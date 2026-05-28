@@ -1,0 +1,51 @@
+<div class="farm-draw-panel shadow-sm">
+  <button
+    type="button"
+    class="btn btn-sm w-100"
+    [class.btn-success]="draw.isDrawing()"
+    [class.btn-outline-success]="!draw.isDrawing()"
+    (click)="toggleMapMyFarm()"
+  >
+    Map my farm
+  </button>
+
+  @if (draw.isDrawing()) {
+    <p class="farm-draw-panel__hint mb-2">
+      Click the map to add points ({{ draw.pointCount() }}). Click the first point to complete.
+    </p>
+    <div class="farm-draw-panel__actions btn-group btn-group-sm w-100">
+      <button type="button" class="btn btn-outline-secondary" (click)="undo()" [disabled]="draw.pointCount() === 0">
+        Undo
+      </button>
+      <button type="button" class="btn btn-outline-danger" (click)="cancel()">Cancel</button>
+    </div>
+  }
+
+  @if (draw.isCompleted() && formattedArea(); as area) {
+    <div class="farm-draw-panel__area mt-2">
+      <span class="farm-draw-panel__area-title">Farm area</span>
+      <span class="farm-draw-panel__area-value">{{ area.hectares }} ha</span>
+      <span class="farm-draw-panel__area-sub">{{ area.acres }} acres</span>
+    </div>
+    <div class="farm-draw-panel__note mt-1">
+      Note: Calculated area is approximate and should not be considered actual acreage.
+    </div>
+    <div class="mt-2">
+      <input
+        type="text"
+        class="form-control form-control-sm mb-1"
+        placeholder="Enter farm name..."
+        [value]="farmName()"
+        (input)="onNameInput($event)"
+      />
+      <div class="btn-group btn-group-sm w-100">
+        <button type="button" class="btn btn-success" (click)="save()" [disabled]="!farmName().trim()">
+          Save
+        </button>
+        <button type="button" class="btn btn-outline-secondary" (click)="draw.startDrawing()">
+          Draw again
+        </button>
+      </div>
+    </div>
+  }
+</div>

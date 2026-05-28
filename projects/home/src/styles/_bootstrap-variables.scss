@@ -1,0 +1,25 @@
+// Bootstrap variable overrides (must load before variables/maps)
+
+// --- Typography System overrides ---
+$font-family-sans-serif: 'Outfit', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+$headings-font-family: $font-family-sans-serif;
+$headings-font-weight: 700;
+$headings-color: #1b5e20; // Elegant agricultural dark green for headers
+
+// Heading font size configurations
+$h1-font-size: 2.25rem;     // ~36px
+$h2-font-size: 1.875rem;    // ~30px
+$h3-font-size: 1.5rem;      // ~24px
+$h4-font-size: 1.25rem;     // ~20px
+$h5-font-size: 1.125rem;    // ~18px
+$h6-font-size: 1rem;        // ~16px
+
+// Layout variable overrides
+$offcanvas-horizontal-width: 260px;
+$zindex-offcanvas-backdrop: 1040;
+$zindex-offcanvas: 1045;
+
+$navbar-padding-y: 0.5rem;
+$nav-link-padding-y: 0.5rem;
+
+

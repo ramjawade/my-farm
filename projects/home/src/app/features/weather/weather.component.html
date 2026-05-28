@@ -1,0 +1,301 @@
+<div class="weather-dashboard py-4 px-3 px-sm-4">
+
+  <!-- HEADER -->
+  <div class="dashboard-header mb-4 text-white">
+    <div class="row align-items-center">
+      <div class="col-md-8 col-12">
+        <h1 class="fw-bold mb-2 d-flex align-items-center gap-2 text-white">
+          <i class="bi bi-cloud-sun text-warning"></i>
+          <span>Smart Farming Dashboard</span>
+        </h1>
+        <p class="mb-0 fs-5 text-white-50">
+          {{ locationName() }} • {{ locationSub() }}
+        </p>
+      </div>
+
+      <div class="col-md-4 col-12 d-flex justify-content-md-end justify-content-center align-items-center mt-3 mt-md-0">
+        <app-sun-path
+          [sunriseTime]="sunriseTime()"
+          [sunsetTime]="sunsetTime()"
+          style="max-width: 360px; width: 100%;"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN WEATHER & METRICS -->
+  <div class="row g-4 align-items-stretch">
+
+    <!-- Column 1: Today's Weather Card -->
+    <div class="col-lg-6 col-12">
+      <div class="card weather-card p-4 h-100 border-0 shadow-sm d-flex flex-column justify-content-between">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h5 class="text-muted mb-2">Today's Weather</h5>
+            <div class="temp mb-1">{{ currentTemp() }}°C</div>
+            <p class="mb-0 text-secondary">
+              Feels like {{ feelsLike() }}°C
+            </p>
+          </div>
+
+          <div class="weather-icon">
+            <i class="bi bi-brightness-high-fill text-warning"></i>
+          </div>
+        </div>
+
+        <div class="flex-grow-1 d-flex flex-column justify-content-end mt-4">
+          <div class="ai-insight-box">
+            <div class="ai-badge">
+              <i class="bi bi-sparkles"></i>
+              <span>AI Crop Advisor</span>
+            </div>
+            <div class="ai-title">
+              <span>{{ currentCondition() }}</span>
+            </div>
+            <p class="ai-desc">
+              Ambient skies are mostly clear with gentle, direct warm sunlight. Splendid weather for crop inspection, field management, and outdoor agricultural tasks.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Column 2: First 2 Metrics (Rain Chance, Humidity) -->
+    <div class="col-lg-3 col-md-6 col-12 d-flex flex-column gap-4">
+      @for (metric of metrics().slice(0, 2); track metric.title) {
+        <div class="card weather-card p-4 border-0 shadow-sm flex-grow-1 d-flex flex-column align-items-center justify-content-center text-center">
+          <i class="bi fs-1" [class]="metric.iconClass + ' ' + metric.textColorClass"></i>
+          <h6 class="text-muted mb-1 fw-bold">{{ metric.title }}</h6>
+          @if (metric.textColorClass === 'text-alert') {
+            <h5 class="fw-bold mb-0 text-danger">{{ metric.value }}</h5>
+          } @else {
+            <h4 class="fw-bold mb-0 text-dark">{{ metric.value }}</h4>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Column 3: Next 2 Metrics (Wind Speed, Weather Alert) -->
+    <div class="col-lg-3 col-md-6 col-12 d-flex flex-column gap-4">
+      @for (metric of metrics().slice(2, 4); track metric.title) {
+        <div class="card weather-card p-4 border-0 shadow-sm flex-grow-1 d-flex flex-column align-items-center justify-content-center text-center">
+          <i class="bi fs-1" [class]="metric.iconClass + ' ' + metric.textColorClass"></i>
+          <h6 class="text-muted mb-1 fw-bold">{{ metric.title }}</h6>
+          @if (metric.textColorClass === 'text-alert') {
+            <h5 class="fw-bold mb-0 text-danger text-truncate w-100" title="{{ metric.value }}">{{ metric.value }}</h5>
+          } @else {
+            <h4 class="fw-bold mb-0 text-dark">{{ metric.value }}</h4>
+          }
+        </div>
+      }
+    </div>
+
+  </div>
+
+  <!-- FORECAST -->
+  <div class="mt-5">
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
+      <div class="d-flex align-items-baseline">
+        <h3 class="section-title mb-0 d-flex flex-wrap align-items-baseline gap-2 pb-2">
+          <span>7 Day Forecast</span>
+          <span class="fs-6 fw-normal text-muted">
+            <i class="bi bi-calendar3 ms-2 me-1 text-success"></i>
+            Period: <strong>{{ currentRange() }}</strong>
+          </span>
+        </h3>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button
+          type="button"
+          class="btn btn-outline-success btn-sm rounded-pill px-3 d-flex align-items-center gap-1 hover-lift"
+          [disabled]="activePeriod() === 0"
+          (click)="previousPeriod()"
+        >
+          <i class="bi bi-chevron-left"></i>
+          <span>Earlier Horizon</span>
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-outline-success btn-sm rounded-pill px-3 d-flex align-items-center gap-1 hover-lift"
+          [disabled]="activePeriod() === 1"
+          (click)="nextPeriod()"
+        >
+          <span>Upcoming Horizon</span>
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="forecast-row">
+      @for (day of forecast(); track day.dayName) {
+        <div class="forecast-col">
+          <div class="forecast-day h-100 d-flex flex-column align-items-center justify-content-center p-3 border-0 shadow-xs">
+            <h6 class="fw-bold text-dark mb-2 text-truncate text-center w-100">
+              {{ day.dayName }}, <span class="text-muted fw-normal text-xs">{{ day.dateLabel }}</span>
+            </h6>
+            <i class="bi fs-2 mb-2" [class]="day.iconClass + ' ' + day.iconColorClass"></i>
+            <h5 class="fw-bold mb-1 text-dark">{{ day.temp }}°C</h5>
+            <small class="text-secondary">{{ day.condition }}</small>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- FARMER INFO -->
+  <div class="row g-4 mt-2">
+
+    <!-- Soil Conditions -->
+    <div class="col-lg-6 col-12">
+      <div class="soil-card h-100 border-0 shadow-sm">
+        <h4 class="fw-bold d-flex align-items-center gap-2 mb-4 text-white">
+          <i class="bi bi-moisture"></i>
+          <span>Soil Condition</span>
+        </h4>
+
+        <!-- Moisture -->
+        <div class="mb-4">
+          <div class="d-flex justify-content-between mb-2">
+            <span class="opacity-90">{{ soilMoisture().name }}</span>
+            <strong class="fw-bold">{{ soilMoisture().value }}{{ soilMoisture().unit }}</strong>
+          </div>
+
+          <div class="progress bg-white-20" style="height: 10px;">
+            <div
+              class="progress-bar"
+              [class]="soilMoisture().progressClass"
+              [style.width.%]="soilMoisture().value"
+              role="progressbar"
+              [attr.aria-valuenow]="soilMoisture().value"
+              aria-valuemin="0"
+              aria-valuemax="100"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Temperature -->
+        <div>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="opacity-90">{{ soilTemp().name }}</span>
+            <strong class="fw-bold">{{ soilTemp().value }}{{ soilTemp().unit }}</strong>
+          </div>
+
+          <div class="progress bg-white-20" style="height: 10px;">
+            <div
+              class="progress-bar"
+              [class]="soilTemp().progressClass"
+              [style.width.%]="soilTemp().value * 2"
+              role="progressbar"
+              [attr.aria-valuenow]="soilTemp().value"
+              aria-valuemin="0"
+              aria-valuemax="50"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Crop Advisory -->
+    <div class="col-lg-6 col-12">
+      <div class="crop-status h-100 border-0 shadow-sm">
+        <h4 class="fw-bold d-flex align-items-center gap-2 mb-4 text-white">
+          <i class="bi bi-tree-fill"></i>
+          <span>Crop Advisory</span>
+        </h4>
+
+        <ul class="mt-3 list-unstyled d-flex flex-column gap-2 ps-0">
+          @for (adv of cropAdvisory(); track adv) {
+            <li class="d-flex align-items-start gap-2">
+              <i class="bi bi-check-circle-fill text-white-50 mt-1"></i>
+              <span>{{ adv }}</span>
+            </li>
+          }
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- HISTORICAL WEATHER TRENDS -->
+  <div class="mt-5">
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
+      <div class="d-flex align-items-baseline">
+        <h3 class="section-title mb-0 d-flex flex-wrap align-items-baseline gap-2 pb-2">
+          <span>Historical Weather Trend</span>
+        </h3>
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <span class="fs-6 fw-normal text-muted d-flex align-items-center gap-1">
+          <i class="bi bi-graph-up text-success me-1"></i>
+          <span>Horizon:</span>
+        </span>
+        
+        <!-- Premium Custom Dropdown -->
+        <div class="position-relative" style="z-index: 1050;">
+          <button 
+            type="button"
+            class="btn btn-sm rounded-pill px-3 py-1 fw-bold text-xs d-flex align-items-center gap-1.5 shadow-sm hover-lift bg-white text-success border border-success-subtle"
+            style="height: 30px;"
+            (click)="toggleDropdown(); $event.stopPropagation();"
+          >
+            <span>{{ activeHistoryTab() === 'weekly' ? 'Weekly' : activeHistoryTab() === 'monthly' ? 'Monthly' : 'Yearly' }}</span>
+            <i class="bi bi-chevron-down text-xs transition ms-2" [style.transform]="dropdownOpen() ? 'rotate(180deg)' : 'rotate(0)'"></i>
+          </button>
+          
+          @if (dropdownOpen()) {
+            <div 
+              class="position-absolute end-0 mt-2 bg-white rounded-3 shadow-lg border border-light-subtle py-1 overflow-hidden animate-fade-in"
+              style="min-width: 110px; box-shadow: 0 10px 30px rgba(46,125,50,0.08) !important;"
+            >
+              <button 
+                type="button" 
+                class="dropdown-item w-100 text-start px-3 py-2 fw-semibold text-xs border-0 bg-transparent transition hover-bg-light"
+                [class.text-success]="activeHistoryTab() === 'weekly'"
+                [class.bg-success-subtle]="activeHistoryTab() === 'weekly'"
+                (click)="selectTab('weekly'); $event.stopPropagation();"
+              >
+                Weekly
+              </button>
+              <button 
+                type="button" 
+                class="dropdown-item w-100 text-start px-3 py-2 fw-semibold text-xs border-0 bg-transparent transition hover-bg-light"
+                [class.text-success]="activeHistoryTab() === 'monthly'"
+                [class.bg-success-subtle]="activeHistoryTab() === 'monthly'"
+                (click)="selectTab('monthly'); $event.stopPropagation();"
+              >
+                Monthly
+              </button>
+              <button 
+                type="button" 
+                class="dropdown-item w-100 text-start px-3 py-2 fw-semibold text-xs border-0 bg-transparent transition hover-bg-light"
+                [class.text-success]="activeHistoryTab() === 'yearly'"
+                [class.bg-success-subtle]="activeHistoryTab() === 'yearly'"
+                (click)="selectTab('yearly'); $event.stopPropagation();"
+              >
+                Yearly
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <app-history-trend [activeTab]="activeHistoryTab()" />
+  </div>
+
+  <!-- FARMER TIP -->
+  <div class="farmer-tip mt-5 border-0 shadow-sm">
+    <h4 class="fw-bold d-flex align-items-center gap-2 text-warning-emphasis">
+      <i class="bi bi-lightbulb-fill text-warning"></i>
+      <span>Farmer Tip of the Day</span>
+    </h4>
+
+    <p class="mb-0 mt-3 fs-5 text-dark-emphasis">
+      {{ farmerTip() }}
+    </p>
+  </div>
+
+</div>

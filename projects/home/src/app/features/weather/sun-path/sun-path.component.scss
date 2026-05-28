@@ -1,0 +1,135 @@
+:host {
+  display: block;
+}
+
+.sun-card {
+  width: 100%;
+  background: transparent;
+  padding: 0;
+}
+
+.sun-chart {
+  position: relative;
+  width: 100%;
+  height: 130px; // Shrunk to perfectly hug the cropped visual dome
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.chart-wrapper {
+  position: relative;
+  width: 360px;
+  height: 125px; // Shrunk to perfectly align with the new cut-to-cut height
+  margin: 0 auto;
+}
+
+.sun-svg {
+  display: block;
+}
+
+.sun-icon-overlay {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffb300;
+  font-size: 26px;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  text-shadow: 0 2px 6px rgba(255, 179, 0, 0.35);
+  transition: left 0.1s linear, top 0.1s linear;
+
+  i {
+    display: block;
+  }
+}
+
+.sunrise,
+.sunset {
+  position: absolute;
+  top: 67px; // Aligned level with the Y = 88.2 baseline chord line
+  display: flex;
+  flex-direction: column; // Revert to vertical column layout
+  align-items: center;
+  user-select: none;
+
+  .label-text {
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.72); // High-contrast semi-transparent white for dark background
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1;
+    margin-top: 1px; // Shrunk margin to bring name closer to chord level
+    margin-bottom: 2px;
+  }
+
+  .time-val {
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+}
+
+.sunrise {
+  left: 50px; // Shifted closer to the chord arc start (X = 68.9)
+  transform: translateX(-50%);
+  color: #ffd54f; // Glow yellow for stunning contrast on green
+  text-shadow: 0 1px 3px rgba(255, 213, 79, 0.2);
+}
+
+.sunset {
+  left: 310px; // Shifted closer to the chord arc end (X = 291.1)
+  transform: translateX(-50%);
+  color: #ff8a65; // Soft warm sunset coral-orange for premium, high-contrast look
+  text-shadow: 0 1px 3px rgba(255, 138, 101, 0.2);
+}
+
+.sunrise i,
+.sunset i {
+  font-size: 1.2rem; // Slightly scaled down icons to prevent pushing text down
+  margin-bottom: 1px;
+  transition: transform 0.2s ease-in-out;
+}
+
+.sunrise:hover i {
+  transform: scale(1.15) translateY(-2px);
+}
+
+.sunset:hover i {
+  transform: scale(1.15) translateY(-2px);
+}
+
+.time-container {
+  position: absolute;
+  top: 41px; // Visually centered inside the dome of the shorter chord arc, matching the spacious proportion offsets
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  user-select: none;
+}
+
+.time-display {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #ffffff; // Clean high-contrast white clock text
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-shadow: 0 0 10px rgba(255, 224, 130, 0.4); // Warm solar glow
+
+  &.night-text {
+    color: #ffffff; // High-contrast white nighttime clock
+    text-shadow: 0 0 10px rgba(0, 229, 255, 0.4); // Cool celestial lunar glow
+  }
+}
+
+.sun-icon-overlay.night-mode {
+  color: #b2ebf2; // Glowing light blue/silver moon
+  text-shadow: 0 2px 8px rgba(0, 188, 212, 0.45);
+}

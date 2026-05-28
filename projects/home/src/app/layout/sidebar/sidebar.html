@@ -1,0 +1,20 @@
+<aside class="app-sidebar" [class.open]="open()">
+  <nav class="nav nav-pills flex-column p-3 gap-1">
+    <a
+      class="nav-link"
+      routerLink="/map"
+      routerLinkActive="active"
+      (click)="onNavClick()"
+    >
+      <i class="bi bi-map me-2"></i>Map
+    </a>
+    <a
+      class="nav-link"
+      routerLink="/weather"
+      routerLinkActive="active"
+      (click)="onNavClick()"
+    >
+      <i class="bi bi-cloud-sun me-2"></i>Weather
+    </a>
+  </nav>
+</aside>

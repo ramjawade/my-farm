@@ -1,0 +1,79 @@
+<!-- HISTORICAL WEATHER TRENDS -->
+<div class="row g-4 align-items-stretch">
+  <!-- Chart Column (D3) -->
+  <div class="col-lg-8 col-12">
+    <div class="card weather-card p-4 border-0 shadow-sm h-100 d-flex flex-column">
+      <div class="d-flex justify-content-end align-items-center gap-3 flex-wrap mb-4">
+        <!-- Dynamic Legend -->
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+          <div class="d-flex align-items-center gap-1.5 text-xs">
+            <span class="d-inline-block rounded-circle" style="width: 8px; height: 8px; background-color: #2e7d32;"></span>
+            <span class="text-muted fw-semibold" style="font-size: 0.72rem; margin-left: 4px;">Temp (°C)</span>
+          </div>
+          <div class="d-flex align-items-center gap-1.5 text-xs">
+            <span class="d-inline-block rounded-circle" style="width: 8px; height: 8px; background-color: #42a5f5;"></span>
+            <span class="text-muted fw-semibold" style="font-size: 0.72rem; margin-left: 4px;">Rainfall (mm)</span>
+          </div>
+          <div class="d-flex align-items-center gap-1.5 text-xs">
+            <span class="d-inline-block rounded-circle" style="width: 8px; height: 8px; background-color: #26a69a;"></span>
+            <span class="text-muted fw-semibold" style="font-size: 0.72rem; margin-left: 4px;">Humidity (%)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- D3 CHART CONTAINER -->
+      <div class="flex-grow-1 position-relative" style="min-height: 220px;">
+        <div #chartContainer class="w-100 h-100" style="min-height: 220px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Aggregate Stats Grid Column -->
+  <div class="col-lg-4 col-12 d-flex flex-column justify-content-between">
+    <div class="row g-3 h-100">
+      <!-- Average Temp -->
+      <div class="col-6">
+        <div class="bottom-stat d-flex flex-column align-items-center justify-content-center h-100 border border-light-subtle rounded-4 p-3 shadow-xs hover-lift transition">
+          <div class="metric-icon alert-bg mb-2 shadow-sm d-flex align-items-center justify-content-center rounded-3" style="width: 48px; height: 48px; background-color: #ef5350;">
+            <i class="bi bi-thermometer-half text-white fs-4"></i>
+          </div>
+          <h6 class="text-muted fw-semibold mb-1 text-sm text-truncate w-100 text-center">Avg Temp</h6>
+          <h4 class="fw-bold mb-0 text-dark">{{ avgTemp() }}°C</h4>
+        </div>
+      </div>
+
+      <!-- Total Rainfall -->
+      <div class="col-6">
+        <div class="bottom-stat d-flex flex-column align-items-center justify-content-center h-100 border border-light-subtle rounded-4 p-3 shadow-xs hover-lift transition">
+          <div class="metric-icon weather-bg mb-2 shadow-sm d-flex align-items-center justify-content-center rounded-3" style="width: 48px; height: 48px; background-color: #42a5f5;">
+            <i class="bi bi-cloud-rain-fill text-white fs-4"></i>
+          </div>
+          <h6 class="text-muted fw-semibold mb-1 text-sm text-truncate w-100 text-center">Rainfall</h6>
+          <h4 class="fw-bold mb-0 text-dark">{{ totalRainfall() }}mm</h4>
+        </div>
+      </div>
+
+      <!-- Humidity -->
+      <div class="col-6">
+        <div class="bottom-stat d-flex flex-column align-items-center justify-content-center h-100 border border-light-subtle rounded-4 p-3 shadow-xs hover-lift transition">
+          <div class="metric-icon water-bg mb-2 shadow-sm d-flex align-items-center justify-content-center rounded-3" style="width: 48px; height: 48px; background-color: #26a69a;">
+            <i class="bi bi-droplet-half text-white fs-4"></i>
+          </div>
+          <h6 class="text-muted fw-semibold mb-1 text-sm text-truncate w-100 text-center">Humidity</h6>
+          <h4 class="fw-bold mb-0 text-dark">{{ avgHumidity() }}%</h4>
+        </div>
+      </div>
+
+      <!-- Wind -->
+      <div class="col-6">
+        <div class="bottom-stat d-flex flex-column align-items-center justify-content-center h-100 border border-light-subtle rounded-4 p-3 shadow-xs hover-lift transition">
+          <div class="metric-icon bg-secondary mb-2 shadow-sm d-flex align-items-center justify-content-center rounded-3" style="width: 48px; height: 48px; background-color: #6c757d;">
+            <i class="bi bi-wind text-white fs-4"></i>
+          </div>
+          <h6 class="text-muted fw-semibold mb-1 text-sm text-truncate w-100 text-center">Wind</h6>
+          <h4 class="fw-bold mb-0 text-dark">{{ avgWind() }} km/h</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

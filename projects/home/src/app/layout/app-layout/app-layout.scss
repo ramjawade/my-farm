@@ -1,0 +1,39 @@
+@import '../../../styles/bootstrap-config';
+
+.app-layout {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    'toolbar'
+    'body';
+  min-height: 100dvh;
+}
+
+.app-layout__body {
+  grid-area: body;
+  display: grid;
+  grid-template-areas: 'sidebar main';
+  grid-template-columns: $offcanvas-horizontal-width 1fr;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+@include media-breakpoint-down(md) {
+  .app-layout__body {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'main';
+  }
+}
+
+.app-layout__backdrop {
+  display: none;
+
+  @include media-breakpoint-down(md) {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: $zindex-offcanvas-backdrop;
+    background-color: rgba($black, 0.5);
+  }
+}

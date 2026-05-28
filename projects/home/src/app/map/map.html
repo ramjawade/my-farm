@@ -1,0 +1,156 @@
+<div class="map-page h-100">
+  <div class="map-page__wrapper">
+    <!-- Saved Farms Panel -->
+    <div class="map-page__saved-farms shadow-sm">
+      <div class="map-page__saved-farms-header d-flex align-items-center justify-content-between cursor-pointer" (click)="toggleSavedFarmsCollapse()">
+        <span class="d-flex align-items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" class="bi bi-map text-success" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.5.5 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103M10 1.91l-4-.8v12.98l4 .8zm1 12.98 4-.8V1.11l-4 .8zm-6-.8V1.11l-4 .8v12.98z"/>
+          </svg>
+          <strong style="font-size: 0.85rem;">My Saved Farms</strong>
+          <span class="badge rounded-pill bg-success text-white" style="font-size: 0.7rem;">{{ farmDraw.savedFarms().length }}</span>
+        </span>
+        <button type="button" class="btn btn-link btn-sm p-0 text-secondary d-flex align-items-center">
+          @if (savedFarmsCollapsed()) {
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/>
+            </svg>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708z"/>
+            </svg>
+          }
+        </button>
+      </div>
+
+      @if (!savedFarmsCollapsed()) {
+        <div class="map-page__saved-farms-body">
+          @if (farmDraw.savedFarms().length === 0) {
+            <div class="map-page__saved-farms-empty text-muted">
+              No saved farms yet. Draw on map and click <strong>Save</strong>.
+            </div>
+          } @else {
+            <div class="list-group list-group-flush map-page__saved-farms-list">
+              @for (farm of farmDraw.savedFarms(); track farm.id) {
+                <div
+                  class="list-group-item list-group-item-action d-flex align-items-center justify-content-between p-2 cursor-pointer position-relative"
+                  [class.active-farm]="farmDraw.selectedSavedFarm()?.id === farm.id"
+                  (click)="farmDraw.selectFarm(farm)"
+                >
+                  <div class="d-flex flex-column min-width-0" style="flex: 1;">
+                    <span class="map-page__saved-farm-name text-truncate text-dark fw-semibold" style="font-size: 0.8rem;">{{ farm.name }}</span>
+                    <span class="map-page__saved-farm-area text-secondary" style="font-size: 0.7rem;">{{ formatFarmArea(farm.area) }}</span>
+                  </div>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-link p-0 text-danger ms-2 map-page__saved-farm-delete"
+                    (click)="onDeleteSavedFarm($event, farm.id)"
+                    title="Delete farm"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                      <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                    </svg>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="map-page__search">
+      <div class="position-relative shadow-sm" style="border-radius: var(--bs-border-radius);">
+        <input
+          id="mapSearchInput"
+          type="search"
+          class="form-control form-control-sm"
+          placeholder="Street, city, postcode, place..."
+          aria-label="Search address"
+          autocomplete="off"
+          [value]="searchQuery()"
+          (input)="onSearchInput($event)"
+          (search)="onSearchClear($event)"
+          (keydown)="onSearchKeydown($event)"
+          (focus)="searchQuery().trim().length >= 3 && showResults.set(true)"
+          style="padding-right: 2rem;"
+        />
+        @if (searchLoading()) {
+          <div class="position-absolute end-0 top-50 translate-middle-y me-2 spinner-border spinner-border-sm text-secondary" role="status" style="width: 0.85rem; height: 0.85rem; pointer-events: none; border-width: 0.15em;">
+          </div>
+        }
+      </div>
+
+      @if (showResults()) {
+        <div class="map-page__search-results shadow-sm">
+          <div class="map-page__search-results-header">
+            @if (searchLoading()) {
+              <span>Searching…</span>
+            } @else if (searchResults().length > 0) {
+              <span>Top {{ searchResults().length }} matches</span>
+            } @else {
+              <span>Results</span>
+            }
+          </div>
+
+          @if (searchError() && !searchLoading()) {
+            <p class="map-page__search-empty">{{ searchError() }}</p>
+          }
+
+          <ul class="list-group list-group-flush">
+            @for (result of searchResults(); track result.id) {
+              <li>
+                <button
+                  type="button"
+                  class="map-page__search-result list-group-item list-group-item-action"
+                  (click)="selectResult(result)"
+                >
+                  <span class="map-page__search-rank">{{ result.rank }}</span>
+                  <span class="map-page__search-text">
+                    <span class="map-page__search-primary">{{ result.label }}</span>
+                    <span class="map-page__search-secondary">{{ result.subtitle }}</span>
+                  </span>
+                </button>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+
+    <app-farm-draw-panel class="map-page__farm-draw" />
+
+    <div
+      class="map-page__layer-control"
+      role="radiogroup"
+      aria-label="Map layer"
+    >
+      <div class="btn-group" role="group">
+        <input
+          type="radio"
+          class="btn-check"
+          name="mapLayer"
+          id="layerStreet"
+          autocomplete="off"
+          [checked]="activeView() === 'street'"
+          (change)="setLayer('street')"
+        />
+        <label class="btn btn-sm btn-light" for="layerStreet">Street</label>
+
+        <input
+          type="radio"
+          class="btn-check"
+          name="mapLayer"
+          id="layerSatellite"
+          autocomplete="off"
+          [checked]="activeView() === 'satellite'"
+          (change)="setLayer('satellite')"
+        />
+        <label class="btn btn-sm btn-light" for="layerSatellite">Satellite</label>
+      </div>
+    </div>
+
+    <div #mapContainer class="map-page__container" role="region" aria-label="Map"></div>
+  </div>
+</div>

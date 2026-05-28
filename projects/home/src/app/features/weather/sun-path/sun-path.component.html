@@ -1,0 +1,101 @@
+<div class="sun-card">
+
+  <!-- CHART CONTAINER -->
+  <div class="sun-chart" id="sunChart">
+    
+    <div class="chart-wrapper">
+      <!-- NATIVE DECLARATIVE SVG -->
+      <svg [attr.width]="width" [attr.height]="height" class="sun-svg">
+        
+        <!-- DEFINITIONS: CELESTIAL GRADIENTS -->
+        <defs>
+          <linearGradient id="sunGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#ffca28"></stop>
+            <stop offset="100%" stop-color="#ff7043"></stop>
+          </linearGradient>
+          <linearGradient id="nightGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#b2ebf2"></stop>
+            <stop offset="100%" stop-color="#00e5ff"></stop>
+          </linearGradient>
+        </defs>
+
+        <!-- CHORD GROUND LINE (Placed horizontally in between Sunrise and Sunset names at Y = startY + 3.8) -->
+        <line
+          [attr.x1]="startX + 7"
+          [attr.y1]="startY + 3.8"
+          [attr.x2]="endX - 7"
+          [attr.y2]="endY + 3.8"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-dasharray="4 4"
+          opacity="0.3"
+        ></line>
+
+        <!-- BACKGROUND ARC (Inactive path representer) -->
+        <path
+          [attr.d]="arcPath"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="7"
+          stroke-linecap="round"
+          opacity="0.15"
+        ></path>
+
+        <!-- ACTIVE ARC (Colored path drawn up to the active sun/moon progress) -->
+        <path
+          [attr.d]="arcPath"
+          fill="none"
+          [attr.stroke]="isDaytime() ? 'url(#sunGradient)' : 'url(#nightGradient)'"
+          stroke-width="7"
+          stroke-linecap="round"
+          [attr.stroke-dasharray]="dashArray"
+          [attr.stroke-dashoffset]="dashOffset()"
+        ></path>
+
+        <!-- CELESTIAL POSITION GLOW (Dynamic) -->
+        <circle
+          [attr.cx]="celestialPosition().cx"
+          [attr.cy]="celestialPosition().cy"
+          r="20"
+          [attr.fill]="isDaytime() ? 'rgba(255, 213, 79, 0.25)' : 'rgba(0, 229, 255, 0.25)'"
+          style="transition: cx 0.1s linear, cy 0.1s linear;"
+        ></circle>
+      </svg>
+
+      <!-- ACTIVE DYNAMIC CELESTIAL ICON (Vector Bootstrap Icon!) -->
+      <div
+        class="sun-icon-overlay"
+        [class.night-mode]="!isDaytime()"
+        [style.left.px]="celestialPosition().cx - 16"
+        [style.top.px]="celestialPosition().cy - 16"
+      >
+        @if (isDaytime()) {
+          <i class="bi bi-sun-fill"></i>
+        } @else {
+          <i class="bi bi-moon-stars-fill"></i>
+        }
+      </div>
+
+      <!-- LIVE CURRENT TIME DISPLAY (Centered inside the dome of the arc) -->
+      <div class="time-container text-center">
+        <div class="time-display" [class.night-text]="!isDaytime()">{{ currentTime() }}</div>
+      </div>
+
+      <!-- SUNRISE LABEL (Perfectly centered underneath start of the arc) -->
+      <div class="sunrise">
+        <i class="bi bi-sunrise-fill"></i>
+        <span class="label-text">Sunrise</span>
+        <span class="time-val text-nowrap">{{ sunriseTime() }}</span>
+      </div>
+
+      <!-- SUNSET LABEL (Perfectly centered underneath end of the arc) -->
+      <div class="sunset">
+        <i class="bi bi-sunset-fill"></i>
+        <span class="label-text">Sunset</span>
+        <span class="time-val text-nowrap">{{ sunsetTime() }}</span>
+      </div>
+    </div>
+
+  </div>
+
+</div>

@@ -1,0 +1,11 @@
+// Typography Rules and Design System
+
+// 1. Import Premium Google Font
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+// 2. Global Typography Enhancements
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #2c3e50;
+}
