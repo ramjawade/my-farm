@@ -1,10 +1,45 @@
 // Bootstrap variable overrides (must load before variables/maps)
 
+// --- Premium Branding Color Palette ---
+$farm-green-dark: #1b5e20;
+$farm-green-primary: #2e7d32;
+$farm-green-light: #66bb6a;
+
+$soil-dark: #4e342e;
+$soil-primary: #6d4c41;
+$soil-light: #8d6e63;
+
+// Specific highlight tones for badges and status text
+$farm-warning-dark: #b7791f;
+$farm-warning-primary: #ff9800;
+$farm-warning-light: #ffca28;
+
+$farm-danger-dark: #c62828;
+$farm-danger-primary: #d32f2f;
+$farm-danger-light: #ef5350;
+
+$farm-info-dark: #01579b;
+$farm-info-primary: #0288d9;
+$farm-info-light: #29b6f6;
+
+$farm-humidity: #26a69a;
+$farm-wind: #7e57c2;
+
+$body-dark-slate: #2c3e50;
+
+// Override Bootstrap's native variables
+$primary: $farm-green-primary;
+$success: $farm-green-primary;
+$info: $farm-info-primary;
+$warning: $farm-warning-primary;
+$danger: $farm-danger-primary;
+$body-color: $body-dark-slate;
+
 // --- Typography System overrides ---
 $font-family-sans-serif: 'Outfit', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
 $headings-font-family: $font-family-sans-serif;
 $headings-font-weight: 700;
-$headings-color: #1b5e20; // Elegant agricultural dark green for headers
+$headings-color: $farm-green-dark; // Elegant agricultural dark green for headers
 
 // Heading font size configurations
 $h1-font-size: 2.25rem;     // ~36px
@@ -21,5 +56,6 @@ $zindex-offcanvas: 1045;
 
 $navbar-padding-y: 0.5rem;
 $nav-link-padding-y: 0.5rem;
+
 
 

@@ -1,6 +1,8 @@
-<div class="app-main d-flex flex-column">
-  <section class="app-main__content flex-grow-1 overflow-hidden p-3 d-flex flex-column">
-    <router-outlet />
-  </section>
-  <app-footer />
+<div class="app-main">
+  <div class="app-main__scroll-wrapper d-flex flex-column">
+    <section class="app-main__content flex-grow-1 p-2 p-sm-3 d-flex flex-column">
+      <router-outlet />
+    </section>
+    <app-footer />
+  </div>
 </div>

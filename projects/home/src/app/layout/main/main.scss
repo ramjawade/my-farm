@@ -6,13 +6,25 @@
   grid-area: main;
   min-height: 0;
   min-width: 0;
+  height: 100%;
+  overflow-y: auto; // Outer block container handles native scrolling perfectly!
+}
+
+.app-main__scroll-wrapper {
+  min-height: 100%; // Restores natural growth so footer is pushed below weather cards!
+  display: flex;
+  flex-direction: column;
 }
 
 .app-main__content {
+  flex-grow: 1;
+  position: relative; // Serves as the stable absolute anchor for full-height screens (like maps)
   min-height: 0;
+  display: flex;
+  flex-direction: column;
 
   > * {
-    flex: 1 1 auto;
+    flex: 1 1 auto; // Stretch components (like Leaflet map) to fill the height
     min-height: 0;
   }
 }

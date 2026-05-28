@@ -1,3 +1,5 @@
+@import '../../../styles/bootstrap-config';
+
 :host {
   display: block;
   min-height: 100%;
@@ -9,11 +11,11 @@
 }
 
 .dashboard-header {
-  background: linear-gradient(135deg, #2e7d32, #66bb6a);
+  background: linear-gradient(135deg, $primary, $farm-green-light);
   color: white;
   border-radius: 20px;
   padding: 28px 24px;
-  box-shadow: 0 8px 24px rgba(46, 125, 50, 0.15);
+  box-shadow: 0 8px 24px rgba($primary, 0.15);
 
   .opacity-90 {
     opacity: 0.9;
@@ -36,7 +38,7 @@
 .temp {
   font-size: 3.25rem;
   font-weight: 800;
-  color: #2e7d32;
+  color: $primary;
   line-height: 1.1;
   letter-spacing: -0.03em;
 }
@@ -59,35 +61,35 @@
 }
 
 .bg-rain {
-  background: #2196f3;
-  box-shadow: 0 4px 10px rgba(33, 150, 243, 0.3);
+  background: $info;
+  box-shadow: 0 4px 10px rgba($info, 0.3);
 }
 .text-rain {
-  color: #2196f3;
+  color: $info;
 }
 
 .bg-humidity {
-  background: #26a69a;
-  box-shadow: 0 4px 10px rgba(38, 166, 154, 0.3);
+  background: $farm-humidity;
+  box-shadow: 0 4px 10px rgba($farm-humidity, 0.3);
 }
 .text-humidity {
-  color: #26a69a;
+  color: $farm-humidity;
 }
 
 .bg-wind {
-  background: #7e57c2;
-  box-shadow: 0 4px 10px rgba(126, 87, 194, 0.3);
+  background: $farm-wind;
+  box-shadow: 0 4px 10px rgba($farm-wind, 0.3);
 }
 .text-wind {
-  color: #7e57c2;
+  color: $farm-wind;
 }
 
 .bg-alert {
-  background: #ef5350;
-  box-shadow: 0 4px 10px rgba(239, 83, 80, 0.3);
+  background: $farm-danger-light;
+  box-shadow: 0 4px 10px rgba($farm-danger-light, 0.3);
 }
 .text-alert {
-  color: #ef5350;
+  color: $farm-danger-light;
 }
 
 .forecast-row {
@@ -105,15 +107,15 @@
     border-radius: 10px;
   }
   &::-webkit-scrollbar-thumb {
-    background: rgba(46, 125, 50, 0.15);
+    background: rgba($primary, 0.15);
     border-radius: 10px;
     &:hover {
-      background: rgba(46, 125, 50, 0.3);
+      background: rgba($primary, 0.3);
     }
   }
 
   scrollbar-width: thin;
-  scrollbar-color: rgba(46, 125, 50, 0.15) rgba(0, 0, 0, 0.02);
+  scrollbar-color: rgba($primary, 0.15) rgba(0, 0, 0, 0.02);
 
   // Desktop display - evenly spread cards on a single line with no scroll
   @media (min-width: 992px) {
@@ -137,40 +139,22 @@
 .forecast-day {
   background: #f9fbf9;
   border-radius: 16px;
-  border: 1px solid rgba(46, 125, 50, 0.05);
+  border: 1px solid rgba($primary, 0.05);
   transition: all 0.2s ease-in-out;
 
   &:hover {
-    background: #e8f5e9;
+    background: rgba($primary, 0.08);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.06);
-  }
-}
-
-.section-title {
-  font-weight: 700;
-  color: #1b5e20;
-  position: relative;
-  padding-bottom: 8px;
-
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 32px;
-    height: 3px;
-    background-color: #2e7d32;
-    border-radius: 2px;
+    box-shadow: 0 4px 12px rgba($primary, 0.06);
   }
 }
 
 .soil-card {
-  background: linear-gradient(135deg, #6d4c41, #8d6e63);
+  background: linear-gradient(135deg, $soil-primary, $soil-light);
   color: white;
   border-radius: 18px;
   padding: 24px;
-  box-shadow: 0 8px 20px rgba(109, 76, 65, 0.15);
+  box-shadow: 0 8px 20px rgba($soil-primary, 0.15);
 
   .bg-white-20 {
     background-color: rgba(255, 255, 255, 0.18);
@@ -178,11 +162,11 @@
 }
 
 .crop-status {
-  background: linear-gradient(135deg, #1b5e20, #43a047);
+  background: linear-gradient(135deg, $farm-green-dark, $farm-green-light);
   color: white;
   border-radius: 18px;
   padding: 24px;
-  box-shadow: 0 8px 20px rgba(27, 94, 32, 0.15);
+  box-shadow: 0 8px 20px rgba($farm-green-dark, 0.15);
 
   ul li {
     font-size: 1.05rem;
@@ -190,11 +174,11 @@
 }
 
 .farmer-tip {
-  background: linear-gradient(135deg, #fff8e1, #ffecb3);
-  border-left: 6px solid #ff9800;
+  background: linear-gradient(135deg, rgba($warning, 0.08), rgba($farm-warning-light, 0.15));
+  border-left: 6px solid $warning;
   border-radius: 18px;
   padding: 24px;
-  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.08);
+  box-shadow: 0 4px 15px rgba($warning, 0.08);
 }
 
 // Media Queries for Mobile Responsiveness
@@ -219,17 +203,31 @@
   .soil-card,
   .crop-status,
   .farmer-tip {
-    padding: 20px;
+    padding: 18px;
   }
 }
 
-@media (max-width: 480px) {
-  .weather-dashboard {
-    padding: 16px 8px !important;
+@media (max-width: 576px) {
+  .dashboard-header {
+    padding: 16px;
+  }
+
+  .soil-card,
+  .crop-status,
+  .farmer-tip {
+    padding: 16px;
+  }
+
+  .temp {
+    font-size: 2.4rem;
+  }
+
+  .weather-icon {
+    font-size: 2.8rem;
   }
 
   .forecast-day {
-    padding: 12px 8px !important;
+    padding: 10px 6px !important;
   }
 }
 
@@ -238,14 +236,14 @@
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(46, 125, 50, 0.15);
+    box-shadow: 0 4px 10px rgba($primary, 0.15);
   }
 }
 
 // AI Insight Box Styling
 .ai-insight-box {
-  background: linear-gradient(135deg, rgba(46, 125, 50, 0.04), rgba(102, 187, 106, 0.07));
-  border: 1px dashed rgba(46, 125, 50, 0.25);
+  background: linear-gradient(135deg, rgba($primary, 0.04), rgba($farm-green-light, 0.07));
+  border: 1px dashed rgba($primary, 0.25);
   border-radius: 16px;
   padding: 20px;
   position: relative;
@@ -260,30 +258,31 @@
     left: 0;
     width: 4px;
     height: 100%;
-    background: linear-gradient(to bottom, #2e7d32, #66bb6a);
+    background: linear-gradient(to bottom, $primary, $farm-green-light);
   }
 
   &:hover {
-    background: linear-gradient(135deg, rgba(46, 125, 50, 0.07), rgba(102, 187, 106, 0.11));
-    border-color: rgba(46, 125, 50, 0.4);
-    box-shadow: 0 6px 18px rgba(46, 125, 50, 0.06);
+    background: linear-gradient(135deg, rgba($primary, 0.07), rgba($farm-green-light, 0.11));
+    border-color: rgba($primary, 0.4);
+    box-shadow: 0 6px 18px rgba($primary, 0.06);
     transform: translateY(-2px);
   }
 
   .ai-badge {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    background: linear-gradient(135deg, #1b5e20, #43a047);
-    color: white;
+    gap: 0.35rem;
+    background: linear-gradient(135deg, rgba($farm-green-primary, 0.12), rgba($farm-green-light, 0.15)) !important;
+    color: $farm-green-dark !important;
+    border: 1px solid rgba($farm-green-primary, 0.18);
+    border-radius: 20px;
     font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     padding: 4px 10px;
-    border-radius: 20px;
     margin-bottom: 12px;
-    box-shadow: 0 3px 8px rgba(27, 94, 32, 0.15);
+    box-shadow: 0 3px 8px rgba($farm-green-dark, 0.15);
 
     i {
       font-size: 0.85rem;
@@ -294,7 +293,7 @@
   .ai-title {
     font-size: 1.2rem;
     font-weight: 750;
-    color: #1b5e20;
+    color: $farm-green-dark;
     margin-bottom: 8px;
     display: flex;
     align-items: center;
@@ -324,7 +323,7 @@
 .hover-bg-light {
   transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
   &:hover {
-    background-color: rgba(46, 125, 50, 0.05) !important;
+    background-color: rgba($primary, 0.05) !important;
   }
 }
 
@@ -343,6 +342,3 @@
     transform: translateY(0) scale(1);
   }
 }
-
-
-

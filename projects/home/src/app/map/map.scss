@@ -1,6 +1,7 @@
 :host {
   display: block;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   min-height: 24rem;
 }
 

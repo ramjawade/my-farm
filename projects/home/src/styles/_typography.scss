@@ -3,9 +3,144 @@
 // 1. Import Premium Google Font
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
-// 2. Global Typography Enhancements
+// 2. Import Bootstrap Config (variables, maps, mixins)
+@import './bootstrap-config';
+
+// 3. Global Typography Enhancements
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
+  color: $body-color;
+}
+
+// 4. Custom premium typography classes extending Bootstrap classes with 'mf-' prefix
+
+// Main Page/Dashboard Heading
+.mf-heading {
+  @extend .h1;
+  @extend .fw-bold;
+  color: $headings-color;
+  font-family: $headings-font-family;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba($primary, 0.05);
+
+  &.text-light-override {
+    color: #ffffff !important;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+// Secondary Subheading / Tagline
+.mf-subheading {
+  @extend .fs-5;
+  @extend .text-muted;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1.5;
+
+  &.text-light-override {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+}
+
+// Card/Section Title with premium animated underline
+.mf-section-heading {
+  @extend .h3;
+  @extend .fw-bold;
+  color: $headings-color;
+  position: relative;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+  font-family: $headings-font-family;
+  letter-spacing: -0.01em;
+
+  @media (min-width: 576px) {
+    margin-bottom: 1.5rem;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 38px;
+    height: 3.5px;
+    background: linear-gradient(to right, $primary, $farm-green-light);
+    border-radius: 4px;
+    transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  &:hover::after {
+    width: 54px;
+  }
+
+  &.text-light-override {
+    color: #ffffff !important;
+
+    &::after {
+      background: linear-gradient(to right, #ffffff, #ffecb3);
+    }
+  }
+}
+
+// Base Premium Badge / Label style
+.mf-badge {
+  @extend .badge;
+  @extend .rounded-pill;
+  @extend .text-uppercase;
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  padding: 0.35em 0.8em;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  }
+
+  i {
+    font-size: 0.82rem;
+  }
+}
+
+// Modifiers with curated agricultural and status tones
+.mf-badge-success {
+  @extend .mf-badge;
+  background: linear-gradient(135deg, rgba($farm-green-primary, 0.12), rgba($farm-green-light, 0.15)) !important;
+  color: $farm-green-dark !important;
+  border: 1px solid rgba($farm-green-primary, 0.18);
+}
+
+.mf-badge-warning {
+  @extend .mf-badge;
+  background: linear-gradient(135deg, rgba($warning, 0.12), rgba($farm-warning-light, 0.15)) !important;
+  color: $farm-warning-dark !important;
+  border: 1px solid rgba($warning, 0.18);
+}
+
+.mf-badge-danger {
+  @extend .mf-badge;
+  background: linear-gradient(135deg, rgba($farm-danger-primary, 0.1), rgba($farm-danger-light, 0.12)) !important;
+  color: $farm-danger-dark !important;
+  border: 1px solid rgba($farm-danger-primary, 0.18);
+}
+
+.mf-badge-info {
+  @extend .mf-badge;
+  background: linear-gradient(135deg, rgba($info, 0.1), rgba($farm-info-light, 0.12)) !important;
+  color: $farm-info-dark !important;
+  border: 1px solid rgba($info, 0.18);
+}
+
+.mf-badge-soil {
+  @extend .mf-badge;
+  background: linear-gradient(135deg, rgba($soil-primary, 0.12), rgba($soil-light, 0.15)) !important;
+  color: $soil-dark !important;
+  border: 1px solid rgba($soil-primary, 0.18);
 }

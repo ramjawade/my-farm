@@ -60,30 +60,30 @@ export class HistoryTrendComponent implements AfterViewInit, OnDestroy {
 
   // Historical stats computed dynamically based on active timeframe
   readonly avgTemp = computed(() => {
-    const data = this.activeTabSignal() === 'weekly' 
-      ? this.weeklyData 
-      : this.activeTabSignal() === 'monthly' 
-        ? this.monthlyData 
+    const data = this.activeTabSignal() === 'weekly'
+      ? this.weeklyData
+      : this.activeTabSignal() === 'monthly'
+        ? this.monthlyData
         : this.yearlyData;
     const sum = data.reduce((acc, curr) => acc + curr.temp, 0);
     return Math.round(sum / data.length);
   });
 
   readonly totalRainfall = computed(() => {
-    const data = this.activeTabSignal() === 'weekly' 
-      ? this.weeklyData 
-      : this.activeTabSignal() === 'monthly' 
-        ? this.monthlyData 
+    const data = this.activeTabSignal() === 'weekly'
+      ? this.weeklyData
+      : this.activeTabSignal() === 'monthly'
+        ? this.monthlyData
         : this.yearlyData;
     const sum = data.reduce((acc, curr) => acc + curr.rain, 0);
     return Math.round(sum);
   });
 
   readonly avgHumidity = computed(() => {
-    const data = this.activeTabSignal() === 'weekly' 
-      ? this.weeklyData 
-      : this.activeTabSignal() === 'monthly' 
-        ? this.monthlyData 
+    const data = this.activeTabSignal() === 'weekly'
+      ? this.weeklyData
+      : this.activeTabSignal() === 'monthly'
+        ? this.monthlyData
         : this.yearlyData;
     const sum = data.reduce((acc, curr) => acc + curr.humidity, 0);
     return Math.round(sum / data.length);
@@ -91,10 +91,10 @@ export class HistoryTrendComponent implements AfterViewInit, OnDestroy {
 
   readonly avgWind = computed(() => {
     // Dynamic wind averages based on selected timeframe
-    return this.activeTabSignal() === 'weekly' 
-      ? 14 
-      : this.activeTabSignal() === 'monthly' 
-        ? 12 
+    return this.activeTabSignal() === 'weekly'
+      ? 14
+      : this.activeTabSignal() === 'monthly'
+        ? 12
         : 16;
   });
 
@@ -120,19 +120,19 @@ export class HistoryTrendComponent implements AfterViewInit, OnDestroy {
   drawChart(): void {
     if (!this.chartContainer) return;
     const container = this.chartContainer.nativeElement;
-    
+
     // Clear previous elements
     d3.select(container).selectAll('*').remove();
 
     // Retrieve active dataset
-    const data = this.activeTabSignal() === 'weekly' 
-      ? this.weeklyData 
-      : this.activeTabSignal() === 'monthly' 
-        ? this.monthlyData 
+    const data = this.activeTabSignal() === 'weekly'
+      ? this.weeklyData
+      : this.activeTabSignal() === 'monthly'
+        ? this.monthlyData
         : this.yearlyData;
 
     // Responsive margins and dimensions
-    const margin = { top: 20, right: 65, bottom: 45, left: 65 };
+    const margin = { top: 20, right: 56, bottom: 45, left: 56 };
     const width = Math.max(100, container.clientWidth - margin.left - margin.right);
     const height = Math.max(100, 220 - margin.top - margin.bottom);
 
@@ -197,10 +197,10 @@ export class HistoryTrendComponent implements AfterViewInit, OnDestroy {
       .attr('stroke-width', '1');
 
     // X Axis Title Label based on active timeframe selected
-    const xAxisLabelText = this.activeTabSignal() === 'weekly' 
-      ? 'Weekly Horizon (Days)' 
-      : this.activeTabSignal() === 'monthly' 
-        ? 'Monthly Horizon (Weeks)' 
+    const xAxisLabelText = this.activeTabSignal() === 'weekly'
+      ? 'Weekly Horizon (Days)'
+      : this.activeTabSignal() === 'monthly'
+        ? 'Monthly Horizon (Weeks)'
         : 'Yearly Horizon (Months)';
 
     svg.append('text')
@@ -214,7 +214,7 @@ export class HistoryTrendComponent implements AfterViewInit, OnDestroy {
       .text(xAxisLabelText);
 
     // Y Axis (Left - primary Temperature values)
-    const yAxis = d3.axisLeft(yScaleTemp).ticks(5).tickSize(0).tickPadding(8).tickFormat(d => `${d}°C`);
+    const yAxis = d3.axisLeft(yScaleTemp).ticks(5).tickSize(0).tickPadding(8).tickFormat(d => `${d}`);
     const yAxisGroup = svg.append('g')
       .call(yAxis)
       .attr('color', 'rgba(0,0,0,0.45)')
@@ -226,7 +226,7 @@ export class HistoryTrendComponent implements AfterViewInit, OnDestroy {
     // Left Y Axis Title Label (Temperature)
     svg.append('text')
       .attr('transform', 'rotate(-90)')
-      .attr('y', 0 - margin.left + 8)
+      .attr('y', 0 - margin.left + 16)
       .attr('x', 0 - (height / 2))
       .attr('dy', '0.75em')
       .attr('text-anchor', 'middle')
@@ -237,7 +237,7 @@ export class HistoryTrendComponent implements AfterViewInit, OnDestroy {
       .text('Temp (°C)');
 
     // Y Axis (Right - secondary Humidity values)
-    const yAxisRight = d3.axisRight(yScaleHum).ticks(5).tickSize(0).tickPadding(8).tickFormat(d => `${d}%`);
+    const yAxisRight = d3.axisRight(yScaleHum).ticks(5).tickSize(0).tickPadding(8).tickFormat(d => `${d}`);
     const yAxisRightGroup = svg.append('g')
       .attr('transform', `translate(${width}, 0)`)
       .call(yAxisRight)
@@ -250,7 +250,7 @@ export class HistoryTrendComponent implements AfterViewInit, OnDestroy {
     // Right Y Axis Title Label (Humidity)
     svg.append('text')
       .attr('transform', 'rotate(-90)')
-      .attr('y', width + margin.right - 10)
+      .attr('y', width + margin.right - 16)
       .attr('x', 0 - (height / 2))
       .attr('dy', '0em')
       .attr('text-anchor', 'middle')
@@ -381,7 +381,7 @@ export class HistoryTrendComponent implements AfterViewInit, OnDestroy {
       .on('mousemove', (event) => {
         const mouseX = d3.pointer(event)[0];
         const domain = xScale.domain();
-        
+
         let minDiff = Infinity;
         let index = 0;
         domain.forEach((d, i) => {
@@ -395,7 +395,7 @@ export class HistoryTrendComponent implements AfterViewInit, OnDestroy {
 
         const activeItem = data[index];
         const xPos = xScale(activeItem.label) as number;
-        
+
         // Calculate dynamic dot translation coordinates
         const yTemp = yScaleTemp(activeItem.temp);
         const yRain = yScaleRain(activeItem.rain);
@@ -420,7 +420,7 @@ export class HistoryTrendComponent implements AfterViewInit, OnDestroy {
         // Format dynamic date header for tooltip
         let tooltipHeader = activeItem.label;
         const currentYear = new Date().getFullYear();
-        
+
         if (this.activeTabSignal() === 'weekly') {
           const dayMap: { [key: string]: string } = {
             'Mon': `Monday, May 25, ${currentYear}`,

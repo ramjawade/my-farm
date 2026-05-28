@@ -6,7 +6,9 @@
   grid-template-areas:
     'toolbar'
     'body';
-  min-height: 100dvh;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
 }
 
 .app-layout__body {
