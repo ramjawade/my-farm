@@ -121,36 +121,6 @@
 
     <app-farm-draw-panel class="map-page__farm-draw" />
 
-    <div
-      class="map-page__layer-control"
-      role="radiogroup"
-      aria-label="Map layer"
-    >
-      <div class="btn-group" role="group">
-        <input
-          type="radio"
-          class="btn-check"
-          name="mapLayer"
-          id="layerStreet"
-          autocomplete="off"
-          [checked]="activeView() === 'street'"
-          (change)="setLayer('street')"
-        />
-        <label class="btn btn-sm btn-light" for="layerStreet">Street</label>
-
-        <input
-          type="radio"
-          class="btn-check"
-          name="mapLayer"
-          id="layerSatellite"
-          autocomplete="off"
-          [checked]="activeView() === 'satellite'"
-          (change)="setLayer('satellite')"
-        />
-        <label class="btn btn-sm btn-light" for="layerSatellite">Satellite</label>
-      </div>
-    </div>
-
     <div #mapContainer class="map-page__container" role="region" aria-label="Map"></div>
   </div>
 </div>

@@ -25,6 +25,13 @@
   transform: translateX(-50%);
   z-index: 1000;
   width: min(20rem, calc(100% - 12rem));
+
+  @media (max-width: 767.98px) {
+    left: 0.75rem;
+    right: 0.75rem;
+    width: auto;
+    transform: none;
+  }
 }
 
 .map-page__search-results {
@@ -114,6 +121,10 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+
+  @media (max-width: 767.98px) {
+    top: 3.5rem;
+  }
 }
 
 .map-page__saved-farms-header {
@@ -187,17 +198,6 @@
   transform: scale(1.1);
 }
 
-.map-page__layer-control {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  z-index: 1000;
-  padding: 0.25rem;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: var(--bs-border-radius);
-  box-shadow: var(--bs-box-shadow-sm);
-}
-
 // Position the attribution watermark horizontally left to the Home button
 :host ::ng-deep .leaflet-control-attribution {
   margin-right: 3.25rem !important; /* Clear the 30px native Home Control nicely */
@@ -218,6 +218,18 @@
   &:hover {
     background-color: #f4f4f4 !important;
     color: #157347 !important;
+  }
+}
+
+// Leaflet layer toggle button custom icon centering and hover states
+:host ::ng-deep .leaflet-layer-toggle-button {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #f4f4f4 !important;
   }
 }
 

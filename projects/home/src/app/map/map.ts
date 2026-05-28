@@ -26,6 +26,7 @@ import { FarmDrawLayer } from './farm-draw/farm-draw-layer';
 import { FarmDrawPanelComponent } from './farm-draw/farm-draw-panel/farm-draw-panel';
 import { FarmDrawService } from './farm-draw/farm-draw.service';
 import { MapGeocodingService, MapSearchResult } from './map-geocoding.service';
+import { createHomeControl, createLayerToggleControl } from './map-controls';
 
 type MapLayer = 'street' | 'satellite';
 
@@ -258,6 +259,12 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     next.addTo(this.map);
     this.activeBase = next;
     this.activeView.set(layer);
+
+    // Synchronize custom Leaflet Layer Toggle control icon if it exists in DOM
+    const toggleButton = document.querySelector('.leaflet-layer-toggle-button');
+    if (toggleButton && toggleButton.parentElement && (toggleButton.parentElement as any)._updateUI) {
+      (toggleButton.parentElement as any)._updateUI(layer);
+    }
   }
 
   goHome(): void {
@@ -313,32 +320,13 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
     this.map.attributionControl?.addAttribution('Satellite imagery & labels &copy; Esri');
 
-    // Custom native Leaflet Home Control
-    const HomeControl = L.Control.extend({
-      options: { position: 'bottomright' },
-      onAdd: (map: L.Map) => {
-        const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-        const button = L.DomUtil.create('a', 'leaflet-home-button', container);
-        button.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-house-door-fill text-success" viewBox="0 0 16 16" style="vertical-align: middle; margin-top: -3px;">
-            <path d="M6.5 14.5v-3.507c0-.235.19-.425.424-.425h2.152c.234 0 .424.19.424.425v3.507c0 .235-.19.425-.424.425H6.924a.424.424 0 0 1-.424-.425z"/>
-            <path d="M7.293 1.5a1 1 0 0 1 1.414 0l6.647 6.646a.5.5 0 0 1-.708.708L8 2.207 1.354 8.854a.5.5 0 1 1-.708-.708z"/>
-          </svg>
-        `;
-        button.href = '#';
-        button.title = 'Go to starting map overview';
-        
-        L.DomEvent.disableClickPropagation(button);
-        L.DomEvent.on(button, 'click', (e) => {
-          L.DomEvent.preventDefault(e);
-          map.flyTo([20.5937, 78.9629], 5, { duration: 1.2 });
-        });
-        return container;
-      }
-    });
-
-    // Add Home Control first, then Zoom Control, so Zoom Control stacks natively directly above it!
-    new HomeControl().addTo(this.map);
+    // Add native Leaflet Controls imported from map-controls.ts
+    createHomeControl().addTo(this.map);
+    createLayerToggleControl({
+      activeView: () => this.activeView(),
+      setLayer: (layer) => this.setLayer(layer)
+    }).addTo(this.map);
+    
     L.control.zoom({ position: 'bottomright' }).addTo(this.map);
     L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(this.map);
 
