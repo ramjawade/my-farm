@@ -318,7 +318,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       zoomControl: false
     });
 
-    this.map.attributionControl?.addAttribution('Satellite imagery & labels &copy; Esri');
+    // this.map.attributionControl?.addAttribution('Satellite imagery & labels &copy; Esri');
+    this.map.attributionControl?.setPrefix(false);
 
     // Add native Leaflet Controls imported from map-controls.ts
     createHomeControl().addTo(this.map);
@@ -326,7 +327,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       activeView: () => this.activeView(),
       setLayer: (layer) => this.setLayer(layer)
     }).addTo(this.map);
-    
+
     L.control.zoom({ position: 'bottomright' }).addTo(this.map);
     L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(this.map);
 

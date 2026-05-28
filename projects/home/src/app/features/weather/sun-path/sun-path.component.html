@@ -19,47 +19,49 @@
           </linearGradient>
         </defs>
 
-        <!-- CHORD GROUND LINE (Placed horizontally in between Sunrise and Sunset names at Y = startY + 3.8) -->
-        <line
-          [attr.x1]="startX + 7"
-          [attr.y1]="startY + 3.8"
-          [attr.x2]="endX - 7"
-          [attr.y2]="endY + 3.8"
-          stroke="currentColor"
-          stroke-width="1.5"
-          stroke-dasharray="4 4"
-          opacity="0.3"
-        ></line>
+        <g transform="translate(0, 16)">
+          <!-- CHORD GROUND LINE (Placed horizontally in between Sunrise and Sunset names at Y = startY + 3.8) -->
+          <line
+            [attr.x1]="startX + 7"
+            [attr.y1]="startY + 3.8"
+            [attr.x2]="endX - 7"
+            [attr.y2]="endY + 3.8"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-dasharray="4 4"
+            opacity="0.3"
+          ></line>
 
-        <!-- BACKGROUND ARC (Inactive path representer) -->
-        <path
-          [attr.d]="arcPath"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="7"
-          stroke-linecap="round"
-          opacity="0.15"
-        ></path>
+          <!-- BACKGROUND ARC (Inactive path representer) -->
+          <path
+            [attr.d]="arcPath"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="7"
+            stroke-linecap="round"
+            opacity="0.15"
+          ></path>
 
-        <!-- ACTIVE ARC (Colored path drawn up to the active sun/moon progress) -->
-        <path
-          [attr.d]="arcPath"
-          fill="none"
-          [attr.stroke]="isDaytime() ? 'url(#sunGradient)' : 'url(#nightGradient)'"
-          stroke-width="7"
-          stroke-linecap="round"
-          [attr.stroke-dasharray]="dashArray"
-          [attr.stroke-dashoffset]="dashOffset()"
-        ></path>
+          <!-- ACTIVE ARC (Colored path drawn up to the active sun/moon progress) -->
+          <path
+            [attr.d]="arcPath"
+            fill="none"
+            [attr.stroke]="isDaytime() ? 'url(#sunGradient)' : 'url(#nightGradient)'"
+            stroke-width="7"
+            stroke-linecap="round"
+            [attr.stroke-dasharray]="dashArray"
+            [attr.stroke-dashoffset]="dashOffset()"
+          ></path>
 
-        <!-- CELESTIAL POSITION GLOW (Dynamic) -->
-        <circle
-          [attr.cx]="celestialPosition().cx"
-          [attr.cy]="celestialPosition().cy"
-          r="20"
-          [attr.fill]="isDaytime() ? 'rgba(255, 213, 79, 0.25)' : 'rgba(0, 229, 255, 0.25)'"
-          style="transition: cx 0.1s linear, cy 0.1s linear;"
-        ></circle>
+          <!-- CELESTIAL POSITION GLOW (Dynamic) -->
+          <circle
+            [attr.cx]="celestialPosition().cx"
+            [attr.cy]="celestialPosition().cy"
+            r="20"
+            [attr.fill]="isDaytime() ? 'rgba(255, 213, 79, 0.25)' : 'rgba(0, 229, 255, 0.25)'"
+            style="transition: cx 0.1s linear, cy 0.1s linear;"
+          ></circle>
+        </g>
       </svg>
 
       <!-- ACTIVE DYNAMIC CELESTIAL ICON (Vector Bootstrap Icon!) -->
@@ -67,7 +69,7 @@
         class="sun-icon-overlay"
         [class.night-mode]="!isDaytime()"
         [style.left.px]="celestialPosition().cx - 16"
-        [style.top.px]="celestialPosition().cy - 16"
+        [style.top.px]="celestialPosition().cy"
       >
         @if (isDaytime()) {
           <i class="bi bi-sun-fill"></i>

@@ -11,7 +11,7 @@
 .sun-chart {
   position: relative;
   width: 100%;
-  height: 130px; // Shrunk to perfectly hug the cropped visual dome
+  height: 150px; // Shrunk to perfectly hug the cropped visual dome
   display: flex;
   justify-content: center;
   overflow: hidden;
@@ -20,7 +20,7 @@
 .chart-wrapper {
   position: relative;
   width: 360px;
-  height: 125px; // Shrunk to perfectly align with the new cut-to-cut height
+  height: 145px; // Shrunk to perfectly align with the new cut-to-cut height
   margin: 0 auto;
 }
 
@@ -51,7 +51,7 @@
 .sunrise,
 .sunset {
   position: absolute;
-  top: 67px; // Aligned level with the Y = 88.2 baseline chord line
+  top: 83px; // Aligned level with the Y = 88.2 baseline chord line (+16px translation shift)
   display: flex;
   flex-direction: column; // Revert to vertical column layout
   align-items: center;
@@ -106,7 +106,7 @@
 
 .time-container {
   position: absolute;
-  top: 41px; // Visually centered inside the dome of the shorter chord arc, matching the spacious proportion offsets
+  top: 57px; // Visually centered inside the dome of the shorter chord arc (+16px translation shift)
   left: 50%;
   transform: translateX(-50%);
   display: flex;

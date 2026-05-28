@@ -17,7 +17,7 @@ export class SunPathComponent implements OnInit, OnDestroy {
 
   // SVG Sizing and Circle variables (cut-to-cut available space parameters)
   readonly width = 360;
-  readonly height = 125;
+  readonly height = 145;
   readonly radius = 115;
   readonly centerX = 180;
   readonly centerY = 118;
