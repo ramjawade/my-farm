@@ -2,7 +2,7 @@ import { computed, Injectable, signal } from '@angular/core';
 import { Subject } from 'rxjs';
 
 import { calculateFarmArea, toGeoJsonPolygon } from './farm-area.utils';
-import { FarmAreaResult, FarmDrawStatus, LatLngPoint, SavedFarm } from './farm-draw.models';
+import { FarmAreaResult, FarmDrawStatus, LatLngPoint, SavedFarm } from '../models/map.models';
 
 @Injectable()
 export class FarmDrawService {

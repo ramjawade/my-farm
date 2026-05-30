@@ -8,46 +8,31 @@ import {
   signal,
   viewChild
 } from '@angular/core';
-import {
-  catchError,
-  debounceTime,
-  distinctUntilChanged,
-  filter,
-  map,
-  of,
-  Subject,
-  switchMap,
-  takeUntil,
-  tap
-} from 'rxjs';
 import * as L from 'leaflet';
 
 import { FarmDrawLayer } from './farm-draw/farm-draw-layer';
-import { FarmDrawPanelComponent } from './farm-draw/farm-draw-panel/farm-draw-panel';
+import { MapMyFarmComponent } from './component/map-my-farm/map-my-farm.component';
 import { FarmDrawService } from './farm-draw/farm-draw.service';
-import { MapGeocodingService, MapSearchResult } from './map-geocoding.service';
-import { createHomeControl, createLayerToggleControl } from './map-controls';
+import { MapSearchResult } from './models/map.models';
+import { HomeControl, LayerToggleControl } from './controls';
+import { MapSearchComponent } from './component/map-search/map-search.component';
+import { SavedFarmsComponent } from './component/saved-farms/saved-farms.component';
 
 type MapLayer = 'street' | 'satellite';
 
 const SEARCH_ZOOM = 15;
-const MIN_SEARCH_LENGTH = 3;
-const SEARCH_DEBOUNCE_MS = 400;
 
 @Component({
   standalone: true,
   selector: 'app-map',
-  imports: [FarmDrawPanelComponent],
+  imports: [MapMyFarmComponent, MapSearchComponent, SavedFarmsComponent],
   providers: [FarmDrawService],
   templateUrl: './map.html',
   styleUrl: './map.scss'
 })
 export class MapComponent implements AfterViewInit, OnDestroy {
   private readonly mapContainer = viewChild.required<ElementRef<HTMLElement>>('mapContainer');
-  private readonly geocoding = inject(MapGeocodingService);
   readonly farmDraw = inject(FarmDrawService);
-  private readonly searchInput$ = new Subject<string>();
-  private readonly destroy$ = new Subject<void>();
 
   private map?: L.Map;
   private farmDrawLayer?: FarmDrawLayer;
@@ -57,25 +42,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   private searchMarker?: L.Marker;
 
   readonly activeView = signal<MapLayer>('satellite');
-  readonly searchQuery = signal('');
-  readonly searchResults = signal<MapSearchResult[]>([]);
-  readonly searchLoading = signal(false);
-  readonly searchError = signal<string | null>(null);
-  readonly showResults = signal(false);
-  readonly savedFarmsCollapsed = signal(false);
-
-  toggleSavedFarmsCollapse(): void {
-    this.savedFarmsCollapsed.update((v) => !v);
-  }
-
-  onDeleteSavedFarm(event: Event, id: string): void {
-    event.stopPropagation();
-    this.farmDraw.deleteFarm(id);
-  }
-
-  formatFarmArea(area: any): string {
-    return `${area.hectares.toFixed(2)} ha (${area.acres.toFixed(2)} ac)`;
-  }
 
   constructor() {
     effect(() => {
@@ -96,48 +62,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         this.map?.doubleClickZoom.enable();
       }
     });
-
-    this.searchInput$
-      .pipe(
-        debounceTime(SEARCH_DEBOUNCE_MS),
-        map((query) => query.trim()),
-        distinctUntilChanged(),
-        tap((query) => {
-          if (query.length === 0) {
-            this.removeSearchMarker();
-          }
-          if (query.length < MIN_SEARCH_LENGTH) {
-            this.searchResults.set([]);
-            this.searchError.set(null);
-            this.showResults.set(false);
-            this.searchLoading.set(false);
-          }
-        }),
-        filter((query) => query.length >= MIN_SEARCH_LENGTH),
-        tap(() => {
-          this.searchLoading.set(true);
-          this.searchError.set(null);
-          this.showResults.set(true);
-        }),
-        switchMap((query) =>
-          this.geocoding.search(query).pipe(
-            catchError(() => {
-              this.searchError.set('Search failed. Try again.');
-              return of([] as MapSearchResult[]);
-            })
-          )
-        ),
-        takeUntil(this.destroy$)
-      )
-      .subscribe((results) => {
-        this.searchResults.set(results);
-        this.searchLoading.set(false);
-        if (results.length === 0) {
-          this.searchError.set('No matching locations. Try a more specific address.');
-        } else {
-          this.searchError.set(null);
-        }
-      });
   }
 
   ngAfterViewInit(): void {
@@ -145,60 +69,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
     this.farmDrawLayer?.destroy();
     this.map?.remove();
-  }
-
-  onSearchInput(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    this.searchQuery.set(value);
-    this.searchError.set(null);
-    if (!value.trim()) {
-      this.clearSearch();
-    } else {
-      this.searchInput$.next(value);
-    }
-  }
-
-  onSearchClear(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    if (!value.trim()) {
-      this.clearSearch();
-    }
-  }
-
-  onSearchKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      this.searchNow();
-    }
-    if (event.key === 'Escape') {
-      this.clearSearch();
-    }
-  }
-
-  searchNow(): void {
-    const query = this.searchQuery().trim();
-    if (query.length < MIN_SEARCH_LENGTH) {
-      this.searchError.set(`Enter at least ${MIN_SEARCH_LENGTH} characters.`);
-      this.showResults.set(true);
-      return;
-    }
-
-    this.searchLoading.set(true);
-    this.searchError.set(null);
-    this.showResults.set(true);
-
-    this.geocoding.search(query).subscribe({
-      next: (results) => this.applySearchResults(results),
-      error: () => {
-        this.searchLoading.set(false);
-        this.searchResults.set([]);
-        this.searchError.set('Search failed. Try again.');
-      }
-    });
   }
 
   selectResult(result: MapSearchResult): void {
@@ -215,22 +87,10 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       .bindPopup(result.label)
       .on('popupclose', () => this.removeSearchMarker())
       .openPopup();
-
-    this.closeResults();
-    this.searchQuery.set(result.label);
   }
 
   clearSearch(): void {
-    this.searchQuery.set('');
-    this.searchInput$.next('');
     this.removeSearchMarker();
-    this.closeResults();
-  }
-
-  closeResults(): void {
-    this.showResults.set(false);
-    this.searchResults.set([]);
-    this.searchError.set(null);
   }
 
   private removeSearchMarker(): void {
@@ -273,16 +133,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  private applySearchResults(results: MapSearchResult[]): void {
-    this.searchResults.set(results);
-    this.searchLoading.set(false);
-    if (results.length === 0) {
-      this.searchError.set('No matching locations. Try a more specific address.');
-    } else {
-      this.searchError.set(null);
-    }
-  }
-
   private initMap(): void {
     const container = this.mapContainer().nativeElement;
 
@@ -322,8 +172,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     this.map.attributionControl?.setPrefix(false);
 
     // Add native Leaflet Controls imported from map-controls.ts
-    createHomeControl().addTo(this.map);
-    createLayerToggleControl({
+    new HomeControl().addTo(this.map);
+    new LayerToggleControl({
       activeView: () => this.activeView(),
       setLayer: (layer) => this.setLayer(layer)
     }).addTo(this.map);

@@ -1,3 +1,12 @@
+export interface MapSearchResult {
+  id: string;
+  rank: number;
+  label: string;
+  subtitle: string;
+  lat: number;
+  lon: number;
+}
+
 export interface LatLngPoint {
   lat: number;
   lng: number;
@@ -9,8 +18,6 @@ export interface FarmAreaResult {
   acres: number;
 }
 
-export type FarmDrawStatus = 'idle' | 'drawing' | 'completed';
-
 export interface SavedFarm {
   id: string;
   name: string;
@@ -19,3 +26,5 @@ export interface SavedFarm {
   geoJson: any;
   createdAt: number;
 }
+
+export type FarmDrawStatus = 'idle' | 'drawing' | 'completed';

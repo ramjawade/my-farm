@@ -1,6 +1,6 @@
 import { geoArea, geoCentroid } from 'd3';
 
-import { FarmAreaResult, LatLngPoint } from './farm-draw.models';
+import { FarmAreaResult, LatLngPoint } from '../models/map.models';
 
 const EARTH_RADIUS_M = 6378137;
 

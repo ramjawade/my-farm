@@ -1,3 +1,4 @@
+import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { HistoryTrendComponent } from './history-trend.component';
@@ -8,7 +9,8 @@ describe('HistoryTrendComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HistoryTrendComponent]
+      imports: [HistoryTrendComponent],
+      providers: [provideZonelessChangeDetection()]
     })
     .compileComponents();
 

@@ -2,7 +2,7 @@ import * as L from 'leaflet';
 import { Subscription } from 'rxjs';
 
 import { formatArea, getPolygonCentroid } from './farm-area.utils';
-import { FarmAreaResult, LatLngPoint } from './farm-draw.models';
+import { FarmAreaResult, LatLngPoint } from '../models/map.models';
 import { FarmDrawService } from './farm-draw.service';
 
 const DRAWING_COLOR = '#0d6efd';

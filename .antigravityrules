@@ -1,0 +1,81 @@
+# Antigravity Workspace Rules for my-farm
+
+This file contains repository-specific guidelines, coding standards, and architectural instructions for the Antigravity AI coding assistant. Whenever performing tasks in this workspace, Antigravity must read, respect, and apply these rules.
+
+---
+
+## 1. Core Principles & Philosophy
+- **Premium Code Quality:** Prioritize dry, well-typed, and highly performant code.
+- **Modern Standards:** Use the latest features of Angular 20+, TypeScript, and modern SCSS.
+- **Aesthetic Excellence:** Ensure any UI changes look premium, utilize beautiful HSL/modern colors, cohesive typography, and smooth transitions/micro-animations. Never use browser defaults or boring styles.
+- **Test-Driven Development Mindset:** For any new development or modification to existing logic, always consider, write, or update corresponding test cases (e.g., Jasmine/Karma `.spec.ts` files).
+
+---
+
+## 2. Tech Stack Context
+- **Framework:** Angular 20+ (Standalone Components, Signals, modern Router).
+- **Styles:** Bootstrap 5.3+ and custom SCSS.
+- **Mapping:** Leaflet 1.9.4+ with custom leaflet control systems and drawing overlays.
+- **Data Visualizations:** D3.js 7.9.0+.
+- **Testing Framework:** Jasmine & Karma (configured with zoneless change detection support using `provideZonelessChangeDetection()`).
+
+---
+
+## 3. TypeScript & Angular Guidelines
+
+### Standalone & Injection Patterns
+- **Use Standalone Components:** All new components, directives, and pipes must be standalone.
+- **Modern Dependency Injection:** Prefer `inject(Service)` over constructor injection.
+  ```typescript
+  // Preferred
+  readonly farmDraw = inject(FarmDrawService);
+  ```
+- **Strict TypeScript:** Avoid using `any`. Define clean interfaces and types for all data structures (e.g. `MapSearchResult`, coordinates, GeoJSON features).
+
+### Model, Interface, and Enum Architecture
+- **Dedicated Files:** Always store interfaces, models, types, and enums in dedicated files rather than inline within components or service code.
+- **Placement by Depth of Usability:**
+  - **Local Placement:** If a model/interface is used in only one file or a single component, keep it defined inline beside that component or in a sibling file in the same directory.
+  - **Common Folder:** If a model/interface is shared and used in more than 2 directories/folders, extract and relocate it to a dedicated common folder (e.g., `projects/home/src/app/map/models/map.models.ts`).
+  - Systematically position these elements in the directory tree based on their structural usage depth.
+
+### Signals & Reactivity
+- **Prefer Signals:** Use Angular Signals (`signal`, `computed`, `effect`) for component and service state management.
+- **Reactive Element Queries:** Prefer Signal-based queries (`viewChild`, `viewChildren`, `contentChild`) over traditional decorators.
+  ```typescript
+  private readonly mapContainer = viewChild.required<ElementRef<HTMLElement>>('mapContainer');
+  ```
+- **Cleanup Management:** Ensure all map events, custom elements, and subscriptions are thoroughly cleared in `ngOnDestroy()`.
+
+---
+
+## 4. Leaflet & Mapping Guidelines
+- **Lifecycle Safety:** Always verify if the Leaflet map instance (`this.map`) is defined before calling Leaflet APIs.
+- **Attribution Control:** Prefix attribution properly and clean up marker layers cleanly to avoid memory leaks.
+- **Custom Controls:** Utilize Leaflet native classes or custom wrappers for UI controls integrated with Angular signal states where possible.
+- **Redraw optimization:** Use `queueMicrotask` or logical throttling when performing heavy Leaflet canvas/SVG drawings.
+
+---
+
+## 5. Coding Style & Formatting
+- **Quotes:** Use single quotes (`'`) for string literals in TS/SCSS files.
+- **Print Width:** Max print width is 100 characters. Break long parameters onto multiple lines.
+- **Import Ordering:** Order imports logically:
+  1. Angular core and framework imports.
+  2. Third-party packages (Leaflet, D3, RxJS).
+  3. Custom local services, components, and utilities.
+
+---
+
+## 6. CSS / SCSS Best Practices
+- **Variables:** Use standard SCSS or CSS variables for key coloring, sizing, and transition curves.
+- **Transitions:** Implement interactive states (`hover`, `focus`, `active`) with clean, fast transitions (`transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1)`).
+- **Responsive Layouts:** Use responsive utilities or flex/grid design to ensure layout fits all modern viewports.
+
+---
+
+## 7. Verification & Workflow
+- Before finishing any task, ensure the project builds correctly by running `npm run build` or the corresponding build command.
+- Do not introduce breaking TypeScript changes or compiler warnings.
+- **Testing Requirement:** Always create or update unit test coverage using the existing **Jasmine and Karma** framework (`.spec.ts` files) for any new development or structural logic modification. Ensure tests use modern zoneless testing utilities (e.g. `TestBed.configureTestingModule` with `provideZonelessChangeDetection()`).
+- **Run Tests:** Validate that test suites compile and pass via `npm run test` or `ng test` to ensure no functional regressions are introduced.

@@ -1,4 +1,4 @@
-<div class="farm-draw-panel shadow-sm">
+<div class="map-my-farm shadow-sm">
   <button
     type="button"
     class="btn btn-sm w-100"
@@ -10,10 +10,10 @@
   </button>
 
   @if (draw.isDrawing()) {
-    <p class="farm-draw-panel__hint mb-2">
+    <p class="map-my-farm__hint mb-2">
       Click the map to add points ({{ draw.pointCount() }}). Click the first point to complete.
     </p>
-    <div class="farm-draw-panel__actions btn-group btn-group-sm w-100">
+    <div class="map-my-farm__actions btn-group btn-group-sm w-100">
       <button type="button" class="btn btn-outline-secondary" (click)="undo()" [disabled]="draw.pointCount() === 0">
         Undo
       </button>
@@ -22,12 +22,12 @@
   }
 
   @if (draw.isCompleted() && formattedArea(); as area) {
-    <div class="farm-draw-panel__area mt-2">
-      <span class="farm-draw-panel__area-title">Farm area</span>
-      <span class="farm-draw-panel__area-value">{{ area.hectares }} ha</span>
-      <span class="farm-draw-panel__area-sub">{{ area.acres }} acres</span>
+    <div class="map-my-farm__area mt-2">
+      <span class="map-my-farm__area-title">Farm area</span>
+      <span class="map-my-farm__area-value">{{ area.hectares }} ha</span>
+      <span class="map-my-farm__area-sub">{{ area.acres }} acres</span>
     </div>
-    <div class="farm-draw-panel__note mt-1">
+    <div class="map-my-farm__note mt-1">
       Note: Calculated area is approximate and should not be considered actual acreage.
     </div>
     <div class="mt-2">

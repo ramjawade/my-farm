@@ -1,17 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
+import { MapSearchResult } from '../../models/map.models';
 
 export const MAP_SEARCH_RESULT_LIMIT = 5;
-
-export interface MapSearchResult {
-  id: string;
-  rank: number;
-  label: string;
-  subtitle: string;
-  lat: number;
-  lon: number;
-}
 
 interface PhotonFeature {
   geometry: { coordinates: [number, number] };
@@ -23,7 +15,7 @@ interface PhotonResponse {
 }
 
 @Injectable({ providedIn: 'root' })
-export class MapGeocodingService {
+export class MapSearchService {
   private readonly http = inject(HttpClient);
 
   search(query: string): Observable<MapSearchResult[]> {

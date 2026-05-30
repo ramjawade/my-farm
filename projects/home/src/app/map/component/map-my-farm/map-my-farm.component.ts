@@ -1,15 +1,15 @@
 import { Component, inject, signal } from '@angular/core';
 
-import { formatArea } from '../farm-area.utils';
-import { FarmDrawService } from '../farm-draw.service';
+import { formatArea } from '../../farm-draw/farm-area.utils';
+import { FarmDrawService } from '../../farm-draw/farm-draw.service';
 
 @Component({
   standalone: true,
-  selector: 'app-farm-draw-panel',
-  templateUrl: './farm-draw-panel.html',
-  styleUrl: './farm-draw-panel.scss'
+  selector: 'app-map-my-farm',
+  templateUrl: './map-my-farm.component.html',
+  styleUrl: './map-my-farm.component.scss'
 })
-export class FarmDrawPanelComponent {
+export class MapMyFarmComponent {
   readonly draw = inject(FarmDrawService);
   readonly farmName = signal('');
 
@@ -29,7 +29,6 @@ export class FarmDrawPanelComponent {
     }
     this.draw.startDrawing();
   }
-
 
   cancel(): void {
     this.draw.cancelDrawing();
