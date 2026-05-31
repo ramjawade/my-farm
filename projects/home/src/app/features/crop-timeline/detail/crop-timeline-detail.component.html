@@ -1,16 +1,16 @@
-<div class="timeline-header-premium sticky-header mb-4 text-start border-bottom pb-3">
+<div class="timeline-header-premium mf-header-pacing sticky-header mb-4 text-start border-bottom pb-3">
   <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
     <div>
-      <h2 class="text-success font-semibold m-0">{{ selectedCrop?.name }} Timeline</h2>
-      <p class="text-muted small mt-1 mb-0">Sown on {{ selectedCrop?.sowingDate | date:'mediumDate' }} · <strong>{{ getDaysAfterSowing(selectedCrop?.sowingDate || '') }} Days After Sowing</strong></p>
+      <h2 class="mf-page-title">{{ selectedCrop?.name }} Timeline</h2>
+      <p class="text-muted small mt-1.5 mb-0">Sown on {{ selectedCrop?.sowingDate | date:'mediumDate' }} · <strong>{{ getDaysAfterSowing(selectedCrop?.sowingDate || '') }} Days After Sowing</strong></p>
     </div>
     <div class="d-flex gap-2">
       <!-- Log Activity (Create) Button on Desktop/Laptop only -->
-      <button class="btn btn-success d-none d-md-inline-flex align-items-center px-3 py-2" (click)="addActivityClicked.emit()">
+      <button class="btn btn-success d-none d-md-inline-flex align-items-center px-3 py-2" (click)="onAddActivityClicked()">
         <i class="bi bi-plus-lg me-1.5"></i>Log Activity
       </button>
       <!-- Back to Dashboard Button on Desktop/Laptop only -->
-      <button class="btn btn-outline-secondary d-none d-md-inline-flex align-items-center px-3 py-2" (click)="backClicked.emit()">
+      <button class="btn btn-outline-secondary d-none d-md-inline-flex align-items-center px-3 py-2" (click)="onBackClicked()">
         <i class="bi bi-arrow-left me-1.5"></i>Back to Dashboard
       </button>
     </div>
@@ -37,8 +37,8 @@
           tabindex="0"
           [class.completed]="getStageIndex(selectedCrop?.currentStage || 'Land Preparation') >= idx"
           [class.active]="selectedCrop?.currentStage === stg"
-          (click)="updateStageClicked.emit(stg)"
-          (keydown.enter)="updateStageClicked.emit(stg)"
+          (click)="onUpdateStageClicked(stg)"
+          (keydown.enter)="onUpdateStageClicked(stg)"
         >
           <!-- Top Label Row (visible only for odd steps, keeps DOM space for even steps) -->
           <div class="step-content step-content-top" [style.visibility]="idx % 2 === 1 ? 'visible' : 'hidden'">
@@ -106,10 +106,10 @@
           </div>
 
           <div class="d-flex justify-content-end gap-1.5 mt-3 border-top pt-2">
-            <button type="button" class="btn btn-sm btn-outline-success btn-xs" (click)="editActivityClicked.emit(up)">
+            <button type="button" class="btn btn-sm btn-outline-success btn-xs" (click)="onEditActivityClicked(up)">
               <i class="bi bi-pencil-square"></i>Edit
             </button>
-            <button type="button" class="btn btn-sm btn-success btn-xs" (click)="markActivityCompletedClicked.emit(up.id)">
+            <button type="button" class="btn btn-sm btn-success btn-xs" (click)="onMarkActivityCompletedClicked(up.id)">
               <i class="bi bi-check-circle-fill me-1"></i>Mark Done
             </button>
           </div>
@@ -147,10 +147,10 @@
               @if (act.cost > 0) {
                 <span class="badge bg-light text-dark font-monospace px-2.5 py-1 border rounded-pill">₹{{ act.cost }}</span>
               }
-              <button type="button" class="btn btn-link text-muted btn-xs p-1" (click)="editActivityClicked.emit(act)" title="Edit">
+              <button type="button" class="btn btn-link text-muted btn-xs p-1" (click)="onEditActivityClicked(act)" title="Edit">
                 <i class="bi bi-pencil-square text-success"></i>
               </button>
-              <button type="button" class="btn btn-link text-muted btn-xs p-1" (click)="deleteActivityClicked.emit(act.id)" title="Delete">
+              <button type="button" class="btn btn-link text-muted btn-xs p-1" (click)="onDeleteActivityClicked(act.id)" title="Delete">
                 <i class="bi bi-trash-fill text-danger"></i>
               </button>
             </div>
@@ -252,14 +252,14 @@
 
 <!-- Back to Dashboard FAB - MOBILE ONLY -->
 <button type="button" class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center position-fixed" 
-        (click)="backClicked.emit()" title="Back to Dashboard"
+        (click)="onBackClicked()" title="Back to Dashboard"
         style="width: 50px; height: 50px; bottom: 95px; right: 29px; z-index: 1030; background-color: rgba(255, 255, 255, 0.95); border: 1.5px solid rgba(42, 111, 71, 0.18) !important; color: #2a6f47; backdrop-filter: blur(8px);">
   <i class="bi bi-arrow-left fs-4"></i>
 </button>
 
 <!-- Create (Add Activity) FAB - MOBILE ONLY -->
 <button type="button" class="btn btn-success rounded-circle shadow-lg fab-button d-flex d-md-none align-items-center justify-content-center position-fixed" 
-        (click)="addActivityClicked.emit()" title="Add Daily Activity"
+        (click)="onAddActivityClicked()" title="Add Daily Activity"
         style="width: 58px; height: 58px; bottom: 25px; right: 25px; z-index: 1030;">
   <i class="bi bi-plus-lg fs-3"></i>
 </button>
@@ -272,10 +272,10 @@
   [showActivityModal]="showActivityModal"
   [editingActivity]="editingActivity"
   [uploadedImages]="uploadedImages"
-  (submitActivity)="submitActivity.emit()"
-  (closeActivityModal)="closeActivityModal.emit()"
-  (imageSelected)="imageSelected.emit($event)"
-  (removeImage)="removeImage.emit($event)"
+  (submitActivity)="onSubmitActivity()"
+  (closeActivityModal)="onCloseActivityModal()"
+  (imageSelected)="onImageSelected($event)"
+  (removeImage)="onRemoveImage($event)"
 />
 
 

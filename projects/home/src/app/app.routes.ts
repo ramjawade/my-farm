@@ -16,6 +16,20 @@ export const routes: Routes = [
   },
   {
     path: 'crops',
-    loadComponent: () => import('./features/crop-timeline/crop-timeline.component').then((m) => m.CropTimelineComponent)
+    loadComponent: () => import('./features/crop-timeline/crop-timeline.component').then((m) => m.CropTimelineComponent),
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./features/crop-timeline/dashboard/crop-dashboard.component').then((m) => m.CropDashboardComponent)
+      },
+      {
+        path: 'add',
+        loadComponent: () => import('./features/crop-timeline/add-crop/add-crop.component').then((m) => m.AddCropComponent)
+      },
+      {
+        path: ':id',
+        loadComponent: () => import('./features/crop-timeline/detail/crop-timeline-detail.component').then((m) => m.CropTimelineDetailComponent)
+      }
+    ]
   }
 ];

@@ -1,14 +1,10 @@
 import { Component, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 
 import { CropTimelineService } from './crop-timeline.service';
 import { CropEntity, ActivityEntity, CropStage, ActivityType, ActivityStatus } from './crop-timeline.models';
-
-import { CropDashboardComponent } from './dashboard/crop-dashboard.component';
-import { AddCropComponent } from './add-crop/add-crop.component';
-import { CropTimelineDetailComponent } from './detail/crop-timeline-detail.component';
 
 @Component({
   standalone: true,
@@ -17,9 +13,7 @@ import { CropTimelineDetailComponent } from './detail/crop-timeline-detail.compo
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    CropDashboardComponent,
-    AddCropComponent,
-    CropTimelineDetailComponent
+    RouterOutlet
   ],
   templateUrl: './crop-timeline.component.html',
   styleUrl: './crop-timeline.component.scss'

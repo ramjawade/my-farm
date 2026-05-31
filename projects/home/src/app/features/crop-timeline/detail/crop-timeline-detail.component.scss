@@ -81,6 +81,11 @@
   outline: none;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   
+  @media (min-width: 768px) {
+    max-width: none; // let steps fill entire width to connect step-lines perfectly
+  }
+
+  
   &:hover {
     .step-circle {
       transform: scale(1.15);
@@ -352,4 +357,9 @@
     transform: scale(0.95);
   }
 }
+
+
+
+
+
 
