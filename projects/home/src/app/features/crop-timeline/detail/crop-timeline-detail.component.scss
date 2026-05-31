@@ -1,0 +1,355 @@
+@import '../../../../styles/bootstrap-config';
+
+/* Sticky Headers with Glassmorphism */
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 1010;
+  background: rgba(243, 248, 245, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  
+  // Pull up to overlay the container's top padding (py-4 is 1.5rem)
+  margin-top: -1.5rem;
+  padding-top: 1.5rem;
+  
+  // Stretch side-to-side to span full width and realign internally
+  margin-left: -1rem;
+  margin-right: -1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  
+  @media (min-width: 768px) {
+    margin-left: -3rem;
+    margin-right: -3rem;
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}
+
+/* Premium Linear Crop Lifecycle Stepper */
+.lifecycle-stepper-container {
+  width: 100%;
+  overflow-x: hidden; // Hide scrollbar completely on desktop/laptop
+  padding: 15px 0 10px 0;
+  
+  @media (max-width: 767px) {
+    overflow-x: auto; // Smooth swipe on mobile screens
+    -webkit-overflow-scrolling: touch;
+    
+    &::-webkit-scrollbar {
+      height: 4px;
+    }
+    &::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.02);
+      border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: rgba(42, 111, 71, 0.15);
+      border-radius: 4px;
+    }
+  }
+}
+
+.lifecycle-track {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  min-width: 100%;
+  position: relative;
+  padding: 0 5px;
+  
+  @media (max-width: 767px) {
+    min-width: 640px; // beautiful legible width on mobile
+    padding: 0 15px;
+  }
+}
+
+.lifecycle-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 1 1 0; // distribute track space perfectly evenly in one line
+  min-width: 0; // prevent flex blowout
+  max-width: 110px; // beautiful spacing
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:hover {
+    .step-circle {
+      transform: scale(1.15);
+      border-color: #2a6f47 !important;
+      box-shadow: 0 0 12px rgba(42, 111, 71, 0.22);
+    }
+    .step-name {
+      color: #2a6f47;
+    }
+  }
+}
+
+.step-circle-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 38px; // circle size
+  z-index: 5;
+}
+
+.step-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.85rem;
+  color: #718096;
+  z-index: 6;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.03);
+  
+  i {
+    font-size: 0.95rem;
+    font-weight: bold;
+  }
+}
+
+.step-content {
+  text-align: center;
+  width: 100%;
+  height: 50px; // fixed height to guarantee perfect linear alignment
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.step-content-top {
+  margin-bottom: 8px;
+}
+
+.step-content-bottom {
+  margin-top: 8px;
+}
+
+.step-content-spacer {
+  height: 50px; // matches step-content height exactly
+  width: 100%;
+}
+
+.step-label {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #a0aec0;
+  letter-spacing: 0.5px;
+  display: block;
+}
+
+.step-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #4a5568;
+  line-height: 1.25;
+  margin-top: 3px;
+  display: block;
+  word-wrap: break-word;
+  white-space: normal;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.step-line {
+  position: absolute;
+  top: 75px; // perfectly horizontal: 50px top content + 8px margin + 19px circle center - 2px half-thickness
+  left: calc(50% + 19px); // Right edge of circle
+  width: calc(100% - 38px); // Bridges perfectly to left edge of next step circle
+  height: 4px;
+  background: #e2e8f0;
+  z-index: 2;
+  transition: background-color 0.4s ease;
+  
+  &.completed {
+    background: #3f9b65;
+  }
+}
+
+// Completed Step state
+.lifecycle-step.completed {
+  .step-circle {
+    background: #edf6f0;
+    border-color: #3f9b65;
+    color: #3f9b65;
+  }
+  .step-name {
+    color: #1b4b2f;
+  }
+  .step-label {
+    color: #3f9b65;
+  }
+}
+
+// Active Step state
+.lifecycle-step.active {
+  .step-circle {
+    background: #1b4b2f;
+    border-color: #2a6f47;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(42, 111, 71, 0.25);
+    transform: scale(1.1);
+  }
+  .step-name {
+    color: #1b4b2f;
+    font-weight: 700;
+  }
+  .step-label {
+    color: #2a6f47;
+  }
+}
+
+/* Upcoming Activities Alert Cards */
+.upcoming-item-card {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(217, 119, 6, 0.18) !important;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(217, 119, 6, 0.08);
+  }
+}
+
+.bg-warning-light {
+  background-color: #fffbeb;
+  color: #92400e;
+}
+
+.text-warning-dark {
+  color: #78350f;
+}
+
+.btn-xs {
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  border-radius: 4px;
+}
+
+/* Chronological Timeline diary styling */
+.timeline {
+  position: relative;
+  margin-top: 20px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 24px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: #d9e4d3;
+  }
+}
+
+.timeline-item {
+  position: relative;
+  padding-left: 65px;
+  margin-bottom: 25px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    .timeline-icon {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+  }
+}
+
+.timeline-icon {
+  position: absolute;
+  left: 5px;
+  top: 4px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 2px 8 rgba(0, 0, 0, 0.08);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.event-card {
+  border: 1px solid rgba(42, 111, 71, 0.1) !important;
+  border-radius: 15px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    border-color: rgba(42, 111, 71, 0.28) !important;
+    box-shadow: 0 6px 18px rgba(42, 111, 71, 0.05) !important;
+  }
+}
+
+.event-date {
+  font-size: 13px;
+  color: #777;
+}
+
+.bg-success-light {
+  background-color: #d1ebd8;
+}
+
+.text-success-dark {
+  color: #1c5230;
+}
+
+/* Attachments preview grid styling */
+.attachment-preview {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: zoom-in;
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.border-dashed {
+  border-style: dashed !important;
+}
+
+/* Floating Action Button (FAB) and Ripple effect */
+.fab-button {
+  background: linear-gradient(135deg, #2a6f47 0%, #3f9b65 100%) !important;
+  border: none !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(42, 111, 71, 0.35) !important;
+
+  &:hover {
+    transform: scale(1.1) rotate(90deg);
+    background: linear-gradient(135deg, #1b4b2f 0%, #2a6f47 100%) !important;
+    box-shadow: 0 6px 25px rgba(42, 111, 71, 0.45) !important;
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+}
+

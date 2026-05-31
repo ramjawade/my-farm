@@ -1,15 +1,21 @@
 <div class="map-page h-100">
   <div class="map-page__wrapper">
     <!-- Saved Farms Panel -->
-    <app-saved-farms />
+    @if (!isPicker) {
+      <app-saved-farms />
+    }
 
-    <app-map-search
-      class="map-page__search"
-      (resultSelected)="selectResult($event)"
-      (searchCleared)="clearSearch()"
-    />
+    @if (!isPicker || showSearch) {
+      <app-map-search
+        class="map-page__search"
+        (resultSelected)="selectResult($event)"
+        (searchCleared)="clearSearch()"
+      />
+    }
 
-    <app-map-my-farm class="map-page__farm-draw" />
+    @if (!isPicker) {
+      <app-map-my-farm class="map-page__farm-draw" />
+    }
 
     <div #mapContainer class="map-page__container" role="region" aria-label="Map"></div>
   </div>

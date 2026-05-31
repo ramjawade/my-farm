@@ -68,6 +68,14 @@
   color: $info;
 }
 
+.bg-temp {
+  background: $warning;
+  box-shadow: 0 4px 10px rgba($warning, 0.3);
+}
+.text-temp {
+  color: $warning;
+}
+
 .bg-humidity {
   background: $farm-humidity;
   box-shadow: 0 4px 10px rgba($farm-humidity, 0.3);
@@ -153,7 +161,6 @@
   background: linear-gradient(135deg, $soil-primary, $soil-light);
   color: white;
   border-radius: 18px;
-  padding: 24px;
   box-shadow: 0 8px 20px rgba($soil-primary, 0.15);
 
   .bg-white-20 {
@@ -165,7 +172,6 @@
   background: linear-gradient(135deg, $farm-green-dark, $farm-green-light);
   color: white;
   border-radius: 18px;
-  padding: 24px;
   box-shadow: 0 8px 20px rgba($farm-green-dark, 0.15);
 
   ul li {
@@ -177,7 +183,6 @@
   background: linear-gradient(135deg, rgba($warning, 0.08), rgba($farm-warning-light, 0.15));
   border-left: 6px solid $warning;
   border-radius: 18px;
-  padding: 24px;
   box-shadow: 0 4px 15px rgba($warning, 0.08);
 }
 
@@ -199,22 +204,10 @@
   .weather-icon {
     font-size: 3.2rem;
   }
-
-  .soil-card,
-  .crop-status,
-  .farmer-tip {
-    padding: 18px;
-  }
 }
 
 @media (max-width: 576px) {
   .dashboard-header {
-    padding: 16px;
-  }
-
-  .soil-card,
-  .crop-status,
-  .farmer-tip {
     padding: 16px;
   }
 
@@ -342,3 +335,5 @@
     transform: translateY(0) scale(1);
   }
 }
+
+

@@ -6,7 +6,9 @@ import {
   inject,
   OnDestroy,
   signal,
-  viewChild
+  viewChild,
+  Input,
+  output
 } from '@angular/core';
 import * as L from 'leaflet';
 
@@ -26,11 +28,17 @@ const SEARCH_ZOOM = 15;
   standalone: true,
   selector: 'app-map',
   imports: [MapMyFarmComponent, MapSearchComponent, SavedFarmsComponent],
-  providers: [FarmDrawService],
   templateUrl: './map.html',
   styleUrl: './map.scss'
 })
 export class MapComponent implements AfterViewInit, OnDestroy {
+  @Input() isPicker = false;
+  @Input() showSearch = false;
+  @Input() mapMode: 'pin' | 'draw' = 'pin';
+
+  readonly mapReady = output<L.Map>();
+  readonly pinCoordinatesSelected = output<{ lat: number; lng: number }>();
+
   private readonly mapContainer = viewChild.required<ElementRef<HTMLElement>>('mapContainer');
   readonly farmDraw = inject(FarmDrawService);
 
@@ -87,6 +95,10 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       .bindPopup(result.label)
       .on('popupclose', () => this.removeSearchMarker())
       .openPopup();
+
+    if (this.isPicker) {
+      this.pinCoordinatesSelected.emit({ lat: result.lat, lng: result.lon });
+    }
   }
 
   clearSearch(): void {
@@ -173,16 +185,25 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
     // Add native Leaflet Controls imported from map-controls.ts
     new HomeControl().addTo(this.map);
-    new LayerToggleControl({
-      activeView: () => this.activeView(),
-      setLayer: (layer) => this.setLayer(layer)
-    }).addTo(this.map);
+    if (!this.isPicker) {
+      new LayerToggleControl({
+        activeView: () => this.activeView(),
+        setLayer: (layer) => this.setLayer(layer)
+      }).addTo(this.map);
+    }
 
     L.control.zoom({ position: 'bottomright' }).addTo(this.map);
     L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(this.map);
 
     if (this.map) {
       this.farmDrawLayer = new FarmDrawLayer(this.map, this.farmDraw);
+      this.mapReady.emit(this.map);
+
+      this.map.on('click', (e: L.LeafletMouseEvent) => {
+        if (this.isPicker && this.mapMode === 'pin') {
+          this.pinCoordinatesSelected.emit({ lat: e.latlng.lat, lng: e.latlng.lng });
+        }
+      });
     }
 
     setTimeout(() => this.map?.invalidateSize(), 0);

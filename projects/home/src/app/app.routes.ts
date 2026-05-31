@@ -9,5 +9,13 @@ export const routes: Routes = [
   {
     path: 'weather',
     loadComponent: () => import('./features/weather/weather.component').then((m) => m.WeatherComponent)
+  },
+  {
+    path: 'register',
+    loadComponent: () => import('./features/farmer-registration/farmer-registration.component').then((m) => m.FarmerRegistrationComponent)
+  },
+  {
+    path: 'crops',
+    loadComponent: () => import('./features/crop-timeline/crop-timeline.component').then((m) => m.CropTimelineComponent)
   }
 ];

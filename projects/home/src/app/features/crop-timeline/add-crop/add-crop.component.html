@@ -1,0 +1,91 @@
+<div class="registration-container max-width-card mx-auto">
+  <div class="card shadow-sm border rounded bg-white p-4 text-start">
+    
+    <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+      <h4 class="text-success font-semibold m-0">
+        <i class="bi bi-plus-circle-fill me-2"></i>Add New Crop Profile
+      </h4>
+      <button class="btn btn-outline-secondary btn-sm px-3" (click)="cancelClicked.emit()">
+        <i class="bi bi-arrow-left me-1"></i>Cancel
+      </button>
+    </div>
+
+    <form [formGroup]="cropForm" (ngSubmit)="onSubmit()">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="name" class="field-label required-label">Crop Name</label>
+          <select id="name" class="form-select" formControlName="name">
+            @for (cName of cropNameOptions; track cName) {
+              <option [value]="cName">{{ cName }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label for="fieldId" class="field-label required-label">Field Name / Identifier</label>
+          <input
+            type="text"
+            id="fieldId"
+            class="form-control"
+            formControlName="fieldId"
+            placeholder="e.g. Field A, North Patch"
+            [class.is-invalid]="cropForm.get('fieldId')?.touched && cropForm.get('fieldId')?.invalid"
+          />
+          @if (cropForm.get('fieldId')?.touched && cropForm.get('fieldId')?.invalid) {
+            <div class="text-danger small mt-1">Field Name is required.</div>
+          }
+        </div>
+
+        <div class="col-md-6">
+          <label for="area" class="field-label required-label">Total Surface Area</label>
+          <input
+            type="number"
+            step="0.01"
+            id="area"
+            class="form-control"
+            formControlName="area"
+            placeholder="e.g. 2.50"
+            [class.is-invalid]="cropForm.get('area')?.touched && cropForm.get('area')?.invalid"
+          />
+          @if (cropForm.get('area')?.touched && cropForm.get('area')?.invalid) {
+            <div class="text-danger small mt-1">Provide a valid area number greater than 0.</div>
+          }
+        </div>
+
+        <div class="col-md-6">
+          <label for="areaUnit" class="field-label required-label">Area Unit</label>
+          <select id="areaUnit" class="form-select" formControlName="areaUnit">
+            <option value="hectares">Hectares (ha)</option>
+            <option value="acres">Acres (ac)</option>
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label for="sowingDate" class="field-label required-label">Sowing Date</label>
+          <input
+            type="date"
+            id="sowingDate"
+            class="form-control"
+            formControlName="sowingDate"
+          />
+        </div>
+
+        <div class="col-md-6">
+          <label for="currentStage" class="field-label required-label">Current Sowing Stage</label>
+          <select id="currentStage" class="form-select" formControlName="currentStage">
+            @for (stg of stages; track stg) {
+              <option [value]="stg">{{ stg }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="col-12 mt-4 pt-3 border-top text-end">
+          <button type="submit" class="btn btn-success px-4" [disabled]="cropForm.invalid">
+            <i class="bi bi-check-lg me-1"></i>Create Profile
+          </button>
+        </div>
+      </div>
+    </form>
+
+  </div>
+</div>

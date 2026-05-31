@@ -2,6 +2,14 @@
   <nav class="nav nav-pills flex-column p-3 gap-1">
     <a
       class="nav-link"
+      routerLink="/crops"
+      routerLinkActive="active"
+      (click)="onNavClick()"
+    >
+      <i class="bi bi-grid-3x3-gap-fill me-2"></i>Dashboard
+    </a>
+    <a
+      class="nav-link"
       routerLink="/map"
       routerLinkActive="active"
       (click)="onNavClick()"
@@ -15,6 +23,14 @@
       (click)="onNavClick()"
     >
       <i class="bi bi-cloud-sun me-2"></i>Weather
+    </a>
+    <a
+      class="nav-link"
+      routerLink="/register"
+      routerLinkActive="active"
+      (click)="onNavClick()"
+    >
+      <i class="bi bi-person-plus-fill me-2"></i>Register Farmer
     </a>
   </nav>
 </aside>

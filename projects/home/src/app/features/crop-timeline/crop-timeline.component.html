@@ -1,0 +1,40 @@
+<div class="crop-timeline-container py-4 px-3 px-md-5">
+  @if (currentView() === 'dashboard') {
+    <app-crop-dashboard
+      [filteredCrops]="filteredCrops()"
+      [searchTerm]="searchTerm()"
+      (searchTermChange)="searchTerm.set($event)"
+      (cropSelected)="selectCrop($event)"
+      (addCropClicked)="currentView.set('add-crop')"
+    />
+  } @else if (currentView() === 'add-crop') {
+    <app-add-crop
+      [cropForm]="cropForm"
+      [cropNameOptions]="cropNameOptions"
+      [stages]="stages"
+      (cancelClicked)="currentView.set('dashboard')"
+      (submitCrop)="onSubmitCrop()"
+    />
+  } @else if (currentView() === 'timeline') {
+    <app-crop-timeline-detail
+      [selectedCrop]="selectedCrop()"
+      [stages]="stages"
+      [upcomingActivities]="upcomingActivities()"
+      [cropActivities]="cropActivities()"
+      [activityForm]="activityForm"
+      [showActivityModal]="showActivityModal()"
+      [editingActivity]="editingActivity()"
+      [uploadedImages]="uploadedImages()"
+      (backClicked)="currentView.set('dashboard'); selectedCrop.set(null)"
+      (updateStageClicked)="updateStage($event)"
+      (addActivityClicked)="openAddActivityModal()"
+      (editActivityClicked)="openEditActivityModal($event)"
+      (deleteActivityClicked)="onDeleteActivity($event)"
+      (markActivityCompletedClicked)="markActivityCompleted($event)"
+      (submitActivity)="onSubmitActivity()"
+      (closeActivityModal)="showActivityModal.set(false)"
+      (imageSelected)="onImageSelected($event)"
+      (removeImage)="removeImage($event)"
+    />
+  }
+</div>

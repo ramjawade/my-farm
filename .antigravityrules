@@ -71,6 +71,10 @@ This file contains repository-specific guidelines, coding standards, and archite
 - **Variables:** Use standard SCSS or CSS variables for key coloring, sizing, and transition curves.
 - **Transitions:** Implement interactive states (`hover`, `focus`, `active`) with clean, fast transitions (`transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1)`).
 - **Responsive Layouts:** Use responsive utilities or flex/grid design to ensure layout fits all modern viewports.
+- **Mobile & Laptop Sizing Rules:**
+  - **Mobile-First Padding:** Design key action options, form buttons, and icon grids to be highly compact on mobile viewports (e.g., icons 1.5rem, padding 10px).
+  - **Laptop/Desktop Constraints:** Enforce maximum widths (e.g., `max-width: 160px`) or fixed grid aspects for selectable buttons on larger laptop screens to prevent excessive stretching or layout bloat.
+  - **No Inline Styles:** Never use inline sizes (e.g., `style="font-size: X"`) for layout elements in HTML templates; always delegate responsive scaling to media queries inside SCSS.
 
 ---
 

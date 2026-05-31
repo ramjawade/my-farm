@@ -1,0 +1,85 @@
+@import '../../../../styles/bootstrap-config';
+
+/* Modal dialog overlays glass styling */
+.activity-modal-backdrop {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.45);
+}
+
+.activity-modal-card {
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes modalPop {
+  from {
+    transform: scale(0.9) translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Standard Premium input fields matching design system guidelines */
+.field-label {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: #2a6f47;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.required-label::after {
+  content: " *";
+  color: #d9534f;
+  font-weight: bold;
+}
+
+.form-control, .form-select {
+  border: 1.5px solid rgba(42, 111, 71, 0.18);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background-color: rgba(255, 255, 255, 0.8);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #2b3a30;
+
+  &:focus {
+    border-color: #2a6f47;
+    box-shadow: 0 0 0 3px rgba(42, 111, 71, 0.15);
+    background-color: #ffffff;
+  }
+}
+
+.btn-xs {
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  border-radius: 4px;
+}
+
+.border-dashed {
+  border-style: dashed !important;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.bg-light {
+  background-color: #f7faf8 !important;
+}
+
+/* Attachment preview thumbnail */
+.attachment-preview {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: zoom-in;
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+}

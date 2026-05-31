@@ -59,19 +59,19 @@ export class WeatherComponent {
   readonly sunriseTime = signal('6:01 AM');
   readonly sunsetTime = signal('6:54 PM');
 
-  // Weather metrics list signal
-  readonly metrics = signal<WeatherMetric[]>([
+  // Weather metrics list computed signal
+  readonly metrics = computed<WeatherMetric[]>(() => [
+    {
+      title: 'Temperature',
+      value: `${this.currentTemp()}°C`,
+      iconClass: 'bi-thermometer-half',
+      textColorClass: 'text-temp',
+    },
     {
       title: 'Rain Chance',
       value: '72%',
       iconClass: 'bi-cloud-rain-heavy-fill',
       textColorClass: 'text-rain',
-    },
-    {
-      title: 'Humidity',
-      value: '68%',
-      iconClass: 'bi-droplet-half',
-      textColorClass: 'text-humidity',
     },
     {
       title: 'Wind Speed',
@@ -80,10 +80,10 @@ export class WeatherComponent {
       textColorClass: 'text-wind',
     },
     {
-      title: 'Weather Alert',
-      value: 'Heavy Rain Tomorrow',
-      iconClass: 'bi-exclamation-triangle-fill',
-      textColorClass: 'text-alert',
+      title: 'Humidity',
+      value: '68%',
+      iconClass: 'bi-droplet-half',
+      textColorClass: 'text-humidity',
     },
   ]);
 

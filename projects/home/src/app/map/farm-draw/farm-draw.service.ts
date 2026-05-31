@@ -4,7 +4,7 @@ import { Subject } from 'rxjs';
 import { calculateFarmArea, toGeoJsonPolygon } from './farm-area.utils';
 import { FarmAreaResult, FarmDrawStatus, LatLngPoint, SavedFarm } from '../models/map.models';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class FarmDrawService {
   readonly status = signal<FarmDrawStatus>('idle');
   readonly points = signal<LatLngPoint[]>([]);
