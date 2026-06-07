@@ -1,0 +1,146 @@
+<div class="mf-page-container">
+  <header class="create-header mf-header-pacing sticky-header d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 mb-4 border-bottom pb-3">
+    <!-- Title on the Left -->
+    <div class="text-start">
+      <h2 class="mf-page-title">Record Farm Activity</h2>
+      <p class="text-muted mb-0">Fill in details to log a new operation performed on your fields.</p>
+    </div>
+
+    <!-- Buttons on the Right -->
+    <div class="d-none d-md-flex gap-2 text-end">
+      <a routerLink="/activities" class="btn btn-secondary d-inline-flex align-items-center gap-2 px-3 py-2 ms-auto" style="white-space: nowrap;">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+      </a>
+    </div>
+  </header>
+
+  <main class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+      <div class="card card-glass p-4 p-md-5">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="d-flex flex-column gap-4">
+          
+          <div class="row g-3">
+            <!-- Date of Activity -->
+            <div class="col-12 col-md-6">
+              <label class="form-label required-label">Date performed</label>
+              <input type="date" class="form-control" formControlName="date"
+                     [class.is-invalid]="form.get('date')?.invalid && form.get('date')?.touched">
+              @if (form.get('date')?.invalid && form.get('date')?.touched) {
+                <div class="invalid-feedback">Date is required.</div>
+              }
+            </div>
+
+            <!-- Season of Activity -->
+            <div class="col-12 col-md-6">
+              <label class="form-label required-label">Season</label>
+              <select class="form-select" formControlName="season"
+                      [class.is-invalid]="form.get('season')?.invalid && form.get('season')?.touched">
+                <option value="Kharif">Kharif</option>
+                <option value="Rabi">Rabi</option>
+                <option value="Summer">Summer</option>
+              </select>
+              @if (form.get('season')?.invalid && form.get('season')?.touched) {
+                <div class="invalid-feedback">Season selection is required.</div>
+              }
+            </div>
+          </div>
+
+          <!-- Activity Title / Name -->
+          <div>
+            <label class="form-label required-label">Activity Name / Type</label>
+            <input type="text" class="form-control" formControlName="activityId" placeholder="e.g. Sowing, Fertilizer Spreading, Bore Drill..."
+                   [class.is-invalid]="form.get('activityId')?.invalid && form.get('activityId')?.touched">
+            @if (form.get('activityId')?.invalid && form.get('activityId')?.touched) {
+              <div class="invalid-feedback">Activity name is required.</div>
+            }
+
+            <!-- Quick Suggestions Grid -->
+            <div class="suggestions-section mt-3">
+              <span class="suggestions-title">Common Suggestions:</span>
+              <div class="d-flex flex-wrap gap-2 mt-2">
+                @for (sugg of commonActivitySuggestions; track sugg) {
+                  <button type="button" class="btn-outline-suggestion btn-sm" (click)="selectSuggestion(sugg)">
+                    + {{ sugg }}
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <!-- Linked Crop -->
+            <div class="col-12 col-md-6">
+              <label class="form-label">Link to Crop (Optional)</label>
+              <select class="form-select" formControlName="cropId">
+                <option value="">-- No Linked Crop --</option>
+                @for (c of crops(); track c.id) {
+                  <option [value]="c.id">{{ c.name }} ({{ c.fieldId }})</option>
+                }
+              </select>
+              <span class="text-muted mt-1 d-block" style="font-size: 0.75rem;">Links this activity's costs to the crop timeline.</span>
+            </div>
+
+            <!-- Linked Field -->
+            <div class="col-12 col-md-6">
+              <label class="form-label">Link to Field / Plot (Optional)</label>
+              <select class="form-select" formControlName="fieldId">
+                <option value="">-- No Linked Field --</option>
+                @for (f of savedFarms(); track f.id) {
+                  <option [value]="f.id">{{ f.name }}</option>
+                }
+              </select>
+              <span class="text-muted mt-1 d-block" style="font-size: 0.75rem;">Associates this activity with a drawn farm layout.</span>
+            </div>
+          </div>
+
+          <!-- Status -->
+          <div>
+            <label class="form-label required-label">Current Status</label>
+            <div class="d-flex gap-3 mt-1">
+              <div class="form-check-custom">
+                <input type="radio" id="statusDraft" value="Draft" formControlName="status">
+                <label for="statusDraft" class="radio-label">
+                  <span class="status-indicator bg-secondary"></span> Draft
+                </label>
+              </div>
+              <div class="form-check-custom">
+                <input type="radio" id="statusInProgress" value="In Progress" formControlName="status">
+                <label for="statusInProgress" class="radio-label">
+                  <span class="status-indicator bg-warning"></span> In Progress
+                </label>
+              </div>
+              <div class="form-check-custom">
+                <input type="radio" id="statusCompleted" value="Completed" formControlName="status">
+                <label for="statusCompleted" class="radio-label">
+                  <span class="status-indicator bg-success"></span> Completed
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div>
+            <label class="form-label">Activity Description & Notes</label>
+            <textarea class="form-control" formControlName="notes" rows="4" placeholder="Mention labor details, soil conditions, materials used, etc."></textarea>
+          </div>
+
+          <!-- Actions -->
+          <div class="d-flex justify-content-end gap-3 mt-3 pt-3 border-top">
+            <a routerLink="/activities" class="btn btn-secondary">
+              Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+              Record Activity
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- Floating Back FAB (User Request) -->
+  <a routerLink="/activities" class="btn btn-secondary fab fab-back shadow d-flex d-md-none align-items-center justify-content-center" title="Back to Dashboard">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+</div>

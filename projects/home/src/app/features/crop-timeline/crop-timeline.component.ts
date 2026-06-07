@@ -5,6 +5,7 @@ import { Router, RouterOutlet } from '@angular/router';
 
 import { CropTimelineService } from './crop-timeline.service';
 import { CropEntity, ActivityEntity, CropStage, ActivityType, ActivityStatus } from './crop-timeline.models';
+import { ConfirmDialogComponent } from 'shared';
 
 @Component({
   standalone: true,
@@ -13,7 +14,8 @@ import { CropEntity, ActivityEntity, CropStage, ActivityType, ActivityStatus } f
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    RouterOutlet
+    RouterOutlet,
+    ConfirmDialogComponent
   ],
   templateUrl: './crop-timeline.component.html',
   styleUrl: './crop-timeline.component.scss'
@@ -29,6 +31,8 @@ export class CropTimelineComponent {
   readonly searchTerm = signal<string>('');
   readonly showActivityModal = signal<boolean>(false);
   readonly editingActivity = signal<ActivityEntity | null>(null);
+  readonly showDeleteConfirm = signal(false);
+  readonly selectedActivityId = signal<string | null>(null);
 
   // File Upload previews signal
   readonly uploadedImages = signal<string[]>([]);
@@ -338,8 +342,15 @@ export class CropTimelineComponent {
   }
 
   onDeleteActivity(id: string): void {
-    if (confirm('Are you sure you want to delete this activity record?')) {
+    this.selectedActivityId.set(id);
+    this.showDeleteConfirm.set(true);
+  }
+
+  confirmDeleteActivity(): void {
+    const id = this.selectedActivityId();
+    if (id) {
       this.timelineService.deleteActivity(id);
+      this.selectedActivityId.set(null);
     }
   }
 

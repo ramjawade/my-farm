@@ -1,0 +1,263 @@
+<div class="mf-page-container">
+  <!-- Top Navigation/Header Panel -->
+  <header class="dashboard-header mf-header-pacing sticky-header d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 mb-4 border-bottom pb-3">
+    <!-- Title on the Left -->
+    <div class="text-start">
+      <h2 class="mf-page-title">Farm Activities</h2>
+      <p class="text-muted mb-0">Record operations, manage crop expenses, and analyze input costs.</p>
+    </div>
+
+    <!-- Buttons on the Right -->
+    <div class="d-flex gap-2 text-end">
+      <a routerLink="list" class="btn btn-secondary d-inline-flex align-items-center gap-2 px-3 py-2 ms-auto" style="white-space: nowrap;">
+        <i class="bi bi-list-task me-1"></i> View All Activities
+      </a>
+      <a routerLink="create" class="btn btn-success d-none d-md-inline-flex align-items-center gap-2 px-3 py-2 ms-auto" style="white-space: nowrap;">
+        <i class="bi bi-plus-lg"></i> Record New Activity
+      </a>
+    </div>
+  </header>
+
+  <!-- KPI Indicator Summary Cards (User Redesign) -->
+  <section class="row g-3 mb-4">
+    <!-- Card 1: Total Expense -->
+    <div class="col-6 col-md-3">
+      <div class="card text-center">
+        <div class="text-secondary font-sans mb-1">Total Expense</div>
+        <div class="metric">₹{{ totalExpensesAmount() | number:'1.0-0' }}</div>
+      </div>
+    </div>
+
+    <!-- Card 2: Activities -->
+    <div class="col-6 col-md-3">
+      <div class="card text-center">
+        <div class="text-secondary font-sans mb-1">Activities</div>
+        <div class="metric">{{ totalActivitiesCount() }}</div>
+      </div>
+    </div>
+
+    <!-- Card 3: In Progress -->
+    <div class="col-6 col-md-3">
+      <div class="card text-center">
+        <div class="text-secondary font-sans mb-1">In Progress</div>
+        <div class="metric text-warning-override">{{ inProgressActivitiesCount() }}</div>
+      </div>
+    </div>
+
+    <!-- Card 4: Completed -->
+    <div class="col-6 col-md-3">
+      <div class="card text-center">
+        <div class="text-secondary font-sans mb-1">Completed</div>
+        <div class="metric text-success-override">{{ completedActivitiesCount() }}</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Row 2: Recent Activities & Today's Progress -->
+  <section class="row g-4 mb-4">
+    <!-- Left Column: Recent Activities -->
+    <div class="col-lg-8">
+      <div class="card h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="m-0 font-sans fw-bold">Recent Activities</h5>
+          <a routerLink="list" class="text-success link-hover small">View All</a>
+        </div>
+        
+        <div class="d-flex flex-column gap-3">
+          @for (act of recentActivities(); track act.id) {
+            <div [routerLink]="['/activities', act.id]" class="activity-card cursor-pointer">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h5 class="m-0 font-sans fw-bold text-soil">
+                    {{ getActivityEmoji(act.activityId) }} {{ act.activityId }}
+                  </h5>
+                  <div class="text-secondary small mt-1 font-sans">
+                    {{ act.date | date:'dd MMM yyyy' }} • 
+                    <span class="status-badge-inline" 
+                          [class.completed]="act.status === 'Completed'" 
+                          [class.progressing]="act.status === 'In Progress'">
+                      {{ act.status }}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <h4 class="m-0 font-monospace fw-bold text-emerald-dark">₹{{ getActivityTotalCost(act.id) | number }}</h4>
+                </div>
+              </div>
+            </div>
+          } @empty {
+            <div class="text-muted text-center py-4">No activities logged yet.</div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Today's Progress / Activity Breakdown -->
+    <div class="col-lg-4">
+      <div class="card h-100">
+        <h5 class="mb-3 font-sans fw-bold">Expenses by Activity</h5>
+        <div class="d-flex flex-column gap-3">
+          @for (item of activityChartData(); track item.name) {
+            <div>
+              <div class="d-flex justify-content-between align-items-center mb-1 font-sans">
+                <span class="fw-semibold text-secondary-custom">{{ item.name }}</span>
+                <strong class="font-monospace">₹{{ item.amount | number }}</strong>
+              </div>
+              <div class="progress progress-custom">
+                <div class="progress-bar rounded-pill" 
+                     [style.width.%]="item.percentage" 
+                     [style.background-color]="item.color"></div>
+              </div>
+            </div>
+          } @empty {
+            <p class="text-muted text-center py-4">No activities logged yet.</p>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Row 3: Expense Charts -->
+  <section class="row g-4 mb-4">
+    <!-- Column 1: Expense Trend -->
+    <div class="col-md-6">
+      <div class="card">
+        <h5 class="mb-3 font-sans fw-bold">Expense Trend</h5>
+        <div class="trend-chart-wrapper position-relative">
+          @if (monthlyTrendChartData().points.length > 0) {
+            <svg viewBox="0 0 500 220" class="trend-svg w-100" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#10b981" stop-opacity="0.3" />
+                  <stop offset="100%" stop-color="#10b981" stop-opacity="0.0" />
+                </linearGradient>
+              </defs>
+              
+              <!-- Grid Lines -->
+              @for (line of monthlyTrendChartData().gridLines; track line.y) {
+                <line x1="40" [attr.y1]="line.y" x2="460" [attr.y2]="line.y" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3,3" />
+                <text x="35" [attr.y]="line.y + 4" class="grid-text text-end">{{ line.label }}</text>
+              }
+
+              <!-- Area Fill -->
+              <path [attr.d]="monthlyTrendChartData().areaPath" fill="url(#trendGradient)" />
+
+              <!-- Line Path -->
+              <path [attr.d]="monthlyTrendChartData().linePath" fill="none" stroke="#10b981" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+
+              <!-- Data Markers & Tooltips -->
+              @for (p of monthlyTrendChartData().points; track p.month) {
+                <circle [attr.cx]="p.x" [attr.cy]="p.y" r="6" fill="#10b981" stroke="#ffffff" stroke-width="2" class="chart-node" />
+                
+                <!-- Value Labels -->
+                <text [attr.x]="p.x" [attr.y]="p.y - 12" class="node-val-text text-center font-monospace" text-anchor="middle">
+                  ₹{{ p.amount | number:'1.0-0' }}
+                </text>
+
+                <!-- Month labels on bottom x-axis -->
+                <text [attr.x]="p.x" y="212" class="axis-text font-sans" text-anchor="middle">{{ p.month }}</text>
+              }
+            </svg>
+          } @else {
+            <div class="no-data-placeholder py-5 text-center">
+              <i class="bi bi-bar-chart-line text-muted display-4"></i>
+              <p class="text-muted mt-2">No activity expenses recorded yet.</p>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Column 2: Expense by Category -->
+    <div class="col-md-6">
+      <div class="card">
+        <h5 class="mb-3 font-sans fw-bold">Expenses by Category</h5>
+        <div class="row align-items-center">
+          <div class="col-12 col-md-5 d-flex justify-content-center mb-3 mb-md-0">
+            <div class="donut-chart-wrapper position-relative" style="width: 140px; height: 140px;">
+              @if (categoryChartData().length > 0) {
+                <svg viewBox="0 0 120 120" class="donut-svg">
+                  <!-- Base circular track -->
+                  <circle cx="60" cy="60" r="50" fill="transparent" stroke="#f1f5f9" stroke-width="14" />
+                  
+                  <!-- Segment Slices -->
+                  @for (cat of categoryChartData(); track cat.name) {
+                    <circle cx="60" cy="60" r="50" fill="transparent" 
+                            [attr.stroke]="cat.color" 
+                            stroke-width="14" 
+                            [attr.stroke-dasharray]="cat.dashArray" 
+                            [attr.stroke-dashoffset]="cat.dashOffset" 
+                            [attr.transform]="cat.transformRotation" 
+                            stroke-linecap="round"
+                            class="donut-segment" />
+                  }
+                </svg>
+                <div class="donut-inner text-center">
+                  <span class="donut-total-lbl font-sans">Total</span>
+                  <span class="donut-total-val">₹{{ totalExpensesAmount() | number:'1.0-0' }}</span>
+                </div>
+              } @else {
+                <div class="donut-placeholder bg-light rounded-circle d-flex align-items-center justify-content-center" style="width:120px; height:120px;">
+                  <span class="text-muted font-sans text-center small">No Data</span>
+                </div>
+              }
+            </div>
+          </div>
+          <div class="col-12 col-md-7">
+            <!-- Legend Indicators -->
+            <div class="category-legend-list">
+              @for (cat of categoryChartData(); track cat.name) {
+                <div class="legend-item d-flex align-items-center justify-content-between p-2 mb-1 rounded">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="legend-dot" [style.background-color]="cat.color"></span>
+                    <span class="legend-name font-sans">{{ cat.name }}</span>
+                  </div>
+                  <div class="legend-values text-end">
+                    <strong class="font-monospace">₹{{ cat.value | number }}</strong>
+                    <span class="text-muted ms-2 small">({{ cat.percentage | number:'1.0-1' }}%)</span>
+                  </div>
+                </div>
+              } @empty {
+                <p class="text-muted text-center py-3">Record expenses to see category breakdown.</p>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Row 4: Quick Navigation Action Buttons -->
+  <section class="row g-3">
+    <div class="col-6 col-md-3">
+      <button routerLink="create" class="btn btn-light w-100 quick-btn d-flex flex-column align-items-center justify-content-center gap-1">
+        <i class="bi bi-plus-circle fs-3 text-success"></i>
+        <span class="quick-btn-text">New Activity</span>
+      </button>
+    </div>
+    <div class="col-6 col-md-3">
+      <button routerLink="list" class="btn btn-light w-100 quick-btn d-flex flex-column align-items-center justify-content-center gap-1">
+        <i class="bi bi-list-task fs-3 text-primary"></i>
+        <span class="quick-btn-text">Activities</span>
+      </button>
+    </div>
+    <div class="col-6 col-md-3">
+      <button routerLink="/activities" class="btn btn-light w-100 quick-btn d-flex flex-column align-items-center justify-content-center gap-1">
+        <i class="bi bi-bar-chart fs-3 text-warning"></i>
+        <span class="quick-btn-text">Reports</span>
+      </button>
+    </div>
+    <div class="col-6 col-md-3">
+      <button routerLink="/weather" class="btn btn-light w-100 quick-btn d-flex flex-column align-items-center justify-content-center gap-1">
+        <i class="bi bi-cloud-sun fs-3 text-info"></i>
+        <span class="quick-btn-text">Weather</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- Floating Action Button (FAB) for Mobile -->
+  <a routerLink="create" class="btn btn-success fab shadow d-flex d-md-none align-items-center justify-content-center" title="Record New Activity">
+    <i class="bi bi-plus-lg"></i>
+  </a>
+</div>
+

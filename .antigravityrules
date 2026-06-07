@@ -69,6 +69,7 @@ This file contains repository-specific guidelines, coding standards, and archite
 
 ## 6. CSS / SCSS Best Practices
 - **Variables:** Use standard SCSS or CSS variables for key coloring, sizing, and transition curves.
+- **Variable-Only Custom Styling:** If existing design system criteria are not applicable and you must write new custom SCSS/CSS classes, never hardcode values (such as colors, margins, padding, border-radius, font-sizes, or shadow values). Always use pre-defined variables from the design system.
 - **Transitions:** Implement interactive states (`hover`, `focus`, `active`) with clean, fast transitions (`transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1)`).
 - **Responsive Layouts:** Use responsive utilities or flex/grid design to ensure layout fits all modern viewports.
 - **Mobile & Laptop Sizing Rules:**

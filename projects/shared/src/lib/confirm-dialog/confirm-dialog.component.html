@@ -1,0 +1,43 @@
+@if (isOpen()) {
+  <div 
+    class="confirm-modal-backdrop position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" 
+    style="z-index: 1050;" 
+    (click)="onCancel()"
+  >
+    <div 
+      class="confirm-modal-card card font-sans border-0 p-4" 
+      style="max-width: 440px; width: 90%;" 
+      (click)="$event.stopPropagation()"
+    >
+      <div class="d-flex gap-3 align-items-start">
+        <div class="confirm-icon-box" [class.confirm-icon-danger]="isDestructive()">
+          @if (isDestructive()) {
+            <i class="bi bi-exclamation-triangle-fill"></i>
+          } @else {
+            <i class="bi bi-question-circle-fill"></i>
+          }
+        </div>
+        <div class="flex-grow-1">
+          <h5 class="card-title text-soil fw-bold mb-2">{{ title() }}</h5>
+          <p class="card-text text-muted small mb-0">{{ message() }}</p>
+        </div>
+      </div>
+      <div class="d-flex justify-content-end gap-2 mt-4">
+        <button 
+          class="btn btn-secondary-custom py-2 px-3 text-sm" 
+          (click)="onCancel()"
+        >
+          {{ cancelText() }}
+        </button>
+        <button 
+          class="btn py-2 px-3 text-sm" 
+          [class.btn-danger-custom]="isDestructive()" 
+          [class.btn-primary-custom]="!isDestructive()" 
+          (click)="onConfirm()"
+        >
+          {{ confirmText() }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,37 @@
+@import '../../../../styles/bootstrap-variables';
+
+// 1. Text clamp helper for activity notes preview
+.notes-preview {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: #57687e;
+  
+  // Multi-line ellipsis clamp (max 3 lines)
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// 2. Custom Empty State Dashed Border
+.empty-state-container {
+  border: 2px dashed #cbd5e1 !important;
+  max-width: 500px;
+  margin: 2.5rem auto;
+
+  .text-muted-custom {
+    color: #64748b;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+}
+
+.max-width-400 {
+  max-width: 400px;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}

@@ -1,0 +1,188 @@
+// 1. Page Container Layout
+.mf-page-container {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  @extend .animate-fade-in;
+}
+
+// 2. Spacing Class Extensions
+.mf-card-pad {
+  @extend .p-2;
+  @extend .p-sm-3;
+}
+
+.mf-section-gap {
+  @extend .mt-4;
+  @extend .mt-sm-5;
+}
+
+.mf-grid-gap {
+  @extend .g-2;
+  @extend .g-sm-3;
+}
+
+.mf-header-pacing {
+  @extend .mb-3 !optional;
+  @extend .mb-sm-4 !optional;
+  @extend .pb-2 !optional;
+  @extend .pb-sm-3 !optional;
+  @extend .border-bottom !optional;
+  
+  border-bottom-color: rgba(42, 111, 71, 0.12) !important;
+}
+
+// 3. Typography Extensions
+.mf-heading {
+  @extend .h1;
+  @extend .fw-bold;
+  color: $headings-color;
+  font-family: $headings-font-family;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba($primary, 0.05);
+
+  &.text-light-override {
+    color: #ffffff !important;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.mf-subheading {
+  @extend .fs-5;
+  @extend .text-muted;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1.5;
+
+  &.text-light-override {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+}
+
+.mf-section-heading {
+  @extend .h3;
+  @extend .fw-bold;
+  color: $headings-color;
+  position: relative;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+  font-family: $headings-font-family;
+  letter-spacing: -0.01em;
+
+  @media (min-width: 576px) {
+    margin-bottom: 1.5rem;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 38px;
+    height: 3.5px;
+    background: linear-gradient(to right, $primary, $farm-green-light);
+    border-radius: 4px;
+    transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  &:hover::after {
+    width: 54px;
+  }
+
+  &.text-light-override {
+    color: #ffffff !important;
+
+    &::after {
+      background: linear-gradient(to right, #ffffff, #ffecb3);
+    }
+  }
+}
+
+.mf-page-title {
+  @extend .h2 !optional;
+  @extend .fw-bold !optional;
+  @extend .m-0 !optional;
+  
+  color: $headings-color !important;
+  font-family: 'Outfit', 'Inter', sans-serif !important;
+  letter-spacing: -0.025em !important;
+  line-height: 1.25 !important;
+}
+
+// Semantic component hierarchy
+.mf-crop-dashboard {
+  &__page-title {
+    @extend .mf-page-title;
+  }
+}
+
+// Card Section Heading
+.mf-card-section-title {
+  @extend .h6;
+  @extend .fw-bold;
+  @extend .m-0;
+  font-family: 'Outfit', sans-serif;
+  color: $headings-color;
+  letter-spacing: -0.015em;
+  line-height: 1.35;
+}
+
+// Meta Fields
+.mf-meta-label {
+  @extend .text-muted;
+  @extend .text-uppercase;
+  @extend .fw-bold;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  display: block;
+}
+
+.mf-meta-value {
+  @extend .fw-bold;
+  font-family: 'Outfit', sans-serif;
+  color: $soil-dark;
+}
+
+.font-sans {
+  font-family: 'Outfit', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif !important;
+}
+
+// 4. Farmer registration custom layout labels
+.field-label {
+  @extend .form-label;
+  font-size: 0.98rem;
+  color: $headings-color;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+// 5. Sticky Header styling
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 1010;
+  background: rgba(243, 248, 245, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  
+  // Pull up to overlay the container's top padding (py-4 is 1.5rem)
+  margin-top: -1.5rem;
+  padding-top: 1.5rem;
+  
+  // Stretch side-to-side to span full width and realign internally
+  margin-left: -1rem;
+  margin-right: -1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  
+  @media (min-width: 768px) {
+    margin-left: -3rem;
+    margin-right: -3rem;
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}
+

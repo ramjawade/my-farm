@@ -22,19 +22,6 @@
   }
 }
 
-.weather-card {
-  border: none;
-  border-radius: 18px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  background: white;
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-  }
-}
-
 .temp {
   font-size: 3.25rem;
   font-weight: 800;
@@ -224,15 +211,6 @@
   }
 }
 
-.hover-lift {
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-
-  &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba($primary, 0.15);
-  }
-}
-
 // AI Insight Box Styling
 .ai-insight-box {
   background: linear-gradient(135deg, rgba($primary, 0.04), rgba($farm-green-light, 0.07));
@@ -242,7 +220,7 @@
   position: relative;
   overflow: hidden;
   transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
-  margin-top: auto; // Push to bottom of flex layout if needed
+  margin-top: auto;
 
   &::before {
     content: '';
@@ -262,21 +240,6 @@
   }
 
   .ai-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    background: linear-gradient(135deg, rgba($farm-green-primary, 0.12), rgba($farm-green-light, 0.15)) !important;
-    color: $farm-green-dark !important;
-    border: 1px solid rgba($farm-green-primary, 0.18);
-    border-radius: 20px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    padding: 4px 10px;
-    margin-bottom: 12px;
-    box-shadow: 0 3px 8px rgba($farm-green-dark, 0.15);
-
     i {
       font-size: 0.85rem;
       animation: ai-pulse 2s infinite ease-in-out;
@@ -319,21 +282,3 @@
     background-color: rgba($primary, 0.05) !important;
   }
 }
-
-.animate-fade-in {
-  animation: dropdown-fade-in 0.18s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
-  transform-origin: top right;
-}
-
-@keyframes dropdown-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(-8px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-

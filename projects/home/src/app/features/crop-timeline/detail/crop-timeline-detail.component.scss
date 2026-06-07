@@ -236,15 +236,6 @@
   }
 }
 
-.bg-warning-light {
-  background-color: #fffbeb;
-  color: #92400e;
-}
-
-.text-warning-dark {
-  color: #78350f;
-}
-
 .btn-xs {
   padding: 4px 8px;
   font-size: 0.72rem;
@@ -313,13 +304,7 @@
   color: #777;
 }
 
-.bg-success-light {
-  background-color: #d1ebd8;
-}
 
-.text-success-dark {
-  color: #1c5230;
-}
 
 /* Attachments preview grid styling */
 .attachment-preview {
@@ -340,23 +325,7 @@
   border-style: dashed !important;
 }
 
-/* Floating Action Button (FAB) and Ripple effect */
-.fab-button {
-  background: linear-gradient(135deg, #2a6f47 0%, #3f9b65 100%) !important;
-  border: none !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 20px rgba(42, 111, 71, 0.35) !important;
 
-  &:hover {
-    transform: scale(1.1) rotate(90deg);
-    background: linear-gradient(135deg, #1b4b2f 0%, #2a6f47 100%) !important;
-    box-shadow: 0 6px 25px rgba(42, 111, 71, 0.45) !important;
-  }
-  
-  &:active {
-    transform: scale(0.95);
-  }
-}
 
 
 

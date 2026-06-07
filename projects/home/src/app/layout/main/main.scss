@@ -23,6 +23,10 @@
   display: flex;
   flex-direction: column;
 
+  router-outlet {
+    display: none !important;
+  }
+
   > * {
     flex: 1 1 auto; // Stretch components (like Leaflet map) to fill the height
     min-height: 0;

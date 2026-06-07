@@ -1,7 +1,7 @@
 <div class="dashboard-header mf-header-pacing sticky-header d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 mb-4 border-bottom pb-3">
   <!-- Title on the Left -->
   <div class="text-start">
-    <h2 class="mf-page-title">
+    <h2 class="mf-crop-dashboard__page-title">
       Crop Dashboard
     </h2>
   </div>
@@ -34,13 +34,13 @@
 <div class="row g-3">
   @for (crop of filteredCrops; track crop.id) {
     <div class="col-12 col-sm-6 col-lg-4">
-      <div class="crop-premium-card border rounded bg-white shadow-sm p-4 text-start h-100 position-relative d-flex flex-column justify-content-between" (click)="onCropSelected(crop)">
+      <div class="card card-glass card-interactive p-4 text-start h-100 position-relative d-flex flex-column justify-content-between" (click)="onCropSelected(crop)">
         
         <div>
           <div class="d-flex justify-content-between align-items-start mb-3">
             <div>
-              <h4 class="crop-card-name font-semibold text-dark m-0">{{ crop.name }}</h4>
-              <span class="badge bg-success-light text-success-dark rounded-pill px-2.5 py-1 font-semibold mt-1.5 d-inline-block">
+              <h4 class="mf-card-title m-0">{{ crop.name }}</h4>
+              <span class="badge bg-success mt-1.5">
                 <i class="bi bi-pin-map-fill me-1"></i>{{ crop.fieldId }}
               </span>
             </div>
@@ -59,20 +59,20 @@
           <div class="py-3 border-top my-3 px-2 bg-light-green rounded flex-grow-1">
             <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
               <li class="d-flex justify-content-between align-items-center">
-                <span class="text-muted small font-semibold">Age</span>
-                <strong class="text-dark font-monospace" style="font-size: 0.95rem;">{{ getDaysAfterSowing(crop.sowingDate) }} Days</strong>
+                <span class="mf-meta-label">Age</span>
+                <strong class="mf-meta-value font-monospace" style="font-size: 0.95rem;">{{ getDaysAfterSowing(crop.sowingDate) }} Days</strong>
               </li>
               <li class="d-flex justify-content-between align-items-center">
-                <span class="text-muted small font-semibold">Plot</span>
-                <strong class="text-dark font-semibold" style="font-size: 0.9rem;">{{ crop.area }} {{ crop.areaUnit === 'hectares' ? 'hec' : 'ac' }}</strong>
+                <span class="mf-meta-label">Plot</span>
+                <strong class="mf-meta-value" style="font-size: 0.9rem;">{{ crop.area }} {{ crop.areaUnit === 'hectares' ? 'hec' : 'ac' }}</strong>
               </li>
               <li class="d-flex justify-content-between align-items-center">
-                <span class="text-muted small font-semibold">Last Activity</span>
-                <strong class="text-dark font-semibold" style="font-size: 0.9rem;">{{ getDaysSinceLastActivity(crop.id) }}</strong>
+                <span class="mf-meta-label">Last Activity</span>
+                <strong class="mf-meta-value" style="font-size: 0.9rem;">{{ getDaysSinceLastActivity(crop.id) }}</strong>
               </li>
               <li class="d-flex justify-content-between align-items-center">
-                <span class="text-muted small font-semibold">Next Activity</span>
-                <strong class="text-success-dark font-bold" style="font-size: 0.9rem; max-width: 60%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="crop.upcomingActivity || 'None scheduled'">
+                <span class="mf-meta-label">Next Activity</span>
+                <strong class="mf-meta-value text-success" style="font-size: 0.9rem; max-width: 60%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="crop.upcomingActivity || 'None scheduled'">
                   {{ crop.upcomingActivity || 'None scheduled' }}
                 </strong>
               </li>
@@ -84,7 +84,7 @@
   }
   @if (filteredCrops.length === 0) {
     <div class="col-12">
-      <div class="p-5 text-center border rounded bg-white shadow-sm">
+      <div class="card card-glass p-5 text-center">
         <i class="bi bi-folder-x text-muted fs-1 d-block mb-3"></i>
         <h5 class="text-dark font-semibold">No crop profiles match your search</h5>
         <p class="text-muted mb-0">Try typing a different crop name, field, or add a new crop to get started.</p>
@@ -94,8 +94,7 @@
 </div>
 
 <!-- FLOATING ACTION BUTTON (FAB) FOR ADDING CROP - MOBILE ONLY -->
-<button type="button" class="btn btn-success rounded-circle shadow-lg fab-button d-flex d-md-none align-items-center justify-content-center position-fixed" 
-        (click)="onAddCropClicked()" title="Add Crop"
-        style="width: 58px; height: 58px; bottom: 25px; right: 25px; z-index: 1030;">
-  <i class="bi bi-plus-lg fs-3"></i>
+<button type="button" class="btn btn-success fab fab-button d-flex d-md-none align-items-center justify-content-center" 
+        (click)="onAddCropClicked()" title="Add Crop">
+  <i class="bi bi-plus-lg"></i>
 </button>

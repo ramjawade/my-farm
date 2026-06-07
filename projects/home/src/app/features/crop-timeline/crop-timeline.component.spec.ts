@@ -193,8 +193,10 @@ describe('CropTimelineComponent', () => {
     expect(updatedIrr.notes).toBe('Updated cost notes');
 
     // 3. Delete Activity
-    spyOn(window, 'confirm').and.returnValue(true);
     component.onDeleteActivity(freshIrr.id);
+    expect(component.showDeleteConfirm()).toBeTrue();
+    expect(component.selectedActivityId()).toBe(freshIrr.id);
+    component.confirmDeleteActivity();
     expect(component.cropActivities().length).toBe(initialHistoryCount); // back to initial
   });
 });

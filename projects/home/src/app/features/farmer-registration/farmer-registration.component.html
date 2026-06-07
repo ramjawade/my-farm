@@ -1,5 +1,5 @@
 <div class="registration-container py-4 px-3 px-md-5">
-  <div class="registration-card mx-auto">
+  <div class="card card-glass registration-card mx-auto">
     
     <!-- HEADER & STEPPER -->
     <div class="card-header-premium p-4 d-flex flex-column align-items-center">
@@ -87,7 +87,7 @@
             </div>
             <div class="d-flex justify-content-between">
               <span class="fw-semibold">Status:</span>
-              <span class="badge bg-success-light text-success-dark">Active Profile</span>
+              <span class="badge bg-success">Active Profile</span>
             </div>
           </div>
           <div class="d-flex justify-content-center gap-3">
@@ -355,7 +355,7 @@
                         <strong class="font-monospace text-success">{{ longitude() }}</strong>
                       </div>
                     </div>
-                    <span class="badge bg-success-light text-success-dark px-3 py-2 rounded-pill font-semibold">
+                    <span class="badge bg-success">
                       <i class="bi bi-geo-fill me-1"></i>Pinned Successfully
                     </span>
                   } @else {
@@ -648,11 +648,11 @@
                     <div class="col-md-6 mb-3 mb-md-0">
                       <span class="fw-semibold text-muted d-block mb-2">Registered Crop Culture:</span>
                       @if (isStep3Skipped()) {
-                        <span class="badge bg-warning-light text-warning-dark border px-3 py-1.5 rounded-pill"><i class="bi bi-clock me-1"></i>To be added later</span>
+                        <span class="badge bg-warning"><i class="bi bi-clock me-1"></i>To be added later</span>
                       } @else {
                         <div class="d-flex flex-wrap gap-1">
                           @for (crop of selectedCrops(); track crop) {
-                            <span class="badge bg-success-light text-success-dark font-semibold border px-3 py-1.5 rounded-pill">{{ crop }}</span>
+                            <span class="badge bg-success">{{ crop }}</span>
                           }
                           @if (selectedCrops().length === 0) {
                             <span class="text-muted small">No crops selected</span>
@@ -739,7 +739,7 @@
             } @else {
               <button
                 type="button"
-                class="btn btn-primary btn-submit-registration px-5 py-2 fw-semibold"
+                class="btn btn-primary px-5 py-2 fw-semibold"
                 [disabled]="registrationForm.invalid || !isStep3Valid() || !isStep4Valid()"
                 (click)="submitRegistration()"
               >

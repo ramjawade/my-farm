@@ -1,68 +1,8 @@
 @import '../../../../styles/bootstrap-config';
 
-/* Sticky Headers with Glassmorphism */
-.sticky-header {
-  position: sticky;
-  top: 0;
-  z-index: 1010;
-  background: rgba(243, 248, 245, 0.94);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  
-  // Pull up to overlay the container's top padding (py-4 is 1.5rem)
-  margin-top: -1.5rem;
-  padding-top: 1.5rem;
-  
-  // Stretch side-to-side to span full width and realign internally
-  margin-left: -1rem;
-  margin-right: -1rem;
-  padding-left: 1rem;
-  padding-right: 1rem;
-  
-  @media (min-width: 768px) {
-    margin-left: -3rem;
-    margin-right: -3rem;
-    padding-left: 3rem;
-    padding-right: 3rem;
-  }
-}
 
 
-
-/* Premium Search control */
-.search-wrapper {
-  .form-control {
-    border: 1.5px solid rgba(42, 111, 71, 0.18);
-    border-radius: 8px;
-    padding: 10px 12px;
-    background-color: rgba(255, 255, 255, 0.85);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    color: #2b3a30;
-
-    &:focus {
-      border-color: #2a6f47;
-      box-shadow: 0 0 0 3px rgba(42, 111, 71, 0.15);
-      background-color: #ffffff;
-    }
-  }
-}
-
-/* Gorgeous Crop Cards on Dashboard */
-.crop-premium-card {
-  cursor: pointer;
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.6) !important;
-  border-radius: 16px !important;
-  box-shadow: 0 4px 15px rgba(42, 111, 71, 0.04);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(42, 111, 71, 0.09);
-    border-color: rgba(42, 111, 71, 0.35) !important;
-  }
-}
-
+/* Crop specific Details Box background */
 .bg-light-green {
   background-color: rgba(240, 249, 243, 0.7);
   border: 1px solid rgba(42, 111, 71, 0.08);
@@ -83,31 +23,5 @@
     border-radius: 50%;
     background-color: #ffffff;
     line-height: 1;
-  }
-}
-
-.bg-success-light {
-  background-color: #d1ebd8;
-}
-
-.text-success-dark {
-  color: #1c5230;
-}
-
-/* Floating Action Button (FAB) */
-.fab-button {
-  background: linear-gradient(135deg, #2a6f47 0%, #3f9b65 100%) !important;
-  border: none !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 20px rgba(42, 111, 71, 0.35) !important;
-
-  &:hover {
-    transform: scale(1.1) rotate(90deg);
-    background: linear-gradient(135deg, #1b4b2f 0%, #2a6f47 100%) !important;
-    box-shadow: 0 6px 25px rgba(42, 111, 71, 0.45) !important;
-  }
-  
-  &:active {
-    transform: scale(0.95);
   }
 }

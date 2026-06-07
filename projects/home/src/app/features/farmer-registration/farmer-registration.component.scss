@@ -1,20 +1,10 @@
-/* Farmer Registration Premium SCSS - Agriculture Theme & Modern Glassmorphism */
+@import '../../../styles/bootstrap-config';
 
 :host {
   display: block;
   min-height: 100vh;
   background: radial-gradient(circle, #f3f8f5 0%, rgba(225, 237, 230, 0.8) 90%);
-  color: #2b3a30;
-  font-family: 'Outfit', 'Inter', sans-serif;
-  --primary-green: #2a6f47;
-  --secondary-green: #3f9b65;
-  --light-mint: #edf6f0;
-  --success-dark: #1b4b2f;
-  --border-mint: rgba(42, 111, 71, 0.15);
-  --glass-bg: rgba(255, 255, 255, 0.85);
-  --glass-border: rgba(255, 255, 255, 0.6);
-  --shadow-premium: 0 12px 40px rgba(42, 111, 71, 0.08);
-  --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: $body-color;
 }
 
 /* Base Card Container */
@@ -27,27 +17,20 @@
 .registration-card {
   max-width: 820px;
   width: 100%;
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-  border-radius: 20px;
-  box-shadow: var(--shadow-premium);
   overflow: hidden;
-  transition: var(--transition-smooth);
 }
 
 /* Header Premium Styling */
 .card-header-premium {
-  background: linear-gradient(135deg, #1b4a2e 0%, #2e7a4e 100%);
-  color: #ffffff;
-  border-bottom: 2px solid var(--border-mint);
+  background: linear-gradient(135deg, $farm-green-dark 0%, $farm-green-primary 100%);
+  color: $white;
+  border-bottom: 2px solid rgba($farm-green-primary, 0.15);
   
   .wizard-title {
     font-size: 1.8rem;
     font-weight: 700;
     margin: 0;
-    color: #ffffff;
+    color: $white;
   }
 }
 
@@ -67,7 +50,7 @@
     position: relative;
     z-index: 2;
     cursor: pointer;
-    transition: var(--transition-smooth);
+    transition: all 0.2s ease;
 
     &:hover {
       .step-circle {
@@ -77,26 +60,26 @@
 
     &.active {
       .step-circle {
-        background-color: #ffffff;
-        color: var(--primary-green);
-        border-color: #ffffff;
-        box-shadow: 0 0 16px rgba(255, 255, 255, 0.6);
+        background-color: $white;
+        color: $farm-green-primary;
+        border-color: $white;
+        box-shadow: 0 0 16px rgba($white, 0.6);
         transform: scale(1.1);
       }
       .step-label {
-        color: #ffffff;
+        color: $white;
         font-weight: 600;
       }
     }
 
     &.completed {
       .step-circle {
-        background-color: #5dc083;
-        color: #ffffff;
-        border-color: #5dc083;
+        background-color: $farm-green-light;
+        color: $white;
+        border-color: $farm-green-light;
       }
       .step-label {
-        color: rgba(255, 255, 255, 0.85);
+        color: rgba($white, 0.85);
       }
     }
   }
@@ -105,35 +88,35 @@
     width: 34px;
     height: 34px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.35);
-    background-color: rgba(42, 111, 71, 0.4);
-    color: rgba(255, 255, 255, 0.7);
+    border: 2px solid rgba($white, 0.35);
+    background-color: rgba($farm-green-primary, 0.4);
+    color: rgba($white, 0.7);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.9rem;
     font-weight: 600;
     margin-bottom: 6px;
-    transition: var(--transition-smooth);
+    transition: all 0.2s ease;
   }
 
   .step-label {
     font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.6);
-    transition: var(--transition-smooth);
+    color: rgba($white, 0.6);
+    transition: all 0.2s ease;
   }
 
   .step-line {
     flex-grow: 1;
     height: 3px;
-    background-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba($white, 0.15);
     margin: 0 -10px;
     margin-bottom: 22px; /* aligns with center of circles */
     z-index: 1;
-    transition: var(--transition-smooth);
+    transition: all 0.2s ease;
 
     &.completed {
-      background-color: #5dc083;
+      background-color: $farm-green-light;
     }
 
     @media (max-width: 575.98px) {
@@ -156,115 +139,75 @@
 .step-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--primary-green);
+  color: $farm-green-primary;
   text-align: center;
 }
 
-.required-label::after {
-  content: " *";
-  color: #d9534f;
-  font-weight: bold;
-}
 
-.form-label {
-  font-weight: 550;
-  font-size: 0.88rem;
-  color: #3f4e44;
-  margin-bottom: 5px;
-}
-
-.field-label {
-  @extend .form-label;
-  font-size: 0.98rem;
-  color: var(--primary-green);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
 
 .field-sub-label {
   font-size: 0.78rem;
-  color: #718096;
+  color: $text-muted;
   margin-bottom: 12px;
   line-height: 1.35;
   font-weight: 400;
 }
 
-.form-control, .form-select {
-  border: 1.5px solid rgba(42, 111, 71, 0.18);
-  border-radius: 8px;
-  padding: 10px 12px;
-  background-color: rgba(255, 255, 255, 0.8);
-  transition: var(--transition-smooth);
-  color: #2b3a30;
-
-  &:focus {
-    border-color: var(--primary-green);
-    box-shadow: 0 0 0 3px rgba(42, 111, 71, 0.15);
-    background-color: #ffffff;
-  }
-
-  &::placeholder {
-    color: #9cb2a4;
-  }
-}
-
 .input-group-text {
-  background-color: var(--light-mint);
-  border: 1.5px solid rgba(42, 111, 71, 0.18);
-  color: var(--primary-green);
+  background-color: $light-mint;
+  border: 1.5px solid $border-mint;
+  color: $farm-green-primary;
   border-radius: 8px;
   padding: 10px 14px;
 }
 
-/* Shared base button option properties (SCSS Budget optimizations) */
+/* Shared base button option properties */
 .role-row-btn, .location-toggle-btn {
-  background-color: #ffffff;
-  border: 1.5px solid rgba(42, 111, 71, 0.15);
+  background-color: $white;
+  border: 1.5px solid rgba($farm-green-primary, 0.15);
   cursor: pointer;
-  transition: var(--transition-smooth);
+  transition: all 0.2s ease;
 }
 
-/* Custom card Buttons for Role Selection (Accessible grids) */
+/* Custom card Buttons for Role Selection */
 .role-row-btn {
   display: flex;
   align-items: center;
   border-radius: 12px;
-  color: #3f4e44;
+  color: $body-color;
   width: 100%;
   padding: 10px 14px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
 
   i.bi {
     font-size: 1.3rem !important;
-    margin-right: 8px; /* small space after left icon */
-    transition: var(--transition-smooth);
+    margin-right: 8px;
+    transition: all 0.2s ease;
   }
 
   .role-label-text {
     font-size: 0.85rem;
-    color: #2b3a30;
-    transition: var(--transition-smooth);
+    color: $body-color;
+    transition: all 0.2s ease;
   }
 
   &:hover {
-    background-color: var(--light-mint);
-    border-color: rgba(42, 111, 71, 0.35);
+    background-color: $light-mint;
+    border-color: rgba($farm-green-primary, 0.35);
   }
 
   &.active {
-    border-color: var(--primary-green) !important; /* outline changes on selection */
+    border-color: $farm-green-primary !important;
     border-width: 1.5px;
-    box-shadow: 0 4px 10px rgba(42, 111, 71, 0.08);
-    background-color: rgba(42, 111, 71, 0.04); /* very soft active tint */
+    box-shadow: 0 4px 10px rgba($farm-green-primary, 0.08);
+    background-color: rgba($farm-green-primary, 0.04);
 
     .role-label-text {
-      color: var(--primary-green);
+      color: $farm-green-primary;
       font-weight: 700;
     }
   }
 
-  /* Tablets and laptops adaptivity */
   @media (min-width: 768px) {
     padding: 12px 16px;
     border-radius: 14px;
@@ -283,42 +226,42 @@
 /* Custom visual card Buttons for Location Method Selection */
 .location-toggle-btn {
   border-radius: 12px;
-  color: #3f4e44;
+  color: $body-color;
   padding: 14px 18px;
   width: 100%;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
 
   i.bi {
     font-size: 1.5rem !important;
-    color: var(--secondary-green);
-    transition: var(--transition-smooth);
+    color: $farm-green-light;
+    transition: all 0.2s ease;
   }
 
   .location-label-text {
     font-size: 0.9rem;
-    color: #2b3a30;
-    transition: var(--transition-smooth);
+    color: $body-color;
+    transition: all 0.2s ease;
   }
 
   &:hover {
-    background-color: var(--light-mint);
-    border-color: var(--primary-green);
+    background-color: $light-mint;
+    border-color: $farm-green-primary;
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(42, 111, 71, 0.06);
+    box-shadow: 0 4px 10px rgba($farm-green-primary, 0.06);
   }
 
   &.active {
-    border-color: var(--primary-green) !important;
+    border-color: $farm-green-primary !important;
     border-width: 1.5px;
-    background-color: rgba(42, 111, 71, 0.04);
-    box-shadow: 0 4px 12px rgba(42, 111, 71, 0.1);
+    background-color: rgba($farm-green-primary, 0.04);
+    box-shadow: 0 4px 12px rgba($farm-green-primary, 0.1);
 
     i.bi {
-      color: var(--primary-green);
+      color: $farm-green-primary;
     }
     
     .location-label-text {
-      color: var(--primary-green);
+      color: $farm-green-primary;
       font-weight: 700;
     }
   }
@@ -326,23 +269,25 @@
 
 @keyframes popIn {
   from {
-    transform: scale(0.5);
+    transform: scale(0.95);
+    opacity: 0;
   }
   to {
     transform: scale(1);
+    opacity: 1;
   }
 }
 
 /* Premium Map Frame Container */
 .map-card-premium {
-  border: 1px solid rgba(42, 111, 71, 0.2);
+  border: 1px solid rgba($farm-green-primary, 0.2);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
 }
 
 .bg-dark-green {
-  background-color: #1a3c27;
+  background-color: $farm-green-dark;
 }
 
 .map-search-box {
@@ -359,13 +304,13 @@
   max-height: 220px;
   overflow-y: auto;
   border-radius: 8px;
-  border: 1px solid rgba(0,0,0,0.1);
-  background-color: #ffffff;
+  border: 1px solid rgba($black, 0.1);
+  background-color: $white;
   
   .list-group-item {
     font-size: 0.8rem;
     &:hover {
-      background-color: var(--light-mint);
+      background-color: $light-mint;
     }
   }
 }
@@ -378,30 +323,14 @@
 .registration-map-canvas {
   height: 360px;
   width: 100%;
-  background-color: #e5e9f0;
-  z-index: 1; /* Keep Leaflet below dropdown search results overlays */
-}
-
-.bg-success-light {
-  background-color: #d1ebd8;
-}
-
-.text-success-dark {
-  color: #1c5230;
-}
-
-.bg-warning-light {
-  background-color: #fef3c7;
-}
-
-.text-warning-dark {
-  color: #b45309;
+  background-color: $gray-200;
+  z-index: 1;
 }
 
 /* Review Ledger summary card styling */
 .receipt-card {
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px dashed rgba(42, 111, 71, 0.35) !important;
+  background: rgba($white, 0.95);
+  border: 1px dashed rgba($farm-green-primary, 0.35) !important;
 }
 
 .receipt-org-title {
@@ -411,7 +340,7 @@
 
 .border-end-md {
   @media (min-width: 768px) {
-    border-right: 1.5px solid rgba(42, 111, 71, 0.12);
+    border-right: 1.5px solid rgba($farm-green-primary, 0.12);
   }
 }
 
@@ -445,7 +374,7 @@
 }
 .success-icon {
   font-size: 80px;
-  color: #4bb543;
+  color: $farm-green-light;
   position: relative;
   z-index: 2;
 }
@@ -456,52 +385,11 @@
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  border: 4px solid #d4edda;
+  border: 4px solid rgba($farm-green-light, 0.2);
   z-index: 1;
   animation: ripple 1.2s ease-out infinite;
 }
 @keyframes ripple {
   0% { transform: scale(0.95); opacity: 1; }
   100% { transform: scale(1.4); opacity: 0; }
-}
-
-.bg-light-green {
-  background-color: rgba(240, 249, 243, 0.7);
-  border: 1px solid rgba(42, 111, 71, 0.1);
-}
-
-/* Button & Nav Styling */
-.btn {
-  font-weight: 550;
-  border-radius: 8px;
-}
-
-.btn-success {
-  background-color: var(--primary-green);
-  border-color: var(--primary-green);
-  
-  &:hover:not(:disabled) {
-    background-color: #1f5435;
-    border-color: #1f5435;
-  }
-}
-
-.btn-outline-success {
-  color: var(--primary-green);
-  border-color: var(--primary-green);
-
-  &:hover {
-    background-color: var(--primary-green);
-    color: #ffffff;
-  }
-}
-
-.btn-submit-registration {
-  background: linear-gradient(135deg, #2a6f47 0%, #3f9b65 100%);
-  border: none;
-  color: white;
-
-  &:hover:not(:disabled) {
-    background: linear-gradient(135deg, #1f5435 0%, #2e7a4e 100%);
-  }
 }

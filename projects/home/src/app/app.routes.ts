@@ -31,5 +31,27 @@ export const routes: Routes = [
         loadComponent: () => import('./features/crop-timeline/detail/crop-timeline-detail.component').then((m) => m.CropTimelineDetailComponent)
       }
     ]
+  },
+  {
+    path: 'activities',
+    loadComponent: () => import('./features/farm-activity/farm-activity.component').then((m) => m.FarmActivityComponent),
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./features/farm-activity/dashboard/activity-dashboard.component').then((m) => m.ActivityDashboardComponent)
+      },
+      {
+        path: 'list',
+        loadComponent: () => import('./features/farm-activity/list/activity-list.component').then((m) => m.ActivityListComponent)
+      },
+      {
+        path: 'create',
+        loadComponent: () => import('./features/farm-activity/create/create-activity.component').then((m) => m.CreateActivityComponent)
+      },
+      {
+        path: ':id',
+        loadComponent: () => import('./features/farm-activity/detail/activity-detail.component').then((m) => m.ActivityDetailComponent)
+      }
+    ]
   }
 ];

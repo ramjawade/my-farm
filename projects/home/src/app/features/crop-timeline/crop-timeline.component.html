@@ -2,3 +2,14 @@
   <router-outlet></router-outlet>
 </div>
 
+<!-- Confirm Delete Crop Activity Dialog -->
+<lib-confirm-dialog
+  [title]="'Delete Activity Record'"
+  [message]="'Are you sure you want to delete this activity record?'"
+  [confirmText]="'Delete'"
+  [cancelText]="'Cancel'"
+  [isDestructive]="true"
+  [(isOpen)]="showDeleteConfirm"
+  (confirm)="confirmDeleteActivity()"
+></lib-confirm-dialog>
+

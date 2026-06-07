@@ -1,0 +1,215 @@
+<div class="mf-page-container">
+  <header class="list-header mf-header-pacing sticky-header d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 mb-4 border-bottom pb-3">
+    <!-- Title on the Left -->
+    <div class="text-start">
+      <h2 class="mf-page-title">Activity Logs</h2>
+      <p class="text-muted mb-0">
+        Showing {{ filteredActivities().length }} of {{ activityService.activities().length }} recorded operations
+      </p>
+    </div>
+
+    <!-- Buttons on the Right -->
+    <div class="d-none d-md-flex gap-2 text-end">
+      <a routerLink="/activities" class="btn btn-secondary d-inline-flex align-items-center gap-2 px-3 py-2 ms-auto" style="white-space: nowrap;">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+      </a>
+      <a routerLink="/activities/create" class="btn btn-success d-inline-flex align-items-center gap-2 px-3 py-2 ms-auto" style="white-space: nowrap;">
+        <i class="bi bi-plus-lg"></i> Record New Activity
+      </a>
+    </div>
+  </header>
+
+  <!-- Filter & Sort Panel -->
+  <section class="card card-glass p-3 mb-4">
+    <div class="row g-2 align-items-center">
+      <!-- Season Filter -->
+      <div class="col-6 col-sm-4 col-md-2">
+        <label class="form-label">Season</label>
+        <select class="form-select" [value]="seasonFilter()" (change)="setSeason($any($event.target).value)">
+          <option value="All">All Seasons</option>
+          <option value="Kharif">Kharif</option>
+          <option value="Rabi">Rabi</option>
+          <option value="Summer">Summer</option>
+        </select>
+      </div>
+
+      <!-- Crop Filter -->
+      <div class="col-6 col-sm-4 col-md-2">
+        <label class="form-label">Linked Crop</label>
+        <select class="form-select" [value]="cropFilter()" (change)="setCrop($any($event.target).value)">
+          <option value="All">All Crops</option>
+          @for (c of cropsList(); track c.id) {
+            <option [value]="c.id">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Field Filter -->
+      <div class="col-6 col-sm-4 col-md-2">
+        <label class="form-label">Field / Plot</label>
+        <select class="form-select" [value]="fieldFilter()" (change)="setField($any($event.target).value)">
+          <option value="All">All Fields</option>
+          @for (f of fieldsList(); track f.id) {
+            <option [value]="f.id">{{ f.name }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Type Filter -->
+      <div class="col-6 col-sm-4 col-md-2">
+        <label class="form-label">Activity Type</label>
+        <select class="form-select" [value]="typeFilter()" (change)="setType($any($event.target).value)">
+          <option value="All">All Types</option>
+          @for (t of activityTypesList(); track t) {
+            <option [value]="t">{{ t }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Status Filter -->
+      <div class="col-6 col-sm-4 col-md-2">
+        <label class="form-label">Status</label>
+        <select class="form-select" [value]="statusFilter()" (change)="setStatus($any($event.target).value)">
+          <option value="All">All Statuses</option>
+          <option value="Draft">Draft</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Completed">Completed</option>
+        </select>
+      </div>
+
+      <!-- Sort Selection -->
+      <div class="col-6 col-sm-4 col-md-2">
+        <label class="form-label">Sort By</label>
+        <select class="form-select" [value]="sortBy()" (change)="setSort($any($event.target).value)">
+          <option value="latest">Latest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="cost">Highest Cost</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Active filter badges & reset action -->
+    @if (seasonFilter() !== 'All' || cropFilter() !== 'All' || fieldFilter() !== 'All' || typeFilter() !== 'All' || statusFilter() !== 'All') {
+      <div class="active-filters-info d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+        <div class="d-flex flex-wrap gap-1 align-items-center">
+          <span class="text-muted small me-2">Active Filters:</span>
+          @if (seasonFilter() !== 'All') {
+            <span class="badge bg-success">Season: {{ seasonFilter() }}</span>
+          }
+          @if (cropFilter() !== 'All') {
+            <span class="badge bg-success">Crop: {{ getCropName(cropFilter()) }}</span>
+          }
+          @if (fieldFilter() !== 'All') {
+            <span class="badge bg-success">Field: {{ getFieldName(fieldFilter()) }}</span>
+          }
+          @if (typeFilter() !== 'All') {
+            <span class="badge bg-success">Type: {{ typeFilter() }}</span>
+          }
+          @if (statusFilter() !== 'All') {
+            <span class="badge bg-success">Status: {{ statusFilter() }}</span>
+          }
+        </div>
+        <button class="btn btn-link text-success p-0" (click)="resetFilters()">
+          Clear All Filters
+        </button>
+      </div>
+    }
+  </section>
+
+  <!-- Grid of Cards -->
+  @if (filteredActivities().length > 0) {
+    <div class="row g-3">
+      @for (act of filteredActivities(); track act.id) {
+        <div class="col-12 col-md-6 col-lg-4">
+          <div [routerLink]="['/activities', act.id]" class="card card-glass card-interactive p-4 h-100 d-flex flex-column justify-content-between">
+            <div>
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h3 class="mf-card-section-title">{{ act.activityId }}</h3>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge" [class.bg-success]="act.status === 'Completed'"
+                                      [class.bg-warning]="act.status === 'In Progress'"
+                                      [class.status-draft]="act.status === 'Draft'">
+                    {{ act.status }}
+                  </span>
+                  <button 
+                    class="btn btn-link text-danger p-0 border-0 lh-1 d-flex align-items-center justify-content-center" 
+                    (click)="onDeleteActivityClick(act.id, $event)" 
+                    title="Delete Activity"
+                  >
+                    <i class="bi bi-trash-fill fs-5"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Metadata row (Crop, Field, Season) -->
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                <span class="badge bg-warning" title="Season">
+                  <i class="bi bi-sun-fill me-1"></i>{{ act.season }}
+                </span>
+                @if (act.cropId) {
+                  <span class="badge bg-success" title="Crop">
+                    <i class="bi bi-flower1 me-1"></i>{{ getCropName(act.cropId) }}
+                  </span>
+                }
+                @if (act.fieldId) {
+                  <span class="badge bg-info" title="Field">
+                    <i class="bi bi-geo-alt me-1"></i>{{ getFieldName(act.fieldId) }}
+                  </span>
+                }
+              </div>
+
+              <!-- Date & Notes summary -->
+              <p class="text-muted mb-2 small font-sans">
+                <i class="bi bi-calendar-event me-2"></i>{{ act.date | date:'dd MMM yyyy' }}
+              </p>
+
+              @if (act.notes) {
+                <p class="notes-preview text-muted mb-0">
+                  {{ act.notes }}
+                </p>
+              }
+            </div>
+
+            <!-- Cost Footer -->
+            <div class="card-footer-cost mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
+              <span class="mf-meta-label">Total Expense</span>
+              <strong class="mf-meta-value font-monospace fs-5">
+                ₹{{ getActivityTotalCost(act.id) | number }}
+              </strong>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="card card-glass empty-state-container p-5 text-center my-4">
+      <i class="bi bi-search text-muted display-3"></i>
+      <h3 class="mt-3 font-sans text-muted">No activities found</h3>
+      <p class="text-muted-custom font-sans max-width-400 mx-auto mt-2">
+        Try adjusting your search filters or record a new activity to get started.
+      </p>
+      <button class="btn btn-secondary mt-3" (click)="resetFilters()">
+        Reset Filters
+      </button>
+    </div>
+  }
+
+  <!-- Floating Action Buttons (FAB) for Mobile -->
+  <a routerLink="/activities/create" class="btn btn-success fab shadow d-flex d-md-none align-items-center justify-content-center" title="Record New Activity">
+    <i class="bi bi-plus-lg"></i>
+  </a>
+  <a routerLink="/activities" class="btn btn-secondary fab fab-back shadow d-flex d-md-none align-items-center justify-content-center" title="Back to Dashboard">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+</div>
+
+<!-- Confirm Delete Activity Dialog -->
+<lib-confirm-dialog
+  [title]="'Delete Activity Log'"
+  [message]="'Are you sure you want to delete this activity log and all associated expenses? This action is irreversible.'"
+  [confirmText]="'Delete'"
+  [cancelText]="'Cancel'"
+  [isDestructive]="true"
+  [(isOpen)]="showDeleteConfirm"
+  (confirm)="confirmDeleteActivity()"
+></lib-confirm-dialog>
