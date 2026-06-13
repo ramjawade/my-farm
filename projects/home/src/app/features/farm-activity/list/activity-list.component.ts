@@ -137,7 +137,9 @@ export class ActivityListComponent implements OnInit {
   setField(val: string): void { this.fieldFilter.set(val); }
   setType(val: string): void { this.typeFilter.set(val); }
   setStatus(val: string): void { this.statusFilter.set(val); }
-  setSort(val: string): void { this.sortBy.set(val); }  clearFilters(): void {
+  setSort(val: string): void { this.sortBy.set(val); }
+
+  clearFilters(): void {
     this.seasonFilter.set('All');
     this.cropFilter.set('All');
     this.fieldFilter.set('All');

@@ -4,10 +4,10 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build shared && ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "build:prod": "ng build --configuration production --base-href /my-farm/"
+    "build:prod": "ng build shared && ng build --configuration production --base-href /my-farm/"
   },
   "prettier": {
     "printWidth": 100,
