@@ -1,0 +1,210 @@
+<!-- Dashboard Page Header (Hidden in Timeline Details) -->
+@if (!isTimeline()) {
+  <header class="dashboard-header mf-header-pacing sticky-header d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 mb-4 border-bottom pb-3 text-start">
+    <div class="text-start">
+      <h2 class="mf-page-title">Farm Activities</h2>
+      <p class="text-muted mb-0">Record operations, manage crop expenses, and analyze input costs.</p>
+    </div>
+    <div class="d-flex gap-2 text-end">
+      <a routerLink="list" class="btn btn-secondary d-inline-flex align-items-center gap-2 px-3 py-2 ms-auto" style="white-space: nowrap;">
+        <i class="bi bi-list-task me-1"></i> View All Activities
+      </a>
+      <a routerLink="create" class="btn btn-success d-none d-md-inline-flex align-items-center gap-2 px-3 py-2 ms-auto" style="white-space: nowrap;">
+        <i class="bi bi-plus-lg"></i> Record New Activity
+      </a>
+    </div>
+  </header>
+}
+
+<!-- KPI Indicator Summary Cards -->
+<section class="row g-3 mb-4 text-start">
+  <!-- Card 1: Total Expense -->
+  <div class="col-6 col-md-3">
+    <div class="card text-center shadow-sm p-3 border rounded bg-white">
+      <div class="text-secondary font-sans mb-1 small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.04em;">Total Expense</div>
+      <div class="metric">₹{{ totalExpense() | number:'1.0-0' }}</div>
+    </div>
+  </div>
+
+  <!-- Card 2: Activities -->
+  <div class="col-6 col-md-3">
+    <div class="card text-center shadow-sm p-3 border rounded bg-white">
+      <div class="text-secondary font-sans mb-1 small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.04em;">Activities</div>
+      <div class="metric">{{ activitiesCount() }}</div>
+    </div>
+  </div>
+
+  <!-- Card 3: In Progress -->
+  <div class="col-6 col-md-3">
+    <div class="card text-center shadow-sm p-3 border rounded bg-white">
+      <div class="text-secondary font-sans mb-1 small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.04em;">In Progress</div>
+      <div class="metric text-warning-override">{{ inProgressCount() }}</div>
+    </div>
+  </div>
+
+  <!-- Card 4: Completed -->
+  <div class="col-6 col-md-3">
+    <div class="card text-center shadow-sm p-3 border rounded bg-white">
+      <div class="text-secondary font-sans mb-1 small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.04em;">Completed</div>
+      <div class="metric text-success-override">{{ completedCount() }}</div>
+    </div>
+  </div>
+</section>
+
+<!-- Row for Upcoming Operations & Recent Activities -->
+<div class="row g-4 mb-4 text-start">
+  <!-- Left Column: Upcoming Operations -->
+  <div class="col-12 col-lg-6">
+    <div class="card shadow-sm border rounded bg-white p-4 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="text-success font-semibold m-0">
+          <i class="bi bi-calendar-check me-2"></i>Upcoming Activity
+        </h5>
+        <a routerLink="/activities/list" [queryParams]="{ status: 'Draft' }" class="text-success small text-decoration-none fw-semibold link-hover">
+          View All
+        </a>
+      </div>
+      <div class="row g-3">
+        @for (up of upcomingActivities(); track up.id) {
+          <div class="col-12 col-md-6">
+            <div class="upcoming-item-card p-3 border rounded bg-warning-light text-warning-dark shadow-sm d-flex flex-column justify-content-between h-100">
+              <div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <strong class="font-semibold text-uppercase d-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
+                    <i class="bi" [class]="getActivityIcon(up.type)"></i>{{ up.type }}
+                  </strong>
+                  @if (up.date) {
+                    <span class="badge bg-warning text-dark font-monospace" style="font-size: 0.72rem;">{{ up.date | date:'mediumDate' }}</span>
+                  }
+                </div>
+                <p class="small text-dark mb-0 mt-1.5">{{ up.notes || 'No description provided.' }}</p>
+                
+                <!-- Category Specific Metadata in upcoming card -->
+                @if (up.type === 'Irrigation' && up.metadata.irrigationMethod) {
+                  <div class="upcoming-meta mt-2 small text-muted border-top pt-2">
+                    Method: <strong>{{ up.metadata.irrigationMethod }}</strong> · Duration: <strong>{{ up.metadata.duration }} mins</strong>
+                  </div>
+                } @else if (up.type === 'Fertilizer Application' && up.metadata.fertilizerName) {
+                  <div class="upcoming-meta mt-2 small text-muted border-top pt-2">
+                    Fertilizer: <strong>{{ up.metadata.fertilizerName }}</strong> · Qty: <strong>{{ up.metadata.quantity }} kg</strong>
+                  </div>
+                } @else if (up.type === 'Spray Application' && up.metadata.chemicalName) {
+                  <div class="upcoming-meta mt-2 small text-muted border-top pt-2">
+                    Chemical: <strong>{{ up.metadata.chemicalName }}</strong> · Target: <strong>{{ up.metadata.targetPest }}</strong>
+                  </div>
+                }
+              </div>
+
+              <div class="d-flex justify-content-end gap-1.5 mt-3 border-top pt-2">
+                <button type="button" class="btn btn-sm btn-outline-success btn-xs" (click)="onEditActivityClicked(up)">
+                  <i class="bi bi-pencil-square"></i>Edit
+                </button>
+                <button type="button" class="btn btn-sm btn-success btn-xs" (click)="onMarkActivityCompletedClicked(up.id)">
+                  <i class="bi bi-check-circle-fill me-1"></i>Mark Done
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+        @if (upcomingActivities().length === 0) {
+          <div class="col-12 text-center py-4 bg-light rounded text-muted small border border-dashed">
+            <i class="bi bi-info-circle me-1"></i>All scheduled operations are completed!
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Recent Activities -->
+  <div class="col-12 col-lg-6">
+    <div class="card shadow-sm border rounded bg-white p-4 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="text-success font-semibold m-0">
+          <i class="bi bi-activity me-2"></i>Recent Activities
+        </h5>
+        <a routerLink="/activities/list" class="text-success small text-decoration-none fw-semibold link-hover">
+          View All
+        </a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col" class="text-secondary small text-uppercase fw-bold pb-2 border-0" style="font-size: 0.68rem; letter-spacing: 0.04em;">Activity</th>
+              <th scope="col" class="text-secondary small text-uppercase fw-bold pb-2 border-0" style="font-size: 0.68rem; letter-spacing: 0.04em;">Date</th>
+              <th scope="col" class="text-secondary small text-uppercase fw-bold pb-2 border-0" style="font-size: 0.68rem; letter-spacing: 0.04em;">Status</th>
+              <th scope="col" class="text-secondary small text-uppercase fw-bold pb-2 border-0 text-end" style="font-size: 0.68rem; letter-spacing: 0.04em;">Expense</th>
+              <th scope="col" class="text-secondary small text-uppercase fw-bold pb-2 border-0 text-end" style="font-size: 0.68rem; letter-spacing: 0.04em; width: 30px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (act of recentActivities(); track act.id) {
+              <tr [routerLink]="['/activities', act.id]" class="cursor-pointer activity-table-row">
+                <td class="border-bottom-0 py-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="activity-emoji-circle-sm">
+                      {{ getActivityEmoji(act.type) }}
+                    </span>
+                    <span class="fw-bold text-soil font-sans text-soil-dark" style="font-size: 0.88rem; color: #5c4033;">
+                      {{ act.type }}
+                    </span>
+                  </div>
+                </td>
+                <td class="border-bottom-0 py-2 text-muted small font-sans" style="font-size: 0.76rem;">
+                  {{ act.date ? (act.date | date:'dd MMM yyyy') : 'No Date' }}
+                </td>
+                <td class="border-bottom-0 py-2">
+                  <span class="status-badge-inline" 
+                        [class.completed]="act.status === 'Completed'" 
+                        [class.progressing]="act.status === 'Scheduled'">
+                    {{ act.status }}
+                  </span>
+                </td>
+                <td class="border-bottom-0 py-2 text-end fw-bold font-monospace text-success" style="font-size: 0.88rem; color: #2a6f47;">
+                  ₹{{ getActivityTotalCost(act.id) | number }}
+                </td>
+                <td class="border-bottom-0 py-2 text-end text-muted">
+                  <i class="bi bi-chevron-right small"></i>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        @if (recentActivities().length === 0) {
+          <div class="text-center py-4 bg-light rounded text-muted small border border-dashed mt-2">
+            <i class="bi bi-info-circle me-1"></i>No recent activities recorded.
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CROP EXPENSE & ACTIVITY DUAL-AXIS CHART.JS CHART -->
+<div class="card shadow-sm border rounded bg-white p-4 mb-4 text-start">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h5 class="text-success font-semibold m-0">
+      <i class="bi bi-graph-up-arrow me-2"></i>Crop Activity vs. Cumulative Expenses
+    </h5>
+  </div>
+
+  @if (chartData().length > 0) {
+    <div class="chart-wrapper-chartjs" style="position: relative; height: 230px; width: 100%;">
+      <canvas #chartCanvas></canvas>
+    </div>
+  } @else {
+    <div class="text-center py-5 text-muted small border border-dashed rounded bg-light">
+      <i class="bi bi-graph-up fs-2 d-block mb-2"></i>
+      <h6 class="font-semibold text-dark m-0">No chart data available</h6>
+      <p class="text-muted mb-0">Record completed activities to visualize progression with Chart.js charts.</p>
+    </div>
+  }
+</div>
+
+<!-- Mobile Floating Action Button (FAB) (Hidden in Timeline Details) -->
+@if (!isTimeline()) {
+  <a routerLink="create" class="btn btn-success fab shadow d-flex d-md-none align-items-center justify-content-center" title="Record New Activity"
+     style="width: 58px; height: 58px; bottom: 25px; right: 25px; z-index: 1030; position: fixed;">
+    <i class="bi bi-plus-lg fs-3"></i>
+  </a>
+}

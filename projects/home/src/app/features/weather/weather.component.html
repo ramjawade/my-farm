@@ -23,6 +23,27 @@
     </div>
   </div>
 
+  <!-- Progressive Profiling Location Prompt -->
+  @if (showLocationPrompt()) {
+    <div class="card card-glass mb-4 p-4 border border-warning-subtle shadow-sm animate-fade-in" style="border-left: 4px solid #2e7d32 !important;">
+      <div class="row align-items-center g-3">
+        <div class="col-lg-8 col-12">
+          <h4 class="text-success fw-bold mb-1">
+            <i class="bi bi-geo-alt-fill text-danger me-1"></i>Set Your Location
+          </h4>
+          <p class="text-secondary text-sm mb-0">
+            Tell us your village and state to receive localized weather forecasts, precise satellite mapping coordinates, and customized agronomy advisories for your fields.
+          </p>
+        </div>
+        <div class="col-lg-4 col-12 text-lg-end">
+          <button type="button" (click)="openLandDialog()" class="btn btn-success px-4 py-2 fw-semibold rounded-pill shadow-xs hover-lift">
+            <i class="bi bi-geo-alt me-1.5"></i>Configure Location
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
   <!-- TODAY'S WEATHER HEADING -->
   <div class="mb-4">
     <h3 class="mf-section-heading mb-0 d-flex flex-wrap align-items-baseline gap-2">
@@ -286,5 +307,7 @@
       {{ farmerTip() }}
     </p>
   </div>
+  <!-- PROFILE EDIT DIALOG -->
+  <app-profile-edit-dialog [section]="'land'" [(show)]="showEditDialog" />
 
 </div>

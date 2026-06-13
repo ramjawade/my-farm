@@ -1,24 +1,48 @@
-<div class="mf-page-container">
-  <header class="create-header mf-header-pacing sticky-header d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 mb-4 border-bottom pb-3">
-    <!-- Title on the Left -->
-    <div class="text-start">
-      <h2 class="mf-page-title">Record Farm Activity</h2>
-      <p class="text-muted mb-0">Fill in details to log a new operation performed on your fields.</p>
-    </div>
+<div class="mf-page-container" [class.p-0]="isModal">
+  @if (!isModal) {
+    <header class="create-header mf-header-pacing sticky-header d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 mb-4 border-bottom pb-3">
+      <!-- Title on the Left -->
+      <div class="text-start">
+        <h2 class="mf-page-title">@if (activityId) { Edit Farm Activity } @else { Record Farm Activity }</h2>
+        <p class="text-muted mb-0">@if (activityId) { Modify the details of this recorded operation. } @else { Fill in details to log a new operation performed on your fields. }</p>
+      </div>
 
-    <!-- Buttons on the Right -->
-    <div class="d-none d-md-flex gap-2 text-end">
-      <a routerLink="/activities" class="btn btn-secondary d-inline-flex align-items-center gap-2 px-3 py-2 ms-auto" style="white-space: nowrap;">
-        <i class="bi bi-arrow-left"></i> Back to Dashboard
-      </a>
-    </div>
-  </header>
+      <!-- Buttons on the Right -->
+      <div class="d-none d-md-flex gap-2 text-end">
+        <a routerLink="/activities" class="btn btn-secondary d-inline-flex align-items-center gap-2 px-3 py-2 ms-auto" style="white-space: nowrap;">
+          <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+      </div>
+    </header>
+  }
 
   <main class="row justify-content-center">
-    <div class="col-12 col-lg-8">
-      <div class="card card-glass p-4 p-md-5">
+    <div class="col-12" [class.col-lg-8]="!isModal">
+      <div [class.card]="!isModal" [class.card-glass]="!isModal" [class.p-4]="!isModal" [class.p-md-5]="!isModal">
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="d-flex flex-column gap-4">
           
+          <!-- Activity Title / Name -->
+          <div>
+            <label class="form-label required-label">Activity Name / Type</label>
+            <input type="text" class="form-control" formControlName="activityId" placeholder="e.g. Sowing, Fertilizer Spreading, Bore Drill..."
+                   [class.is-invalid]="form.get('activityId')?.invalid && form.get('activityId')?.touched">
+            @if (form.get('activityId')?.invalid && form.get('activityId')?.touched) {
+              <div class="invalid-feedback">Activity name is required.</div>
+            }
+
+            <!-- Quick Suggestions Grid -->
+            <div class="suggestions-section mt-3">
+              <span class="suggestions-title">Common Suggestions:</span>
+              <div class="d-flex flex-wrap gap-2 mt-2">
+                @for (sugg of commonActivitySuggestions; track sugg) {
+                  <button type="button" class="btn-outline-suggestion btn-sm" (click)="selectSuggestion(sugg)">
+                    + {{ sugg }}
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+
           <div class="row g-3">
             <!-- Date of Activity -->
             <div class="col-12 col-md-6">
@@ -45,28 +69,6 @@
             </div>
           </div>
 
-          <!-- Activity Title / Name -->
-          <div>
-            <label class="form-label required-label">Activity Name / Type</label>
-            <input type="text" class="form-control" formControlName="activityId" placeholder="e.g. Sowing, Fertilizer Spreading, Bore Drill..."
-                   [class.is-invalid]="form.get('activityId')?.invalid && form.get('activityId')?.touched">
-            @if (form.get('activityId')?.invalid && form.get('activityId')?.touched) {
-              <div class="invalid-feedback">Activity name is required.</div>
-            }
-
-            <!-- Quick Suggestions Grid -->
-            <div class="suggestions-section mt-3">
-              <span class="suggestions-title">Common Suggestions:</span>
-              <div class="d-flex flex-wrap gap-2 mt-2">
-                @for (sugg of commonActivitySuggestions; track sugg) {
-                  <button type="button" class="btn-outline-suggestion btn-sm" (click)="selectSuggestion(sugg)">
-                    + {{ sugg }}
-                  </button>
-                }
-              </div>
-            </div>
-          </div>
-
           <div class="row g-3">
             <!-- Linked Crop -->
             <div class="col-12 col-md-6">
@@ -90,6 +92,18 @@
                 }
               </select>
               <span class="text-muted mt-1 d-block" style="font-size: 0.75rem;">Associates this activity with a drawn farm layout.</span>
+            </div>
+
+            <!-- Parent Activity Select (User Request) -->
+            <div class="col-12 col-md-6">
+              <label class="form-label">Link to Parent Activity (Optional)</label>
+              <select class="form-select" formControlName="parentActivityId">
+                <option value="">-- No Parent Activity --</option>
+                @for (pa of availableParentActivities(); track pa.id) {
+                  <option [value]="pa.id">{{ pa.type }} - {{ pa.notes || 'No Notes' }}@if (pa.date) { ({{ pa.date | date:'shortDate' }})}</option>
+                }
+              </select>
+              <span class="text-muted mt-1 d-block" style="font-size: 0.75rem;">Link this subactivity to a parent event.</span>
             </div>
           </div>
 
@@ -124,13 +138,38 @@
             <textarea class="form-control" formControlName="notes" rows="4" placeholder="Mention labor details, soil conditions, materials used, etc."></textarea>
           </div>
 
+          <!-- Attach Field Images (User Request) -->
+          <div>
+            <label class="form-label"><i class="bi bi-camera-fill me-1"></i>Attach Field Images</label>
+            <div class="d-flex align-items-center gap-3">
+              <label class="btn btn-outline-success btn-sm d-flex align-items-center px-3 py-2 cursor-pointer border-dashed m-0">
+                <i class="bi bi-cloud-arrow-up me-1.5 fs-5"></i>Upload Photo
+                <input type="file" accept="image/*" class="d-none" (change)="onImageSelected($event)" />
+              </label>
+
+              <!-- Base64 Preview Thumbnail Row -->
+              <div class="d-flex flex-wrap gap-2">
+                @for (img of uploadedImages(); track img; let i = $index) {
+                  <div class="attachment-preview position-relative border rounded overflow-hidden" style="width: 50px; height: 50px;">
+                    <img [src]="img" class="w-100 h-100 object-fit-cover" alt="uploaded thumbnail" />
+                    <button type="button" class="btn btn-danger btn-xs position-absolute top-0 end-0 p-0 rounded-circle d-flex align-items-center justify-content-center" 
+                            (click)="removeImage(i)"
+                            style="width: 16px; height: 16px; font-size: 0.6rem;">
+                      <i class="bi bi-x text-white"></i>
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
           <!-- Actions -->
           <div class="d-flex justify-content-end gap-3 mt-3 pt-3 border-top">
-            <a routerLink="/activities" class="btn btn-secondary">
+            <button type="button" class="btn btn-secondary" (click)="onCancel()">
               Cancel
-            </a>
+            </button>
             <button type="submit" class="btn btn-primary">
-              Record Activity
+              @if (activityId) { Save Changes } @else { Record Activity }
             </button>
           </div>
 
@@ -140,7 +179,9 @@
   </main>
 
   <!-- Floating Back FAB (User Request) -->
-  <a routerLink="/activities" class="btn btn-secondary fab fab-back shadow d-flex d-md-none align-items-center justify-content-center" title="Back to Dashboard">
-    <i class="bi bi-arrow-left"></i>
-  </a>
+  @if (!isModal) {
+    <a routerLink="/activities" class="btn btn-secondary fab fab-back shadow d-flex d-md-none align-items-center justify-content-center" title="Back to Dashboard">
+      <i class="bi bi-arrow-left"></i>
+    </a>
+  }
 </div>

@@ -13,8 +13,23 @@
     <form [formGroup]="cropForm" (ngSubmit)="onSubmit()">
       <div class="row g-3">
         <div class="col-md-6">
-          <label for="name" class="field-label required-label">Crop Name</label>
-          <select id="name" class="form-select" formControlName="name">
+          <label for="name" class="field-label required-label">Crop Name (User-Friendly)</label>
+          <input
+            type="text"
+            id="name"
+            class="form-control"
+            formControlName="name"
+            placeholder="e.g. My North Field Soybeans"
+            [class.is-invalid]="cropForm.get('name')?.touched && cropForm.get('name')?.invalid"
+          />
+          @if (cropForm.get('name')?.touched && cropForm.get('name')?.invalid) {
+            <div class="text-danger small mt-1">Provide a valid name (at least 2 characters).</div>
+          }
+        </div>
+
+        <div class="col-md-6">
+          <label for="cropType" class="field-label required-label">Crop Type</label>
+          <select id="cropType" class="form-select" formControlName="cropType">
             @for (cName of cropNameOptions; track cName) {
               <option [value]="cName">{{ cName }}</option>
             }
@@ -22,17 +37,20 @@
         </div>
 
         <div class="col-md-6">
-          <label for="fieldId" class="field-label required-label">Field Name / Identifier</label>
-          <input
-            type="text"
+          <label for="fieldId" class="field-label required-label">Link Land / Field Plot</label>
+          <select
             id="fieldId"
-            class="form-control"
+            class="form-select"
             formControlName="fieldId"
-            placeholder="e.g. Field A, North Patch"
             [class.is-invalid]="cropForm.get('fieldId')?.touched && cropForm.get('fieldId')?.invalid"
-          />
+          >
+            <option value="">-- Select Saved Land --</option>
+            @for (f of savedFarms(); track f.id) {
+              <option [value]="f.id">{{ f.name }}</option>
+            }
+          </select>
           @if (cropForm.get('fieldId')?.touched && cropForm.get('fieldId')?.invalid) {
-            <div class="text-danger small mt-1">Field Name is required.</div>
+            <div class="text-danger small mt-1">Linking a land/field plot is required.</div>
           }
         </div>
 

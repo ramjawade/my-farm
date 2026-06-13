@@ -12,16 +12,7 @@
   }
 }
 
-// Chart D3 Elements
-.grid line {
-  stroke: rgba(0, 0, 0, 0.04);
-}
 
-.chart-tooltip {
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  font-family: inherit;
-}
 
 // Visual Cards
 .weather-card {

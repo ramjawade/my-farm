@@ -1,11 +1,39 @@
 <div class="mf-page-container">
   <header class="list-header mf-header-pacing sticky-header d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 mb-4 border-bottom pb-3">
     <!-- Title on the Left -->
-    <div class="text-start">
-      <h2 class="mf-page-title">Activity Logs</h2>
-      <p class="text-muted mb-0">
-        Showing {{ filteredActivities().length }} of {{ activityService.activities().length }} recorded operations
-      </p>
+    <div class="text-start d-flex flex-column flex-sm-row align-items-sm-center justify-content-between w-100 flex-grow-1">
+      <div>
+        <h2 class="mf-page-title">Activity Logs</h2>
+        <p class="text-muted mb-0">
+          Showing {{ filteredActivities().length }} of {{ activityService.activities().length }} recorded operations
+        </p>
+      </div>
+
+      <!-- View Toggle Button Group -->
+      <div class="btn-group border border-light-subtle rounded-pill bg-white overflow-hidden p-1 mt-3 mt-sm-0 align-self-start align-self-sm-center shadow-sm" style="height: 36px;">
+        <button 
+          type="button" 
+          class="btn btn-sm px-3 border-0 rounded-pill d-inline-flex align-items-center justify-content-center gap-1.5 fw-bold text-xs transition"
+          [class.btn-success]="viewMode() === 'grid'"
+          [class.bg-transparent]="viewMode() !== 'grid'"
+          [class.text-white]="viewMode() === 'grid'"
+          [class.text-secondary]="viewMode() !== 'grid'"
+          (click)="viewMode.set('grid')"
+        >
+          <i class="bi bi-grid-fill"></i> Grid
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-sm px-3 border-0 rounded-pill d-inline-flex align-items-center justify-content-center gap-1.5 fw-bold text-xs transition"
+          [class.btn-success]="viewMode() === 'list'"
+          [class.bg-transparent]="viewMode() !== 'list'"
+          [class.text-white]="viewMode() === 'list'"
+          [class.text-secondary]="viewMode() !== 'list'"
+          (click)="viewMode.set('list')"
+        >
+          <i class="bi bi-list-task"></i> List
+        </button>
+      </div>
     </div>
 
     <!-- Buttons on the Right -->
@@ -21,6 +49,21 @@
 
   <!-- Filter & Sort Panel -->
   <section class="card card-glass p-3 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <span class="text-secondary fw-semibold small text-uppercase font-sans" style="letter-spacing: 0.05em;">
+        <i class="bi bi-funnel-fill me-1 text-success"></i>Filter Operations
+      </span>
+      <button 
+        class="btn btn-link p-0 text-decoration-none fw-semibold small d-inline-flex align-items-center gap-1"
+        [class.text-success]="hasActiveFilters()"
+        [class.text-muted]="!hasActiveFilters()"
+        (click)="clearFilters()" 
+        [disabled]="!hasActiveFilters()"
+        style="cursor: pointer;"
+      >
+        <i class="bi bi-x-circle"></i> Clear Filters
+      </button>
+    </div>
     <div class="row g-2 align-items-center">
       <!-- Season Filter -->
       <div class="col-6 col-sm-4 col-md-2">
@@ -109,78 +152,164 @@
             <span class="badge bg-success">Status: {{ statusFilter() }}</span>
           }
         </div>
-        <button class="btn btn-link text-success p-0" (click)="resetFilters()">
+        <button class="btn btn-link text-success p-0" (click)="clearFilters()">
           Clear All Filters
         </button>
       </div>
     }
   </section>
 
-  <!-- Grid of Cards -->
+  <!-- Grid or List of Cards -->
   @if (filteredActivities().length > 0) {
-    <div class="row g-3">
-      @for (act of filteredActivities(); track act.id) {
-        <div class="col-12 col-md-6 col-lg-4">
-          <div [routerLink]="['/activities', act.id]" class="card card-glass card-interactive p-4 h-100 d-flex flex-column justify-content-between">
-            <div>
-              <div class="d-flex justify-content-between align-items-start mb-2">
-                <h3 class="mf-card-section-title">{{ act.activityId }}</h3>
-                <div class="d-flex align-items-center gap-2">
-                  <span class="badge" [class.bg-success]="act.status === 'Completed'"
-                                      [class.bg-warning]="act.status === 'In Progress'"
-                                      [class.status-draft]="act.status === 'Draft'">
-                    {{ act.status }}
-                  </span>
-                  <button 
-                    class="btn btn-link text-danger p-0 border-0 lh-1 d-flex align-items-center justify-content-center" 
-                    (click)="onDeleteActivityClick(act.id, $event)" 
-                    title="Delete Activity"
-                  >
-                    <i class="bi bi-trash-fill fs-5"></i>
-                  </button>
+    @if (viewMode() === 'grid') {
+      <!-- Grid View -->
+      <div class="row g-3">
+        @for (act of filteredActivities(); track act.id) {
+          <div class="col-12 col-md-6 col-lg-4">
+            <div [routerLink]="['/activities', act.id]" class="card card-glass card-interactive p-4 h-100 d-flex flex-column justify-content-between">
+              <div>
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <h3 class="mf-card-section-title">{{ act.activityId }}</h3>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge" [class.bg-success]="act.status === 'Completed'"
+                                        [class.bg-warning]="act.status === 'In Progress'"
+                                        [class.status-draft]="act.status === 'Draft'">
+                      {{ act.status }}
+                    </span>
+                    <button 
+                      class="btn btn-link text-danger p-0 border-0 lh-1 d-flex align-items-center justify-content-center" 
+                      (click)="onDeleteActivityClick(act.id, $event)" 
+                      title="Delete Activity"
+                    >
+                      <i class="bi bi-trash-fill fs-5"></i>
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              <!-- Metadata row (Crop, Field, Season) -->
-              <div class="d-flex flex-wrap gap-2 mb-3">
-                <span class="badge bg-warning" title="Season">
-                  <i class="bi bi-sun-fill me-1"></i>{{ act.season }}
-                </span>
-                @if (act.cropId) {
-                  <span class="badge bg-success" title="Crop">
-                    <i class="bi bi-flower1 me-1"></i>{{ getCropName(act.cropId) }}
+                <!-- Metadata row (Crop, Field, Season) -->
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                  <span class="badge bg-warning" title="Season">
+                    <i class="bi bi-sun-fill me-1"></i>{{ act.season }}
                   </span>
-                }
-                @if (act.fieldId) {
-                  <span class="badge bg-info" title="Field">
-                    <i class="bi bi-geo-alt me-1"></i>{{ getFieldName(act.fieldId) }}
-                  </span>
-                }
-              </div>
+                  @if (act.cropId) {
+                    <span class="badge bg-success" title="Crop">
+                      <i class="bi bi-flower1 me-1"></i>{{ getCropName(act.cropId) }}
+                    </span>
+                  }
+                  @if (act.fieldId) {
+                    <span class="badge bg-info" title="Field">
+                      <i class="bi bi-geo-alt me-1"></i>{{ getFieldName(act.fieldId) }}
+                    </span>
+                  }
+                </div>
 
-              <!-- Date & Notes summary -->
-              <p class="text-muted mb-2 small font-sans">
-                <i class="bi bi-calendar-event me-2"></i>{{ act.date | date:'dd MMM yyyy' }}
-              </p>
-
-              @if (act.notes) {
-                <p class="notes-preview text-muted mb-0">
-                  {{ act.notes }}
+                <!-- Date & Notes summary -->
+                <p class="text-muted mb-2 small font-sans">
+                  <i class="bi bi-calendar-event me-2"></i>{{ act.date | date:'dd MMM yyyy' }}
                 </p>
-              }
-            </div>
 
-            <!-- Cost Footer -->
-            <div class="card-footer-cost mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
-              <span class="mf-meta-label">Total Expense</span>
-              <strong class="mf-meta-value font-monospace fs-5">
-                ₹{{ getActivityTotalCost(act.id) | number }}
-              </strong>
+                @if (act.notes) {
+                  <p class="notes-preview text-muted mb-0">
+                    {{ act.notes }}
+                  </p>
+                }
+              </div>
+
+              <!-- Cost Footer -->
+              <div class="card-footer-cost mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
+                <span class="mf-meta-label">Total Expense</span>
+                <strong class="mf-meta-value font-monospace fs-5">
+                  ₹{{ getActivityTotalCost(act.id) | number }}
+                </strong>
+              </div>
             </div>
           </div>
+        }
+      </div>
+    } @else {
+      <!-- List/Table View -->
+      <div class="card card-glass border-0 shadow-sm overflow-hidden mb-4 text-start">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr class="bg-light">
+                <th scope="col" class="text-secondary small text-uppercase fw-bold py-3 px-4" style="font-size: 0.72rem; letter-spacing: 0.05em;">Activity</th>
+                <th scope="col" class="text-secondary small text-uppercase fw-bold py-3" style="font-size: 0.72rem; letter-spacing: 0.05em;">Linked Crop</th>
+                <th scope="col" class="text-secondary small text-uppercase fw-bold py-3" style="font-size: 0.72rem; letter-spacing: 0.05em;">Field / Plot</th>
+                <th scope="col" class="text-secondary small text-uppercase fw-bold py-3" style="font-size: 0.72rem; letter-spacing: 0.05em;">Season</th>
+                <th scope="col" class="text-secondary small text-uppercase fw-bold py-3" style="font-size: 0.72rem; letter-spacing: 0.05em;">Date</th>
+                <th scope="col" class="text-secondary small text-uppercase fw-bold py-3" style="font-size: 0.72rem; letter-spacing: 0.05em;">Status</th>
+                <th scope="col" class="text-secondary small text-uppercase fw-bold py-3 text-end" style="font-size: 0.72rem; letter-spacing: 0.05em;">Expense</th>
+                <th scope="col" class="text-secondary small text-uppercase fw-bold py-3 text-center" style="width: 80px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (act of filteredActivities(); track act.id) {
+                <tr [routerLink]="['/activities', act.id]" class="cursor-pointer activity-table-row">
+                  <td class="py-3 px-4">
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="activity-emoji-circle-sm">
+                        {{ getActivityEmoji(act.activityId) }}
+                      </span>
+                      <div>
+                        <span class="fw-bold text-soil font-sans d-block text-soil-dark" style="font-size: 0.9rem; color: #5c4033;">
+                          {{ act.activityId }}
+                        </span>
+                        @if (act.notes) {
+                          <span class="text-muted text-xxs d-inline-block text-truncate" style="max-width: 250px;" [title]="act.notes">{{ act.notes }}</span>
+                        }
+                      </div>
+                    </div>
+                  </td>
+                  <td class="py-3">
+                    @if (act.cropId) {
+                      <span class="badge bg-success-subtle text-success rounded-pill fw-semibold">{{ getCropName(act.cropId) }}</span>
+                    } @else {
+                      <span class="text-muted text-xs">-</span>
+                    }
+                  </td>
+                  <td class="py-3">
+                    @if (act.fieldId) {
+                      <span class="badge bg-info-subtle text-info rounded-pill fw-semibold">{{ getFieldName(act.fieldId) }}</span>
+                    } @else {
+                      <span class="text-muted text-xs">-</span>
+                    }
+                  </td>
+                  <td class="py-3 text-secondary text-sm font-medium">
+                    {{ act.season }}
+                  </td>
+                  <td class="py-3 text-muted text-xs font-sans">
+                    {{ act.date | date:'dd MMM yyyy' }}
+                  </td>
+                  <td class="py-3">
+                    <span class="badge" [class.bg-success]="act.status === 'Completed'"
+                                        [class.bg-warning]="act.status === 'In Progress'"
+                                        [class.status-draft]="act.status === 'Draft'">
+                      {{ act.status }}
+                    </span>
+                  </td>
+                  <td class="py-3 text-end fw-bold font-monospace text-success-dark text-nowrap" style="font-size: 0.9rem;">
+                    ₹{{ getActivityTotalCost(act.id) | number }}
+                  </td>
+                  <td class="py-3 text-center" (click)="$event.stopPropagation()">
+                    <div class="d-flex align-items-center justify-content-center gap-2">
+                      <button 
+                        class="btn btn-link text-danger p-0 border-0 lh-1 d-flex align-items-center justify-content-center" 
+                        (click)="onDeleteActivityClick(act.id, $event)" 
+                        title="Delete Activity"
+                      >
+                        <i class="bi bi-trash-fill fs-6"></i>
+                      </button>
+                      <i class="bi bi-chevron-right text-muted small ms-1"></i>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
-      }
-    </div>
+      </div>
+    }
   } @else {
     <div class="card card-glass empty-state-container p-5 text-center my-4">
       <i class="bi bi-search text-muted display-3"></i>
@@ -188,8 +317,8 @@
       <p class="text-muted-custom font-sans max-width-400 mx-auto mt-2">
         Try adjusting your search filters or record a new activity to get started.
       </p>
-      <button class="btn btn-secondary mt-3" (click)="resetFilters()">
-        Reset Filters
+      <button class="btn btn-secondary mt-3" (click)="clearFilters()">
+        Clear Filters
       </button>
     </div>
   }

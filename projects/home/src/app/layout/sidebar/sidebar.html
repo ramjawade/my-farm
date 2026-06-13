@@ -2,11 +2,20 @@
   <nav class="nav nav-pills flex-column p-3 gap-1">
     <a
       class="nav-link"
+      routerLink="/"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{exact: true}"
+      (click)="onNavClick()"
+    >
+      <i class="bi bi-house-door-fill me-2"></i>Home
+    </a>
+    <a
+      class="nav-link"
       routerLink="/crops"
       routerLinkActive="active"
       (click)="onNavClick()"
     >
-      <i class="bi bi-grid-3x3-gap-fill me-2"></i>Dashboard
+      <i class="bi bi-grid-3x3-gap-fill me-2"></i>Crops & Fields
     </a>
     <a
       class="nav-link"
@@ -22,7 +31,7 @@
       routerLinkActive="active"
       (click)="onNavClick()"
     >
-      <i class="bi bi-map me-2"></i>Map
+      <i class="bi bi-map me-2"></i>Lands
     </a>
     <a
       class="nav-link"

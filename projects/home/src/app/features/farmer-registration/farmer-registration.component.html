@@ -1,59 +1,11 @@
 <div class="registration-container py-4 px-3 px-md-5">
-  <div class="card card-glass registration-card mx-auto">
+  <div class="card card-glass registration-card mx-auto shadow-lg">
     
-    <!-- HEADER & STEPPER -->
     <div class="card-header-premium p-4 d-flex flex-column align-items-center">
-      <h2 class="wizard-title text-center mb-4">Farmer Registration</h2>
-      
-      <!-- Progress Stepper (Hidden on success screen) -->
-      @if (!isSuccess()) {
-        <div class="stepper w-100 mb-2">
-          <!-- Step 1 Node -->
-          <div class="step-node" [class.active]="currentStep() === 1" [class.completed]="currentStep() > 1" (click)="goToStep(1)">
-            <div class="step-circle">
-              @if (currentStep() > 1) { <i class="bi bi-check-lg"></i> } @else { 1 }
-            </div>
-            <span class="step-label d-none d-sm-inline">Personal</span>
-          </div>
-          <div class="step-line" [class.completed]="currentStep() > 1"></div>
-          
-          <!-- Step 2 Node -->
-          <div class="step-node" [class.active]="currentStep() === 2" [class.completed]="currentStep() > 2" (click)="goToStep(2)">
-            <div class="step-circle">
-              @if (currentStep() > 2) { <i class="bi bi-check-lg"></i> } @else { 2 }
-            </div>
-            <span class="step-label d-none d-sm-inline">Farm</span>
-          </div>
-          <div class="step-line" [class.completed]="currentStep() > 2"></div>
-          
-          <!-- Step 3 Node -->
-          <div class="step-node" [class.active]="currentStep() === 3" [class.completed]="currentStep() > 3" (click)="goToStep(3)">
-            <div class="step-circle">
-              @if (currentStep() > 3) { <i class="bi bi-check-lg"></i> } @else { 3 }
-            </div>
-            <span class="step-label d-none d-sm-inline">Location</span>
-          </div>
-          <div class="step-line" [class.completed]="currentStep() > 3"></div>
-          
-          <!-- Step 4 Node -->
-          <div class="step-node" [class.active]="currentStep() === 4" [class.completed]="currentStep() > 4" (click)="goToStep(4)">
-            <div class="step-circle">
-              @if (currentStep() > 4) { <i class="bi bi-check-lg"></i> } @else { 4 }
-            </div>
-            <span class="step-label d-none d-sm-inline">Crops</span>
-          </div>
-          <div class="step-line" [class.completed]="currentStep() > 4"></div>
-          
-          <!-- Step 5 Node -->
-          <div class="step-node" [class.active]="currentStep() === 5" (click)="goToStep(5)">
-            <div class="step-circle">5</div>
-            <span class="step-label d-none d-sm-inline">Review</span>
-          </div>
-        </div>
-      }
+      <h2 class="wizard-title text-center mb-1">Farmer Registration</h2>
+      <p class="text-muted text-xs text-center mb-0">Create your profile to start managing your crops and activities</p>
     </div>
 
-    <!-- MAIN FORM CARD BODY -->
     <div class="card-body-premium p-4">
       @if (isSuccess()) {
         <!-- SUCCESS STATE -->
@@ -64,688 +16,103 @@
           </div>
           <h3 class="success-heading mb-2">Registration Complete!</h3>
           <p class="success-subtext mb-4">
-            <strong>{{ registeredName() }}</strong> has been successfully registered under the agricultural roster.
+            Welcome, <strong>{{ registeredName() }}</strong>! Your profile has been created successfully.
           </p>
-          <div class="success-summary mx-auto p-3 mb-4 rounded border text-start bg-light-green">
-            <div class="d-flex justify-content-between mb-2">
-              <span class="fw-semibold">Registered ID:</span>
-              <span class="font-monospace text-muted">Generated Automatically</span>
-            </div>
-            <div class="d-flex justify-content-between mb-2">
-              <span class="fw-semibold">Farm Name:</span>
-              <span>{{ registrationForm.get('farmName')?.value }}</span>
-            </div>
-            <div class="d-flex justify-content-between mb-2">
-              <span class="fw-semibold">Farm Location:</span>
-              @if (isStep3Skipped()) {
-                <span class="text-warning small"><i class="bi bi-clock me-1"></i>To be added later</span>
-              } @else if (locationMethod() === 'map') {
-                <span>{{ latitude() }}, {{ longitude() }}</span>
-              } @else {
-                <span>{{ registrationForm.get('village')?.value }}, {{ registrationForm.get('state')?.value }}</span>
-              }
-            </div>
-            <div class="d-flex justify-content-between">
-              <span class="fw-semibold">Status:</span>
-              <span class="badge bg-success">Active Profile</span>
-            </div>
-          </div>
-          <div class="d-flex justify-content-center gap-3">
-            <button class="btn btn-outline-success px-4 py-2" (click)="resetForm()">
-              <i class="bi bi-person-plus-fill me-2"></i>Register Another
-            </button>
-            <button class="btn btn-primary px-4 py-2" (click)="navigateToMap()">
+          <div class="d-flex justify-content-center">
+            <button class="btn btn-primary px-5 py-2.5 fw-semibold hover-lift" (click)="navigateToMap()">
               <i class="bi bi-map-fill me-2"></i>Go to Map
             </button>
           </div>
         </div>
       } @else {
-        <!-- ACTIVE FORM STEPS -->
-        <form [formGroup]="registrationForm" (ngSubmit)="$event.preventDefault()">
+        <!-- Simplified Registration Form -->
+        <form [formGroup]="registrationForm" (ngSubmit)="submitRegistration()">
           
-          <!-- STEP 1: PERSONAL DETAILS -->
-          <div class="step-panel" [class.active]="currentStep() === 1">
-            <h4 class="step-title mb-4"><i class="bi bi-person-bounding-box text-success me-2"></i>Farmer Personal Details</h4>
-            
-            <div class="row g-3">
-              <div class="col-md-12">
-                <label for="fullName" class="field-label required-label">Farmer Name</label>
-                <div class="input-group">
-                  <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                  <input
-                    type="text"
-                    id="fullName"
-                    class="form-control"
-                    formControlName="fullName"
-                    placeholder="e.g. Rajesh Kumar"
-                    [class.is-invalid]="registrationForm.get('fullName')?.touched && registrationForm.get('fullName')?.invalid"
-                  />
-                </div>
-                @if (registrationForm.get('fullName')?.touched && registrationForm.get('fullName')?.invalid) {
-                  <div class="text-danger small mt-1">
-                    Please enter a valid farmer name (minimum 3 characters).
-                  </div>
-                }
-              </div>
-
-              <div class="col-md-6">
-                <label for="phone" class="field-label required-label">Contact Number</label>
-                <div class="input-group">
-                  <span class="input-group-text"><i class="bi bi-telephone-fill"></i></span>
-                  <input
-                    type="tel"
-                    id="phone"
-                    class="form-control"
-                    formControlName="phone"
-                    placeholder="e.g. +91 9876543210"
-                    [class.is-invalid]="registrationForm.get('phone')?.touched && registrationForm.get('phone')?.invalid"
-                  />
-                </div>
-                @if (registrationForm.get('phone')?.touched && registrationForm.get('phone')?.invalid) {
-                  <div class="text-danger small mt-1">
-                    Please enter a valid 10-15 digit phone number.
-                  </div>
-                }
-              </div>
-
-              <div class="col-md-6">
-                <label for="email" class="field-label">Email Address (Optional)</label>
-                <div class="input-group">
-                  <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
-                  <input
-                    type="email"
-                    id="email"
-                    class="form-control"
-                    formControlName="email"
-                    placeholder="e.g. rajesh@farm.com"
-                    [class.is-invalid]="registrationForm.get('email')?.touched && registrationForm.get('email')?.invalid"
-                  />
-                </div>
-                @if (registrationForm.get('email')?.touched && registrationForm.get('email')?.invalid) {
-                  <div class="text-danger small mt-1">
-                    Please enter a valid email format.
-                  </div>
-                }
-              </div>
-
-              <div class="col-md-12">
-                <label for="preferredLanguage" class="field-label required-label">Preferred Language</label>
-                <div class="input-group">
-                  <span class="input-group-text"><i class="bi bi-translate"></i></span>
-                  <select id="preferredLanguage" class="form-select" formControlName="preferredLanguage">
-                    @for (lang of languages; track lang.value) {
-                      <option [value]="lang.value">{{ lang.label }}</option>
-                    }
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- STEP 2: FARM DETAILS -->
-          <div class="step-panel" [class.active]="currentStep() === 2">
-            <h4 class="step-title mb-4"><i class="bi bi-card-text text-success me-2"></i>Farm Profile Details</h4>
-            
-            <!-- Who are you? Visual Options (No wrapper box, free-flowing) -->
-            <div class="mb-4">
-              <label class="field-label required-label">Who are you?</label>
-              <p class="field-sub-label">Please select your primary role profile to personalize your experience.</p>
-              
-              <div class="row g-3">
-                @for (role of roleOptions; track role.value) {
-                  <div class="col-12 col-sm-6 col-lg-3">
-                    <button
-                      type="button"
-                      class="role-row-btn border text-start d-flex align-items-center"
-                      [class.active]="registrationForm.get('userRole')?.value === role.value"
-                      (click)="registrationForm.get('userRole')?.setValue(role.value)"
-                    >
-                      <i class="bi" [class]="role.icon" [style.color]="registrationForm.get('userRole')?.value === role.value ? '#2a6f47' : role.color"></i>
-                      <span class="fw-semibold role-label-text ms-2">{{ role.label }}</span>
-                    </button>
-                  </div>
-                }
-              </div>
-            </div>
-
-            <!-- Farming Method Visual Options (Moved to Step 2) -->
-            <div class="mb-4 mt-3 pt-3 border-top">
-              <label class="field-label required-label">Farming Method</label>
-              <p class="field-sub-label">Please select your primary soil and cultivation practice standard.</p>
-              
-              <div class="row g-3">
-                @for (method of farmingMethods; track method.value) {
-                  <div class="col-12 col-sm-6 col-lg-3">
-                    <button
-                      type="button"
-                      class="role-row-btn border text-start d-flex align-items-center"
-                      [class.active]="registrationForm.get('farmingMethod')?.value === method.value"
-                      (click)="registrationForm.get('farmingMethod')?.setValue(method.value)"
-                    >
-                      <i class="bi" [class]="method.icon" [style.color]="registrationForm.get('farmingMethod')?.value === method.value ? '#2a6f47' : method.color"></i>
-                      <span class="fw-semibold role-label-text ms-2">{{ method.label }}</span>
-                    </button>
-                  </div>
-                }
-              </div>
-            </div>
-
-          </div>
-
-          <!-- STEP 3: FARM LOCATION MAP -->
-          <div class="step-panel" [class.active]="currentStep() === 3">
-            <h4 class="step-title mb-4"><i class="bi bi-geo-alt-fill text-success me-2"></i>Farm Location Mapping</h4>
-
-            <!-- Where is your farm? Toggle Selector (No parent box, free-flowing) -->
-            <div class="mb-4">
-              <label class="field-label required-label"><i class="bi bi-geo-alt-fill"></i>Where is your farm?</label>
-              <p class="field-sub-label">This helps us provide accurate local weather alerts and crop suggestions.</p>
-              
-              <div class="row g-3 justify-content-center mb-3">
-                <div class="col-12 col-md-6">
-                  <button
-                    type="button"
-                    class="location-toggle-btn border w-100 text-start d-flex align-items-center"
-                    [class.active]="locationMethod() === 'map'"
-                    (click)="setLocationMethod('map')"
-                  >
-                    <i class="bi bi-pin-map-fill fs-4 text-success"></i>
-                    <span class="fw-semibold location-label-text ms-3">Use Map Location</span>
-                  </button>
-                </div>
-
-                <div class="col-12 col-md-6">
-                  <button
-                    type="button"
-                    class="location-toggle-btn border w-100 text-start d-flex align-items-center"
-                    [class.active]="locationMethod() === 'manual'"
-                    (click)="setLocationMethod('manual')"
-                  >
-                    <i class="bi bi-pencil-square fs-4 text-success"></i>
-                    <span class="fw-semibold location-label-text ms-3">Select Village Manually</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Conditional rendering for Map vs Manual Selection -->
-            @if (locationMethod() === 'map') {
-              <!-- Mapping Area Container -->
-              <div class="map-card-premium mb-3">
-              <div class="map-card-header p-3 bg-dark-green text-white d-flex align-items-center justify-content-between gap-3">
-                <span class="fw-semibold"><i class="bi bi-pin-map-fill me-2"></i>Locate Farm Bounds</span>
-                
-                <!-- Map Mode Selection Button Group -->
-                <div class="btn-group btn-group-sm" role="group">
-                  <button
-                    type="button"
-                    class="btn btn-outline-light px-3"
-                    [class.active]="mapMode() === 'pin'"
-                    (click)="setMapMode('pin')"
-                  >
-                    <i class="bi bi-geo-fill me-1"></i>Pin the Farm
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-outline-light px-3"
-                    [class.active]="mapMode() === 'draw'"
-                    (click)="setMapMode('draw')"
-                  >
-                    <i class="bi bi-pentagon-half me-1"></i>Map My Farm
-                  </button>
-                </div>
-              </div>
-
-              <!-- Leaflet Map viewport -->
-              <div class="registration-map-wrapper" style="height: 360px;">
-                <app-map
-                  style="height: 360px; min-height: auto; display: block; position: relative; inset: auto;"
-                  [isPicker]="true"
-                  [showSearch]="true"
-                  [mapMode]="mapMode()"
-                  (pinCoordinatesSelected)="updateMarker($event.lat, $event.lng)"
-                  (mapReady)="onMapReady($event)"
-                />
-              </div>
-
-              <!-- Map Coordinate readouts, warnings, and drawing controls -->
-              <div class="map-coordinates-footer p-3 bg-light d-flex flex-wrap align-items-center justify-content-between gap-2 border-top">
-                @if (mapMode() === 'draw') {
-                  <div class="d-flex align-items-center justify-content-between w-100 flex-wrap gap-2">
-                    <div class="drawing-status-text">
-                      @if (drawService.status() === 'idle') {
-                        <span class="text-muted small"><i class="bi bi-info-circle me-1"></i>Click on the map to start drawing your farm polygon.</span>
-                      } @else if (drawService.status() === 'drawing') {
-                        <span class="text-primary small font-semibold">
-                          <i class="bi bi-pencil-fill me-1"></i>Drawing: {{ drawService.pointCount() }} points added.
-                        </span>
-                      } @else {
-                        <span class="text-success small font-semibold">
-                          <i class="bi bi-check-circle-fill me-1"></i>Completed: {{ drawService.pointCount() }} vertices.
-                        </span>
-                      }
-                    </div>
-                    <div class="d-flex gap-2">
-                      @if (drawService.status() === 'drawing') {
-                        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="drawService.undoLastPoint()" [disabled]="drawService.pointCount() === 0">
-                          <i class="bi bi-arrow-counterclockwise me-1"></i>Undo
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-danger" (click)="drawService.cancelDrawing()">
-                          <i class="bi bi-x-circle me-1"></i>Cancel
-                        </button>
-                        <button type="button" class="btn btn-sm btn-primary" (click)="drawService.finishDrawing()" [disabled]="!drawService.canFinish()">
-                          <i class="bi bi-check-lg me-1"></i>Finish
-                        </button>
-                      } @else if (drawService.status() === 'completed') {
-                        <button type="button" class="btn btn-sm btn-outline-warning" (click)="drawService.startDrawing()">
-                          <i class="bi bi-arrow-repeat me-1"></i>Redraw
-                        </button>
-                      }
-                    </div>
-                  </div>
-                } @else {
-                  @if (latitude() !== null && longitude() !== null) {
-                    <div class="coord-readouts d-flex gap-4">
-                      <div>
-                        <span class="text-muted small d-block">Latitude</span>
-                        <strong class="font-monospace text-success">{{ latitude() }}</strong>
-                      </div>
-                      <div>
-                        <span class="text-muted small d-block">Longitude</span>
-                        <strong class="font-monospace text-success">{{ longitude() }}</strong>
-                      </div>
-                    </div>
-                    <span class="badge bg-success">
-                      <i class="bi bi-geo-fill me-1"></i>Pinned Successfully
-                    </span>
-                  } @else {
-                    <div class="text-danger small flex-fill">
-                      <i class="bi bi-exclamation-octagon-fill me-1"></i>Please click anywhere on the satellite map to drop your farm pin.
-                    </div>
-                  }
-                }
-              </div>
-            </div>
-            }
-
-            <div class="manual-location-card p-4 border rounded bg-white shadow-sm mb-3 text-start">
-              <h5 class="text-success mb-3 font-semibold">
-                @if (locationMethod() === 'map') {
-                  <i class="bi bi-geo-alt-fill me-2"></i>Resolved Address Details
-                } @else {
-                  <i class="bi bi-card-list me-2"></i>Enter Village Details
-                }
-              </h5>
-                <div class="row g-3">
-                  <div class="col-12 col-md-6">
-                    <label for="state" class="field-label required-label">State</label>
-                    <input
-                      type="text"
-                      id="state"
-                      class="form-control"
-                      formControlName="state"
-                      placeholder="e.g. Maharashtra"
-                      [class.is-invalid]="registrationForm.get('state')?.touched && registrationForm.get('state')?.invalid"
-                    />
-                    @if (registrationForm.get('state')?.touched && registrationForm.get('state')?.invalid) {
-                      <div class="text-danger small mt-1">State is required.</div>
-                    }
-                  </div>
-
-                  <div class="col-12 col-md-6">
-                    <label for="district" class="field-label required-label">District</label>
-                    <input
-                      type="text"
-                      id="district"
-                      class="form-control"
-                      formControlName="district"
-                      placeholder="e.g. Nashik"
-                      [class.is-invalid]="registrationForm.get('district')?.touched && registrationForm.get('district')?.invalid"
-                    />
-                    @if (registrationForm.get('district')?.touched && registrationForm.get('district')?.invalid) {
-                      <div class="text-danger small mt-1">District is required.</div>
-                    }
-                  </div>
-
-                  <div class="col-12 col-md-6">
-                    <label for="village" class="field-label required-label">Village Name</label>
-                    <input
-                      type="text"
-                      id="village"
-                      class="form-control"
-                      formControlName="village"
-                      placeholder="e.g. Pimpalgaon"
-                      [class.is-invalid]="registrationForm.get('village')?.touched && registrationForm.get('village')?.invalid"
-                    />
-                    @if (registrationForm.get('village')?.touched && registrationForm.get('village')?.invalid) {
-                      <div class="text-danger small mt-1">Village Name is required.</div>
-                    }
-                  </div>
-
-                  <div class="col-12 col-md-6">
-                    <label for="pincode" class="field-label required-label">Pin Code</label>
-                    <input
-                      type="text"
-                      id="pincode"
-                      class="form-control"
-                      formControlName="pincode"
-                      placeholder="e.g. 422209"
-                      [class.is-invalid]="registrationForm.get('pincode')?.touched && registrationForm.get('pincode')?.invalid"
-                    />
-                    @if (registrationForm.get('pincode')?.touched && registrationForm.get('pincode')?.invalid) {
-                      <div class="text-danger small mt-1">Pin Code is required.</div>
-                    }
-                  </div>
-                </div>
-              </div>
-
-            <!-- Total Cultivated Area (Moved to bottom of Step 3, locked in Hectares) -->
-            <div class="mb-4 mt-3 pt-3 border-top">
-              <label for="farmArea" class="field-label required-label">Total Cultivated Area (Hectares)</label>
-              <p class="field-sub-label">Specify the active surface area currently used for planting in metric hectares.</p>
-              <input
-                type="number"
-                step="0.01"
-                id="farmArea"
-                class="form-control"
-                formControlName="farmArea"
-                placeholder="e.g. 6.25"
-                [class.is-invalid]="registrationForm.get('farmArea')?.touched && registrationForm.get('farmArea')?.invalid"
-              />
-              @if (registrationForm.get('farmArea')?.touched && registrationForm.get('farmArea')?.invalid) {
-                <div class="text-danger small mt-1">
-                  Area must be a number greater than 0.
-                </div>
-              }
-            </div>
-          </div>
-
-          <!-- STEP 4: PRIMARY CROPS & PRACTICES -->
-          <div class="step-panel" [class.active]="currentStep() === 4">
-            <h4 class="step-title mb-4"><i class="bi bi-patch-check text-success me-2"></i>Primary Crops & Farming Practices</h4>
-
-            <!-- Primary Crop Multi-select Tags (Redesigned as visual cards) -->
-            <div class="mb-4">
-              <label class="field-label required-label"><i class="bi bi-patch-check"></i>Primary Crops Grown</label>
-              <p class="field-sub-label">Please select at least one primary crop grown on your farm.</p>
-              
-              <div class="row g-3">
-                @for (crop of cropOptions; track crop.value) {
-                  <div class="col-12 col-sm-6 col-lg-3">
-                    <button
-                      type="button"
-                      class="role-row-btn border text-start d-flex align-items-center"
-                      [class.active]="selectedCrops().includes(crop.value)"
-                      (click)="toggleCrop(crop.value)"
-                    >
-                      <i class="bi" [class]="crop.icon" [style.color]="selectedCrops().includes(crop.value) ? '#2a6f47' : crop.color"></i>
-                      <span class="fw-semibold role-label-text ms-2">{{ crop.label }}</span>
-                    </button>
-                  </div>
-                }
-              </div>
-            </div>
-
-            <!-- Practices Selection Grid (Split into Water Source & Irrigation Type) -->
-            <div class="mb-4 mt-3 pt-3 border-top">
-              <label class="field-label required-label"><i class="bi bi-droplet-fill"></i>Water Source</label>
-              <p class="field-sub-label">Please select the primary water supply sourcing method used on your fields.</p>
-              
-              <div class="row g-3">
-                @for (ws of waterSourceOptions; track ws.value) {
-                  <div class="col-12 col-sm-6 col-lg-3">
-                    <button
-                      type="button"
-                      class="role-row-btn border text-start d-flex align-items-center"
-                      [class.active]="registrationForm.get('waterSource')?.value === ws.value"
-                      (click)="registrationForm.get('waterSource')?.setValue(ws.value)"
-                    >
-                      <i class="bi" [class]="ws.icon" [style.color]="registrationForm.get('waterSource')?.value === ws.value ? '#2a6f47' : ws.color"></i>
-                      <span class="fw-semibold role-label-text ms-2">{{ ws.label }}</span>
-                    </button>
-                  </div>
-                }
-              </div>
-            </div>
-
-            <div class="mb-4 mt-3 pt-3 border-top">
-              <label class="field-label required-label"><i class="bi bi-moisture"></i>Irrigation Type</label>
-              <p class="field-sub-label">Please select the core water delivery distribution mechanism applied.</p>
-              
-              <div class="row g-3">
-                @for (irr of irrigationTypeOptions; track irr.value) {
-                  <div class="col-12 col-sm-6 col-lg-3">
-                    <button
-                      type="button"
-                      class="role-row-btn border text-start d-flex align-items-center"
-                      [class.active]="registrationForm.get('irrigationType')?.value === irr.value"
-                      (click)="registrationForm.get('irrigationType')?.setValue(irr.value)"
-                    >
-                      <i class="bi" [class]="irr.icon" [style.color]="registrationForm.get('irrigationType')?.value === irr.value ? '#2a6f47' : irr.color"></i>
-                      <span class="fw-semibold role-label-text ms-2">{{ irr.label }}</span>
-                    </button>
-                  </div>
-                }
-              </div>
-            </div>
-          </div>
-
-          <!-- STEP 5: REVIEW SUMMARY -->
-          <div class="step-panel" [class.active]="currentStep() === 5">
-            <h4 class="step-title mb-4"><i class="bi bi-clipboard2-check-fill text-success me-2"></i>Review Registration Record</h4>
-
-            <!-- Farm Name Input Field (Moved from Step 2 to Step 5) -->
-            <div class="mb-4">
-              <label for="farmName" class="field-label required-label">Farm Name</label>
-              <p class="field-sub-label">Give a recognizable identifier to your primary agricultural site.</p>
+          <div class="row g-3">
+            <div class="col-12">
+              <label for="fullName" class="field-label required-label">Full Name</label>
               <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-house-door-fill"></i></span>
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-person-fill"></i></span>
                 <input
                   type="text"
-                  id="farmName"
-                  class="form-control"
-                  formControlName="farmName"
-                  placeholder="e.g. Green Valley Farm"
-                  [class.is-invalid]="registrationForm.get('farmName')?.touched && registrationForm.get('farmName')?.invalid"
+                  id="fullName"
+                  class="form-control border-start-0 ps-0"
+                  formControlName="fullName"
+                  placeholder="e.g. Rajesh Kumar"
+                  [class.is-invalid]="registrationForm.get('fullName')?.touched && registrationForm.get('fullName')?.invalid"
                 />
               </div>
-              @if (registrationForm.get('farmName')?.touched && registrationForm.get('farmName')?.invalid) {
+              @if (registrationForm.get('fullName')?.touched && registrationForm.get('fullName')?.invalid) {
                 <div class="text-danger small mt-1">
-                  Please enter a valid farm name (minimum 2 characters).
+                  Please enter a valid farmer name (minimum 3 characters).
                 </div>
               }
             </div>
 
-            <div class="receipt-card mb-4 p-4 shadow-sm border rounded">
-              <div class="receipt-header border-bottom pb-3 mb-3 text-center">
-                <h5 class="receipt-org-title text-success font-semibold text-uppercase tracking-wider">My Farm Operations</h5>
-                <span class="text-muted small">Verification Ledger Summary</span>
+            <div class="col-12 col-md-6">
+              <label for="phone" class="field-label required-label">Mobile Number</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-telephone-fill"></i></span>
+                <input
+                  type="tel"
+                  id="phone"
+                  class="form-control border-start-0 ps-0"
+                  formControlName="phone"
+                  placeholder="e.g. 9876543210"
+                  [class.is-invalid]="registrationForm.get('phone')?.touched && registrationForm.get('phone')?.invalid"
+                />
               </div>
-
-              <div class="receipt-body row g-4">
-                <!-- Farmer Details Column -->
-                <div class="col-md-6 border-end-md">
-                  <h6 class="section-badge-title text-success mb-3"><i class="bi bi-person-fill me-2"></i>Farmer Details</h6>
-                  <table class="table table-borderless table-sm table-details mb-0">
-                    <tbody>
-                      <tr>
-                        <td class="text-muted pe-3 w-40">Farmer Name:</td>
-                        <td class="fw-semibold">{{ registrationForm.get('fullName')?.value }}</td>
-                      </tr>
-                      <tr>
-                        <td class="text-muted pe-3">Role Profile:</td>
-                        <td class="fw-semibold text-success"><i class="bi bi-person-workspace me-1"></i>{{ registrationForm.get('userRole')?.value }}</td>
-                      </tr>
-                      <tr>
-                        <td class="text-muted pe-3">Phone:</td>
-                        <td class="font-monospace">{{ registrationForm.get('phone')?.value }}</td>
-                      </tr>
-                      <tr>
-                        <td class="text-muted pe-3">Email:</td>
-                        <td>{{ registrationForm.get('email')?.value || 'Not Provided' }}</td>
-                      </tr>
-                      <tr>
-                        <td class="text-muted pe-3">Preferred Language:</td>
-                        <td>{{ registrationForm.get('preferredLanguage')?.value }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
+              @if (registrationForm.get('phone')?.touched && registrationForm.get('phone')?.invalid) {
+                <div class="text-danger small mt-1">
+                  Please enter a valid 10-15 digit phone number.
                 </div>
-
-                <!-- Farm Details Column -->
-                <div class="col-md-6">
-                  <h6 class="section-badge-title text-success mb-3"><i class="bi bi-house-door-fill me-2"></i>Farm Properties</h6>
-                  <table class="table table-borderless table-sm table-details mb-0">
-                    <tbody>
-                      <tr>
-                        <td class="text-muted pe-3 w-40">Farm Name:</td>
-                        <td class="fw-semibold">{{ registrationForm.get('farmName')?.value }}</td>
-                      </tr>
-                      <tr>
-                        <td class="text-muted pe-3">Cultivated Area:</td>
-                        <td>
-                          <strong>{{ registrationForm.get('farmArea')?.value }}</strong>
-                          <span class="text-muted ms-1 font-semibold">hectares</span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td class="text-muted pe-3">Water Source:</td>
-                        <td>
-                          @if (isStep3Skipped()) {
-                            <span class="text-warning-dark small"><i class="bi bi-clock me-1"></i>To be set later</span>
-                          } @else {
-                            {{ registrationForm.get('waterSource')?.value }}
-                          }
-                        </td>
-                      </tr>
-                      <tr>
-                        <td class="text-muted pe-3">Irrigation Type:</td>
-                        <td>
-                          @if (isStep3Skipped()) {
-                            <span class="text-warning-dark small"><i class="bi bi-clock me-1"></i>To be set later</span>
-                          } @else {
-                            {{ registrationForm.get('irrigationType')?.value }}
-                          }
-                        </td>
-                      </tr>
-                      <tr>
-                        <td class="text-muted pe-3">Methodology:</td>
-                        <td>
-                          @if (isStep3Skipped()) {
-                            <span class="text-warning-dark small"><i class="bi bi-clock me-1"></i>To be set later</span>
-                          } @else {
-                            {{ registrationForm.get('farmingMethod')?.value }}
-                          }
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                <!-- Shared Row for Crops and Location Coordinates -->
-                <div class="col-12 border-top pt-3 mt-3">
-                  <div class="row">
-                    <div class="col-md-6 mb-3 mb-md-0">
-                      <span class="fw-semibold text-muted d-block mb-2">Registered Crop Culture:</span>
-                      @if (isStep3Skipped()) {
-                        <span class="badge bg-warning"><i class="bi bi-clock me-1"></i>To be added later</span>
-                      } @else {
-                        <div class="d-flex flex-wrap gap-1">
-                          @for (crop of selectedCrops(); track crop) {
-                            <span class="badge bg-success">{{ crop }}</span>
-                          }
-                          @if (selectedCrops().length === 0) {
-                            <span class="text-muted small">No crops selected</span>
-                          }
-                        </div>
-                      }
-                    </div>
-                    <div class="col-md-6">
-                      @if (isStep3Skipped()) {
-                        <span class="fw-semibold text-muted d-block mb-1">Geocentric Coordinates:</span>
-                        <div class="d-flex gap-3 align-items-center text-warning small mt-2">
-                          <i class="bi bi-clock-fill me-1"></i>Location skipped (will set later)
-                        </div>
-                      } @else if (locationMethod() === 'map') {
-                        <span class="fw-semibold text-muted d-block mb-1">Geocentric Coordinates:</span>
-                        <div class="d-flex gap-3 align-items-center">
-                          <i class="bi bi-geo-alt-fill text-danger fs-5"></i>
-                          <span class="font-monospace small">
-                            Latitude: <strong class="text-dark">{{ latitude() }}</strong>, 
-                            Longitude: <strong class="text-dark">{{ longitude() }}</strong>
-                          </span>
-                        </div>
-                      } @else {
-                        <span class="fw-semibold text-muted d-block mb-1">Village Address Profile:</span>
-                        <div class="d-flex gap-3 align-items-center">
-                          <i class="bi bi-house-door-fill text-success fs-5"></i>
-                          <span class="small">
-                            <strong>{{ registrationForm.get('village')?.value }}</strong>, 
-                            {{ registrationForm.get('district')?.value }}, 
-                            {{ registrationForm.get('state')?.value }}
-                            @if (registrationForm.get('pincode')?.value) {
-                              - <strong>{{ registrationForm.get('pincode')?.value }}</strong>
-                            }
-                          </span>
-                        </div>
-                      }
-                    </div>
-                  </div>
-                </div>
-              </div>
+              }
             </div>
 
-            <!-- Agreement Toggles / Declaration -->
-            <div class="form-check p-3 bg-light border rounded mb-3">
-              <input class="form-check-input ms-0 me-2" type="checkbox" id="declareCheck" checked />
-              <label class="form-check-label text-muted small" for="declareCheck">
-                I hereby declare that the farm bounds mapped and information filled above are true and represent the registered cultivation operation boundaries.
-              </label>
+            <div class="col-12 col-md-6">
+              <label for="email" class="field-label">Email Address (Optional)</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-envelope-fill"></i></span>
+                <input
+                  type="email"
+                  id="email"
+                  class="form-control border-start-0 ps-0"
+                  formControlName="email"
+                  placeholder="e.g. rajesh@farm.com"
+                  [class.is-invalid]="registrationForm.get('email')?.touched && registrationForm.get('email')?.invalid"
+                />
+              </div>
+              @if (registrationForm.get('email')?.touched && registrationForm.get('email')?.invalid) {
+                <div class="text-danger small mt-1">
+                  Please enter a valid email format.
+                </div>
+              }
+            </div>
+
+            <div class="col-12">
+              <label for="preferredLanguage" class="field-label required-label">Preferred Language</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-translate"></i></span>
+                <select id="preferredLanguage" class="form-select border-start-0 ps-0" formControlName="preferredLanguage">
+                  @for (lang of languages; track lang.value) {
+                    <option [value]="lang.value">{{ lang.label }}</option>
+                  }
+                </select>
+              </div>
             </div>
           </div>
 
-          <!-- WIZARD FOOTER NAVIGATION CONTROLS -->
-          <div class="wizard-footer border-top pt-4 mt-4 d-flex justify-content-between">
+          <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+            <a routerLink="/login" class="text-success fw-bold text-decoration-none hover-underline small">
+              <i class="bi bi-arrow-left me-1"></i>Back to Login
+            </a>
             <button
-              type="button"
-              class="btn btn-outline-secondary px-4 py-2"
-              [disabled]="currentStep() === 1"
-              [class.invisible]="currentStep() === 1"
-              (click)="prevStep()"
+              type="submit"
+              class="btn btn-success px-5 py-2.5 fw-semibold hover-lift shadow-xs"
+              [disabled]="registrationForm.invalid"
             >
-              <i class="bi bi-arrow-left me-2"></i>Back
+              <i class="bi bi-person-plus-fill me-2"></i>Register Farmer
             </button>
-
-            @if (currentStep() < 5) {
-              <div class="d-flex gap-2">
-                @if (currentStep() === 3) {
-                  <button
-                    type="button"
-                    class="btn btn-outline-warning px-4 py-2"
-                    (click)="skipStep3()"
-                  >
-                    <i class="bi bi-clock-history me-2"></i>Do it Later
-                  </button>
-                }
-                <button
-                  type="button"
-                  class="btn btn-success px-4 py-2"
-                  [disabled]="(currentStep() === 1 && !isStep1Valid()) || (currentStep() === 2 && !isStep2Valid()) || (currentStep() === 3 && !isStep3Valid()) || (currentStep() === 4 && !isStep4Valid())"
-                  (click)="nextStep()"
-                >
-                  Next Step<i class="bi bi-arrow-right ms-2"></i>
-                </button>
-              </div>
-            } @else {
-              <button
-                type="button"
-                class="btn btn-primary px-5 py-2 fw-semibold"
-                [disabled]="registrationForm.invalid || !isStep3Valid() || !isStep4Valid()"
-                (click)="submitRegistration()"
-              >
-                <i class="bi bi-cloud-arrow-up-fill me-2"></i>Register Farmer
-              </button>
-            }
           </div>
         </form>
       }

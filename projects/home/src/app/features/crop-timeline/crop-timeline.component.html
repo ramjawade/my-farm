@@ -13,3 +13,14 @@
   (confirm)="confirmDeleteActivity()"
 ></lib-confirm-dialog>
 
+<!-- Confirm Delete Crop Profile Dialog -->
+<lib-confirm-dialog
+  [title]="'Delete Crop Profile'"
+  [message]="'Are you sure you want to delete this crop profile and all its associated activities? This action cannot be undone.'"
+  [confirmText]="'Delete'"
+  [cancelText]="'Cancel'"
+  [isDestructive]="true"
+  [(isOpen)]="showDeleteCropConfirm"
+  (confirm)="confirmDeleteCrop()"
+></lib-confirm-dialog>
+

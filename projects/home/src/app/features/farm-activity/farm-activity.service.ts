@@ -1,5 +1,7 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject, effect, Injector } from '@angular/core';
 import { Activity, ActivityExpense, ActivityStatus } from './farm-activity.models';
+import { AuthService } from '../../core/auth/auth.service';
+import { CropTimelineService } from '../crop-timeline/crop-timeline.service';
 
 const ACTIVITIES_KEY = 'my_farm_activities';
 const EXPENSES_KEY = 'my_farm_activity_expenses';
@@ -8,6 +10,8 @@ const EXPENSES_KEY = 'my_farm_activity_expenses';
   providedIn: 'root'
 })
 export class FarmActivityService {
+  private readonly authService = inject(AuthService);
+  private readonly injector = inject(Injector);
   private readonly activitiesSignal = signal<Activity[]>([]);
   private readonly expensesSignal = signal<ActivityExpense[]>([]);
 
@@ -15,30 +19,58 @@ export class FarmActivityService {
   readonly expenses = this.expensesSignal.asReadonly();
 
   constructor() {
-    this.loadFromStorage();
+    effect(() => {
+      const user = this.authService.currentUser();
+      if (user) {
+        this.loadForUser(user.id);
+      } else {
+        this.activitiesSignal.set([]);
+        this.expensesSignal.set([]);
+      }
+    });
+  }
+
+  private getUserActivitiesKey(): string {
+    const user = this.authService.currentUser();
+    return user ? `my_farm_${user.id}_activities` : ACTIVITIES_KEY;
+  }
+
+  private getUserExpensesKey(): string {
+    const user = this.authService.currentUser();
+    return user ? `my_farm_${user.id}_activity_expenses` : EXPENSES_KEY;
   }
 
   // --- Storage Operations ---
-  private loadFromStorage(): void {
+  private loadForUser(userId: string): void {
     try {
-      const storedActivities = localStorage.getItem(ACTIVITIES_KEY);
-      const storedExpenses = localStorage.getItem(EXPENSES_KEY);
+      const actsKey = `my_farm_${userId}_activities`;
+      const expsKey = `my_farm_${userId}_activity_expenses`;
+      const storedActivities = localStorage.getItem(actsKey);
+      const storedExpenses = localStorage.getItem(expsKey);
 
       if (storedActivities && storedExpenses) {
         this.activitiesSignal.set(JSON.parse(storedActivities));
         this.expensesSignal.set(JSON.parse(storedExpenses));
       } else {
-        this.seedMockData();
+        this.activitiesSignal.set([]);
+        this.expensesSignal.set([]);
+        
+        // Seed default user if empty
+        if (userId === 'f-default') {
+          this.seedMockData();
+        }
       }
     } catch (e) {
       console.error('Failed to load farm activities from storage', e);
-      this.seedMockData();
+      if (userId === 'f-default') {
+        this.seedMockData();
+      }
     }
   }
 
   private saveActivities(activities: Activity[]): void {
     try {
-      localStorage.setItem(ACTIVITIES_KEY, JSON.stringify(activities));
+      localStorage.setItem(this.getUserActivitiesKey(), JSON.stringify(activities));
     } catch (e) {
       console.error('Failed to save activities to storage', e);
     }
@@ -46,17 +78,18 @@ export class FarmActivityService {
 
   private saveExpenses(expenses: ActivityExpense[]): void {
     try {
-      localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
+      localStorage.setItem(this.getUserExpensesKey(), JSON.stringify(expenses));
     } catch (e) {
       console.error('Failed to save expenses to storage', e);
     }
   }
 
   // --- Activity API ---
-  addActivity(activityData: Omit<Activity, 'id' | 'createdAt' | 'updatedAt'>): Activity {
+  addActivity(activityData: Omit<Activity, 'createdAt' | 'updatedAt' | 'id'> & { id?: string }): Activity {
+    const id = activityData.id || ('act-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36));
     const newActivity: Activity = {
       ...activityData,
-      id: 'act-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36),
+      id,
       createdAt: Date.now(),
       updatedAt: Date.now()
     };
@@ -66,10 +99,15 @@ export class FarmActivityService {
     this.activitiesSignal.set(updated);
     this.saveActivities(updated);
 
+    // Sync to CropTimelineService if linked to a crop
+    if (newActivity.cropId) {
+      this.syncToCropTimeline(newActivity);
+    }
+
     return newActivity;
   }
 
-  updateActivity(id: string, updates: Partial<Activity>): void {
+  updateActivityOnly(id: string, updates: Partial<Activity>): void {
     const current = this.activitiesSignal();
     const updated = current.map(a => 
       a.id === id 
@@ -80,7 +118,17 @@ export class FarmActivityService {
     this.saveActivities(updated);
   }
 
-  deleteActivity(id: string): void {
+  updateActivity(id: string, updates: Partial<Activity>): void {
+    this.updateActivityOnly(id, updates);
+
+    // Sync to CropTimelineService
+    const updatedAct = this.activitiesSignal().find(a => a.id === id);
+    if (updatedAct && updatedAct.cropId) {
+      this.syncUpdateToCropTimeline(updatedAct);
+    }
+  }
+
+  deleteActivityOnly(id: string): void {
     // Delete activity
     const currentActs = this.activitiesSignal();
     const updatedActs = currentActs.filter(a => a.id !== id);
@@ -92,6 +140,21 @@ export class FarmActivityService {
     const updatedExp = currentExp.filter(e => e.activityId !== id);
     this.expensesSignal.set(updatedExp);
     this.saveExpenses(updatedExp);
+  }
+
+  deleteActivity(id: string): void {
+    this.deleteActivityOnly(id);
+
+    // Sync delete to CropTimelineService
+    try {
+      const cropTimelineService = this.injector.get(CropTimelineService);
+      const exists = cropTimelineService.activities().find((a: any) => a.id === id);
+      if (exists) {
+        cropTimelineService.deleteActivityOnly(id);
+      }
+    } catch (e) {
+      console.error('Lazy sync delete activity failed', e);
+    }
   }
 
   // --- Expense API ---
@@ -107,14 +170,132 @@ export class FarmActivityService {
     this.expensesSignal.set(updated);
     this.saveExpenses(updated);
 
+    // Sync updated cost to crop timeline
+    this.syncExpenseChangeToCropTimeline(newExpense.activityId);
+
     return newExpense;
+  }
+
+  updateExpense(id: string, updates: Partial<ActivityExpense>): void {
+    const current = this.expensesSignal();
+    const updated = current.map(e => e.id === id ? { ...e, ...updates } : e);
+    this.expensesSignal.set(updated);
+    this.saveExpenses(updated);
+
+    const expense = updated.find(e => e.id === id);
+    if (expense) {
+      this.syncExpenseChangeToCropTimeline(expense.activityId);
+    }
   }
 
   deleteExpense(id: string): void {
     const current = this.expensesSignal();
+    const deletedExpense = current.find(e => e.id === id);
     const updated = current.filter(e => e.id !== id);
     this.expensesSignal.set(updated);
     this.saveExpenses(updated);
+
+    // Sync updated cost to crop timeline
+    if (deletedExpense) {
+      this.syncExpenseChangeToCropTimeline(deletedExpense.activityId);
+    }
+  }
+
+  private syncToCropTimeline(act: Activity): void {
+    try {
+      const cropTimelineService = this.injector.get(CropTimelineService);
+      
+      const exists = cropTimelineService.activities().find((a: any) => a.id === act.id);
+      if (exists) return;
+
+      let type: any = 'Field Inspection';
+      const validTypes = ['Sowing', 'Irrigation', 'Fertilizer Application', 'Spray Application', 'Weeding', 'Field Inspection', 'Labour Activity', 'Harvest', 'Sale', 'Weather Incident'];
+      if (validTypes.includes(act.activityId)) {
+        type = act.activityId;
+      } else if (act.activityId === 'Fertilizing') {
+        type = 'Fertilizer Application';
+      } else if (act.activityId === 'Pest Spraying') {
+        type = 'Spray Application';
+      } else if (act.activityId === 'Harvesting') {
+        type = 'Harvest';
+      }
+
+      let status: any = 'Scheduled';
+      if (act.status === 'Completed') status = 'Completed';
+      else if (act.status === 'Draft') status = 'Planned';
+
+      const cost = this.getTotalExpenseForActivity(act.id);
+
+      cropTimelineService.addActivity({
+        id: act.id,
+        cropId: act.cropId!,
+        type,
+        date: act.date,
+        status,
+        cost,
+        notes: act.notes || '',
+        attachments: act.attachments || [],
+        metadata: {},
+        parentActivityId: act.parentActivityId
+      });
+    } catch (e) {
+      console.error('Sync to CropTimelineService failed', e);
+    }
+  }
+
+  private syncUpdateToCropTimeline(act: Activity): void {
+    try {
+      const cropTimelineService = this.injector.get(CropTimelineService);
+      const exists = cropTimelineService.activities().find((a: any) => a.id === act.id);
+      
+      if (!exists) {
+        this.syncToCropTimeline(act);
+        return;
+      }
+
+      let type: any = 'Field Inspection';
+      const validTypes = ['Sowing', 'Irrigation', 'Fertilizer Application', 'Spray Application', 'Weeding', 'Field Inspection', 'Labour Activity', 'Harvest', 'Sale', 'Weather Incident'];
+      if (validTypes.includes(act.activityId)) {
+        type = act.activityId;
+      } else if (act.activityId === 'Fertilizing') {
+        type = 'Fertilizer Application';
+      } else if (act.activityId === 'Pest Spraying') {
+        type = 'Spray Application';
+      } else if (act.activityId === 'Harvesting') {
+        type = 'Harvest';
+      }
+
+      let status: any = 'Scheduled';
+      if (act.status === 'Completed') status = 'Completed';
+      else if (act.status === 'Draft') status = 'Planned';
+
+      const cost = this.getTotalExpenseForActivity(act.id);
+
+      cropTimelineService.updateActivityOnly(act.id, {
+        type,
+        date: act.date,
+        status,
+        cost,
+        notes: act.notes || '',
+        parentActivityId: act.parentActivityId,
+        attachments: act.attachments || []
+      });
+    } catch (e) {
+      console.error('Sync update to CropTimelineService failed', e);
+    }
+  }
+
+  private syncExpenseChangeToCropTimeline(activityId: string): void {
+    try {
+      const cropTimelineService = this.injector.get(CropTimelineService);
+      const exists = cropTimelineService.activities().find((a: any) => a.id === activityId);
+      if (exists) {
+        const cost = this.getTotalExpenseForActivity(activityId);
+        cropTimelineService.updateActivityOnly(activityId, { cost });
+      }
+    } catch (e) {
+      // ignore
+    }
   }
 
   getExpensesForActivity(activityId: string): ActivityExpense[] {
@@ -131,7 +312,7 @@ export class FarmActivityService {
     const mockActivities: Activity[] = [
       {
         id: 'mock-act-1',
-        date: '2026-06-01',
+        date: new Date('2026-06-01').getTime(),
         season: 'Summer',
         activityId: 'Bore Installation',
         fieldId: 'Field A',
@@ -142,7 +323,7 @@ export class FarmActivityService {
       },
       {
         id: 'mock-act-2',
-        date: '2026-05-15',
+        date: new Date('2026-05-15').getTime(),
         season: 'Kharif',
         activityId: 'Sowing Support',
         cropId: 'c-mock-soybean',
@@ -153,8 +334,21 @@ export class FarmActivityService {
         updatedAt: Date.now() - 23 * 24 * 3600 * 1000
       },
       {
+        id: 'mock-act-2-sub1',
+        parentActivityId: 'mock-act-2',
+        date: new Date('2026-05-15').getTime(),
+        season: 'Kharif',
+        activityId: 'Labour Activity',
+        cropId: 'c-mock-soybean',
+        fieldId: 'Field A',
+        status: 'Completed',
+        notes: 'Helpers loading seeds and checking drill calibration.',
+        createdAt: Date.now() - 23 * 24 * 3600 * 1000,
+        updatedAt: Date.now() - 23 * 24 * 3600 * 1000
+      },
+      {
         id: 'mock-act-3',
-        date: '2026-06-02',
+        date: new Date('2026-06-02').getTime(),
         season: 'Kharif',
         activityId: 'Weeding',
         cropId: 'c-mock-soybean',
@@ -166,7 +360,7 @@ export class FarmActivityService {
       },
       {
         id: 'mock-act-4',
-        date: '2026-06-06',
+        date: new Date('2026-06-06').getTime(),
         season: 'Rabi',
         activityId: 'Fertilizing',
         cropId: 'c-mock-wheat',
@@ -178,7 +372,7 @@ export class FarmActivityService {
       },
       {
         id: 'mock-act-5',
-        date: '2026-06-07',
+        date: new Date('2026-06-07').getTime(),
         season: 'Summer',
         activityId: 'Pest Spraying',
         cropId: 'c-mock-soybean',

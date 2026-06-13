@@ -21,6 +21,7 @@ describe('MapMyFarmComponent', () => {
     (mockFarmDraw as any).isCompleted = signal(false);
     (mockFarmDraw as any).area = signal(null);
     (mockFarmDraw as any).pointCount = signal(0);
+    (mockFarmDraw as any).points = signal([]);
 
     await TestBed.configureTestingModule({
       imports: [MapMyFarmComponent],

@@ -13,10 +13,10 @@
         >
           <span class="navbar-toggler-icon"></span>
         </button>
-        <span class="navbar-brand mb-0 fw-bold text-success d-flex align-items-center gap-1.5">
+        <a routerLink="/" class="navbar-brand mb-0 fw-bold text-success d-flex align-items-center gap-1.5 text-decoration-none" style="cursor: pointer;">
           <i class="bi bi-tree-fill text-success"></i>
           <span>My Farm</span>
-        </span>
+        </a>
       </div>
 
       <!-- Right side: Language Dropdown and User Avatar -->
@@ -26,12 +26,12 @@
         <div class="position-relative">
           <button 
             type="button"
-            class="btn btn-sm bg-white border border-light-subtle rounded-pill px-3 py-1 text-xs fw-semibold text-secondary d-flex align-items-center gap-1.5 hover-lift shadow-xs"
+            class="btn btn-sm bg-white border border-light-subtle rounded-pill px-2 px-sm-3 py-1 text-xs fw-semibold text-secondary d-flex align-items-center gap-1 gap-sm-1.5 hover-lift shadow-xs"
             style="height: 32px;"
             (click)="toggleLangDropdown(); $event.stopPropagation();"
           >
             <i class="bi bi-translate text-success"></i>
-            <span>{{ activeLangName() }}</span>
+            <span class="d-none d-sm-inline">{{ activeLangName() }}</span>
             <i class="bi bi-chevron-down text-xs transition ms-1" [style.transform]="langDropdownOpen() ? 'rotate(180deg)' : 'rotate(0)'"></i>
           </button>
           
@@ -64,7 +64,7 @@
             (click)="toggleUserDropdown(); $event.stopPropagation();"
           >
             <img 
-              src="avatar.png" 
+              [src]="avatarUrl()" 
               alt="User Avatar" 
               style="width: 100%; height: 100%; object-fit: cover;"
               (error)="fallbackAvatar($event)"
@@ -74,21 +74,21 @@
           @if (userDropdownOpen()) {
             <div 
               class="position-absolute end-0 mt-2 bg-white rounded-3 shadow-lg border border-light-subtle py-2 overflow-hidden animate-fade-in"
-              style="min-width: 180px; box-shadow: 0 10px 30px rgba(0,0,0,0.08) !important;"
+              style="min-width: 180px; box-shadow: 0 10px 30px rgba(0,0,0,0.08) !important; z-index: 1060;"
             >
               <!-- User Info header inside dropdown -->
               <div class="px-3 pb-2 mb-2 border-bottom">
-                <div class="fw-bold text-dark text-sm">Ram Jawade</div>
-                <div class="text-xs text-muted">Farmer / Admin</div>
+                <div class="fw-bold text-dark text-sm">{{ currentUser()?.fullName || 'Guest User' }}</div>
+                <div class="text-xs text-muted">{{ currentUser()?.userRole || 'Farmer' }}</div>
               </div>
               
-              <button 
-                type="button" 
-                class="dropdown-item w-100 text-start px-3 py-2 fw-semibold text-xs border-0 bg-transparent transition hover-bg-light d-flex align-items-center gap-2"
+              <a 
+                routerLink="/profile" 
+                class="dropdown-item w-100 text-start px-3 py-2 fw-semibold text-xs border-0 bg-transparent transition hover-bg-light d-flex align-items-center gap-2 text-decoration-none text-dark"
               >
                 <i class="bi bi-person-fill text-success"></i>
                 <span>My Profile</span>
-              </button>
+              </a>
               <button 
                 type="button" 
                 class="dropdown-item w-100 text-start px-3 py-2 fw-semibold text-xs border-0 bg-transparent transition hover-bg-light d-flex align-items-center gap-2"
@@ -100,6 +100,7 @@
               <button 
                 type="button" 
                 class="dropdown-item w-100 text-start px-3 py-2 fw-semibold text-xs border-0 bg-transparent text-danger transition hover-bg-light d-flex align-items-center gap-2"
+                (click)="logout()"
               >
                 <i class="bi bi-box-arrow-right"></i>
                 <span>Logout</span>
@@ -109,7 +110,7 @@
         </div>
 
       </div>
-
+      
     </div>
   </nav>
 </header>

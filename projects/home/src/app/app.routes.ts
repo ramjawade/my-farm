@@ -1,22 +1,38 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'map', pathMatch: 'full' },
+  {
+    path: '',
+    loadComponent: () => import('./features/home/home.component').then((m) => m.HomeComponent)
+  },
+  {
+    path: 'login',
+    loadComponent: () => import('./features/auth/login.component').then((m) => m.LoginComponent)
+  },
   {
     path: 'map',
-    loadComponent: () => import('./map/map').then((m) => m.MapComponent)
+    loadComponent: () => import('./map/map').then((m) => m.MapComponent),
+    canActivate: [authGuard]
   },
   {
     path: 'weather',
-    loadComponent: () => import('./features/weather/weather.component').then((m) => m.WeatherComponent)
+    loadComponent: () => import('./features/weather/weather.component').then((m) => m.WeatherComponent),
+    canActivate: [authGuard]
   },
   {
     path: 'register',
     loadComponent: () => import('./features/farmer-registration/farmer-registration.component').then((m) => m.FarmerRegistrationComponent)
   },
   {
+    path: 'profile',
+    loadComponent: () => import('./features/profile/profile.component').then((m) => m.ProfileComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'crops',
     loadComponent: () => import('./features/crop-timeline/crop-timeline.component').then((m) => m.CropTimelineComponent),
+    canActivate: [authGuard],
     children: [
       {
         path: '',
@@ -35,6 +51,7 @@ export const routes: Routes = [
   {
     path: 'activities',
     loadComponent: () => import('./features/farm-activity/farm-activity.component').then((m) => m.FarmActivityComponent),
+    canActivate: [authGuard],
     children: [
       {
         path: '',

@@ -19,6 +19,7 @@ import { MapSearchResult } from './models/map.models';
 import { HomeControl, LayerToggleControl } from './controls';
 import { MapSearchComponent } from './component/map-search/map-search.component';
 import { SavedFarmsComponent } from './component/saved-farms/saved-farms.component';
+import { AuthService } from '../core/auth/auth.service';
 
 type MapLayer = 'street' | 'satellite';
 
@@ -41,6 +42,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   private readonly mapContainer = viewChild.required<ElementRef<HTMLElement>>('mapContainer');
   readonly farmDraw = inject(FarmDrawService);
+  private readonly authService = inject(AuthService);
 
   private map?: L.Map;
   private farmDrawLayer?: FarmDrawLayer;
@@ -141,7 +143,10 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   goHome(): void {
     if (this.map) {
-      this.map.flyTo([20.5937, 78.9629], 5, { duration: 1.2 });
+      const user = this.authService.currentUser();
+      const center: L.LatLngExpression = user?.location ? [user.location.lat, user.location.lng] : [20.5937, 78.9629];
+      const zoom = user?.location ? 15 : 5;
+      this.map.flyTo(center, zoom, { duration: 1.2 });
     }
   }
 
@@ -172,9 +177,13 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
     this.activeBase = this.satelliteLayer;
 
+    const user = this.authService.currentUser();
+    const center: L.LatLngExpression = user?.location ? [user.location.lat, user.location.lng] : [20.5937, 78.9629];
+    const zoom = user?.location ? 15 : 5;
+
     this.map = L.map(container, {
-      center: [20.5937, 78.9629],
-      zoom: 5,
+      center,
+      zoom,
       layers: [this.satelliteLayer],
       attributionControl: true,
       zoomControl: false

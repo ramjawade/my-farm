@@ -35,3 +35,36 @@
 .cursor-pointer {
   cursor: pointer;
 }
+
+// 3. Tabular List View custom premium overrides
+.activity-table-row {
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background-color: rgba($primary, 0.04) !important;
+    
+    .bi-chevron-right {
+      transform: translateX(3px);
+      transition: transform 0.2s ease;
+    }
+  }
+}
+
+.activity-emoji-circle-sm {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba($primary, 0.08);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  border: 1px solid rgba($primary, 0.12);
+  flex-shrink: 0;
+}
+
+.status-draft {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1;
+}

@@ -1,7 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
 import { AddCropComponent } from './add-crop.component';
+import { CropTimelineService } from '../crop-timeline.service';
+import { AuthService } from '../../../core/auth/auth.service';
 
 describe('AddCropComponent', () => {
   let component: AddCropComponent;
@@ -11,7 +15,13 @@ describe('AddCropComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AddCropComponent, ReactiveFormsModule],
-      providers: [provideZonelessChangeDetection()]
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([]),
+        provideHttpClient(),
+        CropTimelineService,
+        AuthService
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(AddCropComponent);
@@ -21,11 +31,12 @@ describe('AddCropComponent', () => {
     component.cropNameOptions = ['Soybeans', 'Wheat'];
     component.stages = ['Land Preparation', 'Sowing'];
     component.cropForm = fb.group({
-      name: ['Soybeans', Validators.required],
+      name: ['', Validators.required],
+      cropType: ['Soybeans', Validators.required],
       fieldId: ['', Validators.required],
       area: [10, [Validators.required, Validators.min(1)]],
       areaUnit: ['hectares'],
-      sowingDate: ['2026-05-31'],
+      sowingDate: [''],
       currentStage: ['Sowing']
     });
 
@@ -39,12 +50,12 @@ describe('AddCropComponent', () => {
   it('should validate form and emit submitCrop on submit', () => {
     spyOn(component.submitCrop, 'emit');
     
-    // Invalid initially (fieldId empty)
+    // Invalid initially (name and fieldId empty)
     component.onSubmit();
     expect(component.submitCrop.emit).not.toHaveBeenCalled();
 
     // Fill form to make it valid
-    component.cropForm.patchValue({ fieldId: 'Field C' });
+    component.cropForm.patchValue({ name: 'My Soy Crop', fieldId: 'Field C' });
     fixture.detectChanges();
 
     component.onSubmit();

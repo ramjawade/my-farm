@@ -1,6 +1,8 @@
-import { Component, computed, signal, HostListener } from '@angular/core';
+import { Component, computed, signal, HostListener, inject } from '@angular/core';
 import { SunPathComponent } from './sun-path/sun-path.component';
 import { HistoryTrendComponent } from './history-trend/history-trend.component';
+import { AuthService } from '../../core/auth/auth.service';
+import { ProfileEditDialogComponent } from '../profile/components/profile-edit-dialog.component';
 
 interface WeatherMetric {
   title: string;
@@ -27,11 +29,25 @@ interface SoilMetric {
 
 @Component({
   selector: 'app-weather',
-  imports: [SunPathComponent, HistoryTrendComponent],
+  imports: [SunPathComponent, HistoryTrendComponent, ProfileEditDialogComponent],
   templateUrl: './weather.component.html',
   styleUrl: './weather.component.scss',
 })
 export class WeatherComponent {
+  private readonly authService = inject(AuthService);
+
+  // Progressive location profiling signals
+  readonly showLocationPrompt = computed(() => {
+    const user = this.authService.currentUser();
+    return user ? (!user.village || !user.state) : false;
+  });
+
+  readonly showEditDialog = signal(false);
+
+  openLandDialog(): void {
+    this.showEditDialog.set(true);
+  }
+
   // Dropdown open state signal
   readonly dropdownOpen = signal(false);
 
@@ -49,7 +65,17 @@ export class WeatherComponent {
     this.dropdownOpen.set(false);
   }
   // Location information
-  readonly locationName = signal('Nashik, Maharashtra');
+  readonly locationName = computed(() => {
+    const user = this.authService.currentUser();
+    if (user) {
+      if (user.village && user.state) {
+        return `${user.village}, ${user.state}`;
+      } else if (user.farmName) {
+        return user.farmName;
+      }
+    }
+    return 'Nashik, Maharashtra';
+  });
   readonly locationSub = signal('Live Weather Monitoring');
 
   // Today's weather signals

@@ -56,7 +56,7 @@
             <div class="mf-meta-label mb-1">Expense Items</div>
             <h3 class="m-0 font-sans fw-bold text-soil">{{ expenses().length }}</h3>
           </div>
-          <div class="col-12 col-md-4 summary-col">
+          <div class="col-12 col-md-4 summary-col d-flex flex-column align-items-center justify-content-center">
             <div class="mf-meta-label mb-1">Status</div>
             <h5 class="m-0 font-sans fw-bold" 
                 [class.text-success]="act.status === 'Completed'" 
@@ -64,6 +64,33 @@
                 [class.text-secondary]="act.status === 'Draft'">
               {{ act.status }}
             </h5>
+            
+            <div class="status-transitions d-flex gap-2 justify-content-center">
+              @if (act.status === 'Draft') {
+                <button type="button" 
+                        class="btn btn-outline-warning"
+                        (click)="updateStatus('In Progress')">
+                  <i class="bi bi-play-fill"></i> Start Progress
+                </button>
+              } @else if (act.status === 'In Progress') {
+                <button type="button" 
+                        class="btn btn-secondary"
+                        (click)="updateStatus('Draft')">
+                  <i class="bi bi-arrow-left-short"></i> Revert to Draft
+                </button>
+                <button type="button" 
+                        class="btn btn-success"
+                        (click)="updateStatus('Completed')">
+                  <i class="bi bi-check-lg"></i> Complete
+                </button>
+              } @else if (act.status === 'Completed') {
+                <button type="button" 
+                        class="btn btn-outline-warning"
+                        (click)="updateStatus('In Progress')">
+                  <i class="bi bi-arrow-counterclockwise"></i> Reopen
+                </button>
+              }
+            </div>
           </div>
         </div>
       </div>
@@ -165,77 +192,81 @@
 <!-- EXPENSE ENTRY DIALOG OVERLAY (User Request) -->
 @if (showExpenseModal()) {
   <div class="expense-modal-backdrop position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center px-3" style="z-index: 2000;">
-    <div class="expense-modal-card card card-glass p-4 w-100 text-start" style="max-width: 620px; max-height: 90vh; overflow-y: auto;">
+    <div class="expense-modal-card card card-glass p-4 w-100 text-start" style="max-width: 620px; max-height: 90vh;">
       <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
         <h3 class="mf-card-section-title m-0"><i class="bi bi-plus-circle-fill text-success me-2"></i>Add Expense Entry</h3>
         <button type="button" class="btn-close" (click)="closeExpenseModal()"></button>
       </div>
 
-      <form [formGroup]="expenseForm" (ngSubmit)="addExpense()" class="d-flex flex-column gap-3">
+      <form [formGroup]="expenseForm" (ngSubmit)="addExpense()" class="d-flex flex-column flex-grow-1 min-height-0 overflow-hidden">
         
-        <div class="row g-2">
-          <!-- Category -->
-          <div class="col-12 col-md-6">
-            <label class="form-label required-label">Category</label>
-            <select class="form-select form-select-sm" formControlName="category">
-              @for (cat of categoriesList; track cat) {
-                <option [value]="cat">{{ cat }}</option>
-              }
-            </select>
-          </div>
+        <div class="expense-modal-body">
+          <div class="d-flex flex-column gap-3">
+            <div class="row g-2">
+              <!-- Category -->
+              <div class="col-12 col-md-6">
+                <label class="form-label required-label">Category</label>
+                <select class="form-select form-select-sm" formControlName="category">
+                  @for (cat of categoriesList; track cat) {
+                    <option [value]="cat">{{ cat }}</option>
+                  }
+                </select>
+              </div>
 
-          <!-- Item Name -->
-          <div class="col-12 col-md-6">
-            <label class="form-label">Item / Service Name</label>
-            <input type="text" class="form-control form-control-sm" formControlName="itemId" placeholder="e.g. Urea bag, tractor lease">
+              <!-- Item Name -->
+              <div class="col-12 col-md-6">
+                <label class="form-label">Item / Service Name</label>
+                <input type="text" class="form-control form-control-sm" formControlName="itemId" placeholder="e.g. Urea bag, tractor lease">
+              </div>
+            </div>
+
+            <div class="row g-2">
+              <!-- Resource / Name -->
+              <div class="col-12 col-md-6">
+                <label class="form-label">Vendor / Laborer (Optional)</label>
+                <input type="text" class="form-control form-control-sm" formControlName="resourceId" placeholder="e.g. John Doe, Cooperative">
+              </div>
+
+              <!-- Remarks -->
+              <div class="col-12 col-md-6">
+                <label class="form-label">Remarks / Notes</label>
+                <input type="text" class="form-control form-control-sm" formControlName="remarks" placeholder="e.g. Batch #4, cash paid">
+              </div>
+            </div>
+
+            <div class="row g-2 align-items-end">
+              <!-- Quantity -->
+              <div class="col-4 col-md-2">
+                <label class="form-label">Qty</label>
+                <input type="number" class="form-control form-control-sm" formControlName="quantity" placeholder="1">
+              </div>
+
+              <!-- Unit -->
+              <div class="col-4 col-md-3">
+                <label class="form-label">Unit</label>
+                <input type="text" class="form-control form-control-sm" formControlName="unit" placeholder="bags, hours">
+              </div>
+
+              <!-- Rate -->
+              <div class="col-4 col-md-3">
+                <label class="form-label">Rate (₹)</label>
+                <input type="number" class="form-control form-control-sm" formControlName="rate" placeholder="500">
+              </div>
+
+              <!-- Total Amount (Auto Calculated) -->
+              <div class="col-12 col-md-4">
+                <label class="form-label required-label">Amount (₹)</label>
+                <input type="number" class="form-control form-control-sm font-monospace fw-bold" formControlName="amount" 
+                       placeholder="Total amount" [class.is-invalid]="expenseForm.get('amount')?.invalid && expenseForm.get('amount')?.touched">
+                @if (expenseForm.get('amount')?.invalid && expenseForm.get('amount')?.touched) {
+                  <div class="invalid-feedback">Valid cost is required.</div>
+                }
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="row g-2">
-          <!-- Resource / Name -->
-          <div class="col-12 col-md-6">
-            <label class="form-label">Vendor / Laborer (Optional)</label>
-            <input type="text" class="form-control form-control-sm" formControlName="resourceId" placeholder="e.g. John Doe, Cooperative">
-          </div>
-
-          <!-- Remarks -->
-          <div class="col-12 col-md-6">
-            <label class="form-label">Remarks / Notes</label>
-            <input type="text" class="form-control form-control-sm" formControlName="remarks" placeholder="e.g. Batch #4, cash paid">
-          </div>
-        </div>
-
-        <div class="row g-2 align-items-end">
-          <!-- Quantity -->
-          <div class="col-4 col-md-2">
-            <label class="form-label">Qty</label>
-            <input type="number" class="form-control form-control-sm" formControlName="quantity" placeholder="1">
-          </div>
-
-          <!-- Unit -->
-          <div class="col-4 col-md-3">
-            <label class="form-label">Unit</label>
-            <input type="text" class="form-control form-control-sm" formControlName="unit" placeholder="bags, hours">
-          </div>
-
-          <!-- Rate -->
-          <div class="col-4 col-md-3">
-            <label class="form-label">Rate (₹)</label>
-            <input type="number" class="form-control form-control-sm" formControlName="rate" placeholder="500">
-          </div>
-
-          <!-- Total Amount (Auto Calculated) -->
-          <div class="col-12 col-md-4">
-            <label class="form-label required-label">Amount (₹)</label>
-            <input type="number" class="form-control form-control-sm font-monospace fw-bold" formControlName="amount" 
-                   placeholder="Total amount" [class.is-invalid]="expenseForm.get('amount')?.invalid && expenseForm.get('amount')?.touched">
-            @if (expenseForm.get('amount')?.invalid && expenseForm.get('amount')?.touched) {
-              <div class="invalid-feedback">Valid cost is required.</div>
-            }
-          </div>
-        </div>
-
-        <div class="d-flex justify-content-end gap-2 mt-2 pt-2 border-top">
+        <div class="d-flex justify-content-end gap-2 mt-4 pt-2 border-top">
           <button type="button" class="btn btn-secondary btn-sm" (click)="closeExpenseModal()">
             Cancel
           </button>

@@ -32,7 +32,10 @@ export class CropTimelineComponent {
   readonly showActivityModal = signal<boolean>(false);
   readonly editingActivity = signal<ActivityEntity | null>(null);
   readonly showDeleteConfirm = signal(false);
+  readonly showDeleteCropConfirm = signal(false);
   readonly selectedActivityId = signal<string | null>(null);
+  readonly selectedCropIdToDelete = signal<string | null>(null);
+  readonly currentParentActivityId = signal<string | null>(null);
 
   // File Upload previews signal
   readonly uploadedImages = signal<string[]>([]);
@@ -87,11 +90,11 @@ export class CropTimelineComponent {
     
     // Sort completed/cancelled/past status chronologically descending (latest first)
     // Sort planned/scheduled upcoming tasks chronologically ascending (earliest first)
-    const all = this.timelineService.activities().filter(a => a.cropId === activeCrop.id);
+    const all = this.timelineService.activities().filter(a => a.cropId === activeCrop.id && !a.parentActivityId);
     
     const completedHistory = all
       .filter(a => a.status === 'Completed' || a.status === 'Cancelled')
-      .sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
+      .sort((a, b) => (b.date || 0) - (a.date || 0));
 
     return completedHistory;
   });
@@ -102,18 +105,23 @@ export class CropTimelineComponent {
     if (!activeCrop) return [];
     
     return this.timelineService.activities()
-      .filter(a => a.cropId === activeCrop.id && (a.status === 'Planned' || a.status === 'Scheduled'))
-      .sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+      .filter(a => a.cropId === activeCrop.id && (a.status === 'Planned' || a.status === 'Scheduled') && !a.parentActivityId)
+      .sort((a, b) => {
+        const timeA = a.date !== undefined ? a.date : Infinity;
+        const timeB = b.date !== undefined ? b.date : Infinity;
+        return timeA - timeB;
+      });
   });
 
   constructor() {
     // Form setups
     this.cropForm = this.fb.group({
-      name: ['Soybeans', Validators.required],
+      name: ['', [Validators.required, Validators.minLength(2)]],
+      cropType: ['Soybeans', Validators.required],
       fieldId: ['', [Validators.required, Validators.minLength(2)]],
       area: ['', [Validators.required, Validators.min(0.01)]],
       areaUnit: ['hectares', Validators.required],
-      sowingDate: [new Date().toISOString().substring(0, 10), Validators.required],
+      sowingDate: [''],
       currentStage: ['Land Preparation', Validators.required]
     });
 
@@ -166,23 +174,24 @@ export class CropTimelineComponent {
     this.currentView.set('timeline');
   }
 
-  getDaysAfterSowing(sowingDateStr: string): number {
-    const sowing = Date.parse(sowingDateStr);
-    const diff = Date.now() - sowing;
+  getDaysAfterSowing(sowingDate: number | undefined): number {
+    if (!sowingDate) return 0;
+    const diff = Date.now() - sowingDate;
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     return days < 0 ? 0 : days;
   }
 
   getDaysSinceLastActivity(cropId: string): string {
     const cropActs = this.timelineService.activities()
-      .filter(a => a.cropId === cropId && a.status === 'Completed')
-      .sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
+      .filter(a => a.cropId === cropId && a.status === 'Completed' && !a.parentActivityId)
+      .sort((a, b) => (b.date || 0) - (a.date || 0));
     
     if (cropActs.length === 0) {
       return 'No activity logged';
     }
     
-    const lastDate = Date.parse(cropActs[0].date);
+    const lastDate = cropActs[0].date;
+    if (!lastDate) return 'No activity logged';
     const diff = Date.now() - lastDate;
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     
@@ -210,6 +219,42 @@ export class CropTimelineComponent {
   }
 
   // --- Growth Stage Operations ---
+  findOrCreateMainActivityForStage(stage: CropStage): ActivityEntity {
+    const crop = this.selectedCrop()!;
+    const activities = this.timelineService.activities().filter(a => a.cropId === crop.id);
+
+    // Look for an activity that represents this stage
+    let mainAct = activities.find(a => 
+      (a.type === 'Field Inspection' && a.notes.includes(`advanced to: ${stage}`)) ||
+      (stage === 'Sowing' && a.type === 'Sowing') ||
+      (stage === 'Harvest' && a.type === 'Harvest')
+    );
+
+    if (mainAct) {
+      if (mainAct.status !== 'Completed') {
+        this.timelineService.updateActivity(mainAct.id, {
+          status: 'Completed',
+          date: Date.now()
+        });
+        // Retrieve the updated mainActivity record
+        mainAct = this.timelineService.activities().find(a => a.id === mainAct!.id)!;
+      }
+    } else {
+      const type: ActivityType = (stage === 'Sowing') ? 'Sowing' : (stage === 'Harvest' ? 'Harvest' : 'Field Inspection');
+      mainAct = this.timelineService.addActivity({
+        cropId: crop.id,
+        type,
+        status: 'Planned',
+        cost: 0,
+        notes: `Growth stage advanced to: ${stage}.`,
+        attachments: [],
+        metadata: {}
+      });
+    }
+
+    return mainAct;
+  }
+
   updateStage(stage: CropStage): void {
     const crop = this.selectedCrop();
     if (!crop) return;
@@ -222,17 +267,10 @@ export class CropTimelineComponent {
       this.selectedCrop.set(fresh);
     }
     
-    // Auto-record a "Field Inspection" activity to mark the growth stage transition
-    this.timelineService.addActivity({
-      cropId: crop.id,
-      type: 'Field Inspection',
-      date: new Date().toISOString(),
-      status: 'Completed',
-      cost: 0,
-      notes: `Growth stage advanced to: ${stage}.`,
-      attachments: [],
-      metadata: {}
-    });
+    const mainAct = this.findOrCreateMainActivityForStage(stage);
+    
+    // Open modal to log subactivity under this main activity
+    this.openAddActivityModal(mainAct.id);
   }
 
   // --- Add Crop Operations ---
@@ -242,34 +280,22 @@ export class CropTimelineComponent {
     const values = this.cropForm.value;
     const newCrop = this.timelineService.addCrop({
       name: values.name,
+      cropType: values.cropType,
       fieldId: values.fieldId,
       area: Number(values.area),
       areaUnit: values.areaUnit,
-      sowingDate: new Date(values.sowingDate).toISOString(),
+      sowingDate: values.sowingDate ? new Date(values.sowingDate).getTime() : undefined,
       currentStage: values.currentStage as CropStage,
       status: 'Active'
     });
 
-    // Record automatic Sowing activity if currentStage is Sowing or later
-    if (this.stages.indexOf(values.currentStage) >= 1) {
-      this.timelineService.addActivity({
-        cropId: newCrop.id,
-        type: 'Sowing',
-        date: new Date(values.sowingDate).toISOString(),
-        status: 'Completed',
-        cost: 0,
-        notes: `Initial sowing recorded in system database.`,
-        attachments: [],
-        metadata: {}
-      });
-    }
-
     this.cropForm.reset({
-      name: 'Soybeans',
+      name: '',
+      cropType: 'Soybeans',
       fieldId: '',
       area: '',
       areaUnit: 'hectares',
-      sowingDate: new Date().toISOString().substring(0, 10),
+      sowingDate: '',
       currentStage: 'Land Preparation'
     });
 
@@ -277,7 +303,8 @@ export class CropTimelineComponent {
   }
 
   // --- Activity Actions ---
-  openAddActivityModal(): void {
+  openAddActivityModal(parentActivityId?: string): void {
+    this.currentParentActivityId.set(parentActivityId || null);
     this.editingActivity.set(null);
     this.uploadedImages.set([]);
     this.activityForm.reset({
@@ -305,12 +332,13 @@ export class CropTimelineComponent {
   }
 
   openEditActivityModal(act: ActivityEntity): void {
+    this.currentParentActivityId.set(act.parentActivityId || null);
     this.editingActivity.set(act);
     this.uploadedImages.set(act.attachments || []);
     
     this.activityForm.patchValue({
       type: act.type,
-      date: act.date.substring(0, 10),
+      date: act.date ? new Date(act.date).toISOString().substring(0, 10) : '',
       status: act.status,
       cost: act.cost,
       notes: act.notes,
@@ -354,6 +382,22 @@ export class CropTimelineComponent {
     }
   }
 
+  onDeleteCrop(id: string): void {
+    this.selectedCropIdToDelete.set(id);
+    this.showDeleteCropConfirm.set(true);
+  }
+
+  confirmDeleteCrop(): void {
+    const id = this.selectedCropIdToDelete();
+    if (id) {
+      this.timelineService.deleteCrop(id);
+      this.selectedCropIdToDelete.set(null);
+      this.showDeleteCropConfirm.set(false);
+      this.selectedCrop.set(null);
+      this.router.navigate(['/crops']);
+    }
+  }
+
   onSubmitActivity(): void {
     if (this.activityForm.invalid) return;
 
@@ -385,12 +429,13 @@ export class CropTimelineComponent {
     const activityPayload = {
       cropId: crop.id,
       type: values.type as ActivityType,
-      date: new Date(values.date).toISOString(),
+      date: values.date ? new Date(values.date).getTime() : undefined,
       status: values.status as ActivityStatus,
       cost: Number(values.cost),
       notes: values.notes,
       attachments: this.uploadedImages(),
-      metadata: metadata
+      metadata: metadata,
+      parentActivityId: this.currentParentActivityId() || undefined
     };
 
     const isEdit = this.editingActivity();
@@ -457,7 +502,7 @@ export class CropTimelineComponent {
   markActivityCompleted(id: string): void {
     this.timelineService.updateActivity(id, {
       status: 'Completed',
-      date: new Date().toISOString()
+      date: Date.now()
     });
   }
 

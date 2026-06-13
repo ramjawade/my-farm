@@ -2,9 +2,19 @@
   <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
     <div>
       <h2 class="mf-page-title">{{ selectedCrop?.name }} Timeline</h2>
-      <p class="text-muted small mt-1.5 mb-0">Sown on {{ selectedCrop?.sowingDate | date:'mediumDate' }} · <strong>{{ getDaysAfterSowing(selectedCrop?.sowingDate || '') }} Days After Sowing</strong></p>
+      <p class="text-muted small mt-1.5 mb-0">
+        @if (selectedCrop?.sowingDate) {
+          Sown on {{ selectedCrop?.sowingDate | date:'mediumDate' }} · <strong>{{ getDaysAfterSowing(selectedCrop?.sowingDate) }} Days After Sowing</strong>
+        } @else {
+          Sowing date not set
+        }
+      </p>
     </div>
     <div class="d-flex gap-2">
+      <!-- Delete Crop Button -->
+      <button class="btn btn-outline-danger d-inline-flex align-items-center px-3 py-2" (click)="onDeleteCropClicked()">
+        <i class="bi bi-trash me-1.5"></i>Delete Crop
+      </button>
       <!-- Log Activity (Create) Button on Desktop/Laptop only -->
       <button class="btn btn-success d-none d-md-inline-flex align-items-center px-3 py-2" (click)="onAddActivityClicked()">
         <i class="bi bi-plus-lg me-1.5"></i>Log Activity
@@ -73,182 +83,14 @@
   </div>
 </div>
 
-<!-- UPCOMING TASKS SECTION -->
-<div class="card shadow-sm border rounded bg-white p-4 mb-4 text-start">
-  <h5 class="text-success font-semibold mb-3"><i class="bi bi-calendar-check me-2"></i>Upcoming Operations</h5>
-  <div class="row g-3">
-    @for (up of upcomingActivities; track up.id) {
-      <div class="col-12 col-md-6 col-lg-4">
-        <div class="upcoming-item-card p-3 border rounded bg-warning-light text-warning-dark shadow-sm d-flex flex-column justify-content-between h-100">
-          <div>
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <strong class="font-semibold text-uppercase d-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
-                <i class="bi" [class]="getActivityIcon(up.type)"></i>{{ up.type }}
-              </strong>
-              <span class="badge bg-warning text-dark font-monospace" style="font-size: 0.72rem;">{{ up.date | date:'mediumDate' }}</span>
-            </div>
-            <p class="small text-dark mb-0 mt-1.5">{{ up.notes || 'No description provided.' }}</p>
-            
-            <!-- Category Specific Metadata in upcoming card -->
-            @if (up.type === 'Irrigation' && up.metadata.irrigationMethod) {
-              <div class="upcoming-meta mt-2 small text-muted border-top pt-2">
-                Method: <strong>{{ up.metadata.irrigationMethod }}</strong> · Duration: <strong>{{ up.metadata.duration }} mins</strong>
-              </div>
-            } @else if (up.type === 'Fertilizer Application' && up.metadata.fertilizerName) {
-              <div class="upcoming-meta mt-2 small text-muted border-top pt-2">
-                Fertilizer: <strong>{{ up.metadata.fertilizerName }}</strong> · Qty: <strong>{{ up.metadata.quantity }} kg</strong>
-              </div>
-            } @else if (up.type === 'Spray Application' && up.metadata.chemicalName) {
-              <div class="upcoming-meta mt-2 small text-muted border-top pt-2">
-                Chemical: <strong>{{ up.metadata.chemicalName }}</strong> · Target: <strong>{{ up.metadata.targetPest }}</strong>
-              </div>
-            }
-          </div>
+<app-activities-summary
+  [cropId]="selectedCrop?.id"
+  [isTimeline]="true"
+  (editActivity)="onEditActivityClicked($event)"
+  (markActivityCompleted)="onMarkActivityCompletedClicked($event)"
+></app-activities-summary>
 
-          <div class="d-flex justify-content-end gap-1.5 mt-3 border-top pt-2">
-            <button type="button" class="btn btn-sm btn-outline-success btn-xs" (click)="onEditActivityClicked(up)">
-              <i class="bi bi-pencil-square"></i>Edit
-            </button>
-            <button type="button" class="btn btn-sm btn-success btn-xs" (click)="onMarkActivityCompletedClicked(up.id)">
-              <i class="bi bi-check-circle-fill me-1"></i>Mark Done
-            </button>
-          </div>
-        </div>
-      </div>
-    }
-    @if (upcomingActivities.length === 0) {
-      <div class="col-12 text-center py-4 bg-light rounded text-muted small border border-dashed">
-        <i class="bi bi-info-circle me-1"></i>All scheduled operations are completed! Use the FAB button in the bottom-right corner to add new planned activities.
-      </div>
-    }
-  </div>
-</div>
 
-<!-- MAIN CHRONOLOGICAL TIMELINE TRACK -->
-<div class="card shadow-sm border rounded bg-white p-4 text-start">
-  <h5 class="text-success font-semibold mb-4"><i class="bi bi-clock-history me-2"></i>Operation Diary History</h5>
-  <div class="timeline">
-    @for (act of cropActivities; track act.id) {
-      <div class="timeline-item">
-        
-        <!-- Timeline Icon -->
-        <div class="timeline-icon">
-          {{ getActivityEmoji(act.type) }}
-        </div>
-
-        <!-- Content Card Box -->
-        <div class="card event-card shadow-sm bg-white p-3 text-start">
-          <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 pb-2 border-bottom">
-            <div>
-              <h6 class="font-semibold text-dark m-0" style="font-size: 0.95rem;">{{ act.type }}</h6>
-              <div class="event-date font-monospace mt-0.5">{{ act.date | date:'dd MMM yyyy' }}</div>
-            </div>
-            <div class="d-flex align-items-center gap-1.5">
-              @if (act.cost > 0) {
-                <span class="badge bg-light text-dark font-monospace px-2.5 py-1 border rounded-pill">₹{{ act.cost }}</span>
-              }
-              <button type="button" class="btn btn-link text-muted btn-xs p-1" (click)="onEditActivityClicked(act)" title="Edit">
-                <i class="bi bi-pencil-square text-success"></i>
-              </button>
-              <button type="button" class="btn btn-link text-muted btn-xs p-1" (click)="onDeleteActivityClicked(act.id)" title="Delete">
-                <i class="bi bi-trash-fill text-danger"></i>
-              </button>
-            </div>
-          </div>
-
-          <!-- Notes Description -->
-          <p class="small text-muted mt-2 mb-0">{{ act.notes || 'No description recorded.' }}</p>
-
-          <!-- Dynamic Metadata details based on type -->
-          @if (act.type === 'Irrigation' && act.metadata.irrigationMethod) {
-            <div class="row g-2 mt-2 pt-2 border-top small bg-light rounded p-2">
-              <div class="col-4">
-                <span class="text-muted d-block" style="font-size: 0.72rem;">Method</span>
-                <strong class="text-dark">{{ act.metadata.irrigationMethod }}</strong>
-              </div>
-              <div class="col-4">
-                <span class="text-muted d-block" style="font-size: 0.72rem;">Duration</span>
-                <strong class="text-dark">{{ act.metadata.duration }} mins</strong>
-              </div>
-              <div class="col-4">
-                <span class="text-muted d-block" style="font-size: 0.72rem;">Water Qty</span>
-                <strong class="text-dark">{{ act.metadata.waterQuantity }} L</strong>
-              </div>
-            </div>
-          } @else if (act.type === 'Fertilizer Application' && act.metadata.fertilizerName) {
-            <div class="row g-2 mt-2 pt-2 border-top small bg-light rounded p-2">
-              <div class="col-4">
-                <span class="text-muted d-block" style="font-size: 0.72rem;">Fertilizer</span>
-                <strong class="text-dark">{{ act.metadata.fertilizerName }}</strong>
-              </div>
-              <div class="col-4">
-                <span class="text-muted d-block" style="font-size: 0.72rem;">Quantity</span>
-                <strong class="text-dark">{{ act.metadata.quantity }} kg</strong>
-              </div>
-              <div class="col-4">
-                <span class="text-muted d-block" style="font-size: 0.72rem;">Method</span>
-                <strong class="text-dark">{{ act.metadata.applicationMethod }}</strong>
-              </div>
-            </div>
-          } @else if (act.type === 'Spray Application' && act.metadata.chemicalName) {
-            <div class="row g-2 mt-2 pt-2 border-top small bg-light rounded p-2">
-              <div class="col-3">
-                <span class="text-muted d-block" style="font-size: 0.72rem;">Chemical</span>
-                <strong class="text-dark">{{ act.metadata.chemicalName }}</strong>
-              </div>
-              <div class="col-3">
-                <span class="text-muted d-block" style="font-size: 0.72rem;">Dosage</span>
-                <strong class="text-dark">{{ act.metadata.dosage }}</strong>
-              </div>
-              <div class="col-3">
-                <span class="text-muted d-block" style="font-size: 0.72rem;">Water Qty</span>
-                <strong class="text-dark">{{ act.metadata.waterQuantity }} L</strong>
-              </div>
-              <div class="col-3">
-                <span class="text-muted d-block" style="font-size: 0.72rem;">Target Pest</span>
-                <strong class="text-dark">{{ act.metadata.targetPest }}</strong>
-              </div>
-            </div>
-          } @else if (act.type === 'Harvest' && act.metadata.yieldQuantity) {
-            <div class="row g-2 mt-2 pt-2 border-top small bg-light rounded p-2">
-              <div class="col-4">
-                <span class="text-muted d-block" style="font-size: 0.72rem;">Yield</span>
-                <strong class="text-dark">{{ act.metadata.yieldQuantity }} {{ act.metadata.unit }}</strong>
-              </div>
-              <div class="col-4">
-                <span class="text-muted d-block" style="font-size: 0.72rem;">Grade</span>
-                <strong class="text-dark">{{ act.metadata.grade }}</strong>
-              </div>
-              <div class="col-4">
-                <span class="text-muted d-block" style="font-size: 0.72rem;">Selling Price</span>
-                <strong class="text-dark">₹{{ act.metadata.sellingPrice }}/{{ act.metadata.unit }}</strong>
-              </div>
-            </div>
-          }
-
-          <!-- Image Attachments List -->
-          @if (act.attachments && act.attachments.length > 0) {
-            <div class="attachments-row d-flex flex-wrap gap-2 mt-3 pt-2 border-top">
-              @for (img of act.attachments; track img) {
-                <div class="attachment-preview position-relative border rounded overflow-hidden shadow-sm" style="width: 70px; height: 70px;">
-                  <img [src]="img" class="w-100 h-100 object-fit-cover" alt="attachment thumbnail" />
-                </div>
-              }
-            </div>
-          }
-
-        </div>
-      </div>
-    }
-  </div>
-  @if (cropActivities.length === 0) {
-    <div class="text-center py-5 text-muted small border border-dashed rounded bg-light">
-      <i class="bi bi-book-half fs-2 d-block mb-2"></i>
-      <h6 class="font-semibold text-dark m-0">Timeline diary is empty</h6>
-      <p class="text-muted mb-0">Record completed events like weeding, fertilization, or chemical sprays using the FAB button below.</p>
-    </div>
-  }
-</div>
 
 <!-- Back to Dashboard FAB - MOBILE ONLY -->
 <button type="button" class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center position-fixed" 
@@ -265,17 +107,31 @@
 </button>
 
 <!-- ======================================================== -->
-<!-- 4. ADD/EDIT ACTIVITY OVERLAY DIALOG MODAL (SUBCOMPONENT) -->
+<!-- 4. ADD/EDIT ACTIVITY OVERLAY DIALOG MODAL (REUSABLE)     -->
 <!-- ======================================================== -->
-<app-log-activity
-  [activityForm]="activityForm"
-  [showActivityModal]="showActivityModal"
-  [editingActivity]="editingActivity"
-  [uploadedImages]="uploadedImages"
-  (submitActivity)="onSubmitActivity()"
-  (closeActivityModal)="onCloseActivityModal()"
-  (imageSelected)="onImageSelected($event)"
-  (removeImage)="onRemoveImage($event)"
-/>
+@if (showActivityModal) {
+  <div class="activity-modal-backdrop position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center px-3" style="z-index: 2000;">
+    <div class="activity-modal-card card shadow-lg border rounded bg-white p-4 w-100 text-start" style="max-width: 620px; max-height: 90vh; overflow-y: auto;">
+      
+      <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+        <h5 class="text-success font-semibold m-0">
+          <i class="bi bi-journal-plus me-2"></i>
+          Record Farm Activity
+        </h5>
+        <button type="button" class="btn-close" (click)="onCloseActivityModal()"></button>
+      </div>
+
+      <app-create-activity
+        [cropId]="selectedCrop?.id"
+        [parentActivityId]="parentActivityIdForModal() || undefined"
+        [activityId]="editingActivityIdForModal() || undefined"
+        [isModal]="true"
+        (activitySaved)="onCloseActivityModal()"
+        (cancelled)="onCloseActivityModal()"
+      ></app-create-activity>
+
+    </div>
+  </div>
+}
 
 

@@ -1,17 +1,21 @@
-<div class="app-layout">
-  <app-toolbar
-    [menuExpanded]="sidebarOpen()"
-    (menuToggle)="toggleSidebar()"
-  />
-  <div class="app-layout__body">
-    <app-sidebar [open]="sidebarOpen()" (close)="closeSidebar()" />
-    @if (sidebarOpen()) {
-      <div
-        class="app-layout__backdrop"
-        role="presentation"
-        (click)="closeSidebar()"
-      ></div>
-    }
-    <app-main />
+@if (authService.isLoggedIn()) {
+  <div class="app-layout">
+    <app-toolbar
+      [menuExpanded]="sidebarOpen()"
+      (menuToggle)="toggleSidebar()"
+    />
+    <div class="app-layout__body">
+      <app-sidebar [open]="sidebarOpen()" (close)="closeSidebar()" />
+      @if (sidebarOpen()) {
+        <div
+          class="app-layout__backdrop"
+          role="presentation"
+          (click)="closeSidebar()"
+        ></div>
+      }
+      <app-main />
+    </div>
   </div>
-</div>
+} @else {
+  <router-outlet />
+}

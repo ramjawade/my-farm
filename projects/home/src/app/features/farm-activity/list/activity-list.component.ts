@@ -1,5 +1,5 @@
-import { Component, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, inject, signal, computed, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { DatePipe, CommonModule } from '@angular/common';
 import { FarmActivityService } from '../farm-activity.service';
 import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
@@ -15,13 +15,27 @@ import { ConfirmDialogComponent } from 'shared';
   styleUrl: './activity-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ActivityListComponent {
+export class ActivityListComponent implements OnInit {
   readonly activityService = inject(FarmActivityService);
   private readonly cropService = inject(CropTimelineService);
   private readonly farmDrawService = inject(FarmDrawService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+
+  ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      const status = params['status'];
+      if (status) {
+        this.statusFilter.set(status);
+      } else {
+        this.statusFilter.set('All');
+      }
+    });
+  }
 
   readonly showDeleteConfirm = signal(false);
   readonly selectedActivityId = signal<string | null>(null);
+  readonly viewMode = signal<'grid' | 'list'>('grid');
 
   // Active filters using Signals
   readonly seasonFilter = signal<string>('All');
@@ -30,7 +44,14 @@ export class ActivityListComponent {
   readonly typeFilter = signal<string>('All');
   readonly statusFilter = signal<string>('All');
   readonly sortBy = signal<string>('latest');
-
+  readonly hasActiveFilters = computed(() => {
+    return this.seasonFilter() !== 'All' ||
+           this.cropFilter() !== 'All' ||
+           this.fieldFilter() !== 'All' ||
+           this.typeFilter() !== 'All' ||
+           this.statusFilter() !== 'All' ||
+           this.sortBy() !== 'latest';
+  });
   // Fetch dropdown lists dynamically
   readonly cropsList = computed(() => this.cropService.crops());
   
@@ -84,9 +105,9 @@ export class ActivityListComponent {
     // Apply Sorting
     const sort = this.sortBy();
     if (sort === 'latest') {
-      list = [...list].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      list = [...list].sort((a, b) => (b.date || 0) - (a.date || 0));
     } else if (sort === 'oldest') {
-      list = [...list].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      list = [...list].sort((a, b) => (a.date || 0) - (b.date || 0));
     } else if (sort === 'cost') {
       list = [...list].sort((a, b) => this.getActivityTotalCost(b.id) - this.getActivityTotalCost(a.id));
     }
@@ -116,15 +137,34 @@ export class ActivityListComponent {
   setField(val: string): void { this.fieldFilter.set(val); }
   setType(val: string): void { this.typeFilter.set(val); }
   setStatus(val: string): void { this.statusFilter.set(val); }
-  setSort(val: string): void { this.sortBy.set(val); }
-
-  resetFilters(): void {
+  setSort(val: string): void { this.sortBy.set(val); }  clearFilters(): void {
     this.seasonFilter.set('All');
     this.cropFilter.set('All');
     this.fieldFilter.set('All');
     this.typeFilter.set('All');
     this.statusFilter.set('All');
     this.sortBy.set('latest');
+    
+    // Clear URL query parameters
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {}
+    });
+  }
+  getActivityEmoji(type: string): string {
+    switch (type) {
+      case 'Sowing': return '🌱';
+      case 'Irrigation': return '💧';
+      case 'Fertilizer Application': return '🌿';
+      case 'Spray Application': return '🐛';
+      case 'Weeding': return '✂️';
+      case 'Field Inspection': return '📷';
+      case 'Labour Activity': return '👥';
+      case 'Harvest': return '🌾';
+      case 'Sale': return '💰';
+      case 'Weather Incident': return '⚡';
+      default: return '📅';
+    }
   }
 
   onDeleteActivityClick(id: string, event: Event): void {

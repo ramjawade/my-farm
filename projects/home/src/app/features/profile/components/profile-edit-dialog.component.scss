@@ -1,0 +1,224 @@
+@import '../../../../styles/bootstrap-config';
+
+/* Backdrop glass overlay */
+.modal-backdrop {
+  background-color: rgba(44, 62, 80, 0.45) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: all 0.3s ease;
+}
+
+/* Modal Card with pop-in entry */
+.modal-card {
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.15) !important;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-body-content {
+  overflow-y: auto;
+  flex-grow: 1;
+  min-height: 0;
+  padding-right: 8px;
+}
+
+/* Animation for dialog popping */
+.animate-pop-in {
+  animation: modalPop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+@keyframes modalPop {
+  0% {
+    transform: scale(0.9) translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Labels and Custom inputs */
+.field-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: $soil-primary;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.required-label::after {
+  content: " *";
+  color: $danger;
+}
+
+.field-sub-label {
+  font-size: 0.78rem;
+  color: $text-muted;
+  margin-bottom: 12px;
+  line-height: 1.35;
+  font-weight: 400;
+}
+
+.input-group-text {
+  background-color: $light-mint;
+  border: 1.5px solid $border-mint;
+  color: $farm-green-primary;
+  border-radius: 8px 0 0 8px;
+  padding: 10px 14px;
+}
+
+.form-control, .form-select {
+  border: 1.5px solid $border-mint;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  color: $body-color;
+  background-color: $white;
+  transition: all 0.2s ease;
+
+  &:focus {
+    border-color: $farm-green-primary;
+    box-shadow: 0 0 0 3px rgba($farm-green-primary, 0.15);
+  }
+}
+
+/* Shared base button option properties */
+.role-row-btn, .location-toggle-btn {
+  background-color: $white;
+  border: 1.5px solid rgba($farm-green-primary, 0.15);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Custom card Buttons for Role Selection */
+.role-row-btn {
+  display: flex;
+  align-items: center;
+  border-radius: 12px;
+  color: $body-color;
+  width: 100%;
+  padding: 12px 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+
+  i.bi {
+    font-size: 1.35rem !important;
+    margin-right: 8px;
+    transition: all 0.2s ease;
+  }
+
+  .role-label-text {
+    font-size: 0.88rem;
+    color: $body-color;
+    transition: all 0.2s ease;
+  }
+
+  &:hover {
+    background-color: $light-mint;
+    border-color: rgba($farm-green-primary, 0.35);
+  }
+
+  &.active {
+    border-color: $farm-green-primary !important;
+    border-width: 1.5px;
+    box-shadow: 0 4px 10px rgba($farm-green-primary, 0.08);
+    background-color: rgba($farm-green-primary, 0.04);
+
+    .role-label-text {
+      color: $farm-green-primary;
+      font-weight: 700;
+    }
+  }
+}
+
+/* Custom visual card Buttons for Location Method Selection */
+.location-toggle-btn {
+  border-radius: 12px;
+  color: $body-color;
+  padding: 14px 18px;
+  width: 100%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+
+  i.bi {
+    font-size: 1.5rem !important;
+    color: $farm-green-light;
+    transition: all 0.2s ease;
+  }
+
+  .location-label-text {
+    font-size: 0.9rem;
+    color: $body-color;
+    transition: all 0.2s ease;
+  }
+
+  &:hover {
+    background-color: $light-mint;
+    border-color: $farm-green-primary;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba($farm-green-primary, 0.06);
+  }
+
+  &.active {
+    border-color: $farm-green-primary !important;
+    border-width: 1.5px;
+    background-color: rgba($farm-green-primary, 0.04);
+    box-shadow: 0 4px 12px rgba($farm-green-primary, 0.1);
+
+    i.bi {
+      color: $farm-green-primary;
+    }
+    
+    .location-label-text {
+      color: $farm-green-primary;
+      font-weight: 700;
+    }
+  }
+}
+
+/* Premium Map Frame Container */
+.map-card-premium {
+  border: 1px solid rgba($farm-green-primary, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.bg-dark-green {
+  background-color: $farm-green-dark;
+}
+
+.registration-map-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.map-coordinates-footer {
+  font-size: 0.85rem;
+}
+
+.drawing-status-text {
+  font-size: 0.8rem;
+}
+
+.manual-location-card {
+  border: 1.5px solid rgba($farm-green-primary, 0.15) !important;
+}
+
+.btn-close {
+  box-shadow: none !important;
+}
+

@@ -1,29 +1,11 @@
 <!-- HISTORICAL WEATHER TRENDS -->
 <div class="row mf-grid-gap align-items-stretch">
-  <!-- Chart Column (D3) -->
+  <!-- Chart Column (Chart.js) -->
   <div class="col-lg-8 col-12">
     <div class="card weather-card mf-card-pad border-0 shadow-sm h-100 d-flex flex-column">
-      <div class="d-flex justify-content-end align-items-center gap-3 flex-wrap mb-3">
-        <!-- Dynamic Legend -->
-        <div class="d-flex align-items-center gap-3 flex-wrap">
-          <div class="d-flex align-items-center gap-1.5 text-xs">
-            <span class="d-inline-block rounded-circle" style="width: 8px; height: 8px; background-color: #2e7d32;"></span>
-            <span class="text-muted fw-semibold" style="font-size: 0.72rem; margin-left: 4px;">Temp (°C)</span>
-          </div>
-          <div class="d-flex align-items-center gap-1.5 text-xs">
-            <span class="d-inline-block rounded-circle" style="width: 8px; height: 8px; background-color: #42a5f5;"></span>
-            <span class="text-muted fw-semibold" style="font-size: 0.72rem; margin-left: 4px;">Rainfall (mm)</span>
-          </div>
-          <div class="d-flex align-items-center gap-1.5 text-xs">
-            <span class="d-inline-block rounded-circle" style="width: 8px; height: 8px; background-color: #26a69a;"></span>
-            <span class="text-muted fw-semibold" style="font-size: 0.72rem; margin-left: 4px;">Humidity (%)</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- D3 CHART CONTAINER -->
+      <!-- CHART JS CANVAS -->
       <div class="flex-grow-1 position-relative" style="min-height: 220px;">
-        <div #chartContainer class="w-100 h-100" style="min-height: 220px;"></div>
+        <canvas #chartCanvas class="w-100 h-100"></canvas>
       </div>
     </div>
   </div>

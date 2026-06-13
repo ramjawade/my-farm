@@ -1,16 +1,18 @@
-import { Component, Input, Output, EventEmitter, inject, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CropTimelineService } from '../crop-timeline.service';
 import { CropTimelineComponent } from '../crop-timeline.component';
 import { CropEntity, ActivityEntity, CropStage, ActivityType } from '../crop-timeline.models';
-import { LogActivityComponent } from '../log-activity/log-activity.component';
+import { CreateActivityComponent } from '../../farm-activity/create/create-activity.component';
+import { FarmActivityService } from '../../farm-activity/farm-activity.service';
+import { ActivitiesSummaryComponent } from '../../farm-activity/summary/activities-summary.component';
 
 @Component({
   standalone: true,
   selector: 'app-crop-timeline-detail',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, LogActivityComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, CreateActivityComponent, ActivitiesSummaryComponent],
   templateUrl: './crop-timeline-detail.component.html',
   styleUrl: './crop-timeline-detail.component.scss'
 })
@@ -19,37 +21,58 @@ export class CropTimelineDetailComponent implements OnInit {
   private readonly router = inject(Router, { optional: true });
   private readonly route = inject(ActivatedRoute, { optional: true });
   private readonly timelineService = inject(CropTimelineService, { optional: true });
+  private readonly farmActivityService = inject(FarmActivityService, { optional: true });
 
-  private _selectedCrop: CropEntity | null = null;
+  readonly selectedCropInput = signal<CropEntity | null>(null);
   @Input() set selectedCrop(value: CropEntity | null) {
-    this._selectedCrop = value;
+    this.selectedCropInput.set(value);
   }
+  readonly selectedCropSignal = computed(() => {
+    const inputVal = this.selectedCropInput();
+    if (inputVal !== null) return inputVal;
+    return this.parent ? this.parent.selectedCrop() : null;
+  });
   get selectedCrop(): CropEntity | null {
-    return this._selectedCrop !== undefined ? this._selectedCrop : this.parent?.selectedCrop() || null;
+    return this.selectedCropSignal();
   }
 
-  private _stages!: CropStage[];
+  readonly stagesInput = signal<CropStage[] | null>(null);
   @Input() set stages(value: CropStage[]) {
-    this._stages = value;
+    this.stagesInput.set(value);
   }
+  readonly stagesSignal = computed(() => {
+    const inputVal = this.stagesInput();
+    if (inputVal !== null) return inputVal;
+    return this.parent ? this.parent.stages : [];
+  });
   get stages(): CropStage[] {
-    return this._stages || this.parent?.stages || [];
+    return this.stagesSignal();
   }
 
-  private _upcomingActivities!: ActivityEntity[];
+  readonly upcomingActivitiesInput = signal<ActivityEntity[] | null>(null);
   @Input() set upcomingActivities(value: ActivityEntity[]) {
-    this._upcomingActivities = value;
+    this.upcomingActivitiesInput.set(value);
   }
+  readonly upcomingActivitiesSignal = computed(() => {
+    const inputVal = this.upcomingActivitiesInput();
+    if (inputVal !== null) return inputVal;
+    return this.parent ? this.parent.upcomingActivities() : [];
+  });
   get upcomingActivities(): ActivityEntity[] {
-    return this._upcomingActivities || this.parent?.upcomingActivities() || [];
+    return this.upcomingActivitiesSignal();
   }
 
-  private _cropActivities!: ActivityEntity[];
+  readonly cropActivitiesInput = signal<ActivityEntity[] | null>(null);
   @Input() set cropActivities(value: ActivityEntity[]) {
-    this._cropActivities = value;
+    this.cropActivitiesInput.set(value);
   }
+  readonly cropActivitiesSignal = computed(() => {
+    const inputVal = this.cropActivitiesInput();
+    if (inputVal !== null) return inputVal;
+    return this.parent ? this.parent.cropActivities() : [];
+  });
   get cropActivities(): ActivityEntity[] {
-    return this._cropActivities || this.parent?.cropActivities() || [];
+    return this.cropActivitiesSignal();
   }
 
   private _activityForm!: FormGroup;
@@ -60,28 +83,43 @@ export class CropTimelineDetailComponent implements OnInit {
     return this._activityForm || this.parent?.activityForm;
   }
 
-  private _showActivityModal!: boolean;
+  readonly showActivityModalInput = signal<boolean | null>(null);
   @Input() set showActivityModal(value: boolean) {
-    this._showActivityModal = value;
+    this.showActivityModalInput.set(value);
   }
+  readonly showActivityModalSignal = computed(() => {
+    const inputVal = this.showActivityModalInput();
+    if (inputVal !== null) return inputVal;
+    return this.parent ? this.parent.showActivityModal() : false;
+  });
   get showActivityModal(): boolean {
-    return this._showActivityModal !== undefined ? this._showActivityModal : this.parent?.showActivityModal() || false;
+    return this.showActivityModalSignal();
   }
 
-  private _editingActivity: ActivityEntity | null = null;
+  readonly editingActivityInput = signal<ActivityEntity | null>(null);
   @Input() set editingActivity(value: ActivityEntity | null) {
-    this._editingActivity = value;
+    this.editingActivityInput.set(value);
   }
+  readonly editingActivitySignal = computed(() => {
+    const inputVal = this.editingActivityInput();
+    if (inputVal !== null) return inputVal;
+    return this.parent ? this.parent.editingActivity() : null;
+  });
   get editingActivity(): ActivityEntity | null {
-    return this._editingActivity !== undefined ? this._editingActivity : this.parent?.editingActivity() || null;
+    return this.editingActivitySignal();
   }
 
-  private _uploadedImages!: string[];
+  readonly uploadedImagesInput = signal<string[] | null>(null);
   @Input() set uploadedImages(value: string[]) {
-    this._uploadedImages = value;
+    this.uploadedImagesInput.set(value);
   }
+  readonly uploadedImagesSignal = computed(() => {
+    const inputVal = this.uploadedImagesInput();
+    if (inputVal !== null) return inputVal;
+    return this.parent ? this.parent.uploadedImages() : [];
+  });
   get uploadedImages(): string[] {
-    return this._uploadedImages || this.parent?.uploadedImages() || [];
+    return this.uploadedImagesSignal();
   }
 
   @Output() readonly backClicked = new EventEmitter<void>();
@@ -89,6 +127,7 @@ export class CropTimelineDetailComponent implements OnInit {
   @Output() readonly addActivityClicked = new EventEmitter<void>();
   @Output() readonly editActivityClicked = new EventEmitter<ActivityEntity>();
   @Output() readonly deleteActivityClicked = new EventEmitter<string>();
+  @Output() readonly deleteCropClicked = new EventEmitter<string>();
   @Output() readonly markActivityCompletedClicked = new EventEmitter<string>();
   @Output() readonly submitActivity = new EventEmitter<void>();
   @Output() readonly closeActivityModal = new EventEmitter<void>();
@@ -126,6 +165,8 @@ export class CropTimelineDetailComponent implements OnInit {
     }
   }
 
+
+
   onBackClicked(): void {
     this.backClicked.emit();
     if (this.parent) {
@@ -137,24 +178,40 @@ export class CropTimelineDetailComponent implements OnInit {
     }
   }
 
+  readonly parentActivityIdForModal = signal<string | null>(null);
+  readonly editingActivityIdForModal = signal<string | null>(null);
+
   onUpdateStageClicked(stage: CropStage): void {
     this.updateStageClicked.emit(stage);
-    if (this.parent) {
-      this.parent.updateStage(stage);
+    const crop = this.selectedCrop;
+    if (crop && this.timelineService) {
+      let mainAct = this.timelineService.findMainActivityForStage(crop.id, stage);
+      if (!mainAct) {
+        mainAct = this.timelineService.findOrCreateMainActivityForStage(crop.id, stage);
+      }
+      this.parentActivityIdForModal.set(mainAct.id);
+      this.editingActivityIdForModal.set(null);
+      if (this.parent) {
+        this.parent.showActivityModal.set(true);
+      }
     }
   }
 
   onAddActivityClicked(): void {
     this.addActivityClicked.emit();
+    this.parentActivityIdForModal.set(null);
+    this.editingActivityIdForModal.set(null);
     if (this.parent) {
-      this.parent.openAddActivityModal();
+      this.parent.showActivityModal.set(true);
     }
   }
 
   onEditActivityClicked(act: ActivityEntity): void {
     this.editActivityClicked.emit(act);
+    this.editingActivityIdForModal.set(act.id);
+    this.parentActivityIdForModal.set(act.parentActivityId || null);
     if (this.parent) {
-      this.parent.openEditActivityModal(act);
+      this.parent.showActivityModal.set(true);
     }
   }
 
@@ -162,6 +219,16 @@ export class CropTimelineDetailComponent implements OnInit {
     this.deleteActivityClicked.emit(id);
     if (this.parent) {
       this.parent.onDeleteActivity(id);
+    }
+  }
+
+  onDeleteCropClicked(): void {
+    const crop = this.selectedCrop;
+    if (crop) {
+      this.deleteCropClicked.emit(crop.id);
+      if (this.parent) {
+        this.parent.onDeleteCrop(crop.id);
+      }
     }
   }
 
@@ -181,6 +248,8 @@ export class CropTimelineDetailComponent implements OnInit {
 
   onCloseActivityModal(): void {
     this.closeActivityModal.emit();
+    this.editingActivityIdForModal.set(null);
+    this.parentActivityIdForModal.set(null);
     if (this.parent) {
       this.parent.showActivityModal.set(false);
     }
@@ -200,9 +269,9 @@ export class CropTimelineDetailComponent implements OnInit {
     }
   }
 
-  getDaysAfterSowing(sowingDateStr: string): number {
-    const sowing = Date.parse(sowingDateStr);
-    const diff = Date.now() - sowing;
+  getDaysAfterSowing(sowingDate: number | undefined): number {
+    if (!sowingDate) return 0;
+    const diff = Date.now() - sowingDate;
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     return days < 0 ? 0 : days;
   }

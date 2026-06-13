@@ -1,0 +1,577 @@
+@if (show()) {
+  <div class="modal-backdrop position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center px-3 animate-fade-in" style="z-index: 2000;">
+    <div class="modal-card card shadow-lg border rounded bg-white p-4 w-100 text-start animate-pop-in" style="max-width: 680px; max-height: 90vh;">
+      
+      <!-- MODAL HEADER -->
+      <div class="d-flex justify-content-between align-items-center pb-3 border-bottom mb-4">
+        <h4 class="h5 fw-bold text-success-dark mb-0">
+          @if (section() === 'account') {
+            <i class="bi bi-person-fill text-success me-2"></i>Edit Account Information
+          } @else if (section() === 'agronomic') {
+            <i class="bi bi-shield-fill text-success me-2"></i>Edit Agronomic Settings
+          } @else if (section() === 'land') {
+            <i class="bi bi-geo-alt-fill text-success me-2"></i>Edit Land & Location
+          } @else if (section() === 'operations') {
+            <i class="bi bi-gear-fill text-success me-2"></i>Edit Operational Settings
+          } @else if (section() === 'setup') {
+            <i class="bi bi-gear-fill text-success me-2"></i>Complete Farm Setup
+          }
+        </h4>
+        <button type="button" class="btn-close" (click)="close()" aria-label="Close"></button>
+      </div>
+
+      <!-- MODAL BODY -->
+      <div class="modal-body-content mb-4">
+        
+        <!-- SECTION 1: ACCOUNT EDIT -->
+        @if (section() === 'account') {
+          <div class="row g-3">
+            <div class="col-md-12">
+              <label for="fullName" class="field-label required-label">Farmer Name</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                <input
+                  type="text"
+                  id="fullName"
+                  class="form-control"
+                  [ngModel]="editFullName()"
+                  (ngModelChange)="editFullName.set($event)"
+                  placeholder="e.g. Rajesh Kumar"
+                />
+              </div>
+              @if (!isNamePatternValid()) {
+                <div class="text-danger small mt-1">
+                  Please enter a valid farmer name (minimum 3 characters).
+                </div>
+              }
+            </div>
+
+            <div class="col-md-12">
+              <label for="phone" class="field-label required-label">Contact Number</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-telephone-fill"></i></span>
+                <input
+                  type="tel"
+                  id="phone"
+                  class="form-control"
+                  [ngModel]="editPhone()"
+                  (ngModelChange)="editPhone.set($event)"
+                  placeholder="e.g. +91 9876543210"
+                />
+              </div>
+              @if (!isPhonePatternValid()) {
+                <div class="text-danger small mt-1">
+                  Please enter a valid 10-15 digit phone number.
+                </div>
+              }
+            </div>
+
+            <div class="col-md-12">
+              <label for="email" class="field-label">Email Address (Optional)</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
+                <input
+                  type="email"
+                  id="email"
+                  class="form-control"
+                  [ngModel]="editEmail()"
+                  (ngModelChange)="editEmail.set($event)"
+                  placeholder="e.g. rajesh@farm.com"
+                />
+              </div>
+              @if (!isEmailPatternValid()) {
+                <div class="text-danger small mt-1">
+                  Please enter a valid email format.
+                </div>
+              }
+            </div>
+
+            <div class="col-md-12">
+              <label for="preferredLanguage" class="field-label required-label">Preferred Language</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-translate"></i></span>
+                <select id="preferredLanguage" class="form-select" [ngModel]="editPreferredLanguage()" (ngModelChange)="editPreferredLanguage.set($event)">
+                  @for (lang of languages; track lang.value) {
+                    <option [value]="lang.value">{{ lang.label }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- SECTION 2: AGRONOMIC EDIT -->
+        @if (section() === 'agronomic') {
+          <div>
+            <!-- Who are you? Visual Options -->
+            <div class="mb-4">
+              <label class="field-label required-label">Who are you?</label>
+              <p class="field-sub-label">Please select your primary role profile to personalize your experience.</p>
+              
+              <div class="row g-3">
+                @for (role of roleOptions; track role.value) {
+                  <div class="col-12 col-sm-6">
+                    <button
+                      type="button"
+                      class="role-row-btn border text-start d-flex align-items-center"
+                      [class.active]="editUserRole() === role.value"
+                      (click)="editUserRole.set(role.value)"
+                    >
+                      <i class="bi" [class]="role.icon" [style.color]="editUserRole() === role.value ? '#2a6f47' : role.color"></i>
+                      <span class="fw-semibold role-label-text ms-2">{{ role.label }}</span>
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Farming Method Visual Options -->
+            <div class="mb-4 mt-3 pt-3 border-top">
+              <label class="field-label required-label">Farming Method</label>
+              <p class="field-sub-label">Please select your primary soil and cultivation practice standard.</p>
+              
+              <div class="row g-3">
+                @for (method of farmingMethods; track method.value) {
+                  <div class="col-12 col-sm-6">
+                    <button
+                      type="button"
+                      class="role-row-btn border text-start d-flex align-items-center"
+                      [class.active]="editFarmingMethod() === method.value"
+                      (click)="editFarmingMethod.set(method.value)"
+                    >
+                      <i class="bi" [class]="method.icon" [style.color]="editFarmingMethod() === method.value ? '#2a6f47' : method.color"></i>
+                      <span class="fw-semibold role-label-text ms-2">{{ method.label }}</span>
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- SECTION 3: LAND & LOCATION MAP EDIT -->
+        @if (section() === 'land') {
+          <div>
+            <!-- Farm Name -->
+            <div class="mb-4">
+              <label for="farmName" class="field-label required-label">Farm Name</label>
+              <p class="field-sub-label">Give a recognizable identifier to your primary agricultural site.</p>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-house-door-fill"></i></span>
+                <input
+                  type="text"
+                  id="farmName"
+                  class="form-control"
+                  [ngModel]="editFarmName()"
+                  (ngModelChange)="editFarmName.set($event)"
+                  placeholder="e.g. Green Valley Farm"
+                />
+              </div>
+              @if (editFarmName() && editFarmName().trim().length < 2) {
+                <div class="text-danger small mt-1">
+                  Please enter a valid farm name (minimum 2 characters).
+                </div>
+              }
+            </div>
+
+            <!-- Cultivated Area -->
+            <div class="row g-3 mb-4">
+              <div class="col-8">
+                <label for="farmArea" class="field-label required-label">Total Cultivated Area</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  id="farmArea"
+                  class="form-control"
+                  [ngModel]="editFarmArea()"
+                  (ngModelChange)="editFarmArea.set($event)"
+                  placeholder="e.g. 6.25"
+                />
+              </div>
+              <div class="col-4">
+                <label for="farmAreaUnit" class="field-label required-label">Unit</label>
+                <select
+                  id="farmAreaUnit"
+                  class="form-select"
+                  [ngModel]="editFarmAreaUnit()"
+                  (ngModelChange)="editFarmAreaUnit.set($event)"
+                >
+                  <option value="hectares">Hectares</option>
+                  <option value="acres">Acres</option>
+                </select>
+              </div>
+              @if (editFarmArea() !== null && editFarmArea() <= 0) {
+                <div class="text-danger small mt-1">
+                  Area must be a number greater than 0.
+                </div>
+              }
+            </div>
+
+            <!-- Where is your farm? Toggle -->
+            <div class="mb-4 mt-3 pt-3 border-top">
+              <label class="field-label required-label"><i class="bi bi-geo-alt-fill me-1"></i>Where is your farm?</label>
+              <p class="field-sub-label">This helps us provide accurate local weather alerts and crop suggestions.</p>
+              
+              <div class="row g-3 justify-content-center mb-3">
+                <div class="col-12 col-sm-6">
+                  <button
+                    type="button"
+                    class="location-toggle-btn border w-100 text-start d-flex align-items-center"
+                    [class.active]="locationMethod() === 'map'"
+                    (click)="setLocationMethod('map')"
+                  >
+                    <i class="bi bi-pin-map-fill fs-4 text-success"></i>
+                    <span class="fw-semibold location-label-text ms-3">Use Map Location</span>
+                  </button>
+                </div>
+
+                <div class="col-12 col-sm-6">
+                  <button
+                    type="button"
+                    class="location-toggle-btn border w-100 text-start d-flex align-items-center"
+                    [class.active]="locationMethod() === 'manual'"
+                    (click)="setLocationMethod('manual')"
+                  >
+                    <i class="bi bi-pencil-square fs-4 text-success"></i>
+                    <span class="fw-semibold location-label-text ms-3">Select Village Manually</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Map Pinning/Drawing Viewport -->
+            @if (locationMethod() === 'map') {
+              <div class="map-card-premium mb-4 animate-pop-in">
+                <div class="map-card-header p-3 bg-dark-green text-white d-flex align-items-center justify-content-between gap-3">
+                  <span class="fw-semibold"><i class="bi bi-pin-map-fill me-2"></i>Locate Farm Bounds</span>
+                  
+                  <div class="btn-group btn-group-sm" role="group">
+                    <button
+                      type="button"
+                      class="btn btn-outline-light px-3"
+                      [class.active]="mapMode() === 'pin'"
+                      (click)="setMapMode('pin')"
+                    >
+                      <i class="bi bi-geo-fill me-1"></i>Pin the Farm
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-outline-light px-3"
+                      [class.active]="mapMode() === 'draw'"
+                      (click)="setMapMode('draw')"
+                    >
+                      <i class="bi bi-pentagon-half me-1"></i>Map My Farm
+                    </button>
+                  </div>
+                </div>
+
+                <div class="registration-map-wrapper" style="height: 280px; position: relative; z-index: 10;">
+                  <app-map
+                    style="height: 280px; min-height: auto; display: block; position: relative; inset: auto;"
+                    [isPicker]="true"
+                    [showSearch]="true"
+                    [mapMode]="mapMode()"
+                    (pinCoordinatesSelected)="updateMarker($event.lat, $event.lng)"
+                    (mapReady)="onMapReady($event)"
+                  />
+                </div>
+
+                <div class="map-coordinates-footer p-3 bg-light d-flex flex-wrap align-items-center justify-content-between gap-2 border-top">
+                  @if (mapMode() === 'draw') {
+                    <div class="d-flex align-items-center justify-content-between w-100 flex-wrap gap-2">
+                      <div class="drawing-status-text">
+                        @if (drawService.status() === 'idle') {
+                          <span class="text-muted small"><i class="bi bi-info-circle me-1"></i>Click on the map to start drawing your farm polygon.</span>
+                        } @else if (drawService.status() === 'drawing') {
+                          <span class="text-primary small font-semibold">
+                            <i class="bi bi-pencil-fill me-1"></i>Drawing: {{ drawService.pointCount() }} points added.
+                          </span>
+                        } @else {
+                          <span class="text-success small font-semibold">
+                            <i class="bi bi-check-circle-fill me-1"></i>Completed: {{ drawService.pointCount() }} vertices.
+                          </span>
+                        }
+                      </div>
+                      <div class="d-flex gap-2">
+                        @if (drawService.status() === 'drawing') {
+                          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="drawService.undoLastPoint()" [disabled]="drawService.pointCount() === 0">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>Undo
+                          </button>
+                          <button type="button" class="btn btn-sm btn-outline-danger" (click)="drawService.cancelDrawing()">
+                            <i class="bi bi-x-circle me-1"></i>Cancel
+                          </button>
+                          <button type="button" class="btn btn-sm btn-primary" (click)="drawService.finishDrawing()" [disabled]="!drawService.canFinish()">
+                            <i class="bi bi-check-lg me-1"></i>Finish
+                          </button>
+                        } @else if (drawService.status() === 'completed') {
+                          <button type="button" class="btn btn-sm btn-outline-warning" (click)="drawService.startDrawing()">
+                            <i class="bi bi-arrow-repeat me-1"></i>Redraw
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  } @else {
+                    @if (latitude() !== null && longitude() !== null) {
+                      <div class="coord-readouts d-flex gap-4">
+                        <div>
+                          <span class="text-muted small d-block">Latitude</span>
+                          <strong class="font-monospace text-success">{{ latitude() }}</strong>
+                        </div>
+                        <div>
+                          <span class="text-muted small d-block">Longitude</span>
+                          <strong class="font-monospace text-success">{{ longitude() }}</strong>
+                        </div>
+                      </div>
+                      <span class="badge bg-success-light text-success-dark px-3 py-2 rounded-pill font-semibold">
+                        <i class="bi bi-geo-fill me-1"></i>Pinned
+                      </span>
+                    } @else {
+                      <div class="text-danger small flex-fill">
+                        <i class="bi bi-exclamation-octagon-fill me-1"></i>Please click anywhere on the satellite map to drop your farm pin.
+                      </div>
+                    }
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Address fields -->
+            <div class="manual-location-card p-4 border rounded bg-white shadow-sm mb-3 text-start">
+              <h5 class="text-success mb-3 font-semibold">
+                @if (locationMethod() === 'map') {
+                  <i class="bi bi-geo-alt-fill me-2"></i>Resolved Address Details
+                } @else {
+                  <i class="bi bi-card-list me-2"></i>Enter Village Details
+                }
+              </h5>
+              <div class="row g-3">
+                <div class="col-6">
+                  <label for="state" class="field-label required-label">State</label>
+                  <input
+                    type="text"
+                    id="state"
+                    class="form-control"
+                    [ngModel]="editState()"
+                    (ngModelChange)="editState.set($event)"
+                    placeholder="e.g. Maharashtra"
+                  />
+                  @if (locationMethod() === 'manual' && editState() && editState().trim().length < 2) {
+                    <div class="text-danger small mt-1">State is required.</div>
+                  }
+                </div>
+
+                <div class="col-6">
+                  <label for="district" class="field-label required-label">District</label>
+                  <input
+                    type="text"
+                    id="district"
+                    class="form-control"
+                    [ngModel]="editDistrict()"
+                    (ngModelChange)="editDistrict.set($event)"
+                    placeholder="e.g. Nashik"
+                  />
+                  @if (locationMethod() === 'manual' && editDistrict() && editDistrict().trim().length < 2) {
+                    <div class="text-danger small mt-1">District is required.</div>
+                  }
+                </div>
+
+                <div class="col-6">
+                  <label for="village" class="field-label required-label">Village Name</label>
+                  <input
+                    type="text"
+                    id="village"
+                    class="form-control"
+                    [ngModel]="editVillage()"
+                    (ngModelChange)="editVillage.set($event)"
+                    placeholder="e.g. Pimpalgaon"
+                  />
+                  @if (locationMethod() === 'manual' && editVillage() && editVillage().trim().length < 2) {
+                    <div class="text-danger small mt-1">Village Name is required.</div>
+                  }
+                </div>
+
+                <div class="col-6">
+                  <label for="pincode" class="field-label required-label">Pin Code</label>
+                  <input
+                    type="text"
+                    id="pincode"
+                    class="form-control"
+                    [ngModel]="editPincode()"
+                    (ngModelChange)="editPincode.set($event)"
+                    placeholder="e.g. 422209"
+                  />
+                  @if (locationMethod() === 'manual' && editPincode() && editPincode().trim().length < 5) {
+                    <div class="text-danger small mt-1">Pin Code must be 5+ digits.</div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- SECTION 4: CROPS & OPERATIONS EDIT -->
+        @if (section() === 'operations') {
+          <div>
+            <!-- Primary Crops selection visually matching wizard tags -->
+            <div class="mb-4">
+              <label class="field-label required-label"><i class="bi bi-patch-check me-1"></i>Primary Crops Grown</label>
+              <p class="field-sub-label">Please select at least one primary crop grown on your farm.</p>
+              
+              <div class="row g-3">
+                @for (crop of cropOptions; track crop.value) {
+                  <div class="col-12 col-sm-6">
+                    <button
+                      type="button"
+                      class="role-row-btn border text-start d-flex align-items-center"
+                      [class.active]="selectedCrops().includes(crop.value)"
+                      (click)="toggleCrop(crop.value)"
+                    >
+                      <i class="bi" [class]="crop.icon" [style.color]="selectedCrops().includes(crop.value) ? '#2a6f47' : crop.color"></i>
+                      <span class="fw-semibold role-label-text ms-2">{{ crop.label }}</span>
+                    </button>
+                  </div>
+                }
+              </div>
+              @if (selectedCrops().length === 0) {
+                <div class="text-danger small mt-2">
+                  Please select at least one primary crop.
+                </div>
+              }
+            </div>
+
+            <!-- Water Source Visual Options -->
+            <div class="mb-4 mt-3 pt-3 border-top">
+              <label class="field-label required-label"><i class="bi bi-droplet-fill me-1"></i>Water Source</label>
+              <p class="field-sub-label">Please select the primary water supply sourcing method used on your fields.</p>
+              
+              <div class="row g-3">
+                @for (ws of waterSourceOptions; track ws.value) {
+                  <div class="col-12 col-sm-6">
+                    <button
+                      type="button"
+                      class="role-row-btn border text-start d-flex align-items-center"
+                      [class.active]="editWaterSource() === ws.value"
+                      (click)="editWaterSource.set(ws.value)"
+                    >
+                      <i class="bi" [class]="ws.icon" [style.color]="editWaterSource() === ws.value ? '#2a6f47' : ws.color"></i>
+                      <span class="fw-semibold role-label-text ms-2">{{ ws.label }}</span>
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Irrigation Type Visual Options -->
+            <div class="mb-4 mt-3 pt-3 border-top">
+              <label class="field-label required-label"><i class="bi bi-moisture me-1"></i>Irrigation Type</label>
+              <p class="field-sub-label">Please select the core water delivery distribution mechanism applied.</p>
+              
+              <div class="row g-3">
+                @for (irr of irrigationTypeOptions; track irr.value) {
+                  <div class="col-12 col-sm-6">
+                    <button
+                      type="button"
+                      class="role-row-btn border text-start d-flex align-items-center"
+                      [class.active]="editIrrigationType() === irr.value"
+                      (click)="editIrrigationType.set(irr.value)"
+                    >
+                      <i class="bi" [class]="irr.icon" [style.color]="editIrrigationType() === irr.value ? '#2a6f47' : irr.color"></i>
+                      <span class="fw-semibold role-label-text ms-2">{{ irr.label }}</span>
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- SECTION 5: FARM SETUP EDIT -->
+        @if (section() === 'setup') {
+          <div>
+            <!-- Water Source Visual Options -->
+            <div class="mb-4">
+              <label class="field-label required-label"><i class="bi bi-droplet-fill me-1"></i>Water Source</label>
+              <p class="field-sub-label">Please select the primary water supply sourcing method used on your fields.</p>
+              
+              <div class="row g-3">
+                @for (ws of waterSourceOptions; track ws.value) {
+                  <div class="col-12 col-sm-6">
+                    <button
+                      type="button"
+                      class="role-row-btn border text-start d-flex align-items-center"
+                      [class.active]="editWaterSource() === ws.value"
+                      (click)="editWaterSource.set(ws.value)"
+                    >
+                      <i class="bi" [class]="ws.icon" [style.color]="editWaterSource() === ws.value ? '#2a6f47' : ws.color"></i>
+                      <span class="fw-semibold role-label-text ms-2">{{ ws.label }}</span>
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Irrigation Type Visual Options -->
+            <div class="mb-4 mt-3 pt-3 border-top">
+              <label class="field-label required-label"><i class="bi bi-moisture me-1"></i>Irrigation Type</label>
+              <p class="field-sub-label">Please select the core water delivery distribution mechanism applied.</p>
+              
+              <div class="row g-3">
+                @for (irr of irrigationTypeOptions; track irr.value) {
+                  <div class="col-12 col-sm-6">
+                    <button
+                      type="button"
+                      class="role-row-btn border text-start d-flex align-items-center"
+                      [class.active]="editIrrigationType() === irr.value"
+                      (click)="editIrrigationType.set(irr.value)"
+                    >
+                      <i class="bi" [class]="irr.icon" [style.color]="editIrrigationType() === irr.value ? '#2a6f47' : irr.color"></i>
+                      <span class="fw-semibold role-label-text ms-2">{{ irr.label }}</span>
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Farming Method Visual Options -->
+            <div class="mb-4 mt-3 pt-3 border-top">
+              <label class="field-label required-label"><i class="bi bi-leaf-fill me-1"></i>Farming Method</label>
+              <p class="field-sub-label">Please select your primary soil and cultivation practice standard.</p>
+              
+              <div class="row g-3">
+                @for (method of farmingMethods; track method.value) {
+                  <div class="col-12 col-sm-6">
+                    <button
+                      type="button"
+                      class="role-row-btn border text-start d-flex align-items-center"
+                      [class.active]="editFarmingMethod() === method.value"
+                      (click)="editFarmingMethod.set(method.value)"
+                    >
+                      <i class="bi" [class]="method.icon" [style.color]="editFarmingMethod() === method.value ? '#2a6f47' : method.color"></i>
+                      <span class="fw-semibold role-label-text ms-2">{{ method.label }}</span>
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+      </div>
+
+      <!-- MODAL FOOTER -->
+      <div class="wizard-footer border-top pt-4 mt-4 d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-outline-secondary px-4 py-2" (click)="close()">Cancel</button>
+        <button 
+          type="button" 
+          class="btn btn-success px-4 py-2 fw-semibold" 
+          [disabled]="(section() === 'account' && !isAccountValid()) || (section() === 'land' && !isLandValid()) || (section() === 'operations' && !isOperationsValid())"
+          (click)="save()"
+        >
+          Save Changes
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+

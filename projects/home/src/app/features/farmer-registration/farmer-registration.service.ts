@@ -35,19 +35,62 @@ export class FarmerRegistrationService {
     localStorage.removeItem(STORAGE_KEY);
   }
 
+  updateFarmer(id: string, updates: Partial<FarmerRegistrationData>): FarmerRegistrationData | null {
+    let updatedFarmer: FarmerRegistrationData | null = null;
+    const current = this.farmersSignal();
+    const updated = current.map(f => {
+      if (f.id === id) {
+        updatedFarmer = { ...f, ...updates };
+        return updatedFarmer;
+      }
+      return f;
+    });
+
+    if (updatedFarmer) {
+      this.farmersSignal.set(updated);
+      this.saveToStorage(updated);
+    }
+    return updatedFarmer;
+  }
+
   private loadFromStorage(): void {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored) as FarmerRegistrationData[];
-        if (Array.isArray(parsed)) {
+        if (Array.isArray(parsed) && parsed.length > 0) {
           this.farmersSignal.set(parsed);
+          return;
         }
       }
+      this.seedDefaultFarmer();
     } catch (e) {
       console.error('Failed to load registered farmers from localStorage', e);
-      this.farmersSignal.set([]);
+      this.seedDefaultFarmer();
     }
+  }
+
+  private seedDefaultFarmer(): void {
+    const defaultFarmer: FarmerRegistrationData = {
+      id: 'f-default',
+      fullName: 'Ram Jawade',
+      phone: '9876543210',
+      email: 'ram.jawade@myfarm.com',
+      preferredLanguage: 'English',
+      userRole: 'Farmer',
+      farmName: 'Green Valley Farm',
+      farmArea: 6.5,
+      farmAreaUnit: 'hectares',
+      primaryCrops: ['Soybeans', 'Wheat'],
+      waterSource: 'Borewell',
+      irrigationType: 'Drip',
+      farmingMethod: 'Organic',
+      locationType: 'map',
+      location: { lat: 20.5937, lng: 78.9629 },
+      createdAt: Date.now()
+    };
+    this.farmersSignal.set([defaultFarmer]);
+    this.saveToStorage([defaultFarmer]);
   }
 
   private saveToStorage(farmers: FarmerRegistrationData[]): void {

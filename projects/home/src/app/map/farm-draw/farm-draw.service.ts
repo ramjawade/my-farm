@@ -1,17 +1,20 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, Injectable, signal, inject, effect } from '@angular/core';
 import { Subject } from 'rxjs';
 
 import { calculateFarmArea, toGeoJsonPolygon } from './farm-area.utils';
 import { FarmAreaResult, FarmDrawStatus, LatLngPoint, SavedFarm } from '../models/map.models';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class FarmDrawService {
+  private readonly authService = inject(AuthService);
+
   readonly status = signal<FarmDrawStatus>('idle');
   readonly points = signal<LatLngPoint[]>([]);
   readonly area = signal<FarmAreaResult | null>(null);
 
   // Saved Farms state
-  readonly savedFarms = signal<SavedFarm[]>(this.loadSavedFarms());
+  readonly savedFarms = signal<SavedFarm[]>([]);
   readonly selectedSavedFarm = signal<SavedFarm | null>(null);
 
   readonly isDrawing = computed(() => this.status() === 'drawing');
@@ -19,18 +22,70 @@ export class FarmDrawService {
   readonly canFinish = computed(() => this.points().length >= 3);
   readonly pointCount = computed(() => this.points().length);
 
-  private loadSavedFarms(): SavedFarm[] {
+  constructor() {
+    effect(() => {
+      const user = this.authService.currentUser();
+      if (user) {
+        const loaded = this.loadSavedFarms(user.id);
+        this.savedFarms.set(loaded);
+      } else {
+        this.savedFarms.set([]);
+        this.selectedSavedFarm.set(null);
+      }
+    });
+  }
+
+  private getSavedFarmsKey(): string {
+    const user = this.authService.currentUser();
+    return user ? `my_farm_${user.id}_saved_farms` : 'saved_farms';
+  }
+
+  private loadSavedFarms(userId: string): SavedFarm[] {
     try {
-      const data = localStorage.getItem('saved_farms');
-      return data ? JSON.parse(data) : [];
+      const key = `my_farm_${userId}_saved_farms`;
+      const data = localStorage.getItem(key);
+      if (data) {
+        return JSON.parse(data);
+      }
+
+      // Seed default user if empty
+      if (userId === 'f-default') {
+        return this.seedDefaultSavedFarm();
+      }
+      return [];
     } catch {
       return [];
     }
   }
 
+  private seedDefaultSavedFarm(): SavedFarm[] {
+    const center = { lat: 20.5937, lng: 78.9629 };
+    const points = [
+      { lat: center.lat - 0.003, lng: center.lng - 0.003 },
+      { lat: center.lat - 0.003, lng: center.lng + 0.003 },
+      { lat: center.lat + 0.003, lng: center.lng + 0.003 },
+      { lat: center.lat + 0.003, lng: center.lng - 0.003 }
+    ];
+    const defaultFarm: SavedFarm = {
+      id: 'default-farm-1',
+      name: 'Green Valley Main Plot',
+      points: points,
+      area: { hectares: 6.5, acres: 16.06, squareMeters: 65000 },
+      geoJson: toGeoJsonPolygon(points),
+      createdAt: Date.now()
+    };
+    const farms = [defaultFarm];
+    try {
+      localStorage.setItem('my_farm_f-default_saved_farms', JSON.stringify(farms));
+    } catch (e) {
+      console.error('Failed to save default farm', e);
+    }
+    return farms;
+  }
+
   private saveToStorage(farms: SavedFarm[]): void {
     try {
-      localStorage.setItem('saved_farms', JSON.stringify(farms));
+      localStorage.setItem(this.getSavedFarmsKey(), JSON.stringify(farms));
     } catch (e) {
       console.error('Could not save to localStorage', e);
     }

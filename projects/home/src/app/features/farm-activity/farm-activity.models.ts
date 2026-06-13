@@ -2,13 +2,15 @@ export type ActivityStatus = 'Draft' | 'In Progress' | 'Completed';
 
 export interface Activity {
   id: string;
-  date: string; // YYYY-MM-DD
+  parentActivityId?: string;
+  date?: number; // timestamp number
   season: string; // 'Kharif' | 'Rabi' | 'Summer' | etc.
   activityId: string; // The type/name of activity, e.g., 'Bore Installation', 'Sowing'
   cropId?: string; // Optional link to CropEntity
   fieldId?: string; // Optional link to SavedFarm
   status: ActivityStatus;
   notes?: string;
+  attachments?: string[];
   createdAt: number;
   updatedAt: number;
 }

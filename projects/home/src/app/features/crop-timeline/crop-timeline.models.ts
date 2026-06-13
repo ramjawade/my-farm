@@ -29,21 +29,23 @@ export type ActivityStatus = 'Planned' | 'Scheduled' | 'Completed' | 'Cancelled'
 export interface CropEntity {
   id: string;
   fieldId: string; // e.g. "Field A", "Field B"
-  name: string; // e.g. "Soybean", "Wheat", "Rice"
+  name: string; // User-friendly name
+  cropType: string; // e.g. "Soybeans", "Wheat", "Rice"
   area: number; // size value
   areaUnit: 'acres' | 'hectares';
-  sowingDate: string; // ISO Date String
+  sowingDate?: number; // timestamp number
   currentStage: CropStage;
   status: CropStatus;
-  expectedHarvestDate?: string; // ISO Date String
+  expectedHarvestDate?: number; // timestamp number
   upcomingActivity?: string; // Quick dashboard note
 }
 
 export interface ActivityEntity {
   id: string;
+  parentActivityId?: string;
   cropId: string;
   type: ActivityType;
-  date: string; // ISO Date String
+  date?: number; // timestamp number
   status: ActivityStatus;
   cost: number; // in ₹
   notes: string;

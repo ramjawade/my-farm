@@ -12,10 +12,11 @@ describe('CropDashboardComponent', () => {
     {
       id: 'c1',
       name: 'Soybeans',
+      cropType: 'Soybeans',
       fieldId: 'Field A',
       area: 10,
       areaUnit: 'hectares',
-      sowingDate: new Date().toISOString(),
+      sowingDate: Date.now(),
       currentStage: 'Sowing',
       status: 'Active'
     }
@@ -45,8 +46,8 @@ describe('CropDashboardComponent', () => {
   });
 
   it('should calculate days after sowing', () => {
-    const todayStr = new Date().toISOString();
-    expect(component.getDaysAfterSowing(todayStr)).toBe(0);
+    const today = Date.now();
+    expect(component.getDaysAfterSowing(today)).toBe(0);
   });
 
   it('should resolve the correct stage index', () => {

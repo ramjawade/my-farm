@@ -8,6 +8,8 @@ import { FarmActivityService } from '../farm-activity.service';
 import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
 import { ConfirmDialogComponent } from 'shared';
+import { ActivityStatus } from '../farm-activity.models';
+
 
 @Component({
   selector: 'app-activity-detail',
@@ -160,10 +162,10 @@ export class ActivityDetailComponent {
     });
   }
 
-  updateStatus(newStatus: string): void {
+  updateStatus(newStatus: ActivityStatus): void {
     const act = this.activity();
     if (act) {
-      this.activityService.updateActivity(act.id, { status: newStatus as any });
+      this.activityService.updateActivity(act.id, { status: newStatus });
     }
   }
 

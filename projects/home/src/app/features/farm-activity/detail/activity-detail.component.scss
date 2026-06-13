@@ -67,6 +67,22 @@
 // 4. Modal specific dialog wrapper
 .expense-modal-card {
   animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.expense-modal-body {
+  overflow-y: auto;
+  flex-grow: 1;
+  min-height: 0;
+  padding-right: 8px;
+}
+
+.expense-modal-backdrop {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.45) !important;
 }
 
 // 5. Expense Items Row Layout
@@ -102,3 +118,41 @@
     border-top: none;
   }
 }
+
+.status-transitions {
+  margin-top: 0.5rem;
+  
+  .btn {
+    font-size: 0.75rem !important;
+    padding: 0.35rem 0.75rem !important;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:hover {
+      transform: translateY(-2px);
+    }
+    
+    &:active {
+      transform: scale(0.96);
+    }
+  }
+
+  .btn-outline-warning {
+    border: 1px solid $warning !important;
+    color: $farm-warning-dark !important;
+    background-color: transparent !important;
+    
+    &:hover {
+      background-color: $warning !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 10px rgba($warning, 0.2);
+    }
+  }
+}
+

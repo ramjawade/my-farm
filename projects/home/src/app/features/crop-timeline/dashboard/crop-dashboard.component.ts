@@ -77,9 +77,9 @@ export class CropDashboardComponent implements OnInit {
     }
   }
 
-  getDaysAfterSowing(sowingDateStr: string): number {
-    const sowing = Date.parse(sowingDateStr);
-    const diff = Date.now() - sowing;
+  getDaysAfterSowing(sowingDate: number | undefined): number {
+    if (!sowingDate) return 0;
+    const diff = Date.now() - sowingDate;
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     return days < 0 ? 0 : days;
   }
@@ -87,13 +87,14 @@ export class CropDashboardComponent implements OnInit {
   getDaysSinceLastActivity(cropId: string): string {
     const cropActs = this.timelineService.activities()
       .filter(a => a.cropId === cropId && a.status === 'Completed')
-      .sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
+      .sort((a, b) => (b.date || 0) - (a.date || 0));
     
     if (cropActs.length === 0) {
       return 'No activity logged';
     }
     
-    const lastDate = Date.parse(cropActs[0].date);
+    const lastDate = cropActs[0].date;
+    if (!lastDate) return 'No activity logged';
     const diff = Date.now() - lastDate;
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     
