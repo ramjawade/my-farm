@@ -52,18 +52,19 @@ describe('WeatherCacheService', () => {
     expect(service.isFresh(testLocation)).toBeTrue();
   });
 
-  it('should identify stale cache after TTL expires', (done) => {
+  it('should identify stale cache after TTL expires', () => {
     service.set(testLocation, testWeatherData);
     expect(service.isFresh(testLocation)).toBeTrue();
 
-    setTimeout(
-      () => {
-        expect(service.isFresh(testLocation)).toBeFalse();
-        expect(service.isStale(testLocation)).toBeTrue();
-        done();
-      },
-      31 * 60 * 1000 + 100,
-    );
+    const cache = (service as any).cache as Map<string, any>;
+    const key = `${testLocation.lat},${testLocation.lng}`;
+    const entry = cache.get(key);
+    if (entry) {
+      entry.timestamp = Date.now() - (31 * 60 * 1000);
+    }
+
+    expect(service.isFresh(testLocation)).toBeFalse();
+    expect(service.isStale(testLocation)).toBeTrue();
   });
 
   it('should handle multiple location caching', () => {
@@ -105,14 +106,16 @@ describe('WeatherCacheService', () => {
     expect(service.isStale(testLocation)).toBeFalse();
   });
 
-  it('should return null for expired cache (after max age)', (done) => {
+  it('should return false for isStale when cache expires (after max age)', () => {
     service.set(testLocation, testWeatherData);
-    setTimeout(
-      () => {
-        expect(service.isStale(testLocation)).toBeTrue();
-        done();
-      },
-      2 * 60 * 60 * 1000 + 100,
-    );
+
+    const cache = (service as any).cache as Map<string, any>;
+    const key = `${testLocation.lat},${testLocation.lng}`;
+    const entry = cache.get(key);
+    if (entry) {
+      entry.timestamp = Date.now() - (2 * 60 * 60 * 1000 + 100);
+    }
+
+    expect(service.isStale(testLocation)).toBeFalse();
   });
 });

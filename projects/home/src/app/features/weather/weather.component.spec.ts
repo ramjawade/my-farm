@@ -4,6 +4,8 @@ import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { WeatherComponent } from './weather.component';
 import { AuthService } from '../../core/auth/auth.service';
+import { WeatherService } from '../../core/weather/weather.service';
+import { IWeatherService } from '../../core/weather/weather.interface';
 import { FarmerRegistrationData } from '../farmer-registration/farmer-registration.models';
 
 describe('WeatherComponent', () => {
@@ -21,6 +23,8 @@ describe('WeatherComponent', () => {
         provideRouter([]),
         provideHttpClient(),
         AuthService,
+        WeatherService,
+        { provide: IWeatherService, useClass: WeatherService },
       ],
     }).compileComponents();
 
