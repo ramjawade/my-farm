@@ -4,6 +4,8 @@ import { FarmerRegistrationService } from '../../features/farmer-registration/fa
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
 
 const ACTIVE_USER_ID_KEY = 'my_farm_active_user_id';
+const SESSION_EXPIRY_KEY = 'my_farm_session_expiry';
+const SESSION_DURATION_MS = 24 * 60 * 60 * 1000;
 
 @Injectable({
   providedIn: 'root',
@@ -19,19 +21,20 @@ export class AuthService {
   constructor() {
     this.loadSession();
 
-    // Auto-save user ID to storage when it changes
     effect(() => {
       const user = this.currentUserSignal();
       if (user) {
         localStorage.setItem(ACTIVE_USER_ID_KEY, user.id);
       } else {
         localStorage.removeItem(ACTIVE_USER_ID_KEY);
+        localStorage.removeItem(SESSION_EXPIRY_KEY);
       }
     });
   }
 
   login(farmer: FarmerRegistrationData): void {
     this.currentUserSignal.set(farmer);
+    localStorage.setItem(SESSION_EXPIRY_KEY, String(Date.now() + SESSION_DURATION_MS));
   }
 
   updateProfile(updates: Partial<FarmerRegistrationData>): void {
@@ -46,14 +49,31 @@ export class AuthService {
 
   logout(): void {
     this.currentUserSignal.set(null);
+    localStorage.removeItem(SESSION_EXPIRY_KEY);
     this.router.navigate(['/login']);
+  }
+
+  /** Returns true if there's a valid, non-expired session. Logs out and clears state if expired. */
+  isSessionValid(): boolean {
+    if (!this.currentUserSignal()) {
+      return false;
+    }
+    const expiry = localStorage.getItem(SESSION_EXPIRY_KEY);
+    if (!expiry || Date.now() > Number(expiry)) {
+      this.currentUserSignal.set(null);
+      localStorage.removeItem(ACTIVE_USER_ID_KEY);
+      localStorage.removeItem(SESSION_EXPIRY_KEY);
+      return false;
+    }
+    return true;
   }
 
   private loadSession(): void {
     try {
       const activeId = localStorage.getItem(ACTIVE_USER_ID_KEY);
-      if (activeId) {
-        // Wait, registrationService has a registeredFarmers signal. Let's look up the user.
+      const expiry = localStorage.getItem(SESSION_EXPIRY_KEY);
+
+      if (activeId && expiry && Date.now() <= Number(expiry)) {
         const farmers = this.registrationService.registeredFarmers();
         const found = farmers.find((f) => f.id === activeId);
         if (found) {
@@ -61,11 +81,11 @@ export class AuthService {
           return;
         }
       }
-      // If there's only one registered farmer (the default seeded one), auto-login for convenience?
-      // No, let them explicitly see the login page if they cleared storage, but if default is seeded,
-      // let's auto-login if no active ID is set and there's a default.
-      // Wait, let's check: if activeId is not set, we can leave it null to show the login screen.
-      // This is better so they can see the login screen first!
+
+      if (activeId || expiry) {
+        localStorage.removeItem(ACTIVE_USER_ID_KEY);
+        localStorage.removeItem(SESSION_EXPIRY_KEY);
+      }
     } catch (e) {
       console.error('Failed to load auth session', e);
     }
