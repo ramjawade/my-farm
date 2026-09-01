@@ -21,6 +21,24 @@ Every feature follows two distinct stages, each on a different model, in this or
 - ❌ Never use the implementation model to author the plan, or the planning model to write the final code.
 - ✅ Re-plan (Stage 1) whenever requirements change mid-feature, instead of patching the plan silently during implementation.
 
+## Usage Optimization Rules
+
+To keep token/API cost down while developing on this repo:
+
+### ✅ DO
+- Keep Plan Stage reasoning effort at `medium` (never `high`/`xhigh`) unless the task is genuinely architectural.
+- Prefer `Grep`/`Glob` over shell `find`/`grep`/`cat` — smaller, targeted output beats raw dumps.
+- Use the `Explore` subagent for open-ended searches (>3 lookups) instead of manual back-and-forth in the main thread, to keep large search results out of the primary context.
+- Batch independent tool calls into a single turn rather than issuing them serially.
+- Reuse context already in the conversation — don't re-read a file you already have open or just edited.
+- Keep commit messages and PR descriptions concise; skip generated summary docs unless requested.
+
+### ❌ DON'T
+- Don't spawn a subagent for a task you can complete in 1-2 direct tool calls.
+- Don't re-run the same search/grep query multiple times with minor variations — narrow the pattern first.
+- Don't request `high`/`xhigh` reasoning effort by default — reserve it for genuinely hard design/debugging problems.
+- Don't duplicate work between the main thread and a delegated subagent (i.e., don't re-verify what an agent already reported unless the change is safety-critical).
+
 ## Branch Strategy
 
 ### Naming Convention
