@@ -6,7 +6,7 @@
     "start": "ng serve",
     "build": "ng build shared && ng build home",
     "watch": "ng build home --watch --configuration development",
-    "test": "ng test --watch=false --code-coverage=false --browsers=ChromiumHeadless",
+    "test": "ng test --watch=false --code-coverage=false --browsers=ChromeHeadlessCI",
     "lint": "eslint \"projects/**/*.ts\"",
     "format:check": "prettier --check \"projects/**/*.{ts,html,scss}\"",
     "format:fix": "prettier --write \"projects/**/*.{ts,html,scss}\"",

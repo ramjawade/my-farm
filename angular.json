@@ -111,7 +111,8 @@
               "sass": {
                 "silenceDeprecations": ["import"]
               }
-            }
+            },
+            "karmaConfig": "projects/home/karma.conf.js"
           }
         },
         "lint": {
@@ -146,7 +147,8 @@
         "test": {
           "builder": "@angular/build:karma",
           "options": {
-            "tsConfig": "projects/shared/tsconfig.spec.json"
+            "tsConfig": "projects/shared/tsconfig.spec.json",
+            "karmaConfig": "projects/shared/karma.conf.js"
           }
         },
         "lint": {
