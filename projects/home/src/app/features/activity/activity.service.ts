@@ -1,7 +1,18 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
+import { Subject } from 'rxjs';
 import { Activity, ActivityExpense } from './activity.models';
 import { IStorageService } from '../../core/storage/storage.interface';
 import { AuthService } from '../../core/auth/auth.service';
+
+// Emitted synchronously whenever an activity (or its expenses/cost) changes,
+// so other services (e.g. CropTimelineService) can mirror the change without
+// ActivityService depending on them — avoids a circular DI dependency.
+export interface ActivityChangeEvent {
+  type: 'upsert' | 'delete';
+  id: string;
+  activity?: Activity;
+  cost?: number;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -12,6 +23,13 @@ export class ActivityService {
 
   private readonly activitiesSignal = signal<Activity[]>([]);
   private readonly expensesSignal = signal<ActivityExpense[]>([]);
+
+  // Bumped on every load and every mutation so a load that resolves after a
+  // later mutation (or a newer load) can detect it's stale and skip applying.
+  private mutationGeneration = 0;
+
+  private readonly changesSubject = new Subject<ActivityChangeEvent>();
+  readonly changes$ = this.changesSubject.asObservable();
 
   readonly activities = this.activitiesSignal.asReadonly();
   readonly expenses = this.expensesSignal.asReadonly();
@@ -26,10 +44,14 @@ export class ActivityService {
   }
 
   private async loadFromStorage(): Promise<void> {
+    const generation = ++this.mutationGeneration;
+
     try {
       const userId = this.getCurrentUserId();
       const activities = await this.storage.getActivities(userId);
-      this.activitiesSignal.set(activities);
+      if (generation === this.mutationGeneration) {
+        this.activitiesSignal.set(activities);
+      }
     } catch (e) {
       console.error('Failed to load activities', e);
     }
@@ -37,7 +59,9 @@ export class ActivityService {
     try {
       const userId = this.getCurrentUserId();
       const expenses = await this.storage.getExpenses(userId);
-      this.expensesSignal.set(expenses);
+      if (generation === this.mutationGeneration) {
+        this.expensesSignal.set(expenses);
+      }
     } catch (e) {
       console.error('Failed to load expenses', e);
     }
@@ -72,32 +96,53 @@ export class ActivityService {
     });
   }
 
-  addActivity(data: Omit<Activity, 'id' | 'createdAt' | 'updatedAt'>): Activity {
+  addActivity(data: Omit<Activity, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): Activity {
     const now = Date.now();
     const activity: Activity = {
       ...data,
-      id: `activity_${now}_${Math.random().toString(36).substr(2, 9)}`,
+      id: data.id || `activity_${now}_${Math.random().toString(36).substr(2, 9)}`,
       createdAt: now,
       updatedAt: now,
     };
 
+    this.mutationGeneration++;
     this.activitiesSignal.update((acts) => [...acts, activity]);
     this.persistActivities();
+    this.emitUpsert(activity);
     return activity;
   }
 
   updateActivity(id: string, updates: Partial<Activity>): void {
+    this.mutationGeneration++;
     this.activitiesSignal.update((acts) =>
       acts.map((act) => (act.id === id ? { ...act, ...updates, updatedAt: Date.now() } : act)),
     );
     this.persistActivities();
+    const updated = this.getActivityById(id);
+    if (updated) this.emitUpsert(updated);
   }
 
   deleteActivity(id: string): void {
+    this.mutationGeneration++;
     this.activitiesSignal.update((acts) => acts.filter((act) => act.id !== id));
     this.expensesSignal.update((exps) => exps.filter((exp) => exp.activityId !== id));
     this.persistActivities();
     this.persistExpenses();
+    this.changesSubject.next({ type: 'delete', id });
+  }
+
+  private emitUpsert(activity: Activity): void {
+    this.changesSubject.next({
+      type: 'upsert',
+      id: activity.id,
+      activity,
+      cost: this.getTotalExpenseForActivity(activity.id),
+    });
+  }
+
+  private emitCostChange(activityId: string): void {
+    const activity = this.getActivityById(activityId);
+    if (activity) this.emitUpsert(activity);
   }
 
   getActivityById(id: string): Activity | undefined {
@@ -123,21 +168,29 @@ export class ActivityService {
       createdAt: Date.now(),
     };
 
+    this.mutationGeneration++;
     this.expensesSignal.update((exps) => [...exps, expense]);
     this.persistExpenses();
+    this.emitCostChange(expense.activityId);
     return expense;
   }
 
   updateExpense(id: string, updates: Partial<ActivityExpense>): void {
+    this.mutationGeneration++;
+    const activityId = this.expensesSignal().find((exp) => exp.id === id)?.activityId;
     this.expensesSignal.update((exps) =>
       exps.map((exp) => (exp.id === id ? { ...exp, ...updates } : exp)),
     );
     this.persistExpenses();
+    if (activityId) this.emitCostChange(activityId);
   }
 
   deleteExpense(id: string): void {
+    this.mutationGeneration++;
+    const activityId = this.expensesSignal().find((exp) => exp.id === id)?.activityId;
     this.expensesSignal.update((exps) => exps.filter((exp) => exp.id !== id));
     this.persistExpenses();
+    if (activityId) this.emitCostChange(activityId);
   }
 
   getExpensesForActivity(activityId: string): ActivityExpense[] {

@@ -1,3 +1,4 @@
+import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { LocalStorageService } from './local-storage.service';
 import { Activity, ActivityExpense } from '../../features/activity/activity.models';
@@ -28,7 +29,7 @@ describe('LocalStorageService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [LocalStorageService],
+      providers: [provideZonelessChangeDetection(), LocalStorageService],
     });
     service = TestBed.inject(LocalStorageService);
     localStorage.clear();

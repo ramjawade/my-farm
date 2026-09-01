@@ -3,6 +3,8 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { CropDashboardComponent } from './crop-dashboard.component';
 import { CropTimelineService } from '../crop-timeline.service';
 import { CropEntity } from '../crop-timeline.models';
+import { IStorageService } from '../../../core/storage/storage.interface';
+import { LocalStorageService } from '../../../core/storage/local-storage.service';
 
 describe('CropDashboardComponent', () => {
   let component: CropDashboardComponent;
@@ -28,7 +30,11 @@ describe('CropDashboardComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [CropDashboardComponent],
-      providers: [provideZonelessChangeDetection(), CropTimelineService],
+      providers: [
+        provideZonelessChangeDetection(),
+        CropTimelineService,
+        { provide: IStorageService, useClass: LocalStorageService },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CropDashboardComponent);

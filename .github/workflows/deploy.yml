@@ -35,9 +35,7 @@ jobs:
       - name: Run format check
         run: npm run format:check
 
-      # Temporarily disabled: pre-existing test failures block deploy; tracked as follow-up.
       - name: Run unit tests
-        if: false
         run: npm run test
 
       - name: Build Angular Application

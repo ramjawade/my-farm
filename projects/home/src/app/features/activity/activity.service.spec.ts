@@ -1,12 +1,21 @@
+import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivityService } from './activity.service';
 import { Activity } from './activity.models';
+import { IStorageService } from '../../core/storage/storage.interface';
+import { LocalStorageService } from '../../core/storage/local-storage.service';
+import { flushPromises } from '../../testing/flush-promises';
 
 describe('ActivityService', () => {
   let service: ActivityService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        { provide: IStorageService, useClass: LocalStorageService },
+      ],
+    });
     localStorage.clear();
     service = TestBed.inject(ActivityService);
   });
@@ -33,14 +42,15 @@ describe('ActivityService', () => {
       expect(service.activities().length).toBe(1);
     });
 
-    it('should persist to localStorage', () => {
+    it('should persist to localStorage', async () => {
       service.addActivity({
         date: Date.now(),
         type: 'Irrigation',
         status: 'Completed',
       });
+      await flushPromises();
 
-      const stored = JSON.parse(localStorage.getItem('my_farm_activities') || '[]');
+      const stored = JSON.parse(localStorage.getItem('my_farm_anonymous_activities') || '[]');
       expect(stored.length).toBe(1);
     });
   });

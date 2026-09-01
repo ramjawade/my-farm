@@ -6,6 +6,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { AddCropComponent } from './add-crop.component';
 import { CropTimelineService } from '../crop-timeline.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { IStorageService } from '../../../core/storage/storage.interface';
+import { LocalStorageService } from '../../../core/storage/local-storage.service';
 
 describe('AddCropComponent', () => {
   let component: AddCropComponent;
@@ -21,6 +23,7 @@ describe('AddCropComponent', () => {
         provideHttpClient(),
         CropTimelineService,
         AuthService,
+        { provide: IStorageService, useClass: LocalStorageService },
       ],
     }).compileComponents();
 
