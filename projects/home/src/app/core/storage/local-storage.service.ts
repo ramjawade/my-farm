@@ -50,7 +50,11 @@ export class LocalStorageService extends IStorageService {
     }
   }
 
-  async updateExpense(userId: string, id: string, updates: Partial<ActivityExpense>): Promise<void> {
+  async updateExpense(
+    userId: string,
+    id: string,
+    updates: Partial<ActivityExpense>,
+  ): Promise<void> {
     const key = this.getExpensesKey(userId);
     const expenses = await this.getExpenses(userId);
     const index = expenses.findIndex((e) => e.id === id);
