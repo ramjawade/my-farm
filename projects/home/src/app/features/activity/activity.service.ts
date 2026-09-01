@@ -1,13 +1,15 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { Activity, ActivityExpense } from './activity.models';
-
-const ACTIVITIES_KEY = 'my_farm_activities';
-const EXPENSES_KEY = 'my_farm_activity_expenses';
+import { IStorageService } from '../../core/storage/storage.interface';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ActivityService {
+  private readonly storage = inject(IStorageService);
+  private readonly auth = inject(AuthService);
+
   private readonly activitiesSignal = signal<Activity[]>([]);
   private readonly expensesSignal = signal<ActivityExpense[]>([]);
 
@@ -18,40 +20,56 @@ export class ActivityService {
     this.loadFromStorage();
   }
 
-  private loadFromStorage(): void {
+  private getCurrentUserId(): string {
+    const user = this.auth.currentUser();
+    return user?.id || 'anonymous';
+  }
+
+  private async loadFromStorage(): Promise<void> {
     try {
-      const stored = localStorage.getItem(ACTIVITIES_KEY);
-      if (stored) {
-        this.activitiesSignal.set(JSON.parse(stored));
-      }
+      const userId = this.getCurrentUserId();
+      const activities = await this.storage.getActivities(userId);
+      this.activitiesSignal.set(activities);
     } catch (e) {
       console.error('Failed to load activities', e);
     }
 
     try {
-      const stored = localStorage.getItem(EXPENSES_KEY);
-      if (stored) {
-        this.expensesSignal.set(JSON.parse(stored));
-      }
+      const userId = this.getCurrentUserId();
+      const expenses = await this.storage.getExpenses(userId);
+      this.expensesSignal.set(expenses);
     } catch (e) {
       console.error('Failed to load expenses', e);
     }
   }
 
-  private saveActivitiesToStorage(): void {
-    try {
-      localStorage.setItem(ACTIVITIES_KEY, JSON.stringify(this.activitiesSignal()));
-    } catch (e) {
-      console.error('Failed to save activities', e);
-    }
+  private persistActivities(): void {
+    const userId = this.getCurrentUserId();
+    const activities = this.activitiesSignal();
+    this.storage.getActivities(userId).then((stored) => {
+      // Replace all stored activities with current signal state
+      const toDelete = stored.filter((s) => !activities.find((a) => a.id === s.id));
+      const toAdd = activities.filter((a) => !stored.find((s) => s.id === a.id));
+      const toUpdate = activities.filter((a) => stored.find((s) => s.id === a.id));
+
+      toDelete.forEach((a) => this.storage.deleteActivity(userId, a.id));
+      toAdd.forEach((a) => this.storage.saveActivity(userId, a));
+      toUpdate.forEach((a) => this.storage.updateActivity(userId, a.id, a));
+    });
   }
 
-  private saveExpensesToStorage(): void {
-    try {
-      localStorage.setItem(EXPENSES_KEY, JSON.stringify(this.expensesSignal()));
-    } catch (e) {
-      console.error('Failed to save expenses', e);
-    }
+  private persistExpenses(): void {
+    const userId = this.getCurrentUserId();
+    const expenses = this.expensesSignal();
+    this.storage.getExpenses(userId).then((stored) => {
+      const toDelete = stored.filter((s) => !expenses.find((e) => e.id === s.id));
+      const toAdd = expenses.filter((e) => !stored.find((s) => s.id === e.id));
+      const toUpdate = expenses.filter((e) => stored.find((s) => s.id === e.id));
+
+      toDelete.forEach((e) => this.storage.deleteExpense(userId, e.id));
+      toAdd.forEach((e) => this.storage.saveExpense(userId, e));
+      toUpdate.forEach((e) => this.storage.updateExpense(userId, e.id, e));
+    });
   }
 
   addActivity(
@@ -66,7 +84,7 @@ export class ActivityService {
     };
 
     this.activitiesSignal.update((acts) => [...acts, activity]);
-    this.saveActivitiesToStorage();
+    this.persistActivities();
     return activity;
   }
 
@@ -78,14 +96,14 @@ export class ActivityService {
           : act
       )
     );
-    this.saveActivitiesToStorage();
+    this.persistActivities();
   }
 
   deleteActivity(id: string): void {
     this.activitiesSignal.update((acts) => acts.filter((act) => act.id !== id));
     this.expensesSignal.update((exps) => exps.filter((exp) => exp.activityId !== id));
-    this.saveActivitiesToStorage();
-    this.saveExpensesToStorage();
+    this.persistActivities();
+    this.persistExpenses();
   }
 
   getActivityById(id: string): Activity | undefined {
@@ -114,7 +132,7 @@ export class ActivityService {
     };
 
     this.expensesSignal.update((exps) => [...exps, expense]);
-    this.saveExpensesToStorage();
+    this.persistExpenses();
     return expense;
   }
 
@@ -126,12 +144,12 @@ export class ActivityService {
           : exp
       )
     );
-    this.saveExpensesToStorage();
+    this.persistExpenses();
   }
 
   deleteExpense(id: string): void {
     this.expensesSignal.update((exps) => exps.filter((exp) => exp.id !== id));
-    this.saveExpensesToStorage();
+    this.persistExpenses();
   }
 
   getExpensesForActivity(activityId: string): ActivityExpense[] {
