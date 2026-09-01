@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { WeatherCacheService } from './weather-cache.service';
 import { WeatherData, WeatherLocation, CurrentWeather, FiveDayForecast } from './weather.models';
 
@@ -24,7 +25,9 @@ describe('WeatherCacheService', () => {
   };
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
     service = TestBed.inject(WeatherCacheService);
   });
 

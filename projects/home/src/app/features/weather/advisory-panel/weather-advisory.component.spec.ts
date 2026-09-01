@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { WeatherAdvisoryComponent } from './weather-advisory.component';
 
 describe('WeatherAdvisoryComponent', () => {
@@ -14,6 +15,7 @@ describe('WeatherAdvisoryComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [WeatherAdvisoryComponent],
+      providers: [provideZonelessChangeDetection()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(WeatherAdvisoryComponent);

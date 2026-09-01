@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { WeatherService } from './weather.service';
 import { AuthService } from '../auth/auth.service';
@@ -58,6 +59,7 @@ describe('WeatherService', () => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
+        provideZonelessChangeDetection(),
         WeatherService,
         WeatherCacheService,
         { provide: AuthService, useValue: authServiceSpy },
