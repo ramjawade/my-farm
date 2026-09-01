@@ -1,9 +1,26 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { FarmerRegistrationService } from './farmer-registration.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { hashPin } from '../../core/auth/pin-hash.util';
+
+function pinsMatchValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const pin = control.get('pin')?.value;
+    const confirmPin = control.get('confirmPin')?.value;
+    return pin && confirmPin && pin !== confirmPin ? { pinMismatch: true } : null;
+  };
+}
 
 @Component({
   standalone: true,
@@ -27,21 +44,26 @@ export class FarmerRegistrationComponent {
     { value: 'Marathi', label: 'Marathi (मराठी)' },
     { value: 'Punjabi', label: 'Punjabi (ਪੰਜਾਬੀ)' },
     { value: 'Telugu', label: 'Telugu (తెలుగు)' },
-    { value: 'Tamil', label: 'Tamil (தமிழ்)' },
+    { value: 'Tamil', label: 'Tamil (தமిழ்)' },
   ];
 
   readonly registrationForm: FormGroup;
 
   constructor() {
-    this.registrationForm = this.fb.group({
-      fullName: ['', [Validators.required, Validators.minLength(3)]],
-      phone: ['', [Validators.required, Validators.pattern('^[0-9-+() ]{10,15}$')]],
-      email: ['', [Validators.email]],
-      preferredLanguage: ['English', Validators.required],
-    });
+    this.registrationForm = this.fb.group(
+      {
+        fullName: ['', [Validators.required, Validators.minLength(3)]],
+        phone: ['', [Validators.required, Validators.pattern('^[0-9-+() ]{10,15}$')]],
+        email: ['', [Validators.email]],
+        preferredLanguage: ['English', Validators.required],
+        pin: ['', [Validators.required, Validators.pattern('^[0-9]{4,6}$')]],
+        confirmPin: ['', [Validators.required, Validators.pattern('^[0-9]{4,6}$')]],
+      },
+      { validators: pinsMatchValidator() },
+    );
   }
 
-  submitRegistration(): void {
+  async submitRegistration(): Promise<void> {
     if (this.registrationForm.invalid) {
       return;
     }
@@ -49,6 +71,7 @@ export class FarmerRegistrationComponent {
     const formValues = this.registrationForm.value;
     const digitsOnly = formValues.phone.replace(/\D/g, '');
     const sanitizedPhone = digitsOnly.length > 10 ? digitsOnly.slice(-10) : digitsOnly;
+    const pinHash = await hashPin(formValues.pin);
 
     const registrationData = {
       fullName: formValues.fullName,
@@ -65,11 +88,11 @@ export class FarmerRegistrationComponent {
       farmingMethod: 'Organic',
       locationType: 'skipped' as const,
       location: null,
+      pinHash,
     };
 
     const registered = this.registrationService.registerFarmer(registrationData);
 
-    // Auto-login
     this.authService.login(registered);
     this.registeredName.set(registered.fullName);
     this.isSuccess.set(true);

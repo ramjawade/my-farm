@@ -22,4 +22,5 @@ export interface FarmerRegistrationData {
   location: LatLngPoint | null;
   createdAt: number;
   farmSetupCompleted?: boolean;
+  pinHash?: string;
 }

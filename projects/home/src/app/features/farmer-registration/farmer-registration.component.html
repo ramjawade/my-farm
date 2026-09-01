@@ -111,6 +111,59 @@
               }
             </div>
 
+            <div class="col-12 col-md-6">
+              <label for="pin" class="field-label required-label">Create PIN</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white border-end-0 text-muted"
+                  ><i class="bi bi-shield-lock-fill"></i
+                ></span>
+                <input
+                  type="password"
+                  inputmode="numeric"
+                  maxlength="6"
+                  id="pin"
+                  class="form-control border-start-0 ps-0"
+                  formControlName="pin"
+                  placeholder="4-6 digit PIN"
+                  [class.is-invalid]="
+                    registrationForm.get('pin')?.touched && registrationForm.get('pin')?.invalid
+                  "
+                />
+              </div>
+              @if (registrationForm.get('pin')?.touched && registrationForm.get('pin')?.invalid) {
+                <div class="text-danger small mt-1">PIN must be 4-6 digits.</div>
+              }
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label for="confirmPin" class="field-label required-label">Confirm PIN</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white border-end-0 text-muted"
+                  ><i class="bi bi-shield-lock-fill"></i
+                ></span>
+                <input
+                  type="password"
+                  inputmode="numeric"
+                  maxlength="6"
+                  id="confirmPin"
+                  class="form-control border-start-0 ps-0"
+                  formControlName="confirmPin"
+                  placeholder="Re-enter PIN"
+                  [class.is-invalid]="
+                    registrationForm.get('confirmPin')?.touched &&
+                    (registrationForm.get('confirmPin')?.invalid ||
+                      registrationForm.errors?.['pinMismatch'])
+                  "
+                />
+              </div>
+              @if (
+                registrationForm.get('confirmPin')?.touched &&
+                registrationForm.errors?.['pinMismatch']
+              ) {
+                <div class="text-danger small mt-1">PINs do not match.</div>
+              }
+            </div>
+
             <div class="col-12">
               <label for="preferredLanguage" class="field-label required-label"
                 >Preferred Language</label

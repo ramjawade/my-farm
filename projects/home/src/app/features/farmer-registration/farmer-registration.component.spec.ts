@@ -16,7 +16,6 @@ describe('FarmerRegistrationComponent', () => {
   let router: Router;
 
   beforeEach(async () => {
-    // Clear localStorage to isolate tests
     localStorage.removeItem('my_farm_registered_farmers');
 
     await TestBed.configureTestingModule({
@@ -33,7 +32,7 @@ describe('FarmerRegistrationComponent', () => {
     fixture = TestBed.createComponent(FarmerRegistrationComponent);
     component = fixture.componentInstance;
     registrationService = TestBed.inject(FarmerRegistrationService);
-    registrationService.clearAll(); // Clean slate
+    registrationService.clearAll();
     authService = TestBed.inject(AuthService);
     router = TestBed.inject(Router);
     spyOn(router, 'navigate');
@@ -57,42 +56,56 @@ describe('FarmerRegistrationComponent', () => {
     expect(form.valid).toBeFalse();
 
     form.patchValue({
-      fullName: 'Ab', // too short
-      phone: '123', // invalid phone pattern
+      fullName: 'Ab',
+      phone: '123',
     });
     expect(form.valid).toBeFalse();
 
     form.patchValue({
       fullName: 'Amit Patel',
       phone: '9876543210',
+      pin: '1234',
+      confirmPin: '1234',
     });
     expect(form.valid).toBeTrue();
   });
 
-  it('should submit registration and save data on successful submit', () => {
+  it('should flag mismatched pins as invalid', () => {
+    const form = component.registrationForm;
+    form.patchValue({
+      fullName: 'Amit Patel',
+      phone: '9876543210',
+      pin: '1234',
+      confirmPin: '4321',
+    });
+    expect(form.valid).toBeFalse();
+    expect(form.errors?.['pinMismatch']).toBeTrue();
+  });
+
+  it('should submit registration and save data on successful submit', async () => {
     component.registrationForm.patchValue({
       fullName: 'Amit Patel',
       phone: '9876543210',
       email: 'amit@patelfarms.com',
       preferredLanguage: 'Hindi',
+      pin: '1234',
+      confirmPin: '1234',
     });
 
     expect(component.registrationForm.valid).toBeTrue();
 
-    // Submit
-    component.submitRegistration();
+    await component.submitRegistration();
 
     expect(component.isSuccess()).toBeTrue();
     expect(component.registeredName()).toBe('Amit Patel');
 
-    // Verify service storage
     const farmers = registrationService.registeredFarmers();
     expect(farmers.length).toBe(1);
     expect(farmers[0].fullName).toBe('Amit Patel');
     expect(farmers[0].phone).toBe('9876543210');
     expect(farmers[0].preferredLanguage).toBe('Hindi');
+    expect(farmers[0].pinHash).toBeTruthy();
 
-    // Verify logged in
     expect(authService.isLoggedIn()).toBeTrue();
     expect(authService.currentUser()?.fullName).toBe('Amit Patel');
   });
