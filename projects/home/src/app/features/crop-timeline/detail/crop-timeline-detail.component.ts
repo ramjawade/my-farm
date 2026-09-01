@@ -1,4 +1,13 @@
-import { Component, Input, Output, EventEmitter, inject, OnInit, signal, computed } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  inject,
+  OnInit,
+  signal,
+  computed,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,9 +21,15 @@ import { ActivitiesSummaryComponent } from '../../farm-activity/summary/activiti
 @Component({
   standalone: true,
   selector: 'app-crop-timeline-detail',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, CreateActivityComponent, ActivitiesSummaryComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    CreateActivityComponent,
+    ActivitiesSummaryComponent,
+  ],
   templateUrl: './crop-timeline-detail.component.html',
-  styleUrl: './crop-timeline-detail.component.scss'
+  styleUrl: './crop-timeline-detail.component.scss',
 })
 export class CropTimelineDetailComponent implements OnInit {
   private readonly parent = inject(CropTimelineComponent, { optional: true });
@@ -144,18 +159,18 @@ export class CropTimelineDetailComponent implements OnInit {
     { type: 'Labour Activity', icon: 'bi-people-fill', color: '#4a5568' },
     { type: 'Harvest', icon: 'bi-flower3', color: '#d69e2e' },
     { type: 'Sale', icon: 'bi-cash-coin', color: '#38a169' },
-    { type: 'Weather Incident', icon: 'bi-lightning-charge-fill', color: '#e53e3e' }
+    { type: 'Weather Incident', icon: 'bi-lightning-charge-fill', color: '#e53e3e' },
   ];
 
   ngOnInit(): void {
     const parentComp = this.parent;
     const timelineSvc = this.timelineService;
     if (this.route && parentComp && timelineSvc) {
-      this.route.paramMap.subscribe(params => {
+      this.route.paramMap.subscribe((params) => {
         const id = params.get('id');
         if (id) {
           const cropsList = timelineSvc.crops();
-          const crop = cropsList.find(c => c.id === id);
+          const crop = cropsList.find((c) => c.id === id);
           if (crop) {
             parentComp.selectedCrop.set(crop);
             parentComp.currentView.set('timeline');
@@ -164,8 +179,6 @@ export class CropTimelineDetailComponent implements OnInit {
       });
     }
   }
-
-
 
   onBackClicked(): void {
     this.backClicked.emit();
@@ -281,28 +294,39 @@ export class CropTimelineDetailComponent implements OnInit {
   }
 
   getActivityIcon(type: ActivityType): string {
-    const item = this.activityTypes.find(a => a.type === type);
+    const item = this.activityTypes.find((a) => a.type === type);
     return item ? item.icon : 'bi-calendar-event';
   }
 
   getActivityEmoji(type: ActivityType): string {
     switch (type) {
-      case 'Sowing': return '🌱';
-      case 'Irrigation': return '💧';
-      case 'Fertilizer Application': return '🌿';
-      case 'Spray Application': return '🐛';
-      case 'Weeding': return '✂️';
-      case 'Field Inspection': return '📷';
-      case 'Labour Activity': return '👥';
-      case 'Harvest': return '🌾';
-      case 'Sale': return '💰';
-      case 'Weather Incident': return '⚡';
-      default: return '📅';
+      case 'Sowing':
+        return '🌱';
+      case 'Irrigation':
+        return '💧';
+      case 'Fertilizer Application':
+        return '🌿';
+      case 'Spray Application':
+        return '🐛';
+      case 'Weeding':
+        return '✂️';
+      case 'Field Inspection':
+        return '📷';
+      case 'Labour Activity':
+        return '👥';
+      case 'Harvest':
+        return '🌾';
+      case 'Sale':
+        return '💰';
+      case 'Weather Incident':
+        return '⚡';
+      default:
+        return '📅';
     }
   }
 
   getActivityColor(type: ActivityType): string {
-    const item = this.activityTypes.find(a => a.type === type);
+    const item = this.activityTypes.find((a) => a.type === type);
     return item ? item.color : '#4a5568';
   }
 }

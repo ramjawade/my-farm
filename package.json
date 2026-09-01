@@ -6,7 +6,10 @@
     "start": "ng serve",
     "build": "ng build shared && ng build home",
     "watch": "ng build home --watch --configuration development",
-    "test": "ng test",
+    "test": "ng test --watch=false --code-coverage=false --browsers=ChromiumHeadless",
+    "lint": "eslint \"projects/**/*.ts\"",
+    "format:check": "prettier --check \"projects/**/*.{ts,html,scss}\"",
+    "format:fix": "prettier --write \"projects/**/*.{ts,html,scss}\"",
     "build:prod": "ng build shared && ng build home --configuration production --base-href /my-farm/"
   },
   "prettier": {
@@ -38,6 +41,11 @@
     "tslib": "^2.3.0"
   },
   "devDependencies": {
+    "@angular-eslint/builder": "^22.2.0",
+    "@angular-eslint/eslint-plugin": "^22.2.0",
+    "@angular-eslint/eslint-plugin-template": "^22.2.0",
+    "@angular-eslint/schematics": "^22.2.0",
+    "@angular-eslint/template-parser": "^22.2.0",
     "@angular/build": "^20.3.26",
     "@angular/cli": "^20.2.1",
     "@angular/compiler-cli": "^20.2.0",
@@ -45,6 +53,7 @@
     "@types/geojson": "^7946.0.16",
     "@types/jasmine": "~5.1.0",
     "@types/leaflet": "^1.9.21",
+    "eslint": "^10.9.1",
     "jasmine-core": "~5.9.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
@@ -52,6 +61,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "ng-packagr": "^20.3.0",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "typescript-eslint": "^8.69.0"
   }
 }

@@ -6,5 +6,4 @@ import { migrateActivityData } from './app/features/activity/migration';
 // Run data migration before app initialization
 migrateActivityData();
 
-bootstrapApplication(App, appConfig)
-  .catch((err) => console.error(err));
+bootstrapApplication(App, appConfig).catch((err) => console.error(err));

@@ -41,7 +41,9 @@
   pointer-events: none;
   user-select: none;
   text-shadow: 0 2px 6px rgba(255, 179, 0, 0.35);
-  transition: left 0.1s linear, top 0.1s linear;
+  transition:
+    left 0.1s linear,
+    top 0.1s linear;
 
   i {
     display: block;

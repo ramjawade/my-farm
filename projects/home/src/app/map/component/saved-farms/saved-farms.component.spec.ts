@@ -12,11 +12,15 @@ describe('SavedFarmsComponent', () => {
     {
       id: 'farm-1',
       name: 'Central Pasture',
-      points: [{ lat: 10, lng: 10 }, { lat: 11, lng: 11 }, { lat: 10, lng: 11 }],
+      points: [
+        { lat: 10, lng: 10 },
+        { lat: 11, lng: 11 },
+        { lat: 10, lng: 11 },
+      ],
       area: { squareMeters: 10000, hectares: 1.0, acres: 2.47 },
       geoJson: {} as any,
-      createdAt: Date.now()
-    }
+      createdAt: Date.now(),
+    },
   ];
 
   beforeEach(async () => {
@@ -29,8 +33,8 @@ describe('SavedFarmsComponent', () => {
       imports: [SavedFarmsComponent],
       providers: [
         provideZonelessChangeDetection(),
-        { provide: FarmDrawService, useValue: mockFarmDraw }
-      ]
+        { provide: FarmDrawService, useValue: mockFarmDraw },
+      ],
     }).compileComponents();
   });
 

@@ -17,7 +17,9 @@
 }
 
 .hover-lift {
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  transition:
+    transform 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
   &:hover:not(:disabled) {
     transform: translateY(-1px);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
@@ -25,7 +27,9 @@
 }
 
 .hover-bg-light {
-  transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+  transition:
+    background-color 0.15s ease-in-out,
+    color 0.15s ease-in-out;
   &:hover {
     background-color: rgba($primary, 0.05) !important;
   }

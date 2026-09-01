@@ -1,7 +1,5 @@
 @import '../../../../styles/bootstrap-config';
 
-
-
 /* Crop specific Details Box background */
 .bg-light-green {
   background-color: rgba(240, 249, 243, 0.7);
@@ -15,7 +13,7 @@
   border-radius: 50%;
   background: conic-gradient(#3f9b65 75%, #e2e8f0 75%);
   padding: 3px; /* border thickness */
-  box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
 
   .progress-circle-inner {
     width: 100%;

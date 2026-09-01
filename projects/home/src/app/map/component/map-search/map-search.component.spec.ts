@@ -15,8 +15,8 @@ describe('MapSearchComponent', () => {
       label: 'Main Farm Office',
       subtitle: 'office · 12345 · India',
       lat: 20.59,
-      lon: 78.96
-    }
+      lon: 78.96,
+    },
   ];
 
   beforeEach(async () => {
@@ -26,8 +26,8 @@ describe('MapSearchComponent', () => {
       imports: [MapSearchComponent],
       providers: [
         provideZonelessChangeDetection(),
-        { provide: MapSearchService, useValue: mockGeocoding }
-      ]
+        { provide: MapSearchService, useValue: mockGeocoding },
+      ],
     }).compileComponents();
   });
 

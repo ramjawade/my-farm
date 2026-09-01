@@ -7,7 +7,7 @@ import { AuthService } from '../../core/auth/auth.service';
   selector: 'app-toolbar',
   imports: [RouterLink],
   templateUrl: './toolbar.html',
-  styleUrl: './toolbar.scss'
+  styleUrl: './toolbar.scss',
 })
 export class Toolbar {
   readonly authService = inject(AuthService);
@@ -31,12 +31,12 @@ export class Toolbar {
   readonly languages = [
     { code: 'en', name: 'English' },
     { code: 'mr', name: 'मराठी (Marathi)' },
-    { code: 'hi', name: 'हिंदी (Hindi)' }
+    { code: 'hi', name: 'हिंदी (Hindi)' },
   ];
 
   readonly activeLangName = computed(() => {
     const code = this.activeLang();
-    return this.languages.find(l => l.code === code)?.name || 'English';
+    return this.languages.find((l) => l.code === code)?.name || 'English';
   });
 
   onMenuClick(): void {

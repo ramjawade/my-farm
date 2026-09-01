@@ -8,17 +8,17 @@
   background: rgba(243, 248, 245, 0.94);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  
+
   // Pull up to overlay the container's top padding (py-4 is 1.5rem)
   margin-top: -1.5rem;
   padding-top: 1.5rem;
-  
+
   // Stretch side-to-side to span full width and realign internally
   margin-left: -1rem;
   margin-right: -1rem;
   padding-left: 1rem;
   padding-right: 1rem;
-  
+
   @media (min-width: 768px) {
     margin-left: -3rem;
     margin-right: -3rem;
@@ -32,11 +32,11 @@
   width: 100%;
   overflow-x: hidden; // Hide scrollbar completely on desktop/laptop
   padding: 15px 0 10px 0;
-  
+
   @media (max-width: 767px) {
     overflow-x: auto; // Smooth swipe on mobile screens
     -webkit-overflow-scrolling: touch;
-    
+
     &::-webkit-scrollbar {
       height: 4px;
     }
@@ -59,7 +59,7 @@
   min-width: 100%;
   position: relative;
   padding: 0 5px;
-  
+
   @media (max-width: 767px) {
     min-width: 640px; // beautiful legible width on mobile
     padding: 0 15px;
@@ -80,12 +80,11 @@
   padding: 0;
   outline: none;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  
+
   @media (min-width: 768px) {
     max-width: none; // let steps fill entire width to connect step-lines perfectly
   }
 
-  
   &:hover {
     .step-circle {
       transform: scale(1.15);
@@ -124,7 +123,7 @@
   z-index: 6;
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.03);
-  
+
   i {
     font-size: 0.95rem;
     font-weight: bold;
@@ -186,7 +185,7 @@
   background: #e2e8f0;
   z-index: 2;
   transition: background-color 0.4s ease;
-  
+
   &.completed {
     background: #3f9b65;
   }
@@ -304,8 +303,6 @@
   color: #777;
 }
 
-
-
 /* Attachments preview grid styling */
 .attachment-preview {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -313,7 +310,7 @@
 
   &:hover {
     transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
 }
 
@@ -324,11 +321,3 @@
 .border-dashed {
   border-style: dashed !important;
 }
-
-
-
-
-
-
-
-

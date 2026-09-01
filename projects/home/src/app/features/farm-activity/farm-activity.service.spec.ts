@@ -26,7 +26,7 @@ describe('FarmActivityService', () => {
     farmingMethod: 'Organic',
     locationType: 'skipped',
     location: null,
-    createdAt: Date.now()
+    createdAt: Date.now(),
   };
 
   const mockActivities = [
@@ -39,8 +39,8 @@ describe('FarmActivityService', () => {
       cost: 500,
       notes: 'Notes',
       attachments: [],
-      metadata: {}
-    }
+      metadata: {},
+    },
   ];
 
   beforeEach(() => {
@@ -51,8 +51,8 @@ describe('FarmActivityService', () => {
         provideZonelessChangeDetection(),
         AuthService,
         FarmActivityService,
-        CropTimelineService
-      ]
+        CropTimelineService,
+      ],
     });
 
     service = TestBed.inject(FarmActivityService);
@@ -84,7 +84,7 @@ describe('FarmActivityService', () => {
       farmingMethod: 'Organic',
       locationType: 'skipped',
       location: null,
-      createdAt: Date.now()
+      createdAt: Date.now(),
     });
 
     TestBed.flushEffects();
@@ -113,7 +113,7 @@ describe('FarmActivityService', () => {
       activityId: 'Irrigation',
       fieldId: 'Field A',
       status: 'Completed',
-      notes: 'Custom activity'
+      notes: 'Custom activity',
     };
 
     const newAct = service.addActivity(activityData);
@@ -134,13 +134,13 @@ describe('FarmActivityService', () => {
       activityId: 'Irrigation',
       fieldId: 'Field A',
       status: 'Completed',
-      notes: 'Notes to update'
+      notes: 'Notes to update',
     };
 
     const created = service.addActivity(activityData);
     service.updateActivity(created.id, { notes: 'Updated notes', status: 'In Progress' });
 
-    const updated = service.activities().find(a => a.id === created.id);
+    const updated = service.activities().find((a) => a.id === created.id);
     expect(updated?.notes).toBe('Updated notes');
     expect(updated?.status).toBe('In Progress');
 
@@ -158,7 +158,7 @@ describe('FarmActivityService', () => {
       activityId: 'Irrigation',
       fieldId: 'Field A',
       status: 'Completed',
-      notes: 'Notes to delete'
+      notes: 'Notes to delete',
     };
 
     const created = service.addActivity(activityData);
@@ -167,7 +167,7 @@ describe('FarmActivityService', () => {
       activityId: created.id,
       category: 'Labour',
       amount: 120,
-      remarks: 'Paid helper'
+      remarks: 'Paid helper',
     });
 
     expect(service.getExpensesForActivity(created.id).length).toBe(1);
@@ -175,9 +175,9 @@ describe('FarmActivityService', () => {
 
     service.deleteActivity(created.id);
 
-    expect(service.activities().find(a => a.id === created.id)).toBeUndefined();
+    expect(service.activities().find((a) => a.id === created.id)).toBeUndefined();
     expect(service.getExpensesForActivity(created.id).length).toBe(0);
-    expect(service.expenses().find(e => e.id === expense.id)).toBeUndefined();
+    expect(service.expenses().find((e) => e.id === expense.id)).toBeUndefined();
   });
 
   it('should sync new activities, updates, and deletes to CropTimelineService', () => {
@@ -193,23 +193,23 @@ describe('FarmActivityService', () => {
       activityId: 'Irrigation',
       fieldId: 'Field A',
       status: 'Completed',
-      notes: 'Crop-linked activity'
+      notes: 'Crop-linked activity',
     };
 
     const created = service.addActivity(activityData);
 
-    let synced = timelineService.activities().find(a => a.id === created.id);
+    let synced = timelineService.activities().find((a) => a.id === created.id);
     expect(synced).toBeTruthy();
     expect(synced?.cropId).toBe(cropId);
     expect(synced?.type).toBe('Irrigation');
     expect(synced?.status).toBe('Completed');
 
     service.updateActivity(created.id, { notes: 'Updated crop notes' });
-    synced = timelineService.activities().find(a => a.id === created.id);
+    synced = timelineService.activities().find((a) => a.id === created.id);
     expect(synced?.notes).toBe('Updated crop notes');
 
     service.deleteActivity(created.id);
-    synced = timelineService.activities().find(a => a.id === created.id);
+    synced = timelineService.activities().find((a) => a.id === created.id);
     expect(synced).toBeUndefined();
   });
 
@@ -225,7 +225,7 @@ describe('FarmActivityService', () => {
       activityId: 'Weeding',
       fieldId: 'Field A',
       status: 'Completed',
-      notes: 'Expense test activity'
+      notes: 'Expense test activity',
     };
 
     const created = service.addActivity(activityData);
@@ -233,27 +233,27 @@ describe('FarmActivityService', () => {
     const exp1 = service.addExpense({
       activityId: created.id,
       category: 'Seeds',
-      amount: 400
+      amount: 400,
     });
 
-    let synced = timelineService.activities().find(a => a.id === created.id);
+    let synced = timelineService.activities().find((a) => a.id === created.id);
     expect(synced?.cost).toBe(400);
 
     const exp2 = service.addExpense({
       activityId: created.id,
       category: 'Labour',
-      amount: 250
+      amount: 250,
     });
 
-    synced = timelineService.activities().find(a => a.id === created.id);
+    synced = timelineService.activities().find((a) => a.id === created.id);
     expect(synced?.cost).toBe(650);
 
     service.updateExpense(exp1.id, { amount: 500 });
-    synced = timelineService.activities().find(a => a.id === created.id);
+    synced = timelineService.activities().find((a) => a.id === created.id);
     expect(synced?.cost).toBe(750);
 
     service.deleteExpense(exp2.id);
-    synced = timelineService.activities().find(a => a.id === created.id);
+    synced = timelineService.activities().find((a) => a.id === created.id);
     expect(synced?.cost).toBe(500);
   });
 });

@@ -12,7 +12,7 @@ import { FarmerRegistrationData } from '../farmer-registration/farmer-registrati
   imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent {
   private readonly authService = inject(AuthService);
@@ -62,7 +62,7 @@ export class LoginComponent {
 
     // Look up registered farmer by comparing clean 10-digit numbers
     const registered = this.registeredFarmers();
-    const found = registered.find(f => {
+    const found = registered.find((f) => {
       const fPhoneClean = f.phone.replace(/\D/g, '');
       const fPhone10 = fPhoneClean.length > 10 ? fPhoneClean.slice(-10) : fPhoneClean;
       return fPhone10 === phoneVal;
@@ -99,7 +99,7 @@ export class LoginComponent {
         irrigationType: 'Manual',
         farmingMethod: 'Organic',
         locationType: 'skipped',
-        location: null
+        location: null,
       });
 
       this.authService.login(newFarmer);
@@ -115,7 +115,7 @@ export class LoginComponent {
   getInitials(name: string): string {
     return name
       .split(' ')
-      .map(part => part[0])
+      .map((part) => part[0])
       .join('')
       .toUpperCase()
       .substring(0, 2);

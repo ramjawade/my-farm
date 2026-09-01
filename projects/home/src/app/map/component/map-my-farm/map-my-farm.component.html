@@ -1,8 +1,19 @@
 <div class="map-my-farm shadow-sm">
   @if (draw.savedFarms().length === 0 && !draw.isDrawing() && !draw.isCompleted()) {
-    <div class="alert alert-success p-2.5 mb-2 border-0 rounded-3 text-start animate-fade-in" style="background-color: rgba(46, 125, 50, 0.09); font-size: 0.75rem; color: #1b5e20; line-height: 1.35;">
-      <div class="fw-bold mb-0.5"><i class="bi bi-pin-map-fill text-danger me-1"></i>Map Your Farm Boundary</div>
-      Draw your farm boundaries to resolve cultivation area and unlock high-resolution satellite views.
+    <div
+      class="alert alert-success p-2.5 mb-2 border-0 rounded-3 text-start animate-fade-in"
+      style="
+        background-color: rgba(46, 125, 50, 0.09);
+        font-size: 0.75rem;
+        color: #1b5e20;
+        line-height: 1.35;
+      "
+    >
+      <div class="fw-bold mb-0.5">
+        <i class="bi bi-pin-map-fill text-danger me-1"></i>Map Your Farm Boundary
+      </div>
+      Draw your farm boundaries to resolve cultivation area and unlock high-resolution satellite
+      views.
     </div>
   }
 
@@ -21,7 +32,12 @@
       Click the map to add points ({{ draw.pointCount() }}). Click the first point to complete.
     </p>
     <div class="map-my-farm__actions btn-group btn-group-sm w-100">
-      <button type="button" class="btn btn-outline-secondary" (click)="undo()" [disabled]="draw.pointCount() === 0">
+      <button
+        type="button"
+        class="btn btn-outline-secondary"
+        (click)="undo()"
+        [disabled]="draw.pointCount() === 0"
+      >
         Undo
       </button>
       <button type="button" class="btn btn-outline-danger" (click)="cancel()">Cancel</button>
@@ -46,7 +62,12 @@
         (input)="onNameInput($event)"
       />
       <div class="btn-group btn-group-sm w-100">
-        <button type="button" class="btn btn-success" (click)="save()" [disabled]="!farmName().trim()">
+        <button
+          type="button"
+          class="btn btn-success"
+          (click)="save()"
+          [disabled]="!farmName().trim()"
+        >
           Save
         </button>
         <button type="button" class="btn btn-outline-secondary" (click)="draw.startDrawing()">

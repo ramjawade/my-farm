@@ -1,24 +1,30 @@
 import { Component, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Router, RouterOutlet } from '@angular/router';
 
 import { CropTimelineService } from './crop-timeline.service';
-import { CropEntity, ActivityEntity, CropStage, ActivityType, ActivityStatus } from './crop-timeline.models';
+import {
+  CropEntity,
+  ActivityEntity,
+  CropStage,
+  ActivityType,
+  ActivityStatus,
+} from './crop-timeline.models';
 import { ConfirmDialogComponent } from 'shared';
 
 @Component({
   standalone: true,
   selector: 'app-crop-timeline',
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    RouterOutlet,
-    ConfirmDialogComponent
-  ],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterOutlet, ConfirmDialogComponent],
   templateUrl: './crop-timeline.component.html',
-  styleUrl: './crop-timeline.component.scss'
+  styleUrl: './crop-timeline.component.scss',
 })
 export class CropTimelineComponent {
   private readonly fb = inject(FormBuilder);
@@ -49,7 +55,7 @@ export class CropTimelineComponent {
     'Flowering',
     'Fruiting / Pod Formation',
     'Maturity',
-    'Harvest'
+    'Harvest',
   ];
 
   readonly activityTypes: { type: ActivityType; icon: string; color: string }[] = [
@@ -62,12 +68,22 @@ export class CropTimelineComponent {
     { type: 'Labour Activity', icon: 'bi-people-fill', color: '#4a5568' },
     { type: 'Harvest', icon: 'bi-flower3', color: '#d69e2e' },
     { type: 'Sale', icon: 'bi-cash-coin', color: '#38a169' },
-    { type: 'Weather Incident', icon: 'bi-lightning-charge-fill', color: '#e53e3e' }
+    { type: 'Weather Incident', icon: 'bi-lightning-charge-fill', color: '#e53e3e' },
   ];
 
   readonly activityStatuses: ActivityStatus[] = ['Planned', 'Scheduled', 'Completed', 'Cancelled'];
 
-  readonly cropNameOptions = ['Soybeans', 'Wheat', 'Rice', 'Corn', 'Cotton', 'Sugarcane', 'Mustard', 'Vegetables', 'Fruits'];
+  readonly cropNameOptions = [
+    'Soybeans',
+    'Wheat',
+    'Rice',
+    'Corn',
+    'Cotton',
+    'Sugarcane',
+    'Mustard',
+    'Vegetables',
+    'Fruits',
+  ];
 
   // Form Groups
   cropForm: FormGroup;
@@ -79,7 +95,7 @@ export class CropTimelineComponent {
     const allCrops = this.timelineService.crops();
     if (!term) return allCrops;
     return allCrops.filter(
-      c => c.name.toLowerCase().includes(term) || c.fieldId.toLowerCase().includes(term)
+      (c) => c.name.toLowerCase().includes(term) || c.fieldId.toLowerCase().includes(term),
     );
   });
 
@@ -87,13 +103,15 @@ export class CropTimelineComponent {
   readonly cropActivities = computed(() => {
     const activeCrop = this.selectedCrop();
     if (!activeCrop) return [];
-    
+
     // Sort completed/cancelled/past status chronologically descending (latest first)
     // Sort planned/scheduled upcoming tasks chronologically ascending (earliest first)
-    const all = this.timelineService.activities().filter(a => a.cropId === activeCrop.id && !a.parentActivityId);
-    
+    const all = this.timelineService
+      .activities()
+      .filter((a) => a.cropId === activeCrop.id && !a.parentActivityId);
+
     const completedHistory = all
-      .filter(a => a.status === 'Completed' || a.status === 'Cancelled')
+      .filter((a) => a.status === 'Completed' || a.status === 'Cancelled')
       .sort((a, b) => (b.date || 0) - (a.date || 0));
 
     return completedHistory;
@@ -103,9 +121,15 @@ export class CropTimelineComponent {
   readonly upcomingActivities = computed(() => {
     const activeCrop = this.selectedCrop();
     if (!activeCrop) return [];
-    
-    return this.timelineService.activities()
-      .filter(a => a.cropId === activeCrop.id && (a.status === 'Planned' || a.status === 'Scheduled') && !a.parentActivityId)
+
+    return this.timelineService
+      .activities()
+      .filter(
+        (a) =>
+          a.cropId === activeCrop.id &&
+          (a.status === 'Planned' || a.status === 'Scheduled') &&
+          !a.parentActivityId,
+      )
       .sort((a, b) => {
         const timeA = a.date !== undefined ? a.date : Infinity;
         const timeB = b.date !== undefined ? b.date : Infinity;
@@ -122,7 +146,7 @@ export class CropTimelineComponent {
       area: ['', [Validators.required, Validators.min(0.01)]],
       areaUnit: ['hectares', Validators.required],
       sowingDate: [''],
-      currentStage: ['Land Preparation', Validators.required]
+      currentStage: ['Land Preparation', Validators.required],
     });
 
     this.activityForm = this.fb.group({
@@ -152,7 +176,7 @@ export class CropTimelineComponent {
       yieldQuantity: [500],
       yieldUnit: ['kg'],
       grade: ['A'],
-      sellingPrice: [40]
+      sellingPrice: [40],
     });
 
     // Handle selected crop dynamic update inside timeline view to keep object fresh
@@ -160,7 +184,7 @@ export class CropTimelineComponent {
       const active = this.selectedCrop();
       if (active) {
         const cropsList = this.timelineService.crops();
-        const fresh = cropsList.find(c => c.id === active.id);
+        const fresh = cropsList.find((c) => c.id === active.id);
         if (fresh && fresh !== active) {
           this.selectedCrop.set(fresh);
         }
@@ -182,19 +206,20 @@ export class CropTimelineComponent {
   }
 
   getDaysSinceLastActivity(cropId: string): string {
-    const cropActs = this.timelineService.activities()
-      .filter(a => a.cropId === cropId && a.status === 'Completed' && !a.parentActivityId)
+    const cropActs = this.timelineService
+      .activities()
+      .filter((a) => a.cropId === cropId && a.status === 'Completed' && !a.parentActivityId)
       .sort((a, b) => (b.date || 0) - (a.date || 0));
-    
+
     if (cropActs.length === 0) {
       return 'No activity logged';
     }
-    
+
     const lastDate = cropActs[0].date;
     if (!lastDate) return 'No activity logged';
     const diff = Date.now() - lastDate;
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
+
     if (days < 0) return 'Today';
     if (days === 0) return 'Today';
     if (days === 1) return '1 Day';
@@ -221,26 +246,28 @@ export class CropTimelineComponent {
   // --- Growth Stage Operations ---
   findOrCreateMainActivityForStage(stage: CropStage): ActivityEntity {
     const crop = this.selectedCrop()!;
-    const activities = this.timelineService.activities().filter(a => a.cropId === crop.id);
+    const activities = this.timelineService.activities().filter((a) => a.cropId === crop.id);
 
     // Look for an activity that represents this stage
-    let mainAct = activities.find(a => 
-      (a.type === 'Field Inspection' && a.notes.includes(`advanced to: ${stage}`)) ||
-      (stage === 'Sowing' && a.type === 'Sowing') ||
-      (stage === 'Harvest' && a.type === 'Harvest')
+    let mainAct = activities.find(
+      (a) =>
+        (a.type === 'Field Inspection' && a.notes.includes(`advanced to: ${stage}`)) ||
+        (stage === 'Sowing' && a.type === 'Sowing') ||
+        (stage === 'Harvest' && a.type === 'Harvest'),
     );
 
     if (mainAct) {
       if (mainAct.status !== 'Completed') {
         this.timelineService.updateActivity(mainAct.id, {
           status: 'Completed',
-          date: Date.now()
+          date: Date.now(),
         });
         // Retrieve the updated mainActivity record
-        mainAct = this.timelineService.activities().find(a => a.id === mainAct!.id)!;
+        mainAct = this.timelineService.activities().find((a) => a.id === mainAct!.id)!;
       }
     } else {
-      const type: ActivityType = (stage === 'Sowing') ? 'Sowing' : (stage === 'Harvest' ? 'Harvest' : 'Field Inspection');
+      const type: ActivityType =
+        stage === 'Sowing' ? 'Sowing' : stage === 'Harvest' ? 'Harvest' : 'Field Inspection';
       mainAct = this.timelineService.addActivity({
         cropId: crop.id,
         type,
@@ -248,7 +275,7 @@ export class CropTimelineComponent {
         cost: 0,
         notes: `Growth stage advanced to: ${stage}.`,
         attachments: [],
-        metadata: {}
+        metadata: {},
       });
     }
 
@@ -260,15 +287,15 @@ export class CropTimelineComponent {
     if (!crop) return;
 
     this.timelineService.updateCrop(crop.id, { currentStage: stage });
-    
+
     // Synchronously sync selectedCrop to keep state instant in tests and UI
-    const fresh = this.timelineService.crops().find(c => c.id === crop.id);
+    const fresh = this.timelineService.crops().find((c) => c.id === crop.id);
     if (fresh) {
       this.selectedCrop.set(fresh);
     }
-    
+
     const mainAct = this.findOrCreateMainActivityForStage(stage);
-    
+
     // Open modal to log subactivity under this main activity
     this.openAddActivityModal(mainAct.id);
   }
@@ -286,7 +313,7 @@ export class CropTimelineComponent {
       areaUnit: values.areaUnit,
       sowingDate: values.sowingDate ? new Date(values.sowingDate).getTime() : undefined,
       currentStage: values.currentStage as CropStage,
-      status: 'Active'
+      status: 'Active',
     });
 
     this.cropForm.reset({
@@ -296,7 +323,7 @@ export class CropTimelineComponent {
       area: '',
       areaUnit: 'hectares',
       sowingDate: '',
-      currentStage: 'Land Preparation'
+      currentStage: 'Land Preparation',
     });
 
     this.currentView.set('dashboard');
@@ -326,7 +353,7 @@ export class CropTimelineComponent {
       yieldQuantity: 500,
       yieldUnit: 'kg',
       grade: 'A',
-      sellingPrice: 40
+      sellingPrice: 40,
     });
     this.showActivityModal.set(true);
   }
@@ -335,35 +362,35 @@ export class CropTimelineComponent {
     this.currentParentActivityId.set(act.parentActivityId || null);
     this.editingActivity.set(act);
     this.uploadedImages.set(act.attachments || []);
-    
+
     this.activityForm.patchValue({
       type: act.type,
       date: act.date ? new Date(act.date).toISOString().substring(0, 10) : '',
       status: act.status,
       cost: act.cost,
       notes: act.notes,
-      
+
       // Irrigation
       irrigationMethod: act.metadata.irrigationMethod || 'Drip',
       duration: act.metadata.duration || 30,
       waterQuantity: act.metadata.waterQuantity || 1000,
-      
+
       // Fertilizer
       fertilizerName: act.metadata.fertilizerName || 'NPK 19-19-19',
       fertilizerQuantity: act.metadata.quantity || 25,
       applicationMethod: act.metadata.applicationMethod || 'Broadcasting',
-      
+
       // Spray
       chemicalName: act.metadata.chemicalName || 'Neem Oil',
       dosage: act.metadata.dosage || '500 ml/ha',
       sprayWaterQuantity: act.metadata.waterQuantity || 200,
       targetPest: act.metadata.targetPest || 'Aphids',
-      
+
       // Harvest
       yieldQuantity: act.metadata.yieldQuantity || 500,
       yieldUnit: act.metadata.unit || 'kg',
       grade: act.metadata.grade || 'A',
-      sellingPrice: act.metadata.sellingPrice || 40
+      sellingPrice: act.metadata.sellingPrice || 40,
     });
 
     this.showActivityModal.set(true);
@@ -435,7 +462,7 @@ export class CropTimelineComponent {
       notes: values.notes,
       attachments: this.uploadedImages(),
       metadata: metadata,
-      parentActivityId: this.currentParentActivityId() || undefined
+      parentActivityId: this.currentParentActivityId() || undefined,
     };
 
     const isEdit = this.editingActivity();
@@ -459,10 +486,10 @@ export class CropTimelineComponent {
     if (input.files && input.files[0]) {
       const file = input.files[0];
       const reader = new FileReader();
-      
+
       reader.onload = () => {
         const base64String = reader.result as string;
-        this.uploadedImages.update(current => [...current, base64String]);
+        this.uploadedImages.update((current) => [...current, base64String]);
       };
 
       reader.readAsDataURL(file);
@@ -470,39 +497,50 @@ export class CropTimelineComponent {
   }
 
   removeImage(index: number): void {
-    this.uploadedImages.update(current => current.filter((_, i) => i !== index));
+    this.uploadedImages.update((current) => current.filter((_, i) => i !== index));
   }
 
   getActivityIcon(type: ActivityType): string {
-    const item = this.activityTypes.find(a => a.type === type);
+    const item = this.activityTypes.find((a) => a.type === type);
     return item ? item.icon : 'bi-calendar-event';
   }
 
   getActivityEmoji(type: ActivityType): string {
     switch (type) {
-      case 'Sowing': return '🌱';
-      case 'Irrigation': return '💧';
-      case 'Fertilizer Application': return '🌿';
-      case 'Spray Application': return '🐛';
-      case 'Weeding': return '✂️';
-      case 'Field Inspection': return '📷';
-      case 'Labour Activity': return '👥';
-      case 'Harvest': return '🌾';
-      case 'Sale': return '💰';
-      case 'Weather Incident': return '⚡';
-      default: return '📅';
+      case 'Sowing':
+        return '🌱';
+      case 'Irrigation':
+        return '💧';
+      case 'Fertilizer Application':
+        return '🌿';
+      case 'Spray Application':
+        return '🐛';
+      case 'Weeding':
+        return '✂️';
+      case 'Field Inspection':
+        return '📷';
+      case 'Labour Activity':
+        return '👥';
+      case 'Harvest':
+        return '🌾';
+      case 'Sale':
+        return '💰';
+      case 'Weather Incident':
+        return '⚡';
+      default:
+        return '📅';
     }
   }
 
   getActivityColor(type: ActivityType): string {
-    const item = this.activityTypes.find(a => a.type === type);
+    const item = this.activityTypes.find((a) => a.type === type);
     return item ? item.color : '#4a5568';
   }
 
   markActivityCompleted(id: string): void {
     this.timelineService.updateActivity(id, {
       status: 'Completed',
-      date: Date.now()
+      date: Date.now(),
     });
   }
 

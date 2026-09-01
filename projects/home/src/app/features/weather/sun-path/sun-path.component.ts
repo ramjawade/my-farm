@@ -21,24 +21,24 @@ export class SunPathComponent implements OnInit, OnDestroy {
   readonly radius = 115;
   readonly centerX = 180;
   readonly centerY = 118;
- 
+
   // Geometry details for chord limits (15 degrees above the diameter line)
   readonly startAngle = 165;
   readonly endAngle = 15;
   readonly angleRange = 150; // Total sweep of 150 degrees
- 
+
   // Mathematically computed start/end endpoints at Y = 118 - 115 * sin(15 deg) = 88.2
   readonly startX = 68.9;
   readonly startY = 88.2;
   readonly endX = 291.1;
   readonly endY = 88.2;
- 
+
   // Declarative SVG path representing the chord arc
   readonly arcPath = `M ${this.startX} ${this.startY} A ${this.radius} ${this.radius} 0 0 1 ${this.endX} ${this.endY}`;
- 
+
   // Arc sweep length: radius * (angleRange in radians) = 115 * (150 * Math.PI / 180) = ~301.07
-  readonly circumference = 115 * (150 * Math.PI / 180);
- 
+  readonly circumference = 115 * ((150 * Math.PI) / 180);
+
   // Dasharray configuration
   readonly dashArray = `${this.circumference} ${this.circumference}`;
 
@@ -46,7 +46,7 @@ export class SunPathComponent implements OnInit, OnDestroy {
   private parseTimeToSeconds(timeStr: string): number {
     const match = timeStr.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
     if (!match) return 0;
-    
+
     let hours = parseInt(match[1], 10);
     const minutes = parseInt(match[2], 10);
     const ampm = match[3].toUpperCase();
@@ -101,12 +101,12 @@ export class SunPathComponent implements OnInit, OnDestroy {
     const current = this.flooredTimeSeconds();
 
     const totalSecondsInDay = 24 * 3600;
-    const nightDuration = (totalSecondsInDay - sunset) + sunrise;
+    const nightDuration = totalSecondsInDay - sunset + sunrise;
 
     if (current >= sunset) {
       return (current - sunset) / nightDuration;
     } else if (current <= sunrise) {
-      return ((totalSecondsInDay - sunset) + current) / nightDuration;
+      return (totalSecondsInDay - sunset + current) / nightDuration;
     }
 
     return 0; // Daytime fallback
@@ -127,8 +127,8 @@ export class SunPathComponent implements OnInit, OnDestroy {
   readonly celestialPosition = computed(() => {
     const p = this.activeProgress();
     // Angle in degrees moving from 165° (Rise) to 15° (Set)
-    const angleDeg = this.startAngle - (this.angleRange * p);
-    const angleRad = angleDeg * Math.PI / 180;
+    const angleDeg = this.startAngle - this.angleRange * p;
+    const angleRad = (angleDeg * Math.PI) / 180;
     const cx = this.centerX + this.radius * Math.cos(angleRad);
     const cy = this.centerY - this.radius * Math.sin(angleRad);
     return { cx, cy };

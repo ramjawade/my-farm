@@ -1,12 +1,9 @@
 <div class="sun-card">
-
   <!-- CHART CONTAINER -->
   <div class="sun-chart" id="sunChart">
-    
     <div class="chart-wrapper">
       <!-- NATIVE DECLARATIVE SVG -->
       <svg [attr.width]="width" [attr.height]="height" class="sun-svg">
-        
         <!-- DEFINITIONS: CELESTIAL GRADIENTS -->
         <defs>
           <linearGradient id="sunGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -59,7 +56,11 @@
             [attr.cy]="celestialPosition().cy"
             r="20"
             [attr.fill]="isDaytime() ? 'rgba(255, 213, 79, 0.25)' : 'rgba(0, 229, 255, 0.25)'"
-            style="transition: cx 0.1s linear, cy 0.1s linear;"
+            style="
+              transition:
+                cx 0.1s linear,
+                cy 0.1s linear;
+            "
           ></circle>
         </g>
       </svg>
@@ -97,7 +98,5 @@
         <span class="time-val text-nowrap">{{ sunsetTime() }}</span>
       </div>
     </div>
-
   </div>
-
 </div>

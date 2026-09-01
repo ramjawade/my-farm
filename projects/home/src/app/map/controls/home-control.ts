@@ -7,7 +7,7 @@ export class HomeControl extends L.Control {
   constructor(options?: L.ControlOptions) {
     super({
       position: 'bottomright',
-      ...options
+      ...options,
     });
   }
 
@@ -22,7 +22,7 @@ export class HomeControl extends L.Control {
     `;
     button.href = '#';
     button.title = 'Go to starting map overview';
-    
+
     L.DomEvent.disableClickPropagation(button);
     L.DomEvent.on(button, 'click', (e) => {
       L.DomEvent.preventDefault(e);

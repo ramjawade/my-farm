@@ -6,7 +6,7 @@ import { FarmAreaResult } from '../../models/map.models';
   standalone: true,
   selector: 'app-saved-farms',
   templateUrl: './saved-farms.component.html',
-  styleUrl: './saved-farms.component.scss'
+  styleUrl: './saved-farms.component.scss',
 })
 export class SavedFarmsComponent {
   readonly farmDraw = inject(FarmDrawService);

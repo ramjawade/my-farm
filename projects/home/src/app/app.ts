@@ -6,6 +6,6 @@ import { AppLayout } from './layout/app-layout/app-layout';
   selector: 'app-root',
   imports: [AppLayout],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
 })
 export class App {}

@@ -23,7 +23,7 @@ describe('ActivitiesSummaryComponent', () => {
       cost: 500,
       notes: 'Notes',
       attachments: [],
-      metadata: {}
+      metadata: {},
     },
     {
       id: 'act-s-2',
@@ -34,7 +34,7 @@ describe('ActivitiesSummaryComponent', () => {
       cost: 1500,
       notes: 'Notes',
       attachments: [],
-      metadata: {}
+      metadata: {},
     },
     {
       id: 'act-s-3',
@@ -45,8 +45,8 @@ describe('ActivitiesSummaryComponent', () => {
       cost: 300,
       notes: 'Notes',
       attachments: [],
-      metadata: {}
-    }
+      metadata: {},
+    },
   ];
 
   beforeEach(async () => {
@@ -60,14 +60,14 @@ describe('ActivitiesSummaryComponent', () => {
         provideRouter([]),
         CropTimelineService,
         FarmActivityService,
-        AuthService
-      ]
+        AuthService,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ActivitiesSummaryComponent);
     component = fixture.componentInstance;
     componentRef = fixture.componentRef;
-    
+
     // Login mock user
     const authSvc = TestBed.inject(AuthService);
     authSvc.login({ id: 'f-test' } as any);

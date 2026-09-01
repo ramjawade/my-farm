@@ -1,4 +1,13 @@
-import { Component, inject, signal, computed, effect, input, model, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  effect,
+  input,
+  model,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -15,7 +24,7 @@ import * as L from 'leaflet';
   imports: [CommonModule, FormsModule, MapComponent],
   templateUrl: './profile-edit-dialog.component.html',
   styleUrl: './profile-edit-dialog.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileEditDialogComponent {
   private readonly authService = inject(AuthService);
@@ -45,7 +54,7 @@ export class ProfileEditDialogComponent {
   readonly editVillage = signal('');
   readonly editPincode = signal('');
   readonly selectedCrops = signal<string[]>([]);
-  
+
   // Geocentric coordinates state
   readonly locationMethod = signal<'map' | 'manual'>('map');
   readonly mapMode = signal<'pin' | 'draw'>('pin');
@@ -62,7 +71,7 @@ export class ProfileEditDialogComponent {
     { value: 'Tamil', label: 'Tamil (தமிழ்)' },
     { value: 'Kannada', label: 'Kannada (ಕನ್ನಡ)' },
     { value: 'Bengali', label: 'Bengali (বাংলা)' },
-    { value: 'Spanish', label: 'Spanish (Español)' }
+    { value: 'Spanish', label: 'Spanish (Español)' },
   ];
 
   readonly cropOptions = [
@@ -75,7 +84,7 @@ export class ProfileEditDialogComponent {
     { value: 'Mustard', label: 'Mustard', icon: 'bi-brightness-high', color: '#d69e2e' },
     { value: 'Vegetables', label: 'Vegetables', icon: 'bi-basket', color: '#e53e3e' },
     { value: 'Fruits', label: 'Fruits', icon: 'bi-apple', color: '#e53e3e' },
-    { value: 'Other', label: 'Other', icon: 'bi-grid-fill', color: '#4a5568' }
+    { value: 'Other', label: 'Other', icon: 'bi-grid-fill', color: '#4a5568' },
   ];
 
   readonly waterSourceOptions = [
@@ -83,21 +92,26 @@ export class ProfileEditDialogComponent {
     { value: 'Canal', label: 'Canal', icon: 'bi-water', color: '#2b6cb0' },
     { value: 'River', label: 'River', icon: 'bi-droplet-fill', color: '#3182ce' },
     { value: 'Farm Pond', label: 'Farm Pond', icon: 'bi-moisture', color: '#319795' },
-    { value: 'Rainfed', label: 'Rainfed', icon: 'bi-cloud-rain-fill', color: '#4a5568' }
+    { value: 'Rainfed', label: 'Rainfed', icon: 'bi-cloud-rain-fill', color: '#4a5568' },
   ];
 
   readonly irrigationTypeOptions = [
     { value: 'Drip', label: 'Drip', icon: 'bi-droplet-half', color: '#319795' },
     { value: 'Sprinkler', label: 'Sprinkler', icon: 'bi-cloud-drizzle-fill', color: '#4a5568' },
     { value: 'Flood', label: 'Flood', icon: 'bi-water', color: '#3182ce' },
-    { value: 'Manual', label: 'Manual', icon: 'bi-person-fill', color: '#d69e2e' }
+    { value: 'Manual', label: 'Manual', icon: 'bi-person-fill', color: '#d69e2e' },
   ];
 
   readonly farmingMethods = [
     { value: 'Organic', label: 'Organic', icon: 'bi-leaf-fill', color: '#38a169' },
     { value: 'Conventional', label: 'Conventional', icon: 'bi-gear-fill', color: '#718096' },
-    { value: 'Conservation Farming', label: 'Conservation Farming', icon: 'bi-shield-shaded', color: '#319795' },
-    { value: 'Natural Farming', label: 'Natural Farming', icon: 'bi-sun-fill', color: '#ecc94b' }
+    {
+      value: 'Conservation Farming',
+      label: 'Conservation Farming',
+      icon: 'bi-shield-shaded',
+      color: '#319795',
+    },
+    { value: 'Natural Farming', label: 'Natural Farming', icon: 'bi-sun-fill', color: '#ecc94b' },
   ];
 
   readonly roleOptions = [
@@ -107,7 +121,7 @@ export class ProfileEditDialogComponent {
     { value: 'Farm Worker', label: 'Farm Worker', icon: 'bi-wrench-adjustable', color: '#4a5568' },
     { value: 'Student', label: 'Student', icon: 'bi-mortarboard-fill', color: '#319795' },
     { value: 'Researcher', label: 'Researcher', icon: 'bi-search', color: '#e53e3e' },
-    { value: 'Gardener', label: 'Gardener', icon: 'bi-flower1', color: '#38a169' }
+    { value: 'Gardener', label: 'Gardener', icon: 'bi-flower1', color: '#38a169' },
   ];
 
   // Leaflet map instances
@@ -134,25 +148,25 @@ export class ProfileEditDialogComponent {
     const name = this.editFullName();
     const phone = this.editPhone();
     const email = this.editEmail();
-    
+
     const isNameValid = name && name.trim().length >= 3;
     const isPhoneValid = phone && /^[0-9-+() ]{10,15}$/.test(phone);
     const isEmailValid = !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    
+
     return !!(isNameValid && isPhoneValid && isEmailValid);
   });
 
   readonly isLandValid = computed(() => {
     const farmName = this.editFarmName();
     const farmArea = this.editFarmArea();
-    
+
     const isFarmNameValid = farmName && farmName.trim().length >= 2;
     const isAreaValid = farmArea !== null && farmArea > 0;
-    
+
     if (!isFarmNameValid || !isAreaValid) {
       return false;
     }
-    
+
     if (this.locationMethod() === 'map') {
       return this.latitude() !== null && this.longitude() !== null;
     } else {
@@ -160,12 +174,16 @@ export class ProfileEditDialogComponent {
       const district = this.editDistrict();
       const village = this.editVillage();
       const pincode = this.editPincode();
-      
+
       return !!(
-        state && state.trim().length >= 2 &&
-        district && district.trim().length >= 2 &&
-        village && village.trim().length >= 2 &&
-        pincode && pincode.trim().length >= 5
+        state &&
+        state.trim().length >= 2 &&
+        district &&
+        district.trim().length >= 2 &&
+        village &&
+        village.trim().length >= 2 &&
+        pincode &&
+        pincode.trim().length >= 5
       );
     }
   });
@@ -176,20 +194,23 @@ export class ProfileEditDialogComponent {
 
   constructor() {
     // Reactively monitor show & section state changes to initialize map / drawing state
-    effect(() => {
-      const showVal = this.show();
-      const secVal = this.section();
-      if (showVal) {
-        this.initFormValues();
-        if (secVal === 'land') {
+    effect(
+      () => {
+        const showVal = this.show();
+        const secVal = this.section();
+        if (showVal) {
+          this.initFormValues();
+          if (secVal === 'land') {
+            this.drawService.cancelDrawing();
+            this.mapMode.set('pin');
+          }
+        } else {
+          this.cleanupMap();
           this.drawService.cancelDrawing();
-          this.mapMode.set('pin');
         }
-      } else {
-        this.cleanupMap();
-        this.drawService.cancelDrawing();
-      }
-    }, { allowSignalWrites: true });
+      },
+      { allowSignalWrites: true },
+    );
 
     // Effect to handle polygon drawing completion
     effect(() => {
@@ -236,7 +257,7 @@ export class ProfileEditDialogComponent {
       this.editDistrict.set(user.district || '');
       this.editVillage.set(user.village || '');
       this.editPincode.set(user.pincode || '');
-      
+
       const type = user.locationType === 'skipped' ? 'map' : user.locationType;
       this.locationMethod.set(type);
 
@@ -319,7 +340,9 @@ export class ProfileEditDialogComponent {
   }
 
   private reverseGeocode(lat: number, lng: number): void {
-    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
+    fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+    )
       .then((res) => res.json())
       .then((data) => {
         if (data && data.address) {
@@ -368,11 +391,11 @@ export class ProfileEditDialogComponent {
       updates.district = this.editDistrict();
       updates.village = this.editVillage();
       updates.pincode = this.editPincode();
-      
+
       if (this.locationMethod() === 'map' && this.latitude() && this.longitude()) {
         updates.location = {
           lat: this.latitude()!,
-          lng: this.longitude()!
+          lng: this.longitude()!,
         };
       } else if (this.locationMethod() === 'manual') {
         updates.location = null;

@@ -18,8 +18,8 @@ describe('CropDashboardComponent', () => {
       areaUnit: 'hectares',
       sowingDate: Date.now(),
       currentStage: 'Sowing',
-      status: 'Active'
-    }
+      status: 'Active',
+    },
   ];
 
   beforeEach(async () => {
@@ -28,10 +28,7 @@ describe('CropDashboardComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [CropDashboardComponent],
-      providers: [
-        provideZonelessChangeDetection(),
-        CropTimelineService
-      ]
+      providers: [provideZonelessChangeDetection(), CropTimelineService],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CropDashboardComponent);

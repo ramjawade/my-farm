@@ -7,7 +7,7 @@ const CROPS_STORAGE_KEY = 'my_farm_crops';
 const ACTIVITIES_STORAGE_KEY = 'my_farm_crop_activities';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CropTimelineService {
   private readonly authService = inject(AuthService);
@@ -44,7 +44,7 @@ export class CropTimelineService {
   addCrop(cropData: Omit<CropEntity, 'id'>): CropEntity {
     const newCrop: CropEntity = {
       ...cropData,
-      id: 'c-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36)
+      id: 'c-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36),
     };
 
     const current = this.cropsSignal();
@@ -61,7 +61,7 @@ export class CropTimelineService {
       'Flowering',
       'Fruiting / Pod Formation',
       'Maturity',
-      'Harvest'
+      'Harvest',
     ];
 
     const hasSowingDate = newCrop.sowingDate !== undefined && newCrop.sowingDate !== null;
@@ -69,21 +69,23 @@ export class CropTimelineService {
     const oneDay = 24 * 60 * 60 * 1000;
     const offsets: Record<CropStage, number> = {
       'Land Preparation': -5 * oneDay,
-      'Sowing': 0,
-      'Germination': 7 * oneDay,
+      Sowing: 0,
+      Germination: 7 * oneDay,
       'Vegetative Growth': 21 * oneDay,
-      'Flowering': 45 * oneDay,
+      Flowering: 45 * oneDay,
       'Fruiting / Pod Formation': 60 * oneDay,
-      'Maturity': 90 * oneDay,
-      'Harvest': 100 * oneDay
+      Maturity: 90 * oneDay,
+      Harvest: 100 * oneDay,
     };
 
     const currentStageIdx = stages.indexOf(newCrop.currentStage);
 
     stages.forEach((stage, idx) => {
-      const type: ActivityType = stage === 'Sowing' ? 'Sowing' : (stage === 'Harvest' ? 'Harvest' : 'Field Inspection');
+      const type: ActivityType =
+        stage === 'Sowing' ? 'Sowing' : stage === 'Harvest' ? 'Harvest' : 'Field Inspection';
       const status = idx <= currentStageIdx ? 'Completed' : 'Planned';
-      const date = (idx <= currentStageIdx && hasSowingDate) ? (sowingTime + offsets[stage]) : undefined;
+      const date =
+        idx <= currentStageIdx && hasSowingDate ? sowingTime + offsets[stage] : undefined;
       const notes = `Growth stage advanced to: ${stage}.`;
 
       this.addActivity({
@@ -94,7 +96,7 @@ export class CropTimelineService {
         cost: 0,
         notes,
         attachments: [],
-        metadata: {}
+        metadata: {},
       });
     });
 
@@ -103,7 +105,7 @@ export class CropTimelineService {
 
   updateCrop(id: string, updates: Partial<CropEntity>): void {
     const current = this.cropsSignal();
-    const updated = current.map(c => c.id === id ? { ...c, ...updates } : c);
+    const updated = current.map((c) => (c.id === id ? { ...c, ...updates } : c));
     this.cropsSignal.set(updated);
     this.saveCropsToStorage(updated);
   }
@@ -111,13 +113,13 @@ export class CropTimelineService {
   deleteCrop(id: string): void {
     // Delete crop
     const currentCrops = this.cropsSignal();
-    const updatedCrops = currentCrops.filter(c => c.id !== id);
+    const updatedCrops = currentCrops.filter((c) => c.id !== id);
     this.cropsSignal.set(updatedCrops);
     this.saveCropsToStorage(updatedCrops);
 
     // Cascading delete activities
     const currentActs = this.activitiesSignal();
-    const updatedActs = currentActs.filter(a => a.cropId !== id);
+    const updatedActs = currentActs.filter((a) => a.cropId !== id);
     this.activitiesSignal.set(updatedActs);
     this.saveActivitiesToStorage(updatedActs);
   }
@@ -126,7 +128,9 @@ export class CropTimelineService {
   addActivity(activityData: Omit<ActivityEntity, 'id'> & { id?: string }): ActivityEntity {
     const newActivity: ActivityEntity = {
       ...activityData,
-      id: activityData.id || ('a-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36))
+      id:
+        activityData.id ||
+        'a-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36),
     };
 
     const current = this.activitiesSignal();
@@ -136,12 +140,12 @@ export class CropTimelineService {
 
     // If this is a subactivity, verify if the parent is a planned stage activity
     if (newActivity.parentActivityId) {
-      const parentAct = current.find(a => a.id === newActivity.parentActivityId);
+      const parentAct = current.find((a) => a.id === newActivity.parentActivityId);
       if (parentAct && parentAct.status === 'Planned') {
         // Mark parent as completed with the subactivity date
         this.updateActivity(parentAct.id, {
           status: 'Completed',
-          date: newActivity.date
+          date: newActivity.date,
         });
 
         // Resolve stage name from parent notes, e.g. "Growth stage advanced to: Flowering."
@@ -166,11 +170,13 @@ export class CropTimelineService {
 
   updateActivityOnly(id: string, updates: Partial<ActivityEntity>): void {
     const current = this.activitiesSignal();
-    const updated = current.map(a => a.id === id ? { ...a, ...updates, metadata: { ...a.metadata, ...updates.metadata } } : a);
+    const updated = current.map((a) =>
+      a.id === id ? { ...a, ...updates, metadata: { ...a.metadata, ...updates.metadata } } : a,
+    );
     this.activitiesSignal.set(updated);
     this.saveActivitiesToStorage(updated);
 
-    const updatedAct = updated.find(a => a.id === id);
+    const updatedAct = updated.find((a) => a.id === id);
     if (updatedAct) {
       this.updateCropUpcomingActivity(updatedAct.cropId);
     }
@@ -180,7 +186,7 @@ export class CropTimelineService {
     this.updateActivityOnly(id, updates);
 
     // Sync update to FarmActivityService
-    const updatedAct = this.activitiesSignal().find(a => a.id === id);
+    const updatedAct = this.activitiesSignal().find((a) => a.id === id);
     if (updatedAct) {
       this.syncUpdateToFarmActivity(updatedAct);
     }
@@ -188,10 +194,10 @@ export class CropTimelineService {
 
   deleteActivityOnly(id: string): void {
     const current = this.activitiesSignal();
-    const actToDelete = current.find(a => a.id === id);
+    const actToDelete = current.find((a) => a.id === id);
     if (!actToDelete) return;
 
-    const updated = current.filter(a => a.id !== id);
+    const updated = current.filter((a) => a.id !== id);
     this.activitiesSignal.set(updated);
     this.saveActivitiesToStorage(updated);
 
@@ -210,17 +216,18 @@ export class CropTimelineService {
     if (!farmActivityService) return;
 
     // Check if general activity already exists
-    const exists = farmActivityService.activities().find(g => g.id === ca.id);
+    const exists = farmActivityService.activities().find((g) => g.id === ca.id);
     if (exists) return;
 
-    const crop = this.cropsSignal().find(c => c.id === ca.cropId);
+    const crop = this.cropsSignal().find((c) => c.id === ca.cropId);
     const fieldId = crop?.fieldId;
 
     // Determine season from date
     const dateObj = ca.date ? new Date(ca.date) : new Date();
     const month = isNaN(dateObj.getTime()) ? new Date().getMonth() : dateObj.getMonth();
     let season = 'Kharif';
-    if (month >= 9 || month <= 0) season = 'Rabi'; // Oct, Nov, Dec, Jan
+    if (month >= 9 || month <= 0)
+      season = 'Rabi'; // Oct, Nov, Dec, Jan
     else if (month >= 1 && month <= 4) season = 'Summer'; // Feb, Mar, Apr, May
 
     // Map status
@@ -239,7 +246,7 @@ export class CropTimelineService {
       status,
       notes: ca.notes,
       parentActivityId: ca.parentActivityId,
-      attachments: ca.attachments
+      attachments: ca.attachments,
     });
 
     // Add expense if cost > 0
@@ -249,7 +256,7 @@ export class CropTimelineService {
       else if (ca.type === 'Fertilizer Application') category = 'Fertilizer';
       else if (ca.type === 'Labour Activity') category = 'Workers';
       else if (ca.type === 'Irrigation') category = 'Machine Rent';
-      
+
       farmActivityService.addExpense({
         activityId: ga.id,
         category,
@@ -258,7 +265,7 @@ export class CropTimelineService {
         unit: 'job',
         rate: ca.cost,
         amount: ca.cost,
-        remarks: 'Auto-synced from Crop Timeline'
+        remarks: 'Auto-synced from Crop Timeline',
       });
     }
   }
@@ -267,7 +274,7 @@ export class CropTimelineService {
     const farmActivityService = this.farmActivityService;
     if (!farmActivityService) return;
 
-    const exists = farmActivityService.activities().find(g => g.id === ca.id);
+    const exists = farmActivityService.activities().find((g) => g.id === ca.id);
     if (!exists) {
       this.syncToFarmActivity(ca);
       return;
@@ -283,7 +290,7 @@ export class CropTimelineService {
       status,
       notes: ca.notes,
       parentActivityId: ca.parentActivityId,
-      attachments: ca.attachments
+      attachments: ca.attachments,
     });
 
     // Update expense
@@ -292,7 +299,7 @@ export class CropTimelineService {
       if (expenses.length > 0) {
         farmActivityService.updateExpense(expenses[0].id, {
           amount: ca.cost,
-          rate: ca.cost
+          rate: ca.cost,
         });
       } else {
         let category = 'Other';
@@ -309,7 +316,7 @@ export class CropTimelineService {
           unit: 'job',
           rate: ca.cost,
           amount: ca.cost,
-          remarks: 'Auto-synced from Crop Timeline'
+          remarks: 'Auto-synced from Crop Timeline',
         });
       }
     } else {
@@ -320,30 +327,32 @@ export class CropTimelineService {
   }
 
   getActivitiesForCrop(cropId: string): ActivityEntity[] {
-    return this.activitiesSignal().filter(a => a.cropId === cropId);
+    return this.activitiesSignal().filter((a) => a.cropId === cropId);
   }
 
   findOrCreateMainActivityForStage(cropId: string, stage: CropStage): ActivityEntity {
-    const activities = this.activitiesSignal().filter(a => a.cropId === cropId);
+    const activities = this.activitiesSignal().filter((a) => a.cropId === cropId);
 
     // Look for an activity that represents this stage
-    let mainAct = activities.find(a => 
-      (a.type === 'Field Inspection' && a.notes.includes(`advanced to: ${stage}`)) ||
-      (stage === 'Sowing' && a.type === 'Sowing') ||
-      (stage === 'Harvest' && a.type === 'Harvest')
+    let mainAct = activities.find(
+      (a) =>
+        (a.type === 'Field Inspection' && a.notes.includes(`advanced to: ${stage}`)) ||
+        (stage === 'Sowing' && a.type === 'Sowing') ||
+        (stage === 'Harvest' && a.type === 'Harvest'),
     );
 
     if (mainAct) {
       if (mainAct.status !== 'Completed') {
         this.updateActivity(mainAct.id, {
           status: 'Completed',
-          date: Date.now()
+          date: Date.now(),
         });
         // Retrieve the updated mainActivity record
-        mainAct = this.activitiesSignal().find(a => a.id === mainAct!.id)!;
+        mainAct = this.activitiesSignal().find((a) => a.id === mainAct!.id)!;
       }
     } else {
-      const type: ActivityType = (stage === 'Sowing') ? 'Sowing' : (stage === 'Harvest' ? 'Harvest' : 'Field Inspection');
+      const type: ActivityType =
+        stage === 'Sowing' ? 'Sowing' : stage === 'Harvest' ? 'Harvest' : 'Field Inspection';
       mainAct = this.addActivity({
         cropId,
         type,
@@ -352,7 +361,7 @@ export class CropTimelineService {
         cost: 0,
         notes: `Growth stage advanced to: ${stage}.`,
         attachments: [],
-        metadata: {}
+        metadata: {},
       });
     }
 
@@ -360,19 +369,22 @@ export class CropTimelineService {
   }
 
   findMainActivityForStage(cropId: string, stage: CropStage): ActivityEntity | undefined {
-    const activities = this.activitiesSignal().filter(a => a.cropId === cropId);
-    return activities.find(a => 
-      (a.type === 'Field Inspection' && a.notes.includes(`advanced to: ${stage}`)) ||
-      (stage === 'Sowing' && a.type === 'Sowing') ||
-      (stage === 'Harvest' && a.type === 'Harvest')
+    const activities = this.activitiesSignal().filter((a) => a.cropId === cropId);
+    return activities.find(
+      (a) =>
+        (a.type === 'Field Inspection' && a.notes.includes(`advanced to: ${stage}`)) ||
+        (stage === 'Sowing' && a.type === 'Sowing') ||
+        (stage === 'Harvest' && a.type === 'Harvest'),
     );
   }
 
   // --- Helper to update Crop's upcomingActivity field based on closest planned task ---
   private updateCropUpcomingActivity(cropId: string): void {
-    const cropActivities = this.activitiesSignal().filter(a => a.cropId === cropId && !a.parentActivityId);
+    const cropActivities = this.activitiesSignal().filter(
+      (a) => a.cropId === cropId && !a.parentActivityId,
+    );
     const planned = cropActivities
-      .filter(a => a.status === 'Planned' || a.status === 'Scheduled')
+      .filter((a) => a.status === 'Planned' || a.status === 'Scheduled')
       .sort((a, b) => {
         const timeA = a.date !== undefined ? a.date : Infinity;
         const timeB = b.date !== undefined ? b.date : Infinity;
@@ -384,7 +396,7 @@ export class CropTimelineService {
       if (nextAct.date) {
         const dateDiff = nextAct.date - Date.now();
         const days = Math.ceil(dateDiff / (1000 * 60 * 60 * 24));
-        
+
         let relativeDay = '';
         if (days <= 0) relativeDay = 'Today';
         else if (days === 1) relativeDay = 'Tomorrow';
@@ -449,7 +461,7 @@ export class CropTimelineService {
 
   private seedMockData(): void {
     const today = new Date();
-    
+
     // Seed Crop 1: Soybean
     const sowingSoybean = new Date();
     sowingSoybean.setDate(today.getDate() - 65); // 65 days ago
@@ -468,7 +480,7 @@ export class CropTimelineService {
       currentStage: 'Flowering',
       status: 'Active',
       expectedHarvestDate: expectedHarvestSoybean.getTime(),
-      upcomingActivity: 'Irrigation (Tomorrow)'
+      upcomingActivity: 'Irrigation (Tomorrow)',
     };
 
     // Seed Crop 2: Wheat
@@ -485,7 +497,7 @@ export class CropTimelineService {
       sowingDate: sowingWheat.getTime(),
       currentStage: 'Germination',
       status: 'Active',
-      upcomingActivity: 'Fertilizer Application (In 5 Days)'
+      upcomingActivity: 'Fertilizer Application (In 5 Days)',
     };
 
     const initialCrops = [crop1, crop2];
@@ -508,7 +520,7 @@ export class CropTimelineService {
       cost: 0,
       notes: 'Growth stage advanced to: Land Preparation.',
       attachments: [],
-      metadata: {}
+      metadata: {},
     };
     const soyStageGerm: ActivityEntity = {
       id: 'a-soy-stage-germ',
@@ -519,7 +531,7 @@ export class CropTimelineService {
       cost: 0,
       notes: 'Growth stage advanced to: Germination.',
       attachments: [],
-      metadata: {}
+      metadata: {},
     };
     const soyStageVeg: ActivityEntity = {
       id: 'a-soy-stage-veg',
@@ -530,7 +542,7 @@ export class CropTimelineService {
       cost: 0,
       notes: 'Growth stage advanced to: Vegetative Growth.',
       attachments: [],
-      metadata: {}
+      metadata: {},
     };
     const soyStageFlow: ActivityEntity = {
       id: 'a-soy-stage-flow',
@@ -541,7 +553,7 @@ export class CropTimelineService {
       cost: 0,
       notes: 'Growth stage advanced to: Flowering.',
       attachments: [],
-      metadata: {}
+      metadata: {},
     };
     const soyStageFruit: ActivityEntity = {
       id: 'a-soy-stage-fruit',
@@ -552,7 +564,7 @@ export class CropTimelineService {
       cost: 0,
       notes: 'Growth stage advanced to: Fruiting / Pod Formation.',
       attachments: [],
-      metadata: {}
+      metadata: {},
     };
     const soyStageMat: ActivityEntity = {
       id: 'a-soy-stage-mat',
@@ -563,7 +575,7 @@ export class CropTimelineService {
       cost: 0,
       notes: 'Growth stage advanced to: Maturity.',
       attachments: [],
-      metadata: {}
+      metadata: {},
     };
     const soyStageHarv: ActivityEntity = {
       id: 'a-soy-stage-harv',
@@ -574,7 +586,7 @@ export class CropTimelineService {
       cost: 0,
       notes: 'Growth stage advanced to: Harvest.',
       attachments: [],
-      metadata: {}
+      metadata: {},
     };
 
     // Calculate dates for default Wheat stages
@@ -590,7 +602,7 @@ export class CropTimelineService {
       cost: 0,
       notes: 'Growth stage advanced to: Land Preparation.',
       attachments: [],
-      metadata: {}
+      metadata: {},
     };
     const wheatStageGerm: ActivityEntity = {
       id: 'a-wheat-stage-germ',
@@ -601,7 +613,7 @@ export class CropTimelineService {
       cost: 0,
       notes: 'Growth stage advanced to: Germination.',
       attachments: [],
-      metadata: {}
+      metadata: {},
     };
     const wheatStageVeg: ActivityEntity = {
       id: 'a-wheat-stage-veg',
@@ -612,7 +624,7 @@ export class CropTimelineService {
       cost: 0,
       notes: 'Growth stage advanced to: Vegetative Growth.',
       attachments: [],
-      metadata: {}
+      metadata: {},
     };
     const wheatStageFlow: ActivityEntity = {
       id: 'a-wheat-stage-flow',
@@ -623,7 +635,7 @@ export class CropTimelineService {
       cost: 0,
       notes: 'Growth stage advanced to: Flowering.',
       attachments: [],
-      metadata: {}
+      metadata: {},
     };
     const wheatStageFruit: ActivityEntity = {
       id: 'a-wheat-stage-fruit',
@@ -634,7 +646,7 @@ export class CropTimelineService {
       cost: 0,
       notes: 'Growth stage advanced to: Fruiting / Pod Formation.',
       attachments: [],
-      metadata: {}
+      metadata: {},
     };
     const wheatStageMat: ActivityEntity = {
       id: 'a-wheat-stage-mat',
@@ -645,7 +657,7 @@ export class CropTimelineService {
       cost: 0,
       notes: 'Growth stage advanced to: Maturity.',
       attachments: [],
-      metadata: {}
+      metadata: {},
     };
     const wheatStageHarv: ActivityEntity = {
       id: 'a-wheat-stage-harv',
@@ -656,7 +668,7 @@ export class CropTimelineService {
       cost: 0,
       notes: 'Growth stage advanced to: Harvest.',
       attachments: [],
-      metadata: {}
+      metadata: {},
     };
 
     // Seed Activities for Crop 1: Soybean
@@ -667,9 +679,10 @@ export class CropTimelineService {
       date: sowingSoybean.getTime(),
       status: 'Completed',
       cost: 4500,
-      notes: 'Soybean sown successfully using mechanical seed drill under optimal moisture conditions.',
+      notes:
+        'Soybean sown successfully using mechanical seed drill under optimal moisture conditions.',
       attachments: [],
-      metadata: {}
+      metadata: {},
     };
 
     const weedingDate = new Date(sowingSoybean);
@@ -683,7 +696,7 @@ export class CropTimelineService {
       cost: 1500,
       notes: 'Manual weeding performed. Field clear of broadleaf weeds.',
       attachments: [],
-      metadata: {}
+      metadata: {},
     };
 
     const fertilizerDate = new Date(sowingSoybean);
@@ -700,8 +713,8 @@ export class CropTimelineService {
       metadata: {
         fertilizerName: 'NPK 19-19-19',
         quantity: 50,
-        applicationMethod: 'Broadcasting'
-      }
+        applicationMethod: 'Broadcasting',
+      },
     };
 
     const inspectionDate = new Date(sowingSoybean);
@@ -715,7 +728,7 @@ export class CropTimelineService {
       cost: 0,
       notes: 'Crop condition healthy. Initial flowering stages detected. No sign of pests.',
       attachments: [],
-      metadata: {}
+      metadata: {},
     };
 
     // Seed upcoming planned activities
@@ -733,8 +746,8 @@ export class CropTimelineService {
       metadata: {
         irrigationMethod: 'Drip',
         duration: 45,
-        waterQuantity: 1500
-      }
+        waterQuantity: 1500,
+      },
     };
 
     const nextSprayDate = new Date();
@@ -752,8 +765,8 @@ export class CropTimelineService {
         chemicalName: 'Organic Neem Oil',
         dosage: '500 ml/ha',
         waterQuantity: 200,
-        targetPest: 'Aphids & Thrips'
-      }
+        targetPest: 'Aphids & Thrips',
+      },
     };
 
     // Seed Activities for Crop 2: Wheat
@@ -766,7 +779,7 @@ export class CropTimelineService {
       cost: 8000,
       notes: 'High yield HD-2967 wheat variety sown successfully.',
       attachments: [],
-      metadata: {}
+      metadata: {},
     };
 
     const wheatNextFertDate = new Date();
@@ -783,8 +796,8 @@ export class CropTimelineService {
       metadata: {
         fertilizerName: 'Urea / NPK',
         quantity: 75,
-        applicationMethod: 'Broadcasting'
-      }
+        applicationMethod: 'Broadcasting',
+      },
     };
 
     const subActivity1: ActivityEntity = {
@@ -797,7 +810,7 @@ export class CropTimelineService {
       cost: 500,
       notes: 'Helpers loading seeds and checking drill calibration.',
       attachments: [],
-      metadata: {}
+      metadata: {},
     };
 
     const initialActivities = [
@@ -823,7 +836,7 @@ export class CropTimelineService {
       wheatStageFruit,
       wheatStageMat,
       wheatStageHarv,
-      wheatFertAct
+      wheatFertAct,
     ];
     this.activitiesSignal.set(initialActivities);
     this.saveActivitiesToStorage(initialActivities);

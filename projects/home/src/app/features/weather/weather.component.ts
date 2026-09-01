@@ -39,7 +39,7 @@ export class WeatherComponent {
   // Progressive location profiling signals
   readonly showLocationPrompt = computed(() => {
     const user = this.authService.currentUser();
-    return user ? (!user.village || !user.state) : false;
+    return user ? !user.village || !user.state : false;
   });
 
   readonly showEditDialog = signal(false);
@@ -52,7 +52,7 @@ export class WeatherComponent {
   readonly dropdownOpen = signal(false);
 
   toggleDropdown(): void {
-    this.dropdownOpen.update(open => !open);
+    this.dropdownOpen.update((open) => !open);
   }
 
   selectTab(tab: 'weekly' | 'monthly' | 'yearly'): void {
@@ -117,31 +117,126 @@ export class WeatherComponent {
   readonly activePeriod = signal<0 | 1>(0);
 
   // Period ranges (aesthetic date labels)
-  readonly periodRange = signal<string[]>([
-    '2 May – 8 May',
-    '9 May – 15 May'
-  ]);
+  readonly periodRange = signal<string[]>(['2 May – 8 May', '9 May – 15 May']);
 
   // Combined forecasts for both periods
   readonly periodForecasts = signal<ForecastDay[][]>([
     [
-      { dayName: 'Mon', dateLabel: '2 May', temp: 29, condition: 'Cloudy', iconClass: 'bi-cloud-sun-fill', iconColorClass: 'text-warning' },
-      { dayName: 'Tue', dateLabel: '3 May', temp: 26, condition: 'Rain', iconClass: 'bi-cloud-rain-fill', iconColorClass: 'text-primary' },
-      { dayName: 'Wed', dateLabel: '4 May', temp: 31, condition: 'Sunny', iconClass: 'bi-sun-fill', iconColorClass: 'text-warning' },
-      { dayName: 'Thu', dateLabel: '5 May', temp: 27, condition: 'Drizzle', iconClass: 'bi-cloud-drizzle-fill', iconColorClass: 'text-info' },
-      { dayName: 'Fri', dateLabel: '6 May', temp: 25, condition: 'Storm', iconClass: 'bi-cloud-lightning-rain-fill', iconColorClass: 'text-primary' },
-      { dayName: 'Sat', dateLabel: '7 May', temp: 28, condition: 'Partly Cloudy', iconClass: 'bi-cloud-sun-fill', iconColorClass: 'text-warning' },
-      { dayName: 'Sun', dateLabel: '8 May', temp: 30, condition: 'Sunny', iconClass: 'bi-sun-fill', iconColorClass: 'text-warning' }
+      {
+        dayName: 'Mon',
+        dateLabel: '2 May',
+        temp: 29,
+        condition: 'Cloudy',
+        iconClass: 'bi-cloud-sun-fill',
+        iconColorClass: 'text-warning',
+      },
+      {
+        dayName: 'Tue',
+        dateLabel: '3 May',
+        temp: 26,
+        condition: 'Rain',
+        iconClass: 'bi-cloud-rain-fill',
+        iconColorClass: 'text-primary',
+      },
+      {
+        dayName: 'Wed',
+        dateLabel: '4 May',
+        temp: 31,
+        condition: 'Sunny',
+        iconClass: 'bi-sun-fill',
+        iconColorClass: 'text-warning',
+      },
+      {
+        dayName: 'Thu',
+        dateLabel: '5 May',
+        temp: 27,
+        condition: 'Drizzle',
+        iconClass: 'bi-cloud-drizzle-fill',
+        iconColorClass: 'text-info',
+      },
+      {
+        dayName: 'Fri',
+        dateLabel: '6 May',
+        temp: 25,
+        condition: 'Storm',
+        iconClass: 'bi-cloud-lightning-rain-fill',
+        iconColorClass: 'text-primary',
+      },
+      {
+        dayName: 'Sat',
+        dateLabel: '7 May',
+        temp: 28,
+        condition: 'Partly Cloudy',
+        iconClass: 'bi-cloud-sun-fill',
+        iconColorClass: 'text-warning',
+      },
+      {
+        dayName: 'Sun',
+        dateLabel: '8 May',
+        temp: 30,
+        condition: 'Sunny',
+        iconClass: 'bi-sun-fill',
+        iconColorClass: 'text-warning',
+      },
     ],
     [
-      { dayName: 'Mon', dateLabel: '9 May', temp: 27, condition: 'Drizzle', iconClass: 'bi-cloud-drizzle-fill', iconColorClass: 'text-info' },
-      { dayName: 'Tue', dateLabel: '10 May', temp: 28, condition: 'Cloudy', iconClass: 'bi-cloud-sun-fill', iconColorClass: 'text-warning' },
-      { dayName: 'Wed', dateLabel: '11 May', temp: 32, condition: 'Sunny', iconClass: 'bi-sun-fill', iconColorClass: 'text-warning' },
-      { dayName: 'Thu', dateLabel: '12 May', temp: 31, condition: 'Sunny', iconClass: 'bi-sun-fill', iconColorClass: 'text-warning' },
-      { dayName: 'Fri', dateLabel: '13 May', temp: 26, condition: 'Rain', iconClass: 'bi-cloud-rain-fill', iconColorClass: 'text-primary' },
-      { dayName: 'Sat', dateLabel: '14 May', temp: 25, condition: 'Storm', iconClass: 'bi-cloud-lightning-rain-fill', iconColorClass: 'text-primary' },
-      { dayName: 'Sun', dateLabel: '15 May', temp: 29, condition: 'Partly Cloudy', iconClass: 'bi-cloud-sun-fill', iconColorClass: 'text-warning' }
-    ]
+      {
+        dayName: 'Mon',
+        dateLabel: '9 May',
+        temp: 27,
+        condition: 'Drizzle',
+        iconClass: 'bi-cloud-drizzle-fill',
+        iconColorClass: 'text-info',
+      },
+      {
+        dayName: 'Tue',
+        dateLabel: '10 May',
+        temp: 28,
+        condition: 'Cloudy',
+        iconClass: 'bi-cloud-sun-fill',
+        iconColorClass: 'text-warning',
+      },
+      {
+        dayName: 'Wed',
+        dateLabel: '11 May',
+        temp: 32,
+        condition: 'Sunny',
+        iconClass: 'bi-sun-fill',
+        iconColorClass: 'text-warning',
+      },
+      {
+        dayName: 'Thu',
+        dateLabel: '12 May',
+        temp: 31,
+        condition: 'Sunny',
+        iconClass: 'bi-sun-fill',
+        iconColorClass: 'text-warning',
+      },
+      {
+        dayName: 'Fri',
+        dateLabel: '13 May',
+        temp: 26,
+        condition: 'Rain',
+        iconClass: 'bi-cloud-rain-fill',
+        iconColorClass: 'text-primary',
+      },
+      {
+        dayName: 'Sat',
+        dateLabel: '14 May',
+        temp: 25,
+        condition: 'Storm',
+        iconClass: 'bi-cloud-lightning-rain-fill',
+        iconColorClass: 'text-primary',
+      },
+      {
+        dayName: 'Sun',
+        dateLabel: '15 May',
+        temp: 29,
+        condition: 'Partly Cloudy',
+        iconClass: 'bi-cloud-sun-fill',
+        iconColorClass: 'text-warning',
+      },
+    ],
   ]);
 
   // Computed properties
@@ -181,7 +276,7 @@ export class WeatherComponent {
   ]);
 
   readonly farmerTip = signal(
-    'Due to expected rainfall tomorrow, delay fertilizer spraying to avoid nutrient washout and save costs.'
+    'Due to expected rainfall tomorrow, delay fertilizer spraying to avoid nutrient washout and save costs.',
   );
 
   // Active History Trend tab selection signal

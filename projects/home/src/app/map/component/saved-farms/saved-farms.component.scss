@@ -54,7 +54,9 @@
 .map-page__saved-farms-list .list-group-item {
   border-left: 0;
   border-right: 0;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
   background: transparent;
 }
 
@@ -82,7 +84,9 @@
 
 .map-page__saved-farm-delete {
   opacity: 0.5;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 
 .map-page__saved-farm-delete:hover {

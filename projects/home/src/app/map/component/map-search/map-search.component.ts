@@ -1,6 +1,14 @@
 import { Component, OnDestroy, inject, signal, output } from '@angular/core';
 import { Subject, of } from 'rxjs';
-import { debounceTime, distinctUntilChanged, filter, tap, switchMap, catchError, takeUntil } from 'rxjs/operators';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  tap,
+  switchMap,
+  catchError,
+  takeUntil,
+} from 'rxjs/operators';
 import { MapSearchService } from './map-search.service';
 import { MapSearchResult } from '../../models/map.models';
 
@@ -11,7 +19,7 @@ const SEARCH_DEBOUNCE_MS = 400;
   standalone: true,
   selector: 'app-map-search',
   templateUrl: './map-search.component.html',
-  styleUrl: './map-search.component.scss'
+  styleUrl: './map-search.component.scss',
 })
 export class MapSearchComponent implements OnDestroy {
   private readonly geocoding = inject(MapSearchService);
@@ -54,10 +62,10 @@ export class MapSearchComponent implements OnDestroy {
             catchError(() => {
               this.searchError.set('Search failed. Try again.');
               return of([] as MapSearchResult[]);
-            })
-          )
+            }),
+          ),
         ),
-        takeUntil(this.destroy$)
+        takeUntil(this.destroy$),
       )
       .subscribe((results) => {
         this.searchResults.set(results);
@@ -121,7 +129,7 @@ export class MapSearchComponent implements OnDestroy {
         this.searchLoading.set(false);
         this.searchResults.set([]);
         this.searchError.set('Search failed. Try again.');
-      }
+      },
     });
   }
 

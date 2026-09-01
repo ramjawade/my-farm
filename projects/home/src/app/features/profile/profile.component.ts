@@ -9,14 +9,14 @@ import { ProfileEditDialogComponent } from './components/profile-edit-dialog.com
   imports: [CommonModule, ProfileEditDialogComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileComponent {
   private readonly authService = inject(AuthService);
 
   // Read-only state
   readonly currentUser = this.authService.currentUser;
-  
+
   // Modal dialog trigger states
   readonly activeSection = signal<'account' | 'agronomic' | 'land' | 'operations'>('account');
   readonly showEditDialog = signal(false);
@@ -39,7 +39,7 @@ export class ProfileComponent {
       return new Date(time).toLocaleDateString(undefined, {
         year: 'numeric',
         month: 'long',
-        day: 'numeric'
+        day: 'numeric',
       });
     } catch {
       return 'N/A';
@@ -56,7 +56,7 @@ export class ProfileComponent {
       this.authService.updateProfile({
         userRole: 'Farmer',
         farmingMethod: '',
-        farmSetupCompleted: false
+        farmSetupCompleted: false,
       });
     }
   }
@@ -73,7 +73,7 @@ export class ProfileComponent {
         pincode: '',
         location: null,
         locationType: 'skipped',
-        farmSetupCompleted: false
+        farmSetupCompleted: false,
       });
     }
   }
@@ -84,7 +84,7 @@ export class ProfileComponent {
         waterSource: '',
         irrigationType: '',
         primaryCrops: [],
-        farmSetupCompleted: false
+        farmSetupCompleted: false,
       });
     }
   }

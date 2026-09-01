@@ -26,8 +26,8 @@ describe('FarmerRegistrationComponent', () => {
         provideHttpClient(),
         provideRouter([]),
         FarmerRegistrationService,
-        AuthService
-      ]
+        AuthService,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FarmerRegistrationComponent);
@@ -58,13 +58,13 @@ describe('FarmerRegistrationComponent', () => {
 
     form.patchValue({
       fullName: 'Ab', // too short
-      phone: '123'    // invalid phone pattern
+      phone: '123', // invalid phone pattern
     });
     expect(form.valid).toBeFalse();
 
     form.patchValue({
       fullName: 'Amit Patel',
-      phone: '9876543210'
+      phone: '9876543210',
     });
     expect(form.valid).toBeTrue();
   });
@@ -74,7 +74,7 @@ describe('FarmerRegistrationComponent', () => {
       fullName: 'Amit Patel',
       phone: '9876543210',
       email: 'amit@patelfarms.com',
-      preferredLanguage: 'Hindi'
+      preferredLanguage: 'Hindi',
     });
 
     expect(component.registrationForm.valid).toBeTrue();

@@ -7,7 +7,7 @@ const ACTIVITIES_KEY = 'my_farm_activities';
 const EXPENSES_KEY = 'my_farm_activity_expenses';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class FarmActivityService {
   private readonly authService = inject(AuthService);
@@ -54,7 +54,7 @@ export class FarmActivityService {
       } else {
         this.activitiesSignal.set([]);
         this.expensesSignal.set([]);
-        
+
         // Seed default user if empty
         if (userId === 'f-default') {
           this.seedMockData();
@@ -85,13 +85,17 @@ export class FarmActivityService {
   }
 
   // --- Activity API ---
-  addActivity(activityData: Omit<Activity, 'createdAt' | 'updatedAt' | 'id'> & { id?: string }): Activity {
-    const id = activityData.id || ('act-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36));
+  addActivity(
+    activityData: Omit<Activity, 'createdAt' | 'updatedAt' | 'id'> & { id?: string },
+  ): Activity {
+    const id =
+      activityData.id ||
+      'act-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36);
     const newActivity: Activity = {
       ...activityData,
       id,
       createdAt: Date.now(),
-      updatedAt: Date.now()
+      updatedAt: Date.now(),
     };
 
     const current = this.activitiesSignal();
@@ -109,10 +113,8 @@ export class FarmActivityService {
 
   updateActivityOnly(id: string, updates: Partial<Activity>): void {
     const current = this.activitiesSignal();
-    const updated = current.map(a => 
-      a.id === id 
-        ? { ...a, ...updates, updatedAt: Date.now() } 
-        : a
+    const updated = current.map((a) =>
+      a.id === id ? { ...a, ...updates, updatedAt: Date.now() } : a,
     );
     this.activitiesSignal.set(updated);
     this.saveActivities(updated);
@@ -122,7 +124,7 @@ export class FarmActivityService {
     this.updateActivityOnly(id, updates);
 
     // Sync to CropTimelineService
-    const updatedAct = this.activitiesSignal().find(a => a.id === id);
+    const updatedAct = this.activitiesSignal().find((a) => a.id === id);
     if (updatedAct && updatedAct.cropId) {
       this.syncUpdateToCropTimeline(updatedAct);
     }
@@ -131,13 +133,13 @@ export class FarmActivityService {
   deleteActivityOnly(id: string): void {
     // Delete activity
     const currentActs = this.activitiesSignal();
-    const updatedActs = currentActs.filter(a => a.id !== id);
+    const updatedActs = currentActs.filter((a) => a.id !== id);
     this.activitiesSignal.set(updatedActs);
     this.saveActivities(updatedActs);
 
     // Cascading delete expenses
     const currentExp = this.expensesSignal();
-    const updatedExp = currentExp.filter(e => e.activityId !== id);
+    const updatedExp = currentExp.filter((e) => e.activityId !== id);
     this.expensesSignal.set(updatedExp);
     this.saveExpenses(updatedExp);
   }
@@ -162,7 +164,7 @@ export class FarmActivityService {
     const newExpense: ActivityExpense = {
       ...expenseData,
       id: 'exp-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36),
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
 
     const current = this.expensesSignal();
@@ -178,11 +180,11 @@ export class FarmActivityService {
 
   updateExpense(id: string, updates: Partial<ActivityExpense>): void {
     const current = this.expensesSignal();
-    const updated = current.map(e => e.id === id ? { ...e, ...updates } : e);
+    const updated = current.map((e) => (e.id === id ? { ...e, ...updates } : e));
     this.expensesSignal.set(updated);
     this.saveExpenses(updated);
 
-    const expense = updated.find(e => e.id === id);
+    const expense = updated.find((e) => e.id === id);
     if (expense) {
       this.syncExpenseChangeToCropTimeline(expense.activityId);
     }
@@ -190,8 +192,8 @@ export class FarmActivityService {
 
   deleteExpense(id: string): void {
     const current = this.expensesSignal();
-    const deletedExpense = current.find(e => e.id === id);
-    const updated = current.filter(e => e.id !== id);
+    const deletedExpense = current.find((e) => e.id === id);
+    const updated = current.filter((e) => e.id !== id);
     this.expensesSignal.set(updated);
     this.saveExpenses(updated);
 
@@ -204,12 +206,23 @@ export class FarmActivityService {
   private syncToCropTimeline(act: Activity): void {
     try {
       const cropTimelineService = this.injector.get(CropTimelineService);
-      
+
       const exists = cropTimelineService.activities().find((a: any) => a.id === act.id);
       if (exists) return;
 
       let type: any = 'Field Inspection';
-      const validTypes = ['Sowing', 'Irrigation', 'Fertilizer Application', 'Spray Application', 'Weeding', 'Field Inspection', 'Labour Activity', 'Harvest', 'Sale', 'Weather Incident'];
+      const validTypes = [
+        'Sowing',
+        'Irrigation',
+        'Fertilizer Application',
+        'Spray Application',
+        'Weeding',
+        'Field Inspection',
+        'Labour Activity',
+        'Harvest',
+        'Sale',
+        'Weather Incident',
+      ];
       if (validTypes.includes(act.activityId)) {
         type = act.activityId;
       } else if (act.activityId === 'Fertilizing') {
@@ -236,7 +249,7 @@ export class FarmActivityService {
         notes: act.notes || '',
         attachments: act.attachments || [],
         metadata: {},
-        parentActivityId: act.parentActivityId
+        parentActivityId: act.parentActivityId,
       });
     } catch (e) {
       console.error('Sync to CropTimelineService failed', e);
@@ -247,14 +260,25 @@ export class FarmActivityService {
     try {
       const cropTimelineService = this.injector.get(CropTimelineService);
       const exists = cropTimelineService.activities().find((a: any) => a.id === act.id);
-      
+
       if (!exists) {
         this.syncToCropTimeline(act);
         return;
       }
 
       let type: any = 'Field Inspection';
-      const validTypes = ['Sowing', 'Irrigation', 'Fertilizer Application', 'Spray Application', 'Weeding', 'Field Inspection', 'Labour Activity', 'Harvest', 'Sale', 'Weather Incident'];
+      const validTypes = [
+        'Sowing',
+        'Irrigation',
+        'Fertilizer Application',
+        'Spray Application',
+        'Weeding',
+        'Field Inspection',
+        'Labour Activity',
+        'Harvest',
+        'Sale',
+        'Weather Incident',
+      ];
       if (validTypes.includes(act.activityId)) {
         type = act.activityId;
       } else if (act.activityId === 'Fertilizing') {
@@ -278,7 +302,7 @@ export class FarmActivityService {
         cost,
         notes: act.notes || '',
         parentActivityId: act.parentActivityId,
-        attachments: act.attachments || []
+        attachments: act.attachments || [],
       });
     } catch (e) {
       console.error('Sync update to CropTimelineService failed', e);
@@ -299,12 +323,11 @@ export class FarmActivityService {
   }
 
   getExpensesForActivity(activityId: string): ActivityExpense[] {
-    return this.expensesSignal().filter(e => e.activityId === activityId);
+    return this.expensesSignal().filter((e) => e.activityId === activityId);
   }
 
   getTotalExpenseForActivity(activityId: string): number {
-    return this.getExpensesForActivity(activityId)
-      .reduce((sum, exp) => sum + exp.amount, 0);
+    return this.getExpensesForActivity(activityId).reduce((sum, exp) => sum + exp.amount, 0);
   }
 
   // --- Seed Data ---
@@ -317,9 +340,10 @@ export class FarmActivityService {
         activityId: 'Bore Installation',
         fieldId: 'Field A',
         status: 'Completed',
-        notes: 'Drilled deep bore well for supplemental irrigation during hot dry spells. Submersible pump set to 250ft.',
+        notes:
+          'Drilled deep bore well for supplemental irrigation during hot dry spells. Submersible pump set to 250ft.',
         createdAt: Date.now() - 6 * 24 * 3600 * 1000,
-        updatedAt: Date.now() - 6 * 24 * 3600 * 1000
+        updatedAt: Date.now() - 6 * 24 * 3600 * 1000,
       },
       {
         id: 'mock-act-2',
@@ -331,7 +355,7 @@ export class FarmActivityService {
         status: 'Completed',
         notes: 'Pre-sowing fertilizer spreading and manual field levelling.',
         createdAt: Date.now() - 23 * 24 * 3600 * 1000,
-        updatedAt: Date.now() - 23 * 24 * 3600 * 1000
+        updatedAt: Date.now() - 23 * 24 * 3600 * 1000,
       },
       {
         id: 'mock-act-2-sub1',
@@ -344,7 +368,7 @@ export class FarmActivityService {
         status: 'Completed',
         notes: 'Helpers loading seeds and checking drill calibration.',
         createdAt: Date.now() - 23 * 24 * 3600 * 1000,
-        updatedAt: Date.now() - 23 * 24 * 3600 * 1000
+        updatedAt: Date.now() - 23 * 24 * 3600 * 1000,
       },
       {
         id: 'mock-act-3',
@@ -356,7 +380,7 @@ export class FarmActivityService {
         status: 'Completed',
         notes: 'First round of manual mechanical weeding in Soybean plots.',
         createdAt: Date.now() - 5 * 24 * 3600 * 1000,
-        updatedAt: Date.now() - 5 * 24 * 3600 * 1000
+        updatedAt: Date.now() - 5 * 24 * 3600 * 1000,
       },
       {
         id: 'mock-act-4',
@@ -368,7 +392,7 @@ export class FarmActivityService {
         status: 'In Progress',
         notes: 'Spreading urea top dressing post crop germination. Light moisture present.',
         createdAt: Date.now() - 1 * 24 * 3600 * 1000,
-        updatedAt: Date.now() - 1 * 24 * 3600 * 1000
+        updatedAt: Date.now() - 1 * 24 * 3600 * 1000,
       },
       {
         id: 'mock-act-5',
@@ -380,8 +404,8 @@ export class FarmActivityService {
         status: 'Draft',
         notes: 'Organic neem spray solution planned to check early aphids infestation.',
         createdAt: Date.now(),
-        updatedAt: Date.now()
-      }
+        updatedAt: Date.now(),
+      },
     ];
 
     const mockExpenses: ActivityExpense[] = [
@@ -396,7 +420,7 @@ export class FarmActivityService {
         rate: 15000,
         amount: 15000,
         remarks: 'Contract rig drilling 250 feet',
-        createdAt: Date.now() - 6 * 24 * 3600 * 1000
+        createdAt: Date.now() - 6 * 24 * 3600 * 1000,
       },
       {
         id: 'mock-exp-2',
@@ -408,7 +432,7 @@ export class FarmActivityService {
         rate: 1000,
         amount: 5000,
         remarks: 'Rig operators and helpers',
-        createdAt: Date.now() - 6 * 24 * 3600 * 1000
+        createdAt: Date.now() - 6 * 24 * 3600 * 1000,
       },
       {
         id: 'mock-exp-3',
@@ -420,7 +444,7 @@ export class FarmActivityService {
         rate: 1950,
         amount: 1950,
         remarks: 'Tractor transport for rig tools',
-        createdAt: Date.now() - 6 * 24 * 3600 * 1000
+        createdAt: Date.now() - 6 * 24 * 3600 * 1000,
       },
       // Sowing Support expenses
       {
@@ -433,7 +457,7 @@ export class FarmActivityService {
         rate: 1500,
         amount: 3000,
         remarks: 'High-germination seed bag',
-        createdAt: Date.now() - 23 * 24 * 3600 * 1000
+        createdAt: Date.now() - 23 * 24 * 3600 * 1000,
       },
       {
         id: 'mock-exp-5',
@@ -445,7 +469,7 @@ export class FarmActivityService {
         rate: 500,
         amount: 1500,
         remarks: 'Local farm hand labor',
-        createdAt: Date.now() - 23 * 24 * 3600 * 1000
+        createdAt: Date.now() - 23 * 24 * 3600 * 1000,
       },
       // Weeding expenses
       {
@@ -458,7 +482,7 @@ export class FarmActivityService {
         rate: 500,
         amount: 1500,
         remarks: 'Hand weeding tools utilized',
-        createdAt: Date.now() - 5 * 24 * 3600 * 1000
+        createdAt: Date.now() - 5 * 24 * 3600 * 1000,
       },
       // Fertilizing expenses
       {
@@ -471,7 +495,7 @@ export class FarmActivityService {
         rate: 1100,
         amount: 2200,
         remarks: 'Cooperative purchase',
-        createdAt: Date.now() - 1 * 24 * 3600 * 1000
+        createdAt: Date.now() - 1 * 24 * 3600 * 1000,
       },
       {
         id: 'mock-exp-8',
@@ -483,7 +507,7 @@ export class FarmActivityService {
         rate: 400,
         amount: 800,
         remarks: 'Broadcasting completed in 4 hours',
-        createdAt: Date.now() - 1 * 24 * 3600 * 1000
+        createdAt: Date.now() - 1 * 24 * 3600 * 1000,
       },
       // Pest Spraying expenses
       {
@@ -496,8 +520,8 @@ export class FarmActivityService {
         rate: 300,
         amount: 1200,
         remarks: 'Organic pesticide supply',
-        createdAt: Date.now()
-      }
+        createdAt: Date.now(),
+      },
     ];
 
     this.activitiesSignal.set(mockActivities);

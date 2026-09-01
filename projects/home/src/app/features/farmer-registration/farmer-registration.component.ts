@@ -10,7 +10,7 @@ import { AuthService } from '../../core/auth/auth.service';
   selector: 'app-farmer-registration',
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './farmer-registration.component.html',
-  styleUrl: './farmer-registration.component.scss'
+  styleUrl: './farmer-registration.component.scss',
 })
 export class FarmerRegistrationComponent {
   private readonly fb = inject(FormBuilder);
@@ -27,7 +27,7 @@ export class FarmerRegistrationComponent {
     { value: 'Marathi', label: 'Marathi (मराठी)' },
     { value: 'Punjabi', label: 'Punjabi (ਪੰਜਾਬੀ)' },
     { value: 'Telugu', label: 'Telugu (తెలుగు)' },
-    { value: 'Tamil', label: 'Tamil (தமிழ்)' }
+    { value: 'Tamil', label: 'Tamil (தமிழ்)' },
   ];
 
   readonly registrationForm: FormGroup;
@@ -37,7 +37,7 @@ export class FarmerRegistrationComponent {
       fullName: ['', [Validators.required, Validators.minLength(3)]],
       phone: ['', [Validators.required, Validators.pattern('^[0-9-+() ]{10,15}$')]],
       email: ['', [Validators.email]],
-      preferredLanguage: ['English', Validators.required]
+      preferredLanguage: ['English', Validators.required],
     });
   }
 
@@ -64,11 +64,11 @@ export class FarmerRegistrationComponent {
       irrigationType: 'Manual',
       farmingMethod: 'Organic',
       locationType: 'skipped' as const,
-      location: null
+      location: null,
     };
 
     const registered = this.registrationService.registerFarmer(registrationData);
-    
+
     // Auto-login
     this.authService.login(registered);
     this.registeredName.set(registered.fullName);

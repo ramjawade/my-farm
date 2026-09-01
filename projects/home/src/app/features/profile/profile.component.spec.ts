@@ -32,7 +32,7 @@ describe('ProfileComponent', () => {
     village: 'Mulshi',
     pincode: '411057',
     location: { lat: 18.5, lng: 73.5 },
-    createdAt: Date.now()
+    createdAt: Date.now(),
   };
 
   beforeEach(async () => {
@@ -44,14 +44,14 @@ describe('ProfileComponent', () => {
         provideZonelessChangeDetection(),
         provideRouter([]),
         provideHttpClient(),
-        AuthService
-      ]
+        AuthService,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProfileComponent);
     component = fixture.componentInstance;
     authService = TestBed.inject(AuthService);
-    
+
     // Seed mockUser in the registration service
     const registrationSvc = TestBed.inject(FarmerRegistrationService);
     (registrationSvc as any).farmersSignal.set([mockUser]);
@@ -78,7 +78,7 @@ describe('ProfileComponent', () => {
     expect(compiled.textContent).toContain('Borewell');
     expect(compiled.textContent).toContain('Drip');
     expect(compiled.textContent).toContain('Organic');
-    
+
     // Verify crop tags list
     expect(compiled.textContent).toContain('Soybeans');
     expect(compiled.textContent).toContain('Wheat');
@@ -86,7 +86,7 @@ describe('ProfileComponent', () => {
 
   it('should set section and show dialog to true when openEditDialog is called', () => {
     expect(component.showEditDialog()).toBeFalse();
-    
+
     component.openEditDialog('account');
     expect(component.activeSection()).toBe('account');
     expect(component.showEditDialog()).toBeTrue();
@@ -99,7 +99,7 @@ describe('ProfileComponent', () => {
   it('should reset agronomic fields when deleteAgronomic is called and confirmed', () => {
     spyOn(window, 'confirm').and.returnValue(true);
     component.deleteAgronomic();
-    
+
     const user = authService.currentUser();
     expect(user?.userRole).toBe('Farmer');
     expect(user?.farmingMethod).toBe('');
@@ -109,7 +109,7 @@ describe('ProfileComponent', () => {
   it('should reset land & location fields when deleteLandLocation is called and confirmed', () => {
     spyOn(window, 'confirm').and.returnValue(true);
     component.deleteLandLocation();
-    
+
     const user = authService.currentUser();
     expect(user?.farmName).toBe('');
     expect(user?.farmArea).toBe(0);
@@ -125,7 +125,7 @@ describe('ProfileComponent', () => {
   it('should reset operational fields when deleteOperations is called and confirmed', () => {
     spyOn(window, 'confirm').and.returnValue(true);
     component.deleteOperations();
-    
+
     const user = authService.currentUser();
     expect(user?.waterSource).toBe('');
     expect(user?.irrigationType).toBe('');
