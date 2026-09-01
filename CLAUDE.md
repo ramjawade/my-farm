@@ -47,9 +47,11 @@ To keep token/API cost down while developing on this repo:
 - Phase branches: `claude/phase-<number>-<description>` (e.g., `claude/phase-2-persistence-layer`)
 
 ### Branch Lifecycle
+0. **Plan**: Create PHASE_N_PLAN.md document, commit & push as first commit
 1. **Create**: Branch from latest `main` 
 2. **Work**: Complete, testable feature only
 3. **Verify**: 
+   - ✅ Plan document committed
    - ✅ `npm run build` passes
    - ✅ `npm run lint` passes
    - ✅ Unit tests ready
@@ -63,6 +65,7 @@ To keep token/API cost down while developing on this repo:
 ## Rules & Guidelines
 
 ### ✅ DO
+- **Commit phase plans** (PHASE_N_PLAN.md) as first commit on feature branch
 - Create **focused, testable features** only per branch
 - Complete features before merging (no half-finished work)
 - Run full test suite before pushing
@@ -133,17 +136,17 @@ git branch -D claude/feature-activity-export
 - Phase 0: ✅ Complete (ESLint, CI gates)
 - Phase 1: ✅ Complete (Unified Activity Model)
 - Phase 2: ✅ Complete (Storage abstraction layer)
-- Phase 3: 🔄 Next (Real authentication system)
+- Phase 3: ✅ Complete (PIN-based authentication + session expiry)
+- Phase 4: 🔄 Next (Real weather API integration) — Plan approved, awaiting implementation
 
 ## Next Features
 
 Ready to work on testable features (each starts with an approved plan, per Plan-Then-Implement Workflow above):
-- Phase 3: Real authentication system
-- Phase 4: Real weather API integration
+- Phase 4: Real weather API integration (OpenWeatherMap integration with caching & advisories)
 - Phase 5: Backend sync layer
 - Phase 6: Feature completion & polish
 
 ---
 
 **Last Updated**: 2026-09-01
-**Process**: Plan-Then-Implement (sonnet plan → approval → haiku implementation), Merge & Delete workflow established
+**Process**: Plan-Then-Implement (sonnet plan → approval → haiku implementation), Plan-commit rule added, Phase 4 plan approved
