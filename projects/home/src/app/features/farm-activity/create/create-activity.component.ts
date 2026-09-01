@@ -45,7 +45,7 @@ export class CreateActivityComponent implements OnInit {
   readonly form: FormGroup = this.fb.group({
     date: [new Date().toISOString().substring(0, 10), Validators.required],
     season: ['Kharif', Validators.required],
-    activityId: ['', Validators.required],
+    type: ['', Validators.required],
     cropId: [''],
     fieldId: [''],
     parentActivityId: [''],
@@ -143,7 +143,7 @@ export class CreateActivityComponent implements OnInit {
         this.form.patchValue({
           date: act.date ? new Date(act.date).toISOString().substring(0, 10) : '',
           season: act.season,
-          activityId: act.activityId,
+          type: act.type,
           cropId: act.cropId || '',
           fieldId: act.fieldId || '',
           parentActivityId: act.parentActivityId || '',
@@ -164,7 +164,7 @@ export class CreateActivityComponent implements OnInit {
   }
 
   selectSuggestion(val: string): void {
-    this.form.patchValue({ activityId: val });
+    this.form.patchValue({ type: val });
   }
 
   onImageSelected(event: Event): void {
@@ -196,23 +196,30 @@ export class CreateActivityComponent implements OnInit {
 
     if (this.activityId) {
       // Update existing activity
-      this.activityService.updateActivity(this.activityId, {
-        date: val.date ? new Date(val.date).getTime() : undefined,
+      const updates: Record<string, any> = {
         season: val.season,
-        activityId: val.activityId.trim(),
-        cropId: val.cropId || undefined,
-        fieldId: val.fieldId || undefined,
+        type: val.type.trim(),
         status: val.status,
         notes: val.notes?.trim() || undefined,
         parentActivityId: val.parentActivityId || undefined,
         attachments: this.uploadedImages(),
-      });
+      };
+      if (val.date) {
+        updates['date'] = new Date(val.date).getTime();
+      }
+      if (val.cropId) {
+        updates['cropId'] = val.cropId;
+      }
+      if (val.fieldId) {
+        updates['fieldId'] = val.fieldId;
+      }
+      this.activityService.updateActivity(this.activityId, updates);
     } else {
       // Create activity
       const newAct = this.activityService.addActivity({
-        date: val.date ? new Date(val.date).getTime() : undefined,
+        date: val.date ? new Date(val.date).getTime() : Date.now(),
         season: val.season,
-        activityId: val.activityId.trim(),
+        type: val.type.trim(),
         cropId: val.cropId || undefined,
         fieldId: val.fieldId || undefined,
         status: val.status,

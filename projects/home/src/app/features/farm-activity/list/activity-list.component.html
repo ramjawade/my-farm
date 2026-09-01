@@ -223,7 +223,7 @@
             >
               <div>
                 <div class="d-flex justify-content-between align-items-start mb-2">
-                  <h3 class="mf-card-section-title">{{ act.activityId }}</h3>
+                  <h3 class="mf-card-section-title">{{ act.type }}</h3>
                   <div class="d-flex align-items-center gap-2">
                     <span
                       class="badge"
@@ -357,14 +357,14 @@
                   <td class="py-3 px-4">
                     <div class="d-flex align-items-center gap-2">
                       <span class="activity-emoji-circle-sm">
-                        {{ getActivityEmoji(act.activityId) }}
+                        {{ getActivityEmoji(act.type) }}
                       </span>
                       <div>
                         <span
                           class="fw-bold text-soil font-sans d-block text-soil-dark"
                           style="font-size: 0.9rem; color: #5c4033"
                         >
-                          {{ act.activityId }}
+                          {{ act.type }}
                         </span>
                         @if (act.notes) {
                           <span

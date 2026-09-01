@@ -2,6 +2,7 @@ import { Injectable, signal, inject, effect } from '@angular/core';
 import { CropEntity, ActivityEntity, CropStage, ActivityType } from './crop-timeline.models';
 import { AuthService } from '../../core/auth/auth.service';
 import { FarmActivityService } from '../farm-activity/farm-activity.service';
+import { ActivityService } from '../activity/activity.service';
 
 const CROPS_STORAGE_KEY = 'my_farm_crops';
 const ACTIVITIES_STORAGE_KEY = 'my_farm_crop_activities';
@@ -12,6 +13,7 @@ const ACTIVITIES_STORAGE_KEY = 'my_farm_crop_activities';
 export class CropTimelineService {
   private readonly authService = inject(AuthService);
   private readonly farmActivityService = inject(FarmActivityService);
+  private readonly activityService = inject(ActivityService);
   private readonly cropsSignal = signal<CropEntity[]>([]);
   private readonly activitiesSignal = signal<ActivityEntity[]>([]);
 
@@ -138,6 +140,9 @@ export class CropTimelineService {
     this.activitiesSignal.set(updated);
     this.saveActivitiesToStorage(updated);
 
+    // Also add to unified ActivityService
+    this.syncToActivityService(newActivity);
+
     // If this is a subactivity, verify if the parent is a planned stage activity
     if (newActivity.parentActivityId) {
       const parentAct = current.find((a) => a.id === newActivity.parentActivityId);
@@ -162,9 +167,6 @@ export class CropTimelineService {
       this.updateCropUpcomingActivity(newActivity.cropId);
     }
 
-    // Sync to FarmActivityService
-    this.syncToFarmActivity(newActivity);
-
     return newActivity;
   }
 
@@ -185,10 +187,10 @@ export class CropTimelineService {
   updateActivity(id: string, updates: Partial<ActivityEntity>): void {
     this.updateActivityOnly(id, updates);
 
-    // Sync update to FarmActivityService
+    // Sync update to unified ActivityService
     const updatedAct = this.activitiesSignal().find((a) => a.id === id);
     if (updatedAct) {
-      this.syncUpdateToFarmActivity(updatedAct);
+      this.syncUpdateToActivityService(updatedAct);
     }
   }
 
@@ -207,16 +209,16 @@ export class CropTimelineService {
   deleteActivity(id: string): void {
     this.deleteActivityOnly(id);
 
-    // Cascading delete only on FarmActivityService side
-    this.farmActivityService.deleteActivityOnly(id);
+    // Cascading delete from ActivityService
+    this.activityService.deleteActivity(id);
   }
 
-  private syncToFarmActivity(ca: ActivityEntity): void {
-    const farmActivityService = this.farmActivityService;
-    if (!farmActivityService) return;
-
-    // Check if general activity already exists
-    const exists = farmActivityService.activities().find((g) => g.id === ca.id);
+  /**
+   * Sync a crop-timeline activity to the unified ActivityService.
+   * Converts ActivityEntity → Activity model.
+   */
+  private syncToActivityService(ca: ActivityEntity): void {
+    const exists = this.activityService.getActivityById(ca.id);
     if (exists) return;
 
     const crop = this.cropsSignal().find((c) => c.id === ca.cropId);
@@ -226,27 +228,26 @@ export class CropTimelineService {
     const dateObj = ca.date ? new Date(ca.date) : new Date();
     const month = isNaN(dateObj.getTime()) ? new Date().getMonth() : dateObj.getMonth();
     let season = 'Kharif';
-    if (month >= 9 || month <= 0)
-      season = 'Rabi'; // Oct, Nov, Dec, Jan
+    if (month >= 9 || month <= 0) season = 'Rabi'; // Oct, Nov, Dec, Jan
     else if (month >= 1 && month <= 4) season = 'Summer'; // Feb, Mar, Apr, May
 
     // Map status
-    let status: 'Draft' | 'In Progress' | 'Completed' = 'In Progress';
+    let status: any = 'In Progress';
     if (ca.status === 'Completed') status = 'Completed';
-    else if (ca.status === 'Planned' || ca.status === 'Scheduled') status = 'In Progress';
+    else if (ca.status === 'Planned' || ca.status === 'Scheduled') status = 'Scheduled';
 
-    // Add activity to FarmActivityService
-    const ga = farmActivityService.addActivity({
-      id: ca.id,
-      date: ca.date || undefined,
+    // Add to unified ActivityService
+    this.activityService.addActivity({
+      date: ca.date || Date.now(),
       season,
-      activityId: ca.type,
+      type: ca.type,
+      status,
       cropId: ca.cropId,
       fieldId,
-      status,
       notes: ca.notes,
       parentActivityId: ca.parentActivityId,
       attachments: ca.attachments,
+      metadata: ca.metadata,
     });
 
     // Add expense if cost > 0
@@ -257,50 +258,42 @@ export class CropTimelineService {
       else if (ca.type === 'Labour Activity') category = 'Workers';
       else if (ca.type === 'Irrigation') category = 'Machine Rent';
 
-      farmActivityService.addExpense({
-        activityId: ga.id,
+      this.activityService.addExpense({
+        activityId: ca.id,
         category,
-        itemId: ca.type + ' Cost',
-        quantity: 1,
-        unit: 'job',
-        rate: ca.cost,
         amount: ca.cost,
         remarks: 'Auto-synced from Crop Timeline',
       });
     }
   }
 
-  private syncUpdateToFarmActivity(ca: ActivityEntity): void {
-    const farmActivityService = this.farmActivityService;
-    if (!farmActivityService) return;
-
-    const exists = farmActivityService.activities().find((g) => g.id === ca.id);
+  /**
+   * Sync updates to unified ActivityService.
+   */
+  private syncUpdateToActivityService(ca: ActivityEntity): void {
+    const exists = this.activityService.getActivityById(ca.id);
     if (!exists) {
-      this.syncToFarmActivity(ca);
+      this.syncToActivityService(ca);
       return;
     }
 
-    let status: 'Draft' | 'In Progress' | 'Completed' = 'In Progress';
+    let status: any = 'In Progress';
     if (ca.status === 'Completed') status = 'Completed';
-    else if (ca.status === 'Planned' || ca.status === 'Scheduled') status = 'In Progress';
+    else if (ca.status === 'Planned' || ca.status === 'Scheduled') status = 'Scheduled';
 
-    farmActivityService.updateActivityOnly(ca.id, {
-      date: ca.date || undefined,
-      activityId: ca.type,
+    this.activityService.updateActivity(ca.id, {
+      type: ca.type,
       status,
       notes: ca.notes,
-      parentActivityId: ca.parentActivityId,
       attachments: ca.attachments,
+      metadata: ca.metadata,
     });
 
-    // Update expense
-    const expenses = farmActivityService.getExpensesForActivity(ca.id);
+    // Update expense if cost changed
+    const expenses = this.activityService.getExpensesForActivity(ca.id);
     if (ca.cost > 0) {
       if (expenses.length > 0) {
-        farmActivityService.updateExpense(expenses[0].id, {
-          amount: ca.cost,
-          rate: ca.cost,
-        });
+        this.activityService.updateExpense(expenses[0].id, { amount: ca.cost });
       } else {
         let category = 'Other';
         if (ca.type === 'Sowing') category = 'Seeds';
@@ -308,20 +301,16 @@ export class CropTimelineService {
         else if (ca.type === 'Labour Activity') category = 'Workers';
         else if (ca.type === 'Irrigation') category = 'Machine Rent';
 
-        farmActivityService.addExpense({
+        this.activityService.addExpense({
           activityId: ca.id,
           category,
-          itemId: ca.type + ' Cost',
-          quantity: 1,
-          unit: 'job',
-          rate: ca.cost,
           amount: ca.cost,
           remarks: 'Auto-synced from Crop Timeline',
         });
       }
-    } else {
+    } else if (expenses.length > 0) {
       for (const e of expenses) {
-        farmActivityService.deleteExpense(e.id);
+        this.activityService.deleteExpense(e.id);
       }
     }
   }

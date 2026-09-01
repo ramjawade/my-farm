@@ -226,7 +226,7 @@ describe('HomeComponent', () => {
     const mockActivity = activityService.addActivity({
       date: Date.now(),
       season: 'Summer',
-      activityId: 'Drip Maintenance',
+      type: 'Maintenance',
       status: 'In Progress',
     });
 
@@ -359,7 +359,7 @@ describe('HomeComponent', () => {
       // Assert synced to FarmActivityService
       const syncedFarmAct = activityService.activities().find((a) => a.id === newCropAct.id);
       expect(syncedFarmAct).toBeTruthy();
-      expect(syncedFarmAct?.activityId).toBe('Irrigation');
+      expect(syncedFarmAct?.type).toBe('Irrigation');
       expect(syncedFarmAct?.cropId).toBe('c-test-crop');
       expect(syncedFarmAct?.notes).toBe('Irrigated for 30 minutes');
       expect(syncedFarmAct?.status).toBe('Completed');
@@ -377,7 +377,7 @@ describe('HomeComponent', () => {
       const newFarmAct = activityService.addActivity({
         date: new Date('2026-06-13').getTime(),
         season: 'Kharif',
-        activityId: 'Weeding',
+        type: 'Weeding',
         cropId: 'c-test-crop',
         fieldId: 'Field A',
         status: 'Completed',

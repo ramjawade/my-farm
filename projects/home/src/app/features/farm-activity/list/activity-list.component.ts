@@ -81,16 +81,20 @@ export class ActivityListComponent implements OnInit {
 
   // Dynamic activity types based on recorded data plus common operations
   readonly activityTypesList = computed(() => {
-    const recorded = this.activityService.activities().map((a) => a.activityId);
+    const recorded = this.activityService.activities().map((a) => a.type);
     const standard = [
-      'Bore Installation',
       'Sowing',
-      'Sowing Support',
-      'Weeding',
-      'Fertilizing',
-      'Pest Spraying',
-      'Harvesting',
       'Irrigation',
+      'Fertilizer Application',
+      'Spray Application',
+      'Weeding',
+      'Field Inspection',
+      'Labour Activity',
+      'Harvest',
+      'Sale',
+      'Weather Incident',
+      'Maintenance',
+      'Custom',
     ];
     return Array.from(new Set([...recorded, ...standard]));
   });
@@ -116,7 +120,7 @@ export class ActivityListComponent implements OnInit {
 
     const type = this.typeFilter();
     if (type !== 'All') {
-      list = list.filter((a) => a.activityId === type);
+      list = list.filter((a) => a.type === type);
     }
 
     const status = this.statusFilter();
