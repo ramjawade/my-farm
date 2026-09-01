@@ -9,6 +9,8 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { IStorageService } from './core/storage/storage.interface';
 import { LocalStorageService } from './core/storage/local-storage.service';
+import { IWeatherService } from './core/weather/weather.interface';
+import { WeatherService } from './core/weather/weather.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -17,5 +19,6 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     provideRouter(routes),
     { provide: IStorageService, useClass: LocalStorageService },
+    { provide: IWeatherService, useClass: WeatherService },
   ],
 };

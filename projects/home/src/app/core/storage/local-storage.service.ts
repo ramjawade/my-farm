@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Activity, ActivityExpense } from '../../features/activity/activity.models';
+import { WeatherData } from '../weather/weather.models';
 import { IStorageService } from './storage.interface';
 
 @Injectable({ providedIn: 'root' })
@@ -86,5 +87,20 @@ export class LocalStorageService extends IStorageService {
   async syncExpensesForActivity(userId: string, activityId: string): Promise<ActivityExpense[]> {
     const expenses = await this.getExpenses(userId);
     return expenses.filter((e) => e.activityId === activityId);
+  }
+
+  private getWeatherHistoryKey(userId: string): string {
+    return `my_farm_${userId}_weather_history`;
+  }
+
+  async getWeatherHistory(userId: string): Promise<WeatherData[]> {
+    const key = this.getWeatherHistoryKey(userId);
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : [];
+  }
+
+  async saveWeatherHistory(userId: string, history: WeatherData[]): Promise<void> {
+    const key = this.getWeatherHistoryKey(userId);
+    localStorage.setItem(key, JSON.stringify(history));
   }
 }

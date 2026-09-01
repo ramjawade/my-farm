@@ -1,4 +1,5 @@
 import { Activity, ActivityExpense } from '../../features/activity/activity.models';
+import { WeatherData } from '../weather/weather.models';
 
 export abstract class IStorageService {
   abstract getActivities(userId: string): Promise<Activity[]>;
@@ -15,4 +16,6 @@ export abstract class IStorageService {
   abstract deleteExpense(userId: string, id: string): Promise<void>;
   abstract syncActivitiesForField(userId: string, fieldId: string): Promise<Activity[]>;
   abstract syncExpensesForActivity(userId: string, activityId: string): Promise<ActivityExpense[]>;
+  abstract getWeatherHistory(userId: string): Promise<WeatherData[]>;
+  abstract saveWeatherHistory(userId: string, history: WeatherData[]): Promise<void>;
 }
