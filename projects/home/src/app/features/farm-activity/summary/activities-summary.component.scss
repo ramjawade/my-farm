@@ -8,17 +8,17 @@
   background: rgba(243, 248, 245, 0.94);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  
+
   // Pull up to overlay the container's top padding (py-4 is 1.5rem)
   margin-top: -1.5rem;
   padding-top: 1.5rem;
-  
+
   // Stretch side-to-side to span full width and realign internally
   margin-left: -1rem;
   margin-right: -1rem;
   padding-left: 1rem;
   padding-right: 1rem;
-  
+
   @media (min-width: 768px) {
     margin-left: -3rem;
     margin-right: -3rem;
@@ -72,14 +72,14 @@
 /* Premium Table-like Recent Activities */
 .activity-table-row {
   transition: all 0.2s ease-in-out;
-  
+
   &:hover {
     background-color: rgba($farm-green-primary, 0.04) !important;
-    
+
     td {
       background-color: rgba($farm-green-primary, 0.04) !important;
     }
-    
+
     .bi-chevron-right {
       transform: translateX(3px);
       color: $farm-green-primary !important;
@@ -105,7 +105,9 @@
 }
 
 .bi-chevron-right {
-  transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
+  transition:
+    transform 0.2s ease-in-out,
+    color 0.2s ease-in-out;
 }
 
 .status-badge-inline {
@@ -118,12 +120,12 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   line-height: 1;
-  
+
   &.completed {
     background-color: #edf6f0;
     color: #3f9b65;
   }
-  
+
   &.progressing {
     background-color: #fef3c7;
     color: #d97706;

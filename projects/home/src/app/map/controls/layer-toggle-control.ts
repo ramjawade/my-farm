@@ -16,7 +16,7 @@ export class LayerToggleControl extends L.Control {
     const { activeView, setLayer, ...controlOptions } = options;
     super({
       position: 'bottomright',
-      ...controlOptions
+      ...controlOptions,
     });
     this.toggleOptions = options;
   }

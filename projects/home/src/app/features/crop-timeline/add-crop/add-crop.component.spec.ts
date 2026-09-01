@@ -20,13 +20,13 @@ describe('AddCropComponent', () => {
         provideRouter([]),
         provideHttpClient(),
         CropTimelineService,
-        AuthService
-      ]
+        AuthService,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AddCropComponent);
     component = fixture.componentInstance;
-    
+
     // Assign inputs
     component.cropNameOptions = ['Soybeans', 'Wheat'];
     component.stages = ['Land Preparation', 'Sowing'];
@@ -37,7 +37,7 @@ describe('AddCropComponent', () => {
       area: [10, [Validators.required, Validators.min(1)]],
       areaUnit: ['hectares'],
       sowingDate: [''],
-      currentStage: ['Sowing']
+      currentStage: ['Sowing'],
     });
 
     fixture.detectChanges();
@@ -49,7 +49,7 @@ describe('AddCropComponent', () => {
 
   it('should validate form and emit submitCrop on submit', () => {
     spyOn(component.submitCrop, 'emit');
-    
+
     // Invalid initially (name and fieldId empty)
     component.onSubmit();
     expect(component.submitCrop.emit).not.toHaveBeenCalled();

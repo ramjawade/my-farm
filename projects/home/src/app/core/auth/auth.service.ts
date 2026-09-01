@@ -6,7 +6,7 @@ import { FarmerRegistrationData } from '../../features/farmer-registration/farme
 const ACTIVE_USER_ID_KEY = 'my_farm_active_user_id';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private readonly router = inject(Router);
@@ -55,7 +55,7 @@ export class AuthService {
       if (activeId) {
         // Wait, registrationService has a registeredFarmers signal. Let's look up the user.
         const farmers = this.registrationService.registeredFarmers();
-        const found = farmers.find(f => f.id === activeId);
+        const found = farmers.find((f) => f.id === activeId);
         if (found) {
           this.currentUserSignal.set(found);
           return;

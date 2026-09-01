@@ -20,10 +20,9 @@ describe('WeatherComponent', () => {
         provideZonelessChangeDetection(),
         provideRouter([]),
         provideHttpClient(),
-        AuthService
-      ]
-    })
-    .compileComponents();
+        AuthService,
+      ],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(WeatherComponent);
     component = fixture.componentInstance;
@@ -51,7 +50,7 @@ describe('WeatherComponent', () => {
       farmingMethod: 'Organic',
       locationType: 'skipped',
       location: null,
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
     authService.login(mockUser);
     fixture.detectChanges();
@@ -77,7 +76,7 @@ describe('WeatherComponent', () => {
       village: 'Pune',
       state: 'Maharashtra',
       location: null,
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
     authService.login(mockUser);
     fixture.detectChanges();

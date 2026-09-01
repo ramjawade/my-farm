@@ -30,8 +30,8 @@ describe('HomeComponent', () => {
         AuthService,
         CropTimelineService,
         FarmActivityService,
-        FarmDrawService
-      ]
+        FarmDrawService,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(HomeComponent);
@@ -50,7 +50,7 @@ describe('HomeComponent', () => {
   it('should default to public landing page (logged out state)', () => {
     expect(component.isLoggedIn()).toBeFalse();
     expect(component.currentUser()).toBeNull();
-    
+
     // Check template layout renders landing page (hero)
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.landing-page')).toBeTruthy();
@@ -73,14 +73,14 @@ describe('HomeComponent', () => {
       farmingMethod: 'Organic',
       locationType: 'skipped',
       location: null,
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
     authService.login(mockUser);
     fixture.detectChanges();
 
     expect(component.isLoggedIn()).toBeTrue();
     expect(component.currentUser()).toEqual(mockUser);
-    
+
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.landing-page')).toBeFalsy();
     expect(compiled.querySelector('.dashboard-page')).toBeTruthy();
@@ -102,7 +102,7 @@ describe('HomeComponent', () => {
       farmingMethod: 'Organic',
       locationType: 'skipped',
       location: null,
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
     authService.login(mockUser);
     fixture.detectChanges();
@@ -131,10 +131,10 @@ describe('HomeComponent', () => {
       farmingMethod: 'Organic',
       locationType: 'skipped',
       location: null,
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
     authService.login(mockUser);
-    
+
     // Set mock saved farms
     const mockFarms = [
       {
@@ -143,7 +143,7 @@ describe('HomeComponent', () => {
         points: [],
         area: { squareMeters: 10000, hectares: 1.0, acres: 2.47 },
         geoJson: {},
-        createdAt: Date.now()
+        createdAt: Date.now(),
       },
       {
         id: '2',
@@ -151,8 +151,8 @@ describe('HomeComponent', () => {
         points: [],
         area: { squareMeters: 15000, hectares: 1.5, acres: 3.7 },
         geoJson: {},
-        createdAt: Date.now()
-      }
+        createdAt: Date.now(),
+      },
     ];
     localStorage.setItem('my_farm_f-test_saved_farms', JSON.stringify(mockFarms));
     farmDrawService.savedFarms.set(mockFarms);
@@ -178,10 +178,10 @@ describe('HomeComponent', () => {
       farmingMethod: 'Organic',
       locationType: 'skipped',
       location: null,
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
     authService.login(mockUser);
-    
+
     const mockFarms = [
       {
         id: '1',
@@ -189,7 +189,7 @@ describe('HomeComponent', () => {
         points: [],
         area: { squareMeters: 10000, hectares: 1.0, acres: 2.47 },
         geoJson: {},
-        createdAt: Date.now()
+        createdAt: Date.now(),
       },
       {
         id: '2',
@@ -197,8 +197,8 @@ describe('HomeComponent', () => {
         points: [],
         area: { squareMeters: 15000, hectares: 1.5, acres: 3.7 },
         geoJson: {},
-        createdAt: Date.now()
-      }
+        createdAt: Date.now(),
+      },
     ];
     localStorage.setItem('my_farm_f-test_saved_farms', JSON.stringify(mockFarms));
     farmDrawService.savedFarms.set(mockFarms);
@@ -226,15 +226,15 @@ describe('HomeComponent', () => {
     const mockActivity = activityService.addActivity({
       date: Date.now(),
       season: 'Summer',
-      activityId: 'Drip Maintenance',
-      status: 'In Progress'
+      type: 'Maintenance',
+      status: 'In Progress',
     });
 
     fixture.detectChanges();
 
     // Verify task is in progress
     const activities = activityService.activities();
-    const target = activities.find(a => a.id === mockActivity.id);
+    const target = activities.find((a) => a.id === mockActivity.id);
     expect(target?.status).toBe('In Progress');
 
     // Complete task
@@ -243,7 +243,7 @@ describe('HomeComponent', () => {
 
     // Verify status has updated to Completed
     const updatedActivities = activityService.activities();
-    const updatedTarget = updatedActivities.find(a => a.id === mockActivity.id);
+    const updatedTarget = updatedActivities.find((a) => a.id === mockActivity.id);
     expect(updatedTarget?.status).toBe('Completed');
   });
 
@@ -263,7 +263,7 @@ describe('HomeComponent', () => {
       farmingMethod: 'Organic',
       locationType: 'skipped',
       location: null,
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
     authService.login(mockUser);
     fixture.detectChanges();
@@ -288,7 +288,7 @@ describe('HomeComponent', () => {
       locationType: 'skipped',
       location: null,
       createdAt: Date.now(),
-      farmSetupCompleted: true
+      farmSetupCompleted: true,
     };
     authService.login(mockUser);
     fixture.detectChanges();
@@ -332,7 +332,7 @@ describe('HomeComponent', () => {
         farmingMethod: 'Organic',
         locationType: 'skipped',
         location: null,
-        createdAt: Date.now()
+        createdAt: Date.now(),
       };
       authService.login(mockUser);
       fixture.detectChanges();
@@ -350,16 +350,16 @@ describe('HomeComponent', () => {
         cost: 250,
         notes: 'Irrigated for 30 minutes',
         attachments: [],
-        metadata: { duration: 30, irrigationMethod: 'Drip' }
+        metadata: { duration: 30, irrigationMethod: 'Drip' },
       });
 
       // Assert synced in CropTimelineService
       expect(cropService.activities().length).toBe(initialCropActivitiesCount + 1);
 
       // Assert synced to FarmActivityService
-      const syncedFarmAct = activityService.activities().find(a => a.id === newCropAct.id);
+      const syncedFarmAct = activityService.activities().find((a) => a.id === newCropAct.id);
       expect(syncedFarmAct).toBeTruthy();
-      expect(syncedFarmAct?.activityId).toBe('Irrigation');
+      expect(syncedFarmAct?.type).toBe('Irrigation');
       expect(syncedFarmAct?.cropId).toBe('c-test-crop');
       expect(syncedFarmAct?.notes).toBe('Irrigated for 30 minutes');
       expect(syncedFarmAct?.status).toBe('Completed');
@@ -377,11 +377,11 @@ describe('HomeComponent', () => {
       const newFarmAct = activityService.addActivity({
         date: new Date('2026-06-13').getTime(),
         season: 'Kharif',
-        activityId: 'Weeding',
+        type: 'Weeding',
         cropId: 'c-test-crop',
         fieldId: 'Field A',
         status: 'Completed',
-        notes: 'Manual mechanical weeding'
+        notes: 'Manual mechanical weeding',
       });
 
       // Assert synced to FarmActivityService

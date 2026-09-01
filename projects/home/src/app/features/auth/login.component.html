@@ -5,7 +5,6 @@
 
   <div class="login-container">
     <div class="card card-glass login-card mx-auto animate-fade-in">
-      
       <!-- Logo & Header -->
       <div class="text-center mb-4 pt-2">
         <div class="brand-logo-container mb-3 shadow-sm mx-auto">
@@ -20,15 +19,17 @@
         <h5 class="section-title text-center mb-3">
           <i class="bi bi-lightning-charge-fill text-warning me-1"></i>Quick Login
         </h5>
-        
+
         <div class="quick-profiles-grid">
           @for (farmer of registeredFarmers(); track farmer.id) {
-            <button 
-              type="button" 
+            <button
+              type="button"
               class="profile-card border text-start d-flex align-items-center gap-3 transition"
               (click)="loginAs(farmer)"
             >
-              <div class="profile-avatar-circle d-flex align-items-center justify-content-center text-white font-semibold">
+              <div
+                class="profile-avatar-circle d-flex align-items-center justify-content-center text-white font-semibold"
+              >
                 {{ getInitials(farmer.fullName) }}
               </div>
               <div class="profile-details flex-grow-1 overflow-hidden">
@@ -103,17 +104,22 @@
               </div>
             } @else {
               <p class="text-success text-xs mt-1.5 fw-semibold">
-                <i class="bi bi-info-circle-fill me-1"></i>This number is not registered. Enter your name to start instantly!
+                <i class="bi bi-info-circle-fill me-1"></i>This number is not registered. Enter your
+                name to start instantly!
               </p>
             }
           </div>
         }
 
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           class="btn btn-success w-100 py-2.5 fw-semibold hover-lift shadow-xs d-flex align-items-center justify-content-center gap-2"
         >
-          <i class="bi" [class.bi-box-arrow-in-right]="!isNewNumber()" [class.bi-person-plus-fill]="isNewNumber()"></i>
+          <i
+            class="bi"
+            [class.bi-box-arrow-in-right]="!isNewNumber()"
+            [class.bi-person-plus-fill]="isNewNumber()"
+          ></i>
           <span>{{ isNewNumber() ? 'Create Profile & Enter' : 'Access Account' }}</span>
         </button>
       </form>
@@ -121,13 +127,15 @@
       <!-- Registration Link -->
       <div class="text-center mt-4 border-top pt-3">
         <p class="text-muted text-sm mb-0">
-          New to My Farm? 
-          <a routerLink="/register" class="text-success fw-bold text-decoration-none hover-underline ms-1">
+          New to My Farm?
+          <a
+            routerLink="/register"
+            class="text-success fw-bold text-decoration-none hover-underline ms-1"
+          >
             Register Farmer Profile <i class="bi bi-arrow-right text-xs"></i>
           </a>
         </p>
       </div>
-
     </div>
   </div>
 </div>

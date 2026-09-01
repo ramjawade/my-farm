@@ -11,7 +11,7 @@ import { CropEntity, CropStage } from '../crop-timeline.models';
   selector: 'app-crop-dashboard',
   imports: [CommonModule, FormsModule],
   templateUrl: './crop-dashboard.component.html',
-  styleUrl: './crop-dashboard.component.scss'
+  styleUrl: './crop-dashboard.component.scss',
 })
 export class CropDashboardComponent implements OnInit {
   private readonly timelineService = inject(CropTimelineService);
@@ -46,7 +46,7 @@ export class CropDashboardComponent implements OnInit {
     'Flowering',
     'Fruiting / Pod Formation',
     'Maturity',
-    'Harvest'
+    'Harvest',
   ];
 
   ngOnInit(): void {
@@ -85,19 +85,20 @@ export class CropDashboardComponent implements OnInit {
   }
 
   getDaysSinceLastActivity(cropId: string): string {
-    const cropActs = this.timelineService.activities()
-      .filter(a => a.cropId === cropId && a.status === 'Completed')
+    const cropActs = this.timelineService
+      .activities()
+      .filter((a) => a.cropId === cropId && a.status === 'Completed')
       .sort((a, b) => (b.date || 0) - (a.date || 0));
-    
+
     if (cropActs.length === 0) {
       return 'No activity logged';
     }
-    
+
     const lastDate = cropActs[0].date;
     if (!lastDate) return 'No activity logged';
     const diff = Date.now() - lastDate;
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
+
     if (days < 0) return 'Today';
     if (days === 0) return 'Today';
     if (days === 1) return '1 Day';

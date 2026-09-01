@@ -11,7 +11,7 @@
   background: linear-gradient(135deg, #edf6f0 0%, #f7fbf8 100%);
   border: 1px solid rgba(42, 111, 71, 0.08);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.02);
-  
+
   .hero-glow {
     position: absolute;
     top: -50%;
@@ -86,7 +86,7 @@
 // 3. Authenticated Dashboard Styles
 .welcome-card {
   border: 1px solid rgba(46, 125, 50, 0.1) !important;
-  
+
   .welcome-card-glow {
     position: absolute;
     top: -50px;
@@ -153,7 +153,7 @@
 .crop-dash-item {
   border: 1px solid rgba(0, 0, 0, 0.05);
   background: #ffffff;
-  
+
   &:hover {
     border-color: rgba(46, 125, 50, 0.2);
     background: #fafcfb;
@@ -182,9 +182,9 @@
     border-color: #2e7d32;
     background: rgba(46, 125, 50, 0.1);
     color: #2e7d32;
-    
+
     i::before {
-      content: "\f272"; // bi-check in bootstrap icons
+      content: '\f272'; // bi-check in bootstrap icons
       font-weight: bold;
     }
   }
@@ -193,7 +193,7 @@
 .activity-dash-item {
   border: 1px solid rgba(0, 0, 0, 0.05);
   background: #ffffff;
-  
+
   &:hover {
     border-color: rgba(2, 136, 217, 0.2);
     background: #fbfdff;

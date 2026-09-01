@@ -64,7 +64,7 @@ export class FarmDrawService {
       { lat: center.lat - 0.003, lng: center.lng - 0.003 },
       { lat: center.lat - 0.003, lng: center.lng + 0.003 },
       { lat: center.lat + 0.003, lng: center.lng + 0.003 },
-      { lat: center.lat + 0.003, lng: center.lng - 0.003 }
+      { lat: center.lat + 0.003, lng: center.lng - 0.003 },
     ];
     const defaultFarm: SavedFarm = {
       id: 'default-farm-1',
@@ -72,7 +72,7 @@ export class FarmDrawService {
       points: points,
       area: { hectares: 6.5, acres: 16.06, squareMeters: 65000 },
       geoJson: toGeoJsonPolygon(points),
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
     const farms = [defaultFarm];
     try {
@@ -148,7 +148,7 @@ export class FarmDrawService {
       points: currentPoints,
       area: currentArea,
       geoJson: toGeoJsonPolygon(currentPoints),
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
 
     this.savedFarms.update((current) => {

@@ -31,7 +31,7 @@
   }
 
   &::before {
-    content: "";
+    content: '';
     width: 14px;
     height: 14px;
     background: $farm-green-primary;
@@ -121,7 +121,7 @@
 
 .status-transitions {
   margin-top: 0.5rem;
-  
+
   .btn {
     font-size: 0.75rem !important;
     padding: 0.35rem 0.75rem !important;
@@ -133,11 +133,11 @@
     align-items: center;
     gap: 0.25rem;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    
+
     &:hover {
       transform: translateY(-2px);
     }
-    
+
     &:active {
       transform: scale(0.96);
     }
@@ -147,7 +147,7 @@
     border: 1px solid $warning !important;
     color: $farm-warning-dark !important;
     background-color: transparent !important;
-    
+
     &:hover {
       background-color: $warning !important;
       color: #ffffff !important;
@@ -155,4 +155,3 @@
     }
   }
 }
-

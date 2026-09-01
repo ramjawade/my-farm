@@ -8,7 +8,7 @@ import { AuthService } from '../../../core/auth/auth.service';
   standalone: true,
   selector: 'app-map-my-farm',
   templateUrl: './map-my-farm.component.html',
-  styleUrl: './map-my-farm.component.scss'
+  styleUrl: './map-my-farm.component.scss',
 })
 export class MapMyFarmComponent {
   readonly draw = inject(FarmDrawService);
@@ -52,7 +52,7 @@ export class MapMyFarmComponent {
     const user = this.authService.currentUser();
     if (user) {
       const updates: any = {};
-      
+
       // Update coordinates
       if (!user.location) {
         // If drawing has finished, we can use the last drawn points from this.draw.points()

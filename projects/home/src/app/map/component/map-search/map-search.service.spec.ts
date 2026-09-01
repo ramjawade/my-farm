@@ -10,10 +10,7 @@ describe('MapSearchService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [
-        MapSearchService,
-        provideZonelessChangeDetection()
-      ]
+      providers: [MapSearchService, provideZonelessChangeDetection()],
     });
     service = TestBed.inject(MapSearchService);
     httpTestingController = TestBed.inject(HttpTestingController);
@@ -37,10 +34,10 @@ describe('MapSearchService', () => {
             city: 'Nagpur',
             state: 'Maharashtra',
             country: 'India',
-            type: 'farm'
-          }
-        }
-      ]
+            type: 'farm',
+          },
+        },
+      ],
     };
 
     service.search('Nagpur').subscribe((results) => {
@@ -54,7 +51,7 @@ describe('MapSearchService', () => {
     });
 
     const req = httpTestingController.expectOne(
-      'https://photon.komoot.io/api/?q=Nagpur&limit=' + MAP_SEARCH_RESULT_LIMIT + '&lang=en'
+      'https://photon.komoot.io/api/?q=Nagpur&limit=' + MAP_SEARCH_RESULT_LIMIT + '&lang=en',
     );
     expect(req.request.method).toEqual('GET');
     req.flush(mockPhotonResponse);

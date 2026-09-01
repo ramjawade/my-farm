@@ -25,7 +25,7 @@
   background: linear-gradient(135deg, $farm-green-dark 0%, $farm-green-primary 100%);
   color: $white;
   border-bottom: 2px solid rgba($farm-green-primary, 0.15);
-  
+
   .wizard-title {
     font-size: 1.8rem;
     font-weight: 700;
@@ -143,8 +143,6 @@
   text-align: center;
 }
 
-
-
 .field-sub-label {
   font-size: 0.78rem;
   color: $text-muted;
@@ -162,7 +160,8 @@
 }
 
 /* Shared base button option properties */
-.role-row-btn, .location-toggle-btn {
+.role-row-btn,
+.location-toggle-btn {
   background-color: $white;
   border: 1.5px solid rgba($farm-green-primary, 0.15);
   cursor: pointer;
@@ -259,7 +258,7 @@
     i.bi {
       color: $farm-green-primary;
     }
-    
+
     .location-label-text {
       color: $farm-green-primary;
       font-weight: 700;
@@ -306,7 +305,7 @@
   border-radius: 8px;
   border: 1px solid rgba($black, 0.1);
   background-color: $white;
-  
+
   .list-group-item {
     font-size: 0.8rem;
     &:hover {
@@ -390,6 +389,12 @@
   animation: ripple 1.2s ease-out infinite;
 }
 @keyframes ripple {
-  0% { transform: scale(0.95); opacity: 1; }
-  100% { transform: scale(1.4); opacity: 0; }
+  0% {
+    transform: scale(0.95);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
 }

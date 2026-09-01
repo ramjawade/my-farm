@@ -48,8 +48,12 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Labels and Custom inputs */
@@ -62,7 +66,7 @@
 }
 
 .required-label::after {
-  content: " *";
+  content: ' *';
   color: $danger;
 }
 
@@ -82,7 +86,8 @@
   padding: 10px 14px;
 }
 
-.form-control, .form-select {
+.form-control,
+.form-select {
   border: 1.5px solid $border-mint;
   border-radius: 8px;
   padding: 10px 14px;
@@ -98,7 +103,8 @@
 }
 
 /* Shared base button option properties */
-.role-row-btn, .location-toggle-btn {
+.role-row-btn,
+.location-toggle-btn {
   background-color: $white;
   border: 1.5px solid rgba($farm-green-primary, 0.15);
   cursor: pointer;
@@ -181,7 +187,7 @@
     i.bi {
       color: $farm-green-primary;
     }
-    
+
     .location-label-text {
       color: $farm-green-primary;
       font-weight: 700;
@@ -221,4 +227,3 @@
 .btn-close {
   box-shadow: none !important;
 }
-

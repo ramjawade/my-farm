@@ -1,6 +1,5 @@
 <div class="registration-container max-width-card mx-auto">
   <div class="card shadow-sm border rounded bg-white p-4 text-start">
-    
     <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
       <h4 class="text-success font-semibold m-0">
         <i class="bi bi-plus-circle-fill me-2"></i>Add New Crop Profile
@@ -42,7 +41,9 @@
             id="fieldId"
             class="form-select"
             formControlName="fieldId"
-            [class.is-invalid]="cropForm.get('fieldId')?.touched && cropForm.get('fieldId')?.invalid"
+            [class.is-invalid]="
+              cropForm.get('fieldId')?.touched && cropForm.get('fieldId')?.invalid
+            "
           >
             <option value="">-- Select Saved Land --</option>
             @for (f of savedFarms(); track f.id) {
@@ -80,12 +81,7 @@
 
         <div class="col-md-6">
           <label for="sowingDate" class="field-label required-label">Sowing Date</label>
-          <input
-            type="date"
-            id="sowingDate"
-            class="form-control"
-            formControlName="sowingDate"
-          />
+          <input type="date" id="sowingDate" class="form-control" formControlName="sowingDate" />
         </div>
 
         <div class="col-md-6">
@@ -104,6 +100,5 @@
         </div>
       </div>
     </form>
-
   </div>
 </div>

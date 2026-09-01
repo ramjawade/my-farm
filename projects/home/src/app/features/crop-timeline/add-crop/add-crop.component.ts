@@ -11,7 +11,7 @@ import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
   standalone: true,
   selector: 'app-add-crop',
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './add-crop.component.html'
+  templateUrl: './add-crop.component.html',
 })
 export class AddCropComponent implements OnInit {
   private readonly parent = inject(CropTimelineComponent, { optional: true });
@@ -22,29 +22,32 @@ export class AddCropComponent implements OnInit {
   readonly savedFarms = this.farmDrawService.savedFarms;
 
   constructor() {
-    effect(() => {
-      const fields = this.savedFarms();
-      const cropNames = this.cropNameOptions;
-      const stagesList = this.stages;
-      const form = this.cropForm;
-      
-      if (form) {
-        // Auto-select crop type if only one option exists
-        if (cropNames.length === 1) {
-          form.patchValue({ cropType: cropNames[0] });
-        }
+    effect(
+      () => {
+        const fields = this.savedFarms();
+        const cropNames = this.cropNameOptions;
+        const stagesList = this.stages;
+        const form = this.cropForm;
 
-        // Auto-select fieldId (land) if only one option exists
-        if (fields.length === 1) {
-          form.patchValue({ fieldId: fields[0].id });
-        }
+        if (form) {
+          // Auto-select crop type if only one option exists
+          if (cropNames.length === 1) {
+            form.patchValue({ cropType: cropNames[0] });
+          }
 
-        // Auto-select currentStage if only one option exists
-        if (stagesList.length === 1) {
-          form.patchValue({ currentStage: stagesList[0] });
+          // Auto-select fieldId (land) if only one option exists
+          if (fields.length === 1) {
+            form.patchValue({ fieldId: fields[0].id });
+          }
+
+          // Auto-select currentStage if only one option exists
+          if (stagesList.length === 1) {
+            form.patchValue({ currentStage: stagesList[0] });
+          }
         }
-      }
-    }, { allowSignalWrites: true });
+      },
+      { allowSignalWrites: true },
+    );
   }
 
   private _cropForm!: FormGroup;
@@ -99,7 +102,7 @@ export class AddCropComponent implements OnInit {
         areaUnit: values.areaUnit,
         sowingDate: values.sowingDate ? new Date(values.sowingDate).getTime() : undefined,
         currentStage: values.currentStage as CropStage,
-        status: 'Active'
+        status: 'Active',
       });
 
       this.submitCrop.emit();
@@ -111,7 +114,7 @@ export class AddCropComponent implements OnInit {
         area: '',
         areaUnit: 'hectares',
         sowingDate: '',
-        currentStage: 'Land Preparation'
+        currentStage: 'Land Preparation',
       });
 
       if (this.router) {

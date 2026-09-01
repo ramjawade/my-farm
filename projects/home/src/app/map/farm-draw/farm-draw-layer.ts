@@ -14,7 +14,7 @@ const vertexStyle: L.CircleMarkerOptions = {
   weight: 3,
   fillColor: '#ffffff',
   fillOpacity: 1,
-  interactive: false
+  interactive: false,
 };
 
 export class FarmDrawLayer {
@@ -24,7 +24,7 @@ export class FarmDrawLayer {
 
   constructor(
     private readonly map: L.Map,
-    private readonly drawService: FarmDrawService
+    private readonly drawService: FarmDrawService,
   ) {
     this.layerGroup.addTo(this.map);
     this.map.on('click', this.onMapClick);
@@ -78,13 +78,15 @@ export class FarmDrawLayer {
       const style: L.CircleMarkerOptions = {
         ...vertexStyle,
         interactive: isInteractive,
-        ...(isInteractive ? {
-          radius: 11,
-          color: COMPLETE_COLOR,
-          weight: 4,
-          fillColor: '#ffffff',
-          className: 'map-drawing-finish-point'
-        } : {})
+        ...(isInteractive
+          ? {
+              radius: 11,
+              color: COMPLETE_COLOR,
+              weight: 4,
+              fillColor: '#ffffff',
+              className: 'map-drawing-finish-point',
+            }
+          : {}),
       };
 
       const marker = L.circleMarker(latLng, style).addTo(this.layerGroup);
@@ -102,7 +104,7 @@ export class FarmDrawLayer {
         color: DRAWING_COLOR,
         weight: 3,
         dashArray: '8 6',
-        interactive: false
+        interactive: false,
       }).addTo(this.layerGroup);
     }
 
@@ -112,13 +114,12 @@ export class FarmDrawLayer {
         weight: 3,
         fillColor: COMPLETE_COLOR,
         fillOpacity: 0.35,
-        interactive: false
+        interactive: false,
       }).addTo(this.layerGroup);
 
       const name = selectedFarm ? selectedFarm.name : 'New Farm';
       this.renderAreaLabel(displayPoints, displayArea, name);
     }
-
   };
 
   private readonly onMapClick = (event: L.LeafletMouseEvent): void => {
@@ -133,7 +134,8 @@ export class FarmDrawLayer {
       const firstPoint = this.map.latLngToContainerPoint(firstLatLng);
       const distance = clickPoint.distanceTo(firstPoint);
 
-      if (distance < 22) { // Within 22 pixels of the first point
+      if (distance < 22) {
+        // Within 22 pixels of the first point
         this.drawService.finishDrawing();
         this.redraw();
         return;
@@ -161,9 +163,9 @@ export class FarmDrawLayer {
         className: 'farm-area-label-wrapper',
         html,
         iconSize: [220, 50],
-        iconAnchor: [110, 25]
+        iconAnchor: [110, 25],
       }),
-      interactive: false
+      interactive: false,
     }).addTo(this.layerGroup);
   }
 }

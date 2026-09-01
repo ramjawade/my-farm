@@ -11,7 +11,7 @@ import { AuthService } from '../../core/auth/auth.service';
   selector: 'app-layout',
   imports: [Toolbar, Sidebar, Main, RouterOutlet],
   templateUrl: './app-layout.html',
-  styleUrl: './app-layout.scss'
+  styleUrl: './app-layout.scss',
 })
 export class AppLayout {
   readonly authService = inject(AuthService);

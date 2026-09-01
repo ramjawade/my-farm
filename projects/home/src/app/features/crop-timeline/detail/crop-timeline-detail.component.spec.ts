@@ -24,7 +24,7 @@ describe('CropTimelineDetailComponent', () => {
     areaUnit: 'hectares',
     sowingDate: Date.now(),
     currentStage: 'Flowering',
-    status: 'Active'
+    status: 'Active',
   };
 
   const mockUpcoming: ActivityEntity[] = [];
@@ -37,7 +37,7 @@ describe('CropTimelineDetailComponent', () => {
     spyRouter.events = of();
     const mockActivatedRoute = {
       queryParams: of({}),
-      snapshot: { queryParams: {} }
+      snapshot: { queryParams: {} },
     };
 
     await TestBed.configureTestingModule({
@@ -49,16 +49,22 @@ describe('CropTimelineDetailComponent', () => {
         CropTimelineService,
         FarmActivityService,
         FarmDrawService,
-        AuthService
-      ]
+        AuthService,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CropTimelineDetailComponent);
     component = fixture.componentInstance;
-    
+
     // Assign inputs
     component.selectedCrop = mockCrop;
-    component.stages = ['Land Preparation', 'Sowing', 'Germination', 'Vegetative Growth', 'Flowering'];
+    component.stages = [
+      'Land Preparation',
+      'Sowing',
+      'Germination',
+      'Vegetative Growth',
+      'Flowering',
+    ];
     component.upcomingActivities = mockUpcoming;
     component.cropActivities = mockActivities;
     component.showActivityModal = false;
@@ -83,7 +89,7 @@ describe('CropTimelineDetailComponent', () => {
       yieldQuantity: [500],
       yieldUnit: ['kg'],
       grade: ['A'],
-      sellingPrice: [40]
+      sellingPrice: [40],
     });
 
     fixture.detectChanges();
@@ -110,10 +116,10 @@ describe('CropTimelineDetailComponent', () => {
 
   it('should not update stage immediately when onUpdateStageClicked is called, but should set parentActivityIdForModal', () => {
     const timelineSvc = TestBed.inject(CropTimelineService);
-    
+
     // Seed default activities for the mock crop
     timelineSvc.addCrop(mockCrop);
-    
+
     const crop = timelineSvc.crops()[0];
     component.selectedCrop = crop;
     fixture.detectChanges();
@@ -126,7 +132,7 @@ describe('CropTimelineDetailComponent', () => {
     fixture.detectChanges();
 
     // Verify crop stage is NOT advanced immediately
-    const currentCrop = timelineSvc.crops().find(c => c.id === crop.id)!;
+    const currentCrop = timelineSvc.crops().find((c) => c.id === crop.id)!;
     expect(currentCrop.currentStage).toBe('Flowering');
 
     // Verify parentActivityIdForModal is set to the pre-created Maturity stage activity
@@ -145,14 +151,14 @@ describe('CropTimelineDetailComponent', () => {
       notes: 'Subactivity notes',
       attachments: [],
       metadata: {},
-      parentActivityId: maturityAct.id
+      parentActivityId: maturityAct.id,
     });
 
     // Now verify parent activity is marked Completed and crop stage is advanced
-    const updatedMaturityAct = timelineSvc.activities().find(a => a.id === maturityAct.id)!;
+    const updatedMaturityAct = timelineSvc.activities().find((a) => a.id === maturityAct.id)!;
     expect(updatedMaturityAct.status).toBe('Completed');
 
-    const updatedCrop = timelineSvc.crops().find(c => c.id === crop.id)!;
+    const updatedCrop = timelineSvc.crops().find((c) => c.id === crop.id)!;
     expect(updatedCrop.currentStage).toBe('Maturity');
   });
 
@@ -167,15 +173,12 @@ describe('CropTimelineDetailComponent', () => {
       notes: 'Test irrigation notes',
       attachments: [],
       metadata: {},
-      parentActivityId: 'a-parent-id'
+      parentActivityId: 'a-parent-id',
     };
 
     component.onEditActivityClicked(mockActivity);
-    
+
     expect(component.editingActivityIdForModal()).toBe('act-edit-1');
     expect(component.parentActivityIdForModal()).toBe('a-parent-id');
   });
-
-
 });
-

@@ -1,21 +1,26 @@
 // 1. General Card Component Override
-.card, .card-box, .glass-card, .activity-card {
+.card,
+.card-box,
+.glass-card,
+.activity-card {
   background: #ffffff;
   border-radius: 16px !important;
   border: 1px solid rgba(0, 0, 0, 0.03) !important;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.04);
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), 
-              box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), 
-              border-color 0.25s ease;
+  transition:
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.25s ease;
   padding: 20px;
-  
+
   // Outer anchor elements should not have underlines
   text-decoration: none;
   color: inherit;
 }
 
 // 2. Glassmorphism Card Modifier
-.card-glass, .glass-card {
+.card-glass,
+.glass-card {
   background: rgba(255, 255, 255, 0.85) !important;
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
@@ -23,9 +28,10 @@
 }
 
 // 3. Interactive Card Modifier (Lift on Hover)
-.card-interactive, .activity-card {
+.card-interactive,
+.activity-card {
   cursor: pointer;
-  
+
   &:hover {
     transform: translateY(-5px) !important;
     box-shadow: 0 16px 36px rgba(46, 125, 50, 0.08) !important;

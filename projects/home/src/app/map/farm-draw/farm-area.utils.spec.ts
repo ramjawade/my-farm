@@ -1,4 +1,9 @@
-import { toGeoJsonPolygon, calculateFarmArea, getPolygonCentroid, formatArea } from './farm-area.utils';
+import {
+  toGeoJsonPolygon,
+  calculateFarmArea,
+  getPolygonCentroid,
+  formatArea,
+} from './farm-area.utils';
 import { LatLngPoint, FarmAreaResult } from '../models/map.models';
 
 describe('farm-area.utils', () => {
@@ -6,7 +11,7 @@ describe('farm-area.utils', () => {
     { lat: 0, lng: 0 },
     { lat: 1, lng: 0 },
     { lat: 1, lng: 1 },
-    { lat: 0, lng: 1 }
+    { lat: 0, lng: 1 },
   ];
 
   describe('toGeoJsonPolygon', () => {
@@ -56,7 +61,7 @@ describe('farm-area.utils', () => {
       const mockAreaResult: FarmAreaResult = {
         squareMeters: 100000,
         hectares: 10.456,
-        acres: 25.834
+        acres: 25.834,
       };
 
       const formatted = formatArea(mockAreaResult);

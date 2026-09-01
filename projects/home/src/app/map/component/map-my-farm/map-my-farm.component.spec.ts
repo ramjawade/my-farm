@@ -13,7 +13,7 @@ describe('MapMyFarmComponent', () => {
       'startDrawing',
       'cancelDrawing',
       'undoLastPoint',
-      'saveFarm'
+      'saveFarm',
     ]);
 
     // Setup mock signal states
@@ -27,8 +27,8 @@ describe('MapMyFarmComponent', () => {
       imports: [MapMyFarmComponent],
       providers: [
         provideZonelessChangeDetection(),
-        { provide: FarmDrawService, useValue: mockFarmDraw }
-      ]
+        { provide: FarmDrawService, useValue: mockFarmDraw },
+      ],
     }).compileComponents();
   });
 

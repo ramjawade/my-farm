@@ -1,4 +1,14 @@
-import { Component, inject, computed, effect, input, output, ElementRef, viewChild, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  inject,
+  computed,
+  effect,
+  input,
+  output,
+  ElementRef,
+  viewChild,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
@@ -14,7 +24,7 @@ Chart.register(...registerables);
   imports: [CommonModule, RouterLink],
   templateUrl: './activities-summary.component.html',
   styleUrl: './activities-summary.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ActivitiesSummaryComponent {
   private readonly timelineService = inject(CropTimelineService);
@@ -31,7 +41,7 @@ export class ActivitiesSummaryComponent {
     const cid = this.cropId();
     const all = this.timelineService.activities();
     if (cid) {
-      return all.filter(a => a.cropId === cid);
+      return all.filter((a) => a.cropId === cid);
     }
     return all;
   });
@@ -41,20 +51,20 @@ export class ActivitiesSummaryComponent {
   });
 
   readonly activitiesCount = computed(() => {
-    return this.allActivities().filter(a => a.status !== 'Planned').length;
+    return this.allActivities().filter((a) => a.status !== 'Planned').length;
   });
 
   readonly inProgressCount = computed(() => {
-    return this.allActivities().filter(a => a.status === 'Scheduled').length;
+    return this.allActivities().filter((a) => a.status === 'Scheduled').length;
   });
 
   readonly completedCount = computed(() => {
-    return this.allActivities().filter(a => a.status === 'Completed').length;
+    return this.allActivities().filter((a) => a.status === 'Completed').length;
   });
 
   readonly upcomingActivities = computed(() => {
     return this.allActivities()
-      .filter(a => (a.status === 'Planned' || a.status === 'Scheduled') && !a.parentActivityId)
+      .filter((a) => (a.status === 'Planned' || a.status === 'Scheduled') && !a.parentActivityId)
       .sort((a, b) => {
         const timeA = a.date !== undefined ? a.date : Infinity;
         const timeB = b.date !== undefined ? b.date : Infinity;
@@ -64,19 +74,19 @@ export class ActivitiesSummaryComponent {
 
   readonly recentActivities = computed(() => {
     return this.allActivities()
-      .filter(a => a.status !== 'Planned')
+      .filter((a) => a.status !== 'Planned')
       .sort((a, b) => (b.date || 0) - (a.date || 0))
       .slice(0, 4);
   });
 
   readonly chartData = computed(() => {
     const acts = this.allActivities()
-      .filter(a => a.status === 'Completed' && a.date !== undefined && a.date !== null)
+      .filter((a) => a.status === 'Completed' && a.date !== undefined && a.date !== null)
       .sort((a, b) => (a.date || 0) - (b.date || 0));
-      
+
     let cumulativeCost = 0;
     return acts.map((a, idx) => {
-      cumulativeCost += (a.cost || 0);
+      cumulativeCost += a.cost || 0;
       return {
         id: a.id,
         type: a.type,
@@ -84,7 +94,7 @@ export class ActivitiesSummaryComponent {
         timestamp: a.date || 0,
         activityIndex: idx + 1,
         cost: a.cost || 0,
-        cumulativeCost
+        cumulativeCost,
       };
     });
   });
@@ -101,7 +111,7 @@ export class ActivitiesSummaryComponent {
     { type: 'Labour Activity', icon: 'bi-people-fill', color: '#4a5568' },
     { type: 'Harvest', icon: 'bi-flower3', color: '#d69e2e' },
     { type: 'Sale', icon: 'bi-cash-coin', color: '#38a169' },
-    { type: 'Weather Incident', icon: 'bi-lightning-charge-fill', color: '#e53e3e' }
+    { type: 'Weather Incident', icon: 'bi-lightning-charge-fill', color: '#e53e3e' },
   ];
 
   constructor() {
@@ -117,11 +127,13 @@ export class ActivitiesSummaryComponent {
       const chart = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: data.map(d => d.date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' })),
+          labels: data.map((d) =>
+            d.date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
+          ),
           datasets: [
             {
               label: 'Cumulative Expenses (Left Axis)',
-              data: data.map(d => d.cumulativeCost),
+              data: data.map((d) => d.cumulativeCost),
               yAxisID: 'yExpenses',
               borderColor: '#10b981',
               backgroundColor: 'rgba(16, 185, 129, 0.06)',
@@ -133,11 +145,11 @@ export class ActivitiesSummaryComponent {
               pointBorderWidth: 2,
               pointRadius: 4.5,
               pointHoverRadius: 6.5,
-              pointHoverBorderWidth: 2.5
+              pointHoverBorderWidth: 2.5,
             },
             {
               label: 'Activities Logged (Right Axis)',
-              data: data.map(d => d.activityIndex),
+              data: data.map((d) => d.activityIndex),
               yAxisID: 'yActivities',
               borderColor: '#319795',
               backgroundColor: 'transparent',
@@ -149,16 +161,16 @@ export class ActivitiesSummaryComponent {
               pointBorderWidth: 2,
               pointRadius: 4,
               pointHoverRadius: 6,
-              pointHoverBorderWidth: 2.5
-            }
-          ]
+              pointHoverBorderWidth: 2.5,
+            },
+          ],
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           interaction: {
             mode: 'index',
-            intersect: false
+            intersect: false,
           },
           plugins: {
             legend: {
@@ -173,10 +185,10 @@ export class ActivitiesSummaryComponent {
                 font: {
                   family: 'Outfit, sans-serif',
                   size: 11,
-                  weight: 'bold'
+                  weight: 'bold',
                 },
-                color: '#4a5568'
-              }
+                color: '#4a5568',
+              },
             },
             tooltip: {
               backgroundColor: 'rgba(255, 255, 255, 0.96)',
@@ -184,12 +196,12 @@ export class ActivitiesSummaryComponent {
               titleFont: {
                 family: 'Outfit, sans-serif',
                 weight: 'bold',
-                size: 13
+                size: 13,
               },
               bodyColor: '#4a5568',
               bodyFont: {
                 family: 'Outfit, sans-serif',
-                size: 12
+                size: 12,
               },
               borderColor: 'rgba(42, 111, 71, 0.15)',
               borderWidth: 1,
@@ -206,23 +218,23 @@ export class ActivitiesSummaryComponent {
                     const item = data[context.dataIndex];
                     return ` Activity: #${value} (${item.type})`;
                   }
-                }
-              }
-            }
+                },
+              },
+            },
           },
           scales: {
             x: {
               grid: {
-                color: '#f8fafc'
+                color: '#f8fafc',
               },
               ticks: {
                 font: {
                   family: 'Outfit, sans-serif',
                   size: 10,
-                  weight: 'bold'
+                  weight: 'bold',
                 },
-                color: '#64748b'
-              }
+                color: '#64748b',
+              },
             },
             yExpenses: {
               type: 'linear',
@@ -234,23 +246,23 @@ export class ActivitiesSummaryComponent {
                 font: {
                   family: 'Outfit, sans-serif',
                   weight: 'bold',
-                  size: 11
-                }
+                  size: 11,
+                },
               },
               grid: {
-                color: '#f1f5f9'
+                color: '#f1f5f9',
               },
               ticks: {
                 color: '#245e3c',
                 font: {
                   family: 'Outfit, sans-serif',
-                  size: 10
+                  size: 10,
                 },
                 callback: (value) => {
                   const val = Number(value);
                   return val >= 1000 ? `₹${(val / 1000).toFixed(1)}k` : `₹${val}`;
-                }
-              }
+                },
+              },
             },
             yActivities: {
               type: 'linear',
@@ -262,24 +274,24 @@ export class ActivitiesSummaryComponent {
                 font: {
                   family: 'Outfit, sans-serif',
                   weight: 'bold',
-                  size: 11
-                }
+                  size: 11,
+                },
               },
               grid: {
-                drawOnChartArea: false
+                drawOnChartArea: false,
               },
               ticks: {
                 color: '#475569',
                 stepSize: 1,
                 font: {
                   family: 'Outfit, sans-serif',
-                  size: 10
+                  size: 10,
                 },
-                callback: (value) => Math.round(Number(value))
-              }
-            }
-          }
-        }
+                callback: (value) => Math.round(Number(value)),
+              },
+            },
+          },
+        },
       });
 
       onCleanup(() => {
@@ -293,28 +305,39 @@ export class ActivitiesSummaryComponent {
   }
 
   getActivityIcon(type: ActivityType): string {
-    const item = this.activityTypes.find(a => a.type === type);
+    const item = this.activityTypes.find((a) => a.type === type);
     return item ? item.icon : 'bi-calendar-event';
   }
 
   getActivityEmoji(type: ActivityType): string {
     switch (type) {
-      case 'Sowing': return '🌱';
-      case 'Irrigation': return '💧';
-      case 'Fertilizer Application': return '🌿';
-      case 'Spray Application': return '🐛';
-      case 'Weeding': return '✂️';
-      case 'Field Inspection': return '📷';
-      case 'Labour Activity': return '👥';
-      case 'Harvest': return '🌾';
-      case 'Sale': return '💰';
-      case 'Weather Incident': return '⚡';
-      default: return '📅';
+      case 'Sowing':
+        return '🌱';
+      case 'Irrigation':
+        return '💧';
+      case 'Fertilizer Application':
+        return '🌿';
+      case 'Spray Application':
+        return '🐛';
+      case 'Weeding':
+        return '✂️';
+      case 'Field Inspection':
+        return '📷';
+      case 'Labour Activity':
+        return '👥';
+      case 'Harvest':
+        return '🌾';
+      case 'Sale':
+        return '💰';
+      case 'Weather Incident':
+        return '⚡';
+      default:
+        return '📅';
     }
   }
 
   getActivityColor(type: ActivityType): string {
-    const item = this.activityTypes.find(a => a.type === type);
+    const item = this.activityTypes.find((a) => a.type === type);
     return item ? item.color : '#4a5568';
   }
 
@@ -332,7 +355,7 @@ export class ActivitiesSummaryComponent {
     } else {
       this.timelineService.updateActivity(id, {
         status: 'Completed',
-        date: Date.now()
+        date: Date.now(),
       });
     }
   }

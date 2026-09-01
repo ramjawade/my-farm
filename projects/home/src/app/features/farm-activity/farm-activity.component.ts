@@ -6,6 +6,6 @@ import { RouterOutlet } from '@angular/router';
   standalone: true,
   imports: [RouterOutlet],
   template: '<router-outlet></router-outlet>',
-  styleUrl: './farm-activity.component.scss'
+  styleUrl: './farm-activity.component.scss',
 })
 export class FarmActivityComponent {}

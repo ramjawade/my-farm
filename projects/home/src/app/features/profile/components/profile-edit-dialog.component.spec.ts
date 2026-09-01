@@ -30,7 +30,7 @@ describe('ProfileEditDialogComponent', () => {
     village: 'Mulshi',
     pincode: '411057',
     location: { lat: 18.5, lng: 73.5 },
-    createdAt: Date.now()
+    createdAt: Date.now(),
   };
 
   beforeEach(async () => {
@@ -38,17 +38,13 @@ describe('ProfileEditDialogComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [ProfileEditDialogComponent],
-      providers: [
-        provideZonelessChangeDetection(),
-        provideHttpClient(),
-        AuthService
-      ]
+      providers: [provideZonelessChangeDetection(), provideHttpClient(), AuthService],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProfileEditDialogComponent);
     component = fixture.componentInstance;
     authService = TestBed.inject(AuthService);
-    
+
     // Login mock user
     authService.login(mockUser);
   });
@@ -119,15 +115,15 @@ describe('ProfileEditDialogComponent', () => {
 
     component.editFullName.set('Updated Full Name');
     component.editEmail.set('updated@example.com');
-    
+
     spyOn(authService, 'updateProfile').and.callThrough();
     component.save();
-    
+
     expect(authService.updateProfile).toHaveBeenCalledWith({
       fullName: 'Updated Full Name',
       phone: '1122334455',
       email: 'updated@example.com',
-      preferredLanguage: 'English'
+      preferredLanguage: 'English',
     });
     expect(component.show()).toBeFalse();
   });
@@ -148,7 +144,7 @@ describe('ProfileEditDialogComponent', () => {
     expect(authService.updateProfile).toHaveBeenCalledWith({
       waterSource: 'River',
       irrigationType: 'Sprinkler',
-      primaryCrops: ['Wheat', 'Cotton']
+      primaryCrops: ['Wheat', 'Cotton'],
     });
     expect(component.show()).toBeFalse();
   });

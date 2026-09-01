@@ -10,9 +10,8 @@ describe('HistoryTrendComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [HistoryTrendComponent],
-      providers: [provideZonelessChangeDetection()]
-    })
-    .compileComponents();
+      providers: [provideZonelessChangeDetection()],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(HistoryTrendComponent);
     component = fixture.componentInstance;

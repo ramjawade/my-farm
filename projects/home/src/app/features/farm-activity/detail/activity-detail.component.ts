@@ -10,20 +10,19 @@ import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
 import { ConfirmDialogComponent } from 'shared';
 import { ActivityStatus } from '../farm-activity.models';
 
-
 @Component({
   selector: 'app-activity-detail',
   standalone: true,
   imports: [CommonModule, RouterLink, ReactiveFormsModule, DatePipe, ConfirmDialogComponent],
   templateUrl: './activity-detail.component.html',
   styleUrl: './activity-detail.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ActivityDetailComponent {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
-  
+
   readonly activityService = inject(FarmActivityService);
   private readonly cropService = inject(CropTimelineService);
   private readonly farmDrawService = inject(FarmDrawService);
@@ -34,19 +33,19 @@ export class ActivityDetailComponent {
   readonly selectedExpenseId = signal<string | null>(null);
 
   // Extract ID from routing params reactive signal
-  private readonly routeParams$ = this.route.paramMap.pipe(map(params => params.get('id') || ''));
+  private readonly routeParams$ = this.route.paramMap.pipe(map((params) => params.get('id') || ''));
   readonly activityId = toSignal(this.routeParams$, { initialValue: '' });
 
   // Get current activity
   readonly activity = computed(() => {
     const id = this.activityId();
-    return this.activityService.activities().find(a => a.id === id);
+    return this.activityService.activities().find((a) => a.id === id);
   });
 
   // Get current activity expenses
   readonly expenses = computed(() => {
     const id = this.activityId();
-    return this.activityService.expenses().filter(e => e.activityId === id);
+    return this.activityService.expenses().filter((e) => e.activityId === id);
   });
 
   readonly totalCost = computed(() => {
@@ -57,7 +56,7 @@ export class ActivityDetailComponent {
   readonly cropName = computed(() => {
     const act = this.activity();
     if (!act || !act.cropId) return '';
-    const crop = this.cropService.crops().find(c => c.id === act.cropId);
+    const crop = this.cropService.crops().find((c) => c.id === act.cropId);
     return crop ? crop.name : 'Unknown Crop';
   });
 
@@ -65,21 +64,29 @@ export class ActivityDetailComponent {
   readonly fieldName = computed(() => {
     const act = this.activity();
     if (!act || !act.fieldId) return '';
-    const farm = this.farmDrawService.savedFarms().find(f => f.id === act.fieldId);
+    const farm = this.farmDrawService.savedFarms().find((f) => f.id === act.fieldId);
     return farm ? farm.name : act.fieldId;
   });
 
   // Resolve category icons dynamically
   getCategoryIcon(cat: string): string {
     switch (cat) {
-      case 'Transport': return 'bi-truck';
-      case 'Machine Rent': return 'bi-tools';
-      case 'Workers': return 'bi-people';
-      case 'Seeds': return 'bi-flower1';
-      case 'Fertilizer': return 'bi-moisture';
-      case 'Pesticides': return 'bi-shield-shaded';
-      case 'Irrigation Fuel': return 'bi-droplet-half';
-      default: return 'bi-box-seam';
+      case 'Transport':
+        return 'bi-truck';
+      case 'Machine Rent':
+        return 'bi-tools';
+      case 'Workers':
+        return 'bi-people';
+      case 'Seeds':
+        return 'bi-flower1';
+      case 'Fertilizer':
+        return 'bi-moisture';
+      case 'Pesticides':
+        return 'bi-shield-shaded';
+      case 'Irrigation Fuel':
+        return 'bi-droplet-half';
+      default:
+        return 'bi-box-seam';
     }
   }
 
@@ -98,16 +105,16 @@ export class ActivityDetailComponent {
     // 1. Created Event
     events.push({
       title: 'Activity Created',
-      timestamp: act.createdAt
+      timestamp: act.createdAt,
     });
 
     // 2. Expenses Events
     const expensesList = this.expenses();
-    expensesList.forEach(exp => {
+    expensesList.forEach((exp) => {
       events.push({
         title: 'Expense Added',
         detail: `${exp.itemId || exp.category} - ₹${exp.amount.toLocaleString()}`,
-        timestamp: exp.createdAt
+        timestamp: exp.createdAt,
       });
     });
 
@@ -116,7 +123,7 @@ export class ActivityDetailComponent {
       events.push({
         title: 'Activity Completed',
         timestamp: act.updatedAt,
-        isSuccess: true
+        isSuccess: true,
       });
     }
 
@@ -133,7 +140,7 @@ export class ActivityDetailComponent {
     unit: [''],
     rate: [null as number | null],
     amount: [null as number | null, [Validators.required, Validators.min(0)]],
-    remarks: ['']
+    remarks: [''],
   });
 
   // Pre-configured category list
@@ -145,12 +152,12 @@ export class ActivityDetailComponent {
     'Fertilizer',
     'Pesticides',
     'Irrigation Fuel',
-    'Other'
+    'Other',
   ];
 
   constructor() {
     // Automatically calculate Amount = Quantity * Rate
-    this.expenseForm.valueChanges.subscribe(val => {
+    this.expenseForm.valueChanges.subscribe((val) => {
       const qty = val.quantity;
       const rate = val.rate;
       if (qty != null && rate != null && qty >= 0 && rate >= 0) {
@@ -207,7 +214,7 @@ export class ActivityDetailComponent {
       unit: val.unit?.trim() || undefined,
       rate: val.rate ?? undefined,
       amount: val.amount,
-      remarks: val.remarks?.trim() || undefined
+      remarks: val.remarks?.trim() || undefined,
     });
 
     this.closeExpenseModal();
@@ -227,7 +234,7 @@ export class ActivityDetailComponent {
       unit: '',
       rate: null,
       amount: null,
-      remarks: ''
+      remarks: '',
     });
   }
 

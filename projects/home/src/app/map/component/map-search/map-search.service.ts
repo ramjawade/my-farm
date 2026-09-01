@@ -22,7 +22,7 @@ export class MapSearchService {
     const trimmed = query.trim();
     return this.http
       .get<PhotonResponse>('https://photon.komoot.io/api/', {
-        params: { q: trimmed, limit: String(MAP_SEARCH_RESULT_LIMIT), lang: 'en' }
+        params: { q: trimmed, limit: String(MAP_SEARCH_RESULT_LIMIT), lang: 'en' },
       })
       .pipe(
         map((response) =>
@@ -34,10 +34,10 @@ export class MapSearchService {
               label,
               subtitle,
               lat: feature.geometry.coordinates[1],
-              lon: feature.geometry.coordinates[0]
+              lon: feature.geometry.coordinates[0],
             };
-          })
-        )
+          }),
+        ),
       );
   }
 
@@ -47,7 +47,10 @@ export class MapSearchService {
   } {
     const name = properties['name'];
     const street = [properties['housenumber'], properties['street']].filter(Boolean).join(' ');
-    const locality = [properties['city'] ?? properties['town'] ?? properties['village'], properties['state']]
+    const locality = [
+      properties['city'] ?? properties['town'] ?? properties['village'],
+      properties['state'],
+    ]
       .filter(Boolean)
       .join(', ');
 

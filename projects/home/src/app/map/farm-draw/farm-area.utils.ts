@@ -19,8 +19,8 @@ export function toGeoJsonPolygon(points: LatLngPoint[]): GeoPolygonFeature {
     properties: {},
     geometry: {
       type: 'Polygon',
-      coordinates: [ring]
-    }
+      coordinates: [ring],
+    },
   };
 }
 
@@ -36,7 +36,7 @@ export function calculateFarmArea(points: LatLngPoint[]): FarmAreaResult | null 
   return {
     squareMeters,
     hectares: squareMeters / 10_000,
-    acres: squareMeters / 4_046.8564224
+    acres: squareMeters / 4_046.8564224,
   };
 }
 
@@ -52,6 +52,6 @@ export function getPolygonCentroid(points: LatLngPoint[]): LatLngPoint | null {
 export function formatArea(area: FarmAreaResult): { hectares: string; acres: string } {
   return {
     hectares: area.hectares.toFixed(2),
-    acres: area.acres.toFixed(2)
+    acres: area.acres.toFixed(2),
   };
 }

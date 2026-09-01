@@ -1,4 +1,15 @@
-import { Component, inject, signal, computed, effect, ChangeDetectionStrategy, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  effect,
+  ChangeDetectionStrategy,
+  OnInit,
+  Input,
+  Output,
+  EventEmitter,
+} from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -12,7 +23,7 @@ import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
   imports: [CommonModule, RouterLink, ReactiveFormsModule],
   templateUrl: './create-activity.component.html',
   styleUrl: './create-activity.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CreateActivityComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
@@ -34,34 +45,37 @@ export class CreateActivityComponent implements OnInit {
   readonly form: FormGroup = this.fb.group({
     date: [new Date().toISOString().substring(0, 10), Validators.required],
     season: ['Kharif', Validators.required],
-    activityId: ['', Validators.required],
+    type: ['', Validators.required],
     cropId: [''],
     fieldId: [''],
     parentActivityId: [''],
     status: ['Completed', Validators.required],
-    notes: ['']
+    notes: [''],
   });
 
   constructor() {
     // Automatically apply auto-selection reactively when signal data lists load/change
-    effect(() => {
-      const crops = this.crops();
-      const fields = this.savedFarms();
+    effect(
+      () => {
+        const crops = this.crops();
+        const fields = this.savedFarms();
 
-      // Auto-select crop if only one exists and form cropId is not set
-      const currentCropId = this.form.get('cropId')?.value;
-      if (!currentCropId && crops.length === 1) {
-        const singleCrop = crops[0];
-        this.form.patchValue({ cropId: singleCrop.id });
-      }
+        // Auto-select crop if only one exists and form cropId is not set
+        const currentCropId = this.form.get('cropId')?.value;
+        if (!currentCropId && crops.length === 1) {
+          const singleCrop = crops[0];
+          this.form.patchValue({ cropId: singleCrop.id });
+        }
 
-      // Auto-select field if only one exists and form fieldId is not set
-      const currentFieldId = this.form.get('fieldId')?.value;
-      if (!currentFieldId && fields.length === 1) {
-        const singleField = fields[0];
-        this.form.patchValue({ fieldId: singleField.id });
-      }
-    }, { allowSignalWrites: true });
+        // Auto-select field if only one exists and form fieldId is not set
+        const currentFieldId = this.form.get('fieldId')?.value;
+        if (!currentFieldId && fields.length === 1) {
+          const singleField = fields[0];
+          this.form.patchValue({ fieldId: singleField.id });
+        }
+      },
+      { allowSignalWrites: true },
+    );
   }
 
   // Populate dropdowns from services
@@ -81,7 +95,7 @@ export class CreateActivityComponent implements OnInit {
     'Harvesting',
     'Irrigation',
     'Field Inspection',
-    'Tillage'
+    'Tillage',
   ];
 
   readonly uploadedImages = signal<string[]>([]);
@@ -89,7 +103,7 @@ export class CreateActivityComponent implements OnInit {
   readonly availableParentActivities = computed(() => {
     const cropId = this.selectedCropId();
     if (!cropId) return [];
-    return this.cropService.activities().filter(a => a.cropId === cropId && !a.parentActivityId);
+    return this.cropService.activities().filter((a) => a.cropId === cropId && !a.parentActivityId);
   });
 
   ngOnInit(): void {
@@ -104,11 +118,11 @@ export class CreateActivityComponent implements OnInit {
 
     // 2. If we are running in route mode, read from query parameters
     if (!this.isModal) {
-      this.route.queryParams.subscribe(params => {
+      this.route.queryParams.subscribe((params) => {
         const routeCropId = params['cropId'];
         const routeParentId = params['parentActivityId'];
         const routeActivityId = params['activityId'];
-        
+
         if (routeCropId) {
           this.form.patchValue({ cropId: routeCropId });
           this.selectedCropId.set(routeCropId);
@@ -124,17 +138,17 @@ export class CreateActivityComponent implements OnInit {
 
     // 3. Load existing activity for editing if activityId is present
     if (this.activityId) {
-      const act = this.activityService.activities().find(a => a.id === this.activityId);
+      const act = this.activityService.activities().find((a) => a.id === this.activityId);
       if (act) {
         this.form.patchValue({
           date: act.date ? new Date(act.date).toISOString().substring(0, 10) : '',
           season: act.season,
-          activityId: act.activityId,
+          type: act.type,
           cropId: act.cropId || '',
           fieldId: act.fieldId || '',
           parentActivityId: act.parentActivityId || '',
           status: act.status,
-          notes: act.notes || ''
+          notes: act.notes || '',
         });
         if (act.cropId) {
           this.selectedCropId.set(act.cropId);
@@ -144,13 +158,13 @@ export class CreateActivityComponent implements OnInit {
     }
 
     // Subscribe to form cropId changes to update the signal reactively
-    this.form.get('cropId')!.valueChanges.subscribe(val => {
+    this.form.get('cropId')!.valueChanges.subscribe((val) => {
       this.selectedCropId.set(val || '');
     });
   }
 
   selectSuggestion(val: string): void {
-    this.form.patchValue({ activityId: val });
+    this.form.patchValue({ type: val });
   }
 
   onImageSelected(event: Event): void {
@@ -158,10 +172,10 @@ export class CreateActivityComponent implements OnInit {
     if (input.files && input.files[0]) {
       const file = input.files[0];
       const reader = new FileReader();
-      
+
       reader.onload = () => {
         const base64String = reader.result as string;
-        this.uploadedImages.update(current => [...current, base64String]);
+        this.uploadedImages.update((current) => [...current, base64String]);
       };
 
       reader.readAsDataURL(file);
@@ -169,7 +183,7 @@ export class CreateActivityComponent implements OnInit {
   }
 
   removeImage(index: number): void {
-    this.uploadedImages.update(current => current.filter((_, i) => i !== index));
+    this.uploadedImages.update((current) => current.filter((_, i) => i !== index));
   }
 
   onSubmit(): void {
@@ -179,34 +193,41 @@ export class CreateActivityComponent implements OnInit {
     }
 
     const val = this.form.value;
-    
+
     if (this.activityId) {
       // Update existing activity
-      this.activityService.updateActivity(this.activityId, {
-        date: val.date ? new Date(val.date).getTime() : undefined,
+      const updates: Record<string, any> = {
         season: val.season,
-        activityId: val.activityId.trim(),
-        cropId: val.cropId || undefined,
-        fieldId: val.fieldId || undefined,
+        type: val.type.trim(),
         status: val.status,
         notes: val.notes?.trim() || undefined,
         parentActivityId: val.parentActivityId || undefined,
-        attachments: this.uploadedImages()
-      });
+        attachments: this.uploadedImages(),
+      };
+      if (val.date) {
+        updates['date'] = new Date(val.date).getTime();
+      }
+      if (val.cropId) {
+        updates['cropId'] = val.cropId;
+      }
+      if (val.fieldId) {
+        updates['fieldId'] = val.fieldId;
+      }
+      this.activityService.updateActivity(this.activityId, updates);
     } else {
       // Create activity
       const newAct = this.activityService.addActivity({
-        date: val.date ? new Date(val.date).getTime() : undefined,
+        date: val.date ? new Date(val.date).getTime() : Date.now(),
         season: val.season,
-        activityId: val.activityId.trim(),
+        type: val.type.trim(),
         cropId: val.cropId || undefined,
         fieldId: val.fieldId || undefined,
         status: val.status,
         notes: val.notes?.trim() || undefined,
         parentActivityId: val.parentActivityId || undefined,
-        attachments: this.uploadedImages()
+        attachments: this.uploadedImages(),
       });
-      
+
       if (!this.isModal) {
         this.router.navigate(['/activities', newAct.id]);
         return;

@@ -1,4 +1,4 @@
-<div class="position-relative shadow-sm" style="border-radius: var(--bs-border-radius);">
+<div class="position-relative shadow-sm" style="border-radius: var(--bs-border-radius)">
   <input
     id="mapSearchInput"
     type="search"
@@ -11,11 +11,14 @@
     (search)="onSearchClear($event)"
     (keydown)="onSearchKeydown($event)"
     (focus)="searchQuery().trim().length >= 3 && showResults.set(true)"
-    style="padding-right: 2rem;"
+    style="padding-right: 2rem"
   />
   @if (searchLoading()) {
-    <div class="position-absolute end-0 top-50 translate-middle-y me-2 spinner-border spinner-border-sm text-secondary" role="status" style="width: 0.85rem; height: 0.85rem; pointer-events: none; border-width: 0.15em;">
-    </div>
+    <div
+      class="position-absolute end-0 top-50 translate-middle-y me-2 spinner-border spinner-border-sm text-secondary"
+      role="status"
+      style="width: 0.85rem; height: 0.85rem; pointer-events: none; border-width: 0.15em"
+    ></div>
   }
 </div>
 

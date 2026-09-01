@@ -10,7 +10,7 @@ describe('FarmDrawService', () => {
     { lat: 10, lng: 20 },
     { lat: 10, lng: 21 },
     { lat: 11, lng: 21 },
-    { lat: 11, lng: 20 }
+    { lat: 11, lng: 20 },
   ];
 
   beforeEach(() => {
@@ -18,10 +18,7 @@ describe('FarmDrawService', () => {
     spyOn(localStorage, 'setItem');
 
     TestBed.configureTestingModule({
-      providers: [
-        FarmDrawService,
-        provideZonelessChangeDetection()
-      ]
+      providers: [FarmDrawService, provideZonelessChangeDetection()],
     });
     service = TestBed.inject(FarmDrawService);
   });
@@ -115,7 +112,7 @@ describe('FarmDrawService', () => {
       points: mockPoints,
       area: { squareMeters: 125000, hectares: 12.5, acres: 30.8 },
       geoJson: {} as any,
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
     service.savedFarms.set([mockFarm]);
     service.selectedSavedFarm.set(mockFarm);
@@ -133,7 +130,7 @@ describe('FarmDrawService', () => {
       points: mockPoints,
       area: { squareMeters: 55000, hectares: 5.5, acres: 13.5 },
       geoJson: {} as any,
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
 
     service.zoomRequest$.subscribe((requested) => {

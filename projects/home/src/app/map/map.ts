@@ -8,7 +8,7 @@ import {
   signal,
   viewChild,
   Input,
-  output
+  output,
 } from '@angular/core';
 import * as L from 'leaflet';
 
@@ -30,7 +30,7 @@ const SEARCH_ZOOM = 15;
   selector: 'app-map',
   imports: [MapMyFarmComponent, MapSearchComponent, SavedFarmsComponent],
   templateUrl: './map.html',
-  styleUrl: './map.scss'
+  styleUrl: './map.scss',
 })
 export class MapComponent implements AfterViewInit, OnDestroy {
   @Input() isPicker = false;
@@ -136,7 +136,11 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
     // Synchronize custom Leaflet Layer Toggle control icon if it exists in DOM
     const toggleButton = document.querySelector('.leaflet-layer-toggle-button');
-    if (toggleButton && toggleButton.parentElement && (toggleButton.parentElement as any)._updateUI) {
+    if (
+      toggleButton &&
+      toggleButton.parentElement &&
+      (toggleButton.parentElement as any)._updateUI
+    ) {
       (toggleButton.parentElement as any)._updateUI(layer);
     }
   }
@@ -144,7 +148,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   goHome(): void {
     if (this.map) {
       const user = this.authService.currentUser();
-      const center: L.LatLngExpression = user?.location ? [user.location.lat, user.location.lng] : [20.5937, 78.9629];
+      const center: L.LatLngExpression = user?.location
+        ? [user.location.lat, user.location.lng]
+        : [20.5937, 78.9629];
       const zoom = user?.location ? 15 : 5;
       this.map.flyTo(center, zoom, { duration: 1.2 });
     }
@@ -157,20 +163,20 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
     this.streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     });
 
     const satelliteImagery = L.tileLayer(
       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      { maxZoom: 19 }
+      { maxZoom: 19 },
     );
 
     const satelliteLabels = L.tileLayer(
       'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
       {
         maxZoom: 19,
-        pane: 'overlayPane'
-      }
+        pane: 'overlayPane',
+      },
     );
 
     this.satelliteLayer = L.layerGroup([satelliteImagery, satelliteLabels]);
@@ -178,7 +184,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     this.activeBase = this.satelliteLayer;
 
     const user = this.authService.currentUser();
-    const center: L.LatLngExpression = user?.location ? [user.location.lat, user.location.lng] : [20.5937, 78.9629];
+    const center: L.LatLngExpression = user?.location
+      ? [user.location.lat, user.location.lng]
+      : [20.5937, 78.9629];
     const zoom = user?.location ? 15 : 5;
 
     this.map = L.map(container, {
@@ -186,7 +194,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       zoom,
       layers: [this.satelliteLayer],
       attributionControl: true,
-      zoomControl: false
+      zoomControl: false,
     });
 
     // this.map.attributionControl?.addAttribution('Satellite imagery & labels &copy; Esri');
@@ -197,7 +205,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     if (!this.isPicker) {
       new LayerToggleControl({
         activeView: () => this.activeView(),
-        setLayer: (layer) => this.setLayer(layer)
+        setLayer: (layer) => this.setLayer(layer),
       }).addTo(this.map);
     }
 
@@ -226,7 +234,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       iconSize: [25, 41],
       iconAnchor: [12, 41],
       popupAnchor: [1, -34],
-      shadowSize: [41, 41]
+      shadowSize: [41, 41],
     });
     L.Marker.prototype.options.icon = icon;
   }

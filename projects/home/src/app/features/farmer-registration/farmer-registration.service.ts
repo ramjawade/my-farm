@@ -4,7 +4,7 @@ import { FarmerRegistrationData } from './farmer-registration.models';
 const STORAGE_KEY = 'my_farm_registered_farmers';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class FarmerRegistrationService {
   private readonly farmersSignal = signal<FarmerRegistrationData[]>([]);
@@ -18,12 +18,12 @@ export class FarmerRegistrationService {
     const newFarmer: FarmerRegistrationData = {
       ...data,
       id: this.generateUUID(),
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
 
     const currentFarmers = this.farmersSignal();
     const updatedFarmers = [newFarmer, ...currentFarmers];
-    
+
     this.farmersSignal.set(updatedFarmers);
     this.saveToStorage(updatedFarmers);
 
@@ -35,10 +35,13 @@ export class FarmerRegistrationService {
     localStorage.removeItem(STORAGE_KEY);
   }
 
-  updateFarmer(id: string, updates: Partial<FarmerRegistrationData>): FarmerRegistrationData | null {
+  updateFarmer(
+    id: string,
+    updates: Partial<FarmerRegistrationData>,
+  ): FarmerRegistrationData | null {
     let updatedFarmer: FarmerRegistrationData | null = null;
     const current = this.farmersSignal();
-    const updated = current.map(f => {
+    const updated = current.map((f) => {
       if (f.id === id) {
         updatedFarmer = { ...f, ...updates };
         return updatedFarmer;
@@ -87,7 +90,7 @@ export class FarmerRegistrationService {
       farmingMethod: 'Organic',
       locationType: 'map',
       location: { lat: 20.5937, lng: 78.9629 },
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
     this.farmersSignal.set([defaultFarmer]);
     this.saveToStorage([defaultFarmer]);

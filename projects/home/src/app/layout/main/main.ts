@@ -8,6 +8,6 @@ import { Footer } from '../footer/footer';
   selector: 'app-main',
   imports: [RouterOutlet, Footer],
   templateUrl: './main.html',
-  styleUrl: './main.scss'
+  styleUrl: './main.scss',
 })
 export class Main {}

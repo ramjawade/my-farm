@@ -92,7 +92,7 @@
   overflow-x: auto;
   gap: 16px;
   padding-bottom: 12px;
-  
+
   // Custom scrollbar formatting for a premium feel
   &::-webkit-scrollbar {
     height: 6px;
@@ -265,7 +265,8 @@
 }
 
 @keyframes ai-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.75;
     transform: scale(1);
   }
@@ -277,7 +278,9 @@
 }
 
 .hover-bg-light {
-  transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+  transition:
+    background-color 0.15s ease-in-out,
+    color 0.15s ease-in-out;
   &:hover {
     background-color: rgba($primary, 0.05) !important;
   }

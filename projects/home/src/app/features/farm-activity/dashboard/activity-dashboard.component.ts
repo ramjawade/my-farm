@@ -7,9 +7,6 @@ import { ActivitiesSummaryComponent } from '../summary/activities-summary.compon
   imports: [ActivitiesSummaryComponent],
   templateUrl: './activity-dashboard.component.html',
   styleUrl: './activity-dashboard.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ActivityDashboardComponent {
-}
-
-
+export class ActivityDashboardComponent {}

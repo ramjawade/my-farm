@@ -10,9 +10,8 @@ describe('SunPathComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SunPathComponent],
-      providers: [provideZonelessChangeDetection()]
-    })
-    .compileComponents();
+      providers: [provideZonelessChangeDetection()],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(SunPathComponent);
     component = fixture.componentInstance;
