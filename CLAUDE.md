@@ -3,6 +3,24 @@
 ## Overview
 This document outlines the workflow and rules for developing features with Claude Code on this project.
 
+## Plan-Then-Implement Workflow
+
+Every feature follows two distinct stages, each on a different model, in this order:
+
+1. **Plan Stage** — model: `sonnet`, reasoning effort: `medium`
+   - Produce a concise implementation plan (scope, files to touch, approach, risks).
+   - Present the plan to the user and **wait for explicit approval** before writing any code.
+   - Do not start implementation, branch creation, or commits during this stage.
+2. **Implementation Stage** — model: `haiku`
+   - Only begins after the user approves the plan from Stage 1.
+   - Follows the approved plan to create the branch, write code, tests, and open the PR per the Branch Lifecycle below.
+   - If the implementation needs to deviate materially from the approved plan, stop and re-confirm with the user rather than improvising.
+
+### Rule
+- ❌ Never skip straight to implementation without an approved plan.
+- ❌ Never use the implementation model to author the plan, or the planning model to write the final code.
+- ✅ Re-plan (Stage 1) whenever requirements change mid-feature, instead of patching the plan silently during implementation.
+
 ## Branch Strategy
 
 ### Naming Convention
@@ -96,12 +114,12 @@ git branch -D claude/feature-activity-export
 
 - Phase 0: ✅ Complete (ESLint, CI gates)
 - Phase 1: ✅ Complete (Unified Activity Model)
-- Phase 2: 🔄 Next (Storage abstraction layer)
+- Phase 2: ✅ Complete (Storage abstraction layer)
+- Phase 3: 🔄 Next (Real authentication system)
 
 ## Next Features
 
-Ready to work on testable features:
-- Phase 2: Storage abstraction layer (StorageService interface)
+Ready to work on testable features (each starts with an approved plan, per Plan-Then-Implement Workflow above):
 - Phase 3: Real authentication system
 - Phase 4: Real weather API integration
 - Phase 5: Backend sync layer
@@ -110,4 +128,4 @@ Ready to work on testable features:
 ---
 
 **Last Updated**: 2026-09-01
-**Process**: Merge & Delete workflow established
+**Process**: Plan-Then-Implement (sonnet plan → approval → haiku implementation), Merge & Delete workflow established
