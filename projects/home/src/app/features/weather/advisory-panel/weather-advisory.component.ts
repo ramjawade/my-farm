@@ -1,10 +1,10 @@
 import { Component, computed, input, signal } from '@angular/core';
-import { NgClass } from '@angular/common';
+import { NgClass, NgIf, NgForOf } from '@angular/common';
 
 @Component({
   selector: 'app-weather-advisory',
   standalone: true,
-  imports: [NgClass],
+  imports: [NgClass, NgIf, NgForOf],
   template: `
     <div class="advisory-panel">
       <div class="advisory-header">

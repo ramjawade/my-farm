@@ -1,11 +1,11 @@
 import { Component, computed, signal, input } from '@angular/core';
 import { WeatherAlert } from '../../../core/weather/weather.models';
-import { NgClass } from '@angular/common';
+import { NgClass, NgIf, NgForOf } from '@angular/common';
 
 @Component({
   selector: 'app-weather-alert',
   standalone: true,
-  imports: [NgClass],
+  imports: [NgClass, NgIf, NgForOf],
   template: `
     <div *ngIf="showAlerts()" class="alert-banner">
       <div class="alert-container">
