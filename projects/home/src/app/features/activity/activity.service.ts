@@ -72,9 +72,7 @@ export class ActivityService {
     });
   }
 
-  addActivity(
-    data: Omit<Activity, 'id' | 'createdAt' | 'updatedAt'>
-  ): Activity {
+  addActivity(data: Omit<Activity, 'id' | 'createdAt' | 'updatedAt'>): Activity {
     const now = Date.now();
     const activity: Activity = {
       ...data,
@@ -90,11 +88,7 @@ export class ActivityService {
 
   updateActivity(id: string, updates: Partial<Activity>): void {
     this.activitiesSignal.update((acts) =>
-      acts.map((act) =>
-        act.id === id
-          ? { ...act, ...updates, updatedAt: Date.now() }
-          : act
-      )
+      acts.map((act) => (act.id === id ? { ...act, ...updates, updatedAt: Date.now() } : act)),
     );
     this.persistActivities();
   }
@@ -122,9 +116,7 @@ export class ActivityService {
     return this.activitiesSignal().filter((act) => act.parentActivityId === parentActivityId);
   }
 
-  addExpense(
-    data: Omit<ActivityExpense, 'id' | 'createdAt'>
-  ): ActivityExpense {
+  addExpense(data: Omit<ActivityExpense, 'id' | 'createdAt'>): ActivityExpense {
     const expense: ActivityExpense = {
       ...data,
       id: `expense_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -138,11 +130,7 @@ export class ActivityService {
 
   updateExpense(id: string, updates: Partial<ActivityExpense>): void {
     this.expensesSignal.update((exps) =>
-      exps.map((exp) =>
-        exp.id === id
-          ? { ...exp, ...updates }
-          : exp
-      )
+      exps.map((exp) => (exp.id === id ? { ...exp, ...updates } : exp)),
     );
     this.persistExpenses();
   }
@@ -167,7 +155,7 @@ export class ActivityService {
         acc[exp.category] = (acc[exp.category] || 0) + (exp.amount || 0);
         return acc;
       },
-      {} as Record<string, number>
+      {} as Record<string, number>,
     );
   }
 }

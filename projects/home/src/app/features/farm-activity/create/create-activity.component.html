@@ -51,9 +51,7 @@
               class="form-control"
               formControlName="type"
               placeholder="e.g. Sowing, Fertilizer Spreading, Bore Drill..."
-              [class.is-invalid]="
-                form.get('type')?.invalid && form.get('type')?.touched
-              "
+              [class.is-invalid]="form.get('type')?.invalid && form.get('type')?.touched"
             />
             @if (form.get('type')?.invalid && form.get('type')?.touched) {
               <div class="invalid-feedback">Activity name is required.</div>
