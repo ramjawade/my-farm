@@ -3,7 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../auth/auth.service';
 import { IWeatherService } from './weather.interface';
 import { WeatherCacheService } from './weather-cache.service';
-import { WeatherData, WeatherLocation, CurrentWeather, WeatherAlert, OpenWeatherResponse, OpenWeatherForecastResponse } from './weather.models';
+import {
+  WeatherData,
+  WeatherLocation,
+  CurrentWeather,
+  WeatherAlert,
+  OpenWeatherResponse,
+  OpenWeatherForecastResponse,
+} from './weather.models';
 import { API_CONFIG } from '../config/api.config';
 
 @Injectable({ providedIn: 'root' })
@@ -134,7 +141,9 @@ export class WeatherService extends IWeatherService {
     };
   }
 
-  private async fetchForecast(location: WeatherLocation): Promise<{ days: any[]; fetchedAt: number }> {
+  private async fetchForecast(
+    location: WeatherLocation,
+  ): Promise<{ days: any[]; fetchedAt: number }> {
     const params = {
       lat: String(location.lat),
       lon: String(location.lng),
@@ -173,7 +182,9 @@ export class WeatherService extends IWeatherService {
           tempMin: Math.round(Math.min(...temps)),
           condition: items[0]?.weather[0]?.main || 'Unknown',
           conditionCode: items[0]?.weather[0]?.icon || 'unknown',
-          rainProbability: Math.round((popValues.reduce((a, b) => a + b, 0) / popValues.length) * 100),
+          rainProbability: Math.round(
+            (popValues.reduce((a, b) => a + b, 0) / popValues.length) * 100,
+          ),
           rainfall: items.reduce((sum, i) => sum + (i.rain?.['3h'] || 0), 0),
           uvIndex: undefined,
         };
@@ -239,11 +250,56 @@ export class WeatherService extends IWeatherService {
       },
       forecast: {
         days: [
-          { date: Date.now(), dayName: 'Mon', dateLabel: 'May 2', tempMax: 29, tempMin: 22, condition: 'Cloudy', conditionCode: '04d', rainProbability: 30 },
-          { date: Date.now() + 86400000, dayName: 'Tue', dateLabel: 'May 3', tempMax: 26, tempMin: 20, condition: 'Rainy', conditionCode: '10d', rainProbability: 80 },
-          { date: Date.now() + 172800000, dayName: 'Wed', dateLabel: 'May 4', tempMax: 31, tempMin: 23, condition: 'Sunny', conditionCode: '01d', rainProbability: 10 },
-          { date: Date.now() + 259200000, dayName: 'Thu', dateLabel: 'May 5', tempMax: 27, tempMin: 21, condition: 'Drizzle', conditionCode: '09d', rainProbability: 40 },
-          { date: Date.now() + 345600000, dayName: 'Fri', dateLabel: 'May 6', tempMax: 25, tempMin: 19, condition: 'Stormy', conditionCode: '11d', rainProbability: 90 },
+          {
+            date: Date.now(),
+            dayName: 'Mon',
+            dateLabel: 'May 2',
+            tempMax: 29,
+            tempMin: 22,
+            condition: 'Cloudy',
+            conditionCode: '04d',
+            rainProbability: 30,
+          },
+          {
+            date: Date.now() + 86400000,
+            dayName: 'Tue',
+            dateLabel: 'May 3',
+            tempMax: 26,
+            tempMin: 20,
+            condition: 'Rainy',
+            conditionCode: '10d',
+            rainProbability: 80,
+          },
+          {
+            date: Date.now() + 172800000,
+            dayName: 'Wed',
+            dateLabel: 'May 4',
+            tempMax: 31,
+            tempMin: 23,
+            condition: 'Sunny',
+            conditionCode: '01d',
+            rainProbability: 10,
+          },
+          {
+            date: Date.now() + 259200000,
+            dayName: 'Thu',
+            dateLabel: 'May 5',
+            tempMax: 27,
+            tempMin: 21,
+            condition: 'Drizzle',
+            conditionCode: '09d',
+            rainProbability: 40,
+          },
+          {
+            date: Date.now() + 345600000,
+            dayName: 'Fri',
+            dateLabel: 'May 6',
+            tempMax: 25,
+            tempMin: 19,
+            condition: 'Stormy',
+            conditionCode: '11d',
+            rainProbability: 90,
+          },
         ],
         fetchedAt: Date.now(),
       },

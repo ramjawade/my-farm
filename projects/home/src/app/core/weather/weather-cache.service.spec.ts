@@ -53,11 +53,14 @@ describe('WeatherCacheService', () => {
     service.set(testLocation, testWeatherData);
     expect(service.isFresh(testLocation)).toBeTrue();
 
-    setTimeout(() => {
-      expect(service.isFresh(testLocation)).toBeFalse();
-      expect(service.isStale(testLocation)).toBeTrue();
-      done();
-    }, 31 * 60 * 1000 + 100);
+    setTimeout(
+      () => {
+        expect(service.isFresh(testLocation)).toBeFalse();
+        expect(service.isStale(testLocation)).toBeTrue();
+        done();
+      },
+      31 * 60 * 1000 + 100,
+    );
   });
 
   it('should handle multiple location caching', () => {
@@ -101,9 +104,12 @@ describe('WeatherCacheService', () => {
 
   it('should return null for expired cache (after max age)', (done) => {
     service.set(testLocation, testWeatherData);
-    setTimeout(() => {
-      expect(service.isStale(testLocation)).toBeTrue();
-      done();
-    }, 2 * 60 * 60 * 1000 + 100);
+    setTimeout(
+      () => {
+        expect(service.isStale(testLocation)).toBeTrue();
+        done();
+      },
+      2 * 60 * 60 * 1000 + 100,
+    );
   });
 });

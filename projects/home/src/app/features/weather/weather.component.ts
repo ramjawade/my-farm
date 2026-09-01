@@ -89,17 +89,23 @@ export class WeatherComponent {
 
   // Today's weather computed signals
   readonly currentTemp = computed(() => this.weatherData()?.current.temp ?? 28);
-  readonly currentCondition = computed(() => this.weatherData()?.current.condition ?? 'Partly Cloudy');
+  readonly currentCondition = computed(
+    () => this.weatherData()?.current.condition ?? 'Partly Cloudy',
+  );
   readonly feelsLike = computed(() => this.weatherData()?.current.feelsLike ?? 31);
 
   readonly sunriseTime = computed(() => {
     const sunrise = this.weatherData()?.current.feelsLikeRange?.min;
-    return sunrise ? new Date(sunrise).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '6:01 AM';
+    return sunrise
+      ? new Date(sunrise).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+      : '6:01 AM';
   });
 
   readonly sunsetTime = computed(() => {
     const sunset = this.weatherData()?.current.feelsLikeRange?.max;
-    return sunset ? new Date(sunset).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '6:54 PM';
+    return sunset
+      ? new Date(sunset).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+      : '6:54 PM';
   });
 
   // Weather metrics list computed signal

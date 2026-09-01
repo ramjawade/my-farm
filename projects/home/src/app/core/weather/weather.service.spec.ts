@@ -3,7 +3,11 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { WeatherService } from './weather.service';
 import { AuthService } from '../auth/auth.service';
 import { WeatherCacheService } from './weather-cache.service';
-import { WeatherLocation, OpenWeatherResponse, OpenWeatherForecastResponse } from './weather.models';
+import {
+  WeatherLocation,
+  OpenWeatherResponse,
+  OpenWeatherForecastResponse,
+} from './weather.models';
 
 describe('WeatherService', () => {
   let service: WeatherService;
@@ -53,7 +57,11 @@ describe('WeatherService', () => {
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [WeatherService, WeatherCacheService, { provide: AuthService, useValue: authServiceSpy }],
+      providers: [
+        WeatherService,
+        WeatherCacheService,
+        { provide: AuthService, useValue: authServiceSpy },
+      ],
     });
 
     service = TestBed.inject(WeatherService);
