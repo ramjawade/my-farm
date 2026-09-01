@@ -7,6 +7,8 @@ import { of } from 'rxjs';
 import { CropTimelineComponent } from './crop-timeline.component';
 import { CropTimelineService } from './crop-timeline.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { IStorageService } from '../../core/storage/storage.interface';
+import { LocalStorageService } from '../../core/storage/local-storage.service';
 
 describe('CropTimelineComponent', () => {
   let component: CropTimelineComponent;
@@ -32,6 +34,7 @@ describe('CropTimelineComponent', () => {
         provideZonelessChangeDetection(),
         CropTimelineService,
         { provide: Router, useValue: spyRouter },
+        { provide: IStorageService, useClass: LocalStorageService },
       ],
     }).compileComponents();
 

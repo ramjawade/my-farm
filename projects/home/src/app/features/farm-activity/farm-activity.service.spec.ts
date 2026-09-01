@@ -5,6 +5,9 @@ import { CropTimelineService } from '../crop-timeline/crop-timeline.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { Activity } from './farm-activity.models';
 import { FarmerRegistrationData } from '../farmer-registration/farmer-registration.models';
+import { IStorageService } from '../../core/storage/storage.interface';
+import { LocalStorageService } from '../../core/storage/local-storage.service';
+import { flushPromises } from '../../testing/flush-promises';
 
 describe('FarmActivityService', () => {
   let service: FarmActivityService;
@@ -52,6 +55,7 @@ describe('FarmActivityService', () => {
         AuthService,
         FarmActivityService,
         CropTimelineService,
+        { provide: IStorageService, useClass: LocalStorageService },
       ],
     });
 
@@ -101,7 +105,7 @@ describe('FarmActivityService', () => {
     expect(service.expenses().length).toBe(0);
   });
 
-  it('should save and load activities for a specific user', () => {
+  it('should save and load activities for a specific user', async () => {
     authService.login(mockUser);
     TestBed.flushEffects();
 
@@ -119,12 +123,13 @@ describe('FarmActivityService', () => {
     const newAct = service.addActivity(activityData);
     expect(newAct.id).toBeTruthy();
     expect(service.activities().length).toBe(initialCount + 1);
+    await flushPromises();
 
     const stored = localStorage.getItem(`my_farm_f-test_activities`);
     expect(stored).toContain(newAct.id);
   });
 
-  it('should update an activity and save changes to localStorage', () => {
+  it('should update an activity and save changes to localStorage', async () => {
     authService.login(mockUser);
     TestBed.flushEffects();
 
@@ -139,6 +144,7 @@ describe('FarmActivityService', () => {
 
     const created = service.addActivity(activityData);
     service.updateActivity(created.id, { notes: 'Updated notes', status: 'In Progress' });
+    await flushPromises();
 
     const updated = service.activities().find((a) => a.id === created.id);
     expect(updated?.notes).toBe('Updated notes');

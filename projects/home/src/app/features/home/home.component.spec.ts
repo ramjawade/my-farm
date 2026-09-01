@@ -8,6 +8,8 @@ import { CropTimelineService } from '../crop-timeline/crop-timeline.service';
 import { FarmActivityService } from '../farm-activity/farm-activity.service';
 import { FarmerRegistrationData } from '../farmer-registration/farmer-registration.models';
 import { FarmDrawService } from '../../map/farm-draw/farm-draw.service';
+import { IStorageService } from '../../core/storage/storage.interface';
+import { LocalStorageService } from '../../core/storage/local-storage.service';
 
 describe('HomeComponent', () => {
   let component: HomeComponent;
@@ -31,6 +33,7 @@ describe('HomeComponent', () => {
         CropTimelineService,
         FarmActivityService,
         FarmDrawService,
+        { provide: IStorageService, useClass: LocalStorageService },
       ],
     }).compileComponents();
 

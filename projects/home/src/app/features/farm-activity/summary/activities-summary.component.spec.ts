@@ -7,6 +7,8 @@ import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
 import { FarmActivityService } from '../farm-activity.service';
 import { ActivityEntity } from '../../crop-timeline/crop-timeline.models';
 import { AuthService } from '../../../core/auth/auth.service';
+import { IStorageService } from '../../../core/storage/storage.interface';
+import { LocalStorageService } from '../../../core/storage/local-storage.service';
 
 describe('ActivitiesSummaryComponent', () => {
   let component: ActivitiesSummaryComponent;
@@ -61,6 +63,7 @@ describe('ActivitiesSummaryComponent', () => {
         CropTimelineService,
         FarmActivityService,
         AuthService,
+        { provide: IStorageService, useClass: LocalStorageService },
       ],
     }).compileComponents();
 
