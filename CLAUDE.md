@@ -81,6 +81,7 @@ To keep token/API cost down while developing on this repo:
 - Accumulate multiple features in one branch
 - Force push to main/master
 - Skip build/lint checks before push
+- **Push directly to main without a PR** — all changes must go through PR review, even hotfixes
 
 ## CI/CD Gates
 
