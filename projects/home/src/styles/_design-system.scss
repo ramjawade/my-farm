@@ -1,0 +1,23 @@
+// Premium Design System (Typography & Spacing Rules)
+
+// 1. Import Premium Google Font
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+// 2. Import Bootstrap Config (variables, maps, mixins)
+@import './bootstrap-config';
+
+// 3. Import Component Overrides
+@import './components/animations';
+@import './components/layout';
+@import './components/buttons';
+@import './components/cards';
+@import './components/badges';
+@import './components/forms';
+
+// 4. Global Body Base Styles
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: $body-color;
+  font-family: 'Outfit', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif !important;
+}

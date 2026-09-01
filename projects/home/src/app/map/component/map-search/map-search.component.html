@@ -1,0 +1,56 @@
+<div class="position-relative shadow-sm" style="border-radius: var(--bs-border-radius);">
+  <input
+    id="mapSearchInput"
+    type="search"
+    class="form-control form-control-sm"
+    placeholder="Street, city, postcode, place..."
+    aria-label="Search address"
+    autocomplete="off"
+    [value]="searchQuery()"
+    (input)="onSearchInput($event)"
+    (search)="onSearchClear($event)"
+    (keydown)="onSearchKeydown($event)"
+    (focus)="searchQuery().trim().length >= 3 && showResults.set(true)"
+    style="padding-right: 2rem;"
+  />
+  @if (searchLoading()) {
+    <div class="position-absolute end-0 top-50 translate-middle-y me-2 spinner-border spinner-border-sm text-secondary" role="status" style="width: 0.85rem; height: 0.85rem; pointer-events: none; border-width: 0.15em;">
+    </div>
+  }
+</div>
+
+@if (showResults()) {
+  <div class="map-page__search-results shadow-sm">
+    <div class="map-page__search-results-header">
+      @if (searchLoading()) {
+        <span>Searching…</span>
+      } @else if (searchResults().length > 0) {
+        <span>Top {{ searchResults().length }} matches</span>
+      } @else {
+        <span>Results</span>
+      }
+    </div>
+
+    @if (searchError() && !searchLoading()) {
+      <p class="map-page__search-empty">{{ searchError() }}</p>
+    }
+
+    <ul class="list-group list-group-flush">
+      @for (result of searchResults(); track result.id) {
+        <li>
+          <button
+            type="button"
+            class="map-page__search-result list-group-item list-group-item-action"
+            (click)="selectResult(result)"
+          >
+            <span class="map-page__search-rank">{{ result.rank }}</span>
+            <span class="map-page__search-text">
+              <span class="map-page__search-primary">{{ result.label }}</span>
+              <span class="map-page__search-secondary">{{ result.subtitle }}</span>
+            </span>
+          </button>
+        </li>
+      }
+    </ul>
+  </div>
+}

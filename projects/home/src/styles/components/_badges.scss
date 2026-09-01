@@ -1,0 +1,83 @@
+// 1. Base Badge Styling Override
+.badge, .mf-badge {
+  font-family: 'Outfit', sans-serif;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  padding: 0.35em 0.8em;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 50rem !important;
+  text-decoration: none;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  }
+
+  i {
+    font-size: 0.82rem;
+  }
+}
+
+// 2. Curated Agricultural Theme Modifiers
+
+// Success / Completed (Green)
+.bg-success, .mf-badge-success, .status-completed, .status-badge-inline.completed {
+  background: linear-gradient(135deg, rgba($farm-green-primary, 0.12), rgba($farm-green-light, 0.15)) !important;
+  color: $farm-green-dark !important;
+  border: 1px solid rgba($farm-green-primary, 0.18) !important;
+}
+
+// Warning / Progressing (Amber)
+.bg-warning, .mf-badge-warning, .status-progress, .status-badge-inline.progressing {
+  background: linear-gradient(135deg, rgba($warning, 0.12), rgba($farm-warning-light, 0.15)) !important;
+  color: $farm-warning-dark !important;
+  border: 1px solid rgba($warning, 0.18) !important;
+}
+
+// Danger / Alert (Red)
+.bg-danger, .mf-badge-danger {
+  background: linear-gradient(135deg, rgba($farm-danger-primary, 0.1), rgba($farm-danger-light, 0.12)) !important;
+  color: $farm-danger-dark !important;
+  border: 1px solid rgba($farm-danger-primary, 0.18) !important;
+}
+
+// Info / Field (Blue)
+.bg-info, .mf-badge-info, .tag-field {
+  background: linear-gradient(135deg, rgba($info, 0.1), rgba($farm-info-light, 0.12)) !important;
+  color: $farm-info-dark !important;
+  border: 1px solid rgba($info, 0.18) !important;
+}
+
+// Soil / Land (Brown)
+.mf-badge-soil, .tag-season {
+  background: linear-gradient(135deg, rgba($soil-primary, 0.12), rgba($soil-light, 0.15)) !important;
+  color: $soil-dark !important;
+  border: 1px solid rgba($soil-primary, 0.18) !important;
+}
+
+// Specific UI Stage / Tag overrides
+.bg-success-light, .badge-crop, .tag-crop {
+  background-color: rgba($farm-green-primary, 0.08) !important;
+  color: $farm-green-dark !important;
+  border: 1px solid rgba($farm-green-primary, 0.15) !important;
+}
+
+.status-draft {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+// 3. AI Advisor badge
+.ai-badge {
+  @extend .badge;
+  @extend .bg-success;
+  margin-bottom: 12px;
+  box-shadow: 0 3px 8px rgba($farm-green-dark, 0.15);
+}

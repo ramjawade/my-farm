@@ -1,0 +1,138 @@
+@import '../../../../styles/bootstrap-config';
+
+/* Sticky Headers with Glassmorphism */
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 1010;
+  background: rgba(243, 248, 245, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  
+  // Pull up to overlay the container's top padding (py-4 is 1.5rem)
+  margin-top: -1.5rem;
+  padding-top: 1.5rem;
+  
+  // Stretch side-to-side to span full width and realign internally
+  margin-left: -1rem;
+  margin-right: -1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  
+  @media (min-width: 768px) {
+    margin-left: -3rem;
+    margin-right: -3rem;
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}
+
+/* Upcoming Activities Alert Cards */
+.upcoming-item-card {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(217, 119, 6, 0.18) !important;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(217, 119, 6, 0.08);
+  }
+}
+
+.btn-xs {
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  border-radius: 4px;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.border-dashed {
+  border-style: dashed !important;
+}
+
+.metric {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: $farm-green-dark;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+
+  &.text-warning-override {
+    color: $farm-warning-dark;
+  }
+
+  &.text-success-override {
+    color: $farm-green-primary;
+  }
+}
+
+/* Premium Table-like Recent Activities */
+.activity-table-row {
+  transition: all 0.2s ease-in-out;
+  
+  &:hover {
+    background-color: rgba($farm-green-primary, 0.04) !important;
+    
+    td {
+      background-color: rgba($farm-green-primary, 0.04) !important;
+    }
+    
+    .bi-chevron-right {
+      transform: translateX(3px);
+      color: $farm-green-primary !important;
+    }
+  }
+
+  td {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.03) !important;
+    transition: background-color 0.2s ease-in-out;
+  }
+}
+
+.activity-emoji-circle-sm {
+  width: 30px;
+  height: 30px;
+  background-color: rgba($farm-green-primary, 0.06);
+  border: 1px solid rgba($farm-green-primary, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+}
+
+.bi-chevron-right {
+  transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.status-badge-inline {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  border-radius: 50rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  
+  &.completed {
+    background-color: #edf6f0;
+    color: #3f9b65;
+  }
+  
+  &.progressing {
+    background-color: #fef3c7;
+    color: #d97706;
+  }
+}
+
+/* Chart.js Container Styling */
+.chart-wrapper-chartjs {
+  position: relative;
+  height: 230px;
+  width: 100%;
+}

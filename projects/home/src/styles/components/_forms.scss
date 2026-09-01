@@ -1,0 +1,127 @@
+// 1. Native Form Controls (Inputs & Selects)
+.form-control, .form-select {
+  font-family: 'Outfit', sans-serif;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.9rem;
+  color: $body-dark-slate;
+  background-color: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:focus {
+    border-color: $farm-green-primary !important;
+    box-shadow: 0 0 0 3px rgba($farm-green-primary, 0.15) !important;
+    background-color: #ffffff;
+  }
+}
+
+textarea.form-control {
+  resize: vertical;
+}
+
+// Small sizes
+.form-control-sm, .form-select-sm {
+  padding: 0.45rem 0.6rem;
+  font-size: 0.85rem;
+  border-radius: 6px;
+}
+
+// 2. Form Labels
+.form-label {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.35rem;
+  display: block;
+}
+
+// Required Form Field Asterisk Indicator
+.required-label, .form-required {
+  &::after {
+    content: ' *';
+    color: $farm-danger-primary;
+    font-weight: bold;
+  }
+}
+
+// 3. Custom suggestions list helper
+.suggestions-section {
+  .suggestions-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+}
+
+// 4. Custom Checkbox / Selectable Radio Button Cards
+.form-check-custom {
+  position: relative;
+  display: inline-block;
+
+  input[type="radio"], input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+
+    &:checked + .radio-label, &:checked + .check-label {
+      background-color: #ffffff;
+      border-color: $farm-green-primary;
+      box-shadow: 0 4px 10px rgba($farm-green-primary, 0.08);
+      color: $farm-green-dark;
+      font-weight: 600;
+    }
+  }
+
+  .radio-label, .check-label {
+    font-family: 'Outfit', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background-color: #f8fafc;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: #f1f5f9;
+      border-color: #94a3b8;
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+  }
+}
+
+// 5. Search Bar Wrapper Input Override
+.search-wrapper {
+  .form-control {
+    border: 1.5px solid rgba(42, 111, 71, 0.18) !important;
+    border-radius: 8px;
+    padding: 10px 12px;
+    background-color: rgba(255, 255, 255, 0.85);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    color: #2b3a30;
+
+    &:focus {
+      border-color: #2a6f47 !important;
+      box-shadow: 0 0 0 3px rgba(42, 111, 71, 0.15) !important;
+      background-color: #ffffff;
+    }
+  }
+}

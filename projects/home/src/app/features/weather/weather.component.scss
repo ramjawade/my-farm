@@ -1,0 +1,284 @@
+@import '../../../styles/bootstrap-config';
+
+:host {
+  display: block;
+  min-height: 100%;
+  background-color: #f4f8f3;
+}
+
+.weather-dashboard {
+  font-family: inherit;
+}
+
+.dashboard-header {
+  background: linear-gradient(135deg, $primary, $farm-green-light);
+  color: white;
+  border-radius: 20px;
+  padding: 28px 24px;
+  box-shadow: 0 8px 24px rgba($primary, 0.15);
+
+  .opacity-90 {
+    opacity: 0.9;
+  }
+}
+
+.temp {
+  font-size: 3.25rem;
+  font-weight: 800;
+  color: $primary;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.weather-icon {
+  font-size: 3.8rem;
+  line-height: 1;
+}
+
+.metric-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  color: white;
+  flex-shrink: 0;
+}
+
+.bg-rain {
+  background: $info;
+  box-shadow: 0 4px 10px rgba($info, 0.3);
+}
+.text-rain {
+  color: $info;
+}
+
+.bg-temp {
+  background: $warning;
+  box-shadow: 0 4px 10px rgba($warning, 0.3);
+}
+.text-temp {
+  color: $warning;
+}
+
+.bg-humidity {
+  background: $farm-humidity;
+  box-shadow: 0 4px 10px rgba($farm-humidity, 0.3);
+}
+.text-humidity {
+  color: $farm-humidity;
+}
+
+.bg-wind {
+  background: $farm-wind;
+  box-shadow: 0 4px 10px rgba($farm-wind, 0.3);
+}
+.text-wind {
+  color: $farm-wind;
+}
+
+.bg-alert {
+  background: $farm-danger-light;
+  box-shadow: 0 4px 10px rgba($farm-danger-light, 0.3);
+}
+.text-alert {
+  color: $farm-danger-light;
+}
+
+.forecast-row {
+  display: flex;
+  overflow-x: auto;
+  gap: 16px;
+  padding-bottom: 12px;
+  
+  // Custom scrollbar formatting for a premium feel
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 10px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba($primary, 0.15);
+    border-radius: 10px;
+    &:hover {
+      background: rgba($primary, 0.3);
+    }
+  }
+
+  scrollbar-width: thin;
+  scrollbar-color: rgba($primary, 0.15) rgba(0, 0, 0, 0.02);
+
+  // Desktop display - evenly spread cards on a single line with no scroll
+  @media (min-width: 992px) {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    overflow-x: visible;
+    padding-bottom: 0;
+  }
+}
+
+.forecast-col {
+  flex: 0 0 115px; // Stabilize card widths on mobile swipe-row
+  display: flex;
+  flex-direction: column;
+
+  @media (min-width: 992px) {
+    flex: initial;
+  }
+}
+
+.forecast-day {
+  background: #f9fbf9;
+  border-radius: 16px;
+  border: 1px solid rgba($primary, 0.05);
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background: rgba($primary, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba($primary, 0.06);
+  }
+}
+
+.soil-card {
+  background: linear-gradient(135deg, $soil-primary, $soil-light);
+  color: white;
+  border-radius: 18px;
+  box-shadow: 0 8px 20px rgba($soil-primary, 0.15);
+
+  .bg-white-20 {
+    background-color: rgba(255, 255, 255, 0.18);
+  }
+}
+
+.crop-status {
+  background: linear-gradient(135deg, $farm-green-dark, $farm-green-light);
+  color: white;
+  border-radius: 18px;
+  box-shadow: 0 8px 20px rgba($farm-green-dark, 0.15);
+
+  ul li {
+    font-size: 1.05rem;
+  }
+}
+
+.farmer-tip {
+  background: linear-gradient(135deg, rgba($warning, 0.08), rgba($farm-warning-light, 0.15));
+  border-left: 6px solid $warning;
+  border-radius: 18px;
+  box-shadow: 0 4px 15px rgba($warning, 0.08);
+}
+
+// Media Queries for Mobile Responsiveness
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 20px;
+    text-align: center;
+
+    .text-md-end {
+      text-align: center !important;
+    }
+  }
+
+  .temp {
+    font-size: 2.8rem;
+  }
+
+  .weather-icon {
+    font-size: 3.2rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .dashboard-header {
+    padding: 16px;
+  }
+
+  .temp {
+    font-size: 2.4rem;
+  }
+
+  .weather-icon {
+    font-size: 2.8rem;
+  }
+
+  .forecast-day {
+    padding: 10px 6px !important;
+  }
+}
+
+// AI Insight Box Styling
+.ai-insight-box {
+  background: linear-gradient(135deg, rgba($primary, 0.04), rgba($farm-green-light, 0.07));
+  border: 1px dashed rgba($primary, 0.25);
+  border-radius: 16px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+  margin-top: auto;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, $primary, $farm-green-light);
+  }
+
+  &:hover {
+    background: linear-gradient(135deg, rgba($primary, 0.07), rgba($farm-green-light, 0.11));
+    border-color: rgba($primary, 0.4);
+    box-shadow: 0 6px 18px rgba($primary, 0.06);
+    transform: translateY(-2px);
+  }
+
+  .ai-badge {
+    i {
+      font-size: 0.85rem;
+      animation: ai-pulse 2s infinite ease-in-out;
+    }
+  }
+
+  .ai-title {
+    font-size: 1.2rem;
+    font-weight: 750;
+    color: $farm-green-dark;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .ai-desc {
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: #455a64;
+    margin-bottom: 0;
+  }
+}
+
+@keyframes ai-pulse {
+  0%, 100% {
+    opacity: 0.75;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+  }
+}
+
+.hover-bg-light {
+  transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+  &:hover {
+    background-color: rgba($primary, 0.05) !important;
+  }
+}

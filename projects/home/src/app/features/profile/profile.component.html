@@ -1,0 +1,217 @@
+<div class="profile-page-container py-4 px-3 px-md-5 animate-fade-in">
+  
+  @if (currentUser()) {
+    <!-- PROFILE HEADER CARD -->
+    <div class="card card-glass border-0 shadow-lg mb-4 p-3 p-sm-4 welcome-card position-relative overflow-hidden">
+      <div class="welcome-card-glow"></div>
+      <div class="row g-3 align-items-center position-relative z-1">
+        <div class="col-auto">
+          <div class="profile-avatar-circle-large shadow-sm">
+            <span>{{ userInitials() }}</span>
+          </div>
+        </div>
+        <div class="col flex-grow-1">
+          <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+            <h2 class="h3 fw-bold text-success-dark mb-0">{{ currentUser()?.fullName }}</h2>
+            <span class="badge bg-success-subtle text-success rounded-pill fw-semibold text-xxs">
+              {{ currentUser()?.userRole || 'Farmer' }}
+            </span>
+          </div>
+          <p class="text-xs text-muted mb-0 d-flex align-items-center gap-1.5 flex-wrap">
+            <span class="text-secondary font-medium"><i class="bi bi-tag-fill me-1"></i>{{ currentUser()?.farmName || 'Unnamed Farm' }}</span>
+            <span class="text-secondary">|</span>
+            <span class="text-secondary"><i class="bi bi-calendar3 me-1"></i>Member since {{ memberSince() }}</span>
+          </p>
+        </div>
+        <div class="col-12 col-md-auto text-md-end mt-2 mt-md-0">
+          <span class="badge bg-success text-white px-3 py-2 text-xxs rounded-pill fw-semibold shadow-xs">
+            <i class="bi bi-shield-check me-1"></i>Verified Profile
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE DETAILS DISPLAY GRID -->
+    <div class="row g-4">
+      
+      <!-- CARD 1: ACCOUNT & PERSONAL INFO -->
+      <div class="col-12 col-lg-6">
+        <div class="card border-0 shadow-sm p-3 p-sm-4 bg-white h-100">
+          <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+            <h3 class="h5 fw-bold text-success-dark mb-0">
+              <i class="bi bi-person-fill text-success me-2"></i>Account Information
+            </h3>
+            <button (click)="openEditDialog('account')" class="btn btn-outline-success btn-xs px-2.5 py-1 fw-bold text-xxs rounded-pill bg-white hover-lift">
+              <i class="bi bi-pencil-square me-1"></i>Edit
+            </button>
+          </div>
+
+          <div class="d-flex flex-column gap-3">
+            <div class="row">
+              <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">Full Name</div>
+              <div class="col-8 text-sm fw-bold text-dark">{{ currentUser()?.fullName }}</div>
+            </div>
+            <div class="row">
+              <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">Phone Number</div>
+              <div class="col-8 text-sm fw-bold text-dark">{{ currentUser()?.phone }}</div>
+            </div>
+            <div class="row">
+              <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">Email Address</div>
+              <div class="col-8 text-sm fw-medium text-secondary">{{ currentUser()?.email || 'Not Configured' }}</div>
+            </div>
+            <div class="row">
+              <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">Language</div>
+              <div class="col-8 text-sm fw-semibold text-secondary">{{ currentUser()?.preferredLanguage }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 2: AGRONOMIC SETTINGS -->
+      <div class="col-12 col-lg-6">
+        <div class="card border-0 shadow-sm p-3 p-sm-4 bg-white h-100">
+          <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+            <h3 class="h5 fw-bold text-success-dark mb-0">
+              <i class="bi bi-focus-fill text-success me-2"></i>Agronomic Settings
+            </h3>
+            <div class="d-flex gap-2">
+              <button (click)="openEditDialog('agronomic')" class="btn btn-outline-success btn-xs px-2.5 py-1 fw-bold text-xxs rounded-pill bg-white hover-lift">
+                <i class="bi bi-pencil-square me-1"></i>Edit
+              </button>
+              <button (click)="deleteAgronomic()" class="btn btn-outline-danger btn-xs px-2.5 py-1 fw-bold text-xxs rounded-pill bg-white hover-lift" title="Reset Agronomic Settings">
+                <i class="bi bi-trash me-1"></i>Delete
+              </button>
+            </div>
+          </div>
+
+          <div class="d-flex flex-column gap-3">
+            <div class="row">
+              <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">User Role</div>
+              <div class="col-8 text-sm fw-bold text-dark">
+                <span class="badge bg-success-subtle text-success px-2.5 py-1 rounded-pill">{{ currentUser()?.userRole || 'Farmer' }}</span>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">Farming Method</div>
+              <div class="col-8 text-sm fw-bold text-dark">
+                <span class="badge bg-success-subtle text-success px-2.5 py-1 rounded-pill">{{ currentUser()?.farmingMethod || 'Not Configured' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 3: LAND & LOCATION -->
+      <div class="col-12 col-lg-6">
+        <div class="card border-0 shadow-sm p-3 p-sm-4 bg-white h-100">
+          <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+            <h3 class="h5 fw-bold text-success-dark mb-0">
+              <i class="bi bi-geo-alt-fill text-success me-2"></i>Land & Location
+            </h3>
+            <div class="d-flex gap-2">
+              <button (click)="openEditDialog('land')" class="btn btn-outline-success btn-xs px-2.5 py-1 fw-bold text-xxs rounded-pill bg-white hover-lift">
+                <i class="bi bi-pencil-square me-1"></i>Edit
+              </button>
+              <button (click)="deleteLandLocation()" class="btn btn-outline-danger btn-xs px-2.5 py-1 fw-bold text-xxs rounded-pill bg-white hover-lift" title="Reset Land & Location">
+                <i class="bi bi-trash me-1"></i>Delete
+              </button>
+            </div>
+          </div>
+
+          <div class="d-flex flex-column gap-3">
+            <div class="row">
+              <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">Farm Name</div>
+              <div class="col-8 text-sm fw-bold text-dark">{{ currentUser()?.farmName || 'Unnamed Farm' }}</div>
+            </div>
+            <div class="row">
+              <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">Cultivated Area</div>
+              <div class="col-8 text-sm fw-bold text-dark">
+                {{ currentUser()?.farmArea }} {{ currentUser()?.farmAreaUnit }}
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">Village / Address</div>
+              <div class="col-8 text-sm fw-bold text-dark">{{ currentUser()?.village || 'Not Configured' }}</div>
+            </div>
+            <div class="row">
+              <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">District & State</div>
+              <div class="col-8 text-sm fw-semibold text-secondary">
+                {{ currentUser()?.district || 'Not Configured' }}@if (currentUser()?.district && currentUser()?.state) { , }{{ currentUser()?.state }}
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">Pincode</div>
+              <div class="col-8 text-sm fw-semibold text-secondary">{{ currentUser()?.pincode || 'Not Configured' }}</div>
+            </div>
+            <div class="row">
+              <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">GPS Coordinates</div>
+              <div class="col-8 text-xs font-monospace text-secondary">
+                @if (currentUser()?.location) {
+                  Lat: {{ currentUser()?.location?.lat | number:'1.4-4' }}, Lng: {{ currentUser()?.location?.lng | number:'1.4-4' }}
+                } @else {
+                  No boundary mapped yet
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 4: OPERATIONAL SETTINGS -->
+      <div class="col-12 col-lg-6">
+        <div class="card border-0 shadow-sm p-3 p-sm-4 bg-white h-100">
+          <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+            <h3 class="h5 fw-bold text-success-dark mb-0">
+              <i class="bi bi-gear-fill text-success me-2"></i>Operational Settings
+            </h3>
+            <div class="d-flex gap-2">
+              <button (click)="openEditDialog('operations')" class="btn btn-outline-success btn-xs px-2.5 py-1 fw-bold text-xxs rounded-pill bg-white hover-lift">
+                <i class="bi bi-pencil-square me-1"></i>Edit
+              </button>
+              <button (click)="deleteOperations()" class="btn btn-outline-danger btn-xs px-2.5 py-1 fw-bold text-xxs rounded-pill bg-white hover-lift" title="Reset Operational Settings">
+                <i class="bi bi-trash me-1"></i>Delete
+              </button>
+            </div>
+          </div>
+
+          <div class="d-flex flex-column gap-3">
+            <div class="row">
+              <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">Water Source</div>
+              <div class="col-8 text-sm fw-bold text-dark">{{ currentUser()?.waterSource || 'Not Configured' }}</div>
+            </div>
+            <div class="row">
+              <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">Irrigation Type</div>
+              <div class="col-8 text-sm fw-bold text-dark">{{ currentUser()?.irrigationType || 'Not Configured' }}</div>
+            </div>
+            <div class="row">
+              <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">Primary Crops</div>
+              <div class="col-8 text-sm fw-semibold text-secondary">
+                <div class="d-flex flex-wrap gap-1.5 mt-1">
+                  @for (crop of currentUser()?.primaryCrops; track crop) {
+                    <span class="badge bg-light text-secondary border border-light-subtle rounded-pill font-medium px-2.5 py-1">
+                      {{ crop }}
+                    </span>
+                  } @empty {
+                    <span class="text-xs text-muted">No primary crops listed</span>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- DIALOG COMPONENT FOR EDITING -->
+    <app-profile-edit-dialog [section]="activeSection()" [(show)]="showEditDialog" />
+
+  } @else {
+    <div class="text-center py-5">
+      <div class="spinner-border text-success mb-3" role="status">
+        <span class="visually-hidden">Loading profile...</span>
+      </div>
+      <p class="text-muted">Loading profile settings...</p>
+    </div>
+  }
+</div>

@@ -1,0 +1,133 @@
+<div class="login-wrapper">
+  <!-- Dynamic Organic Background Gradients -->
+  <div class="background-blob blob-top"></div>
+  <div class="background-blob blob-bottom"></div>
+
+  <div class="login-container">
+    <div class="card card-glass login-card mx-auto animate-fade-in">
+      
+      <!-- Logo & Header -->
+      <div class="text-center mb-4 pt-2">
+        <div class="brand-logo-container mb-3 shadow-sm mx-auto">
+          <i class="bi bi-tree-fill text-success fs-2 animate-pulse"></i>
+        </div>
+        <h2 class="brand-title mb-1">My Farm</h2>
+        <p class="brand-subtitle">Smart Agriculture Management Portal</p>
+      </div>
+
+      <!-- Quick Login Section -->
+      <div class="quick-login-section mb-4">
+        <h5 class="section-title text-center mb-3">
+          <i class="bi bi-lightning-charge-fill text-warning me-1"></i>Quick Login
+        </h5>
+        
+        <div class="quick-profiles-grid">
+          @for (farmer of registeredFarmers(); track farmer.id) {
+            <button 
+              type="button" 
+              class="profile-card border text-start d-flex align-items-center gap-3 transition"
+              (click)="loginAs(farmer)"
+            >
+              <div class="profile-avatar-circle d-flex align-items-center justify-content-center text-white font-semibold">
+                {{ getInitials(farmer.fullName) }}
+              </div>
+              <div class="profile-details flex-grow-1 overflow-hidden">
+                <h6 class="profile-name mb-0 text-truncate">{{ farmer.fullName }}</h6>
+                <span class="profile-role text-success d-block text-truncate">
+                  <i class="bi bi-person-badge-fill me-1"></i>{{ farmer.userRole }}
+                </span>
+                <span class="profile-farm text-muted text-xs d-block text-truncate">
+                  <i class="bi bi-house-door me-1"></i>{{ farmer.farmName }}
+                </span>
+              </div>
+              <i class="bi bi-chevron-right text-muted flex-shrink-0 ms-auto"></i>
+            </button>
+          } @empty {
+            <div class="text-center p-3 border border-dashed rounded text-muted">
+              No registered profiles found.
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="divider-container mb-4">
+        <span class="divider-text">or authenticate via mobile</span>
+      </div>
+
+      <!-- Standard Form Login -->
+      <form (ngSubmit)="onSubmitPhone()" class="login-form">
+        <div class="mb-3">
+          <label for="phoneInput" class="field-label required-label">Mobile Number</label>
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0 text-muted">
+              <i class="bi bi-telephone-fill"></i>
+            </span>
+            <input
+              type="tel"
+              id="phoneInput"
+              class="form-control border-start-0 ps-0"
+              placeholder="e.g. 9876543210"
+              [value]="phone()"
+              (input)="phone.set($any($event.target).value); resetOnNumberChange()"
+              [class.is-invalid]="phoneError() && !isNewNumber()"
+            />
+          </div>
+          @if (phoneError() && !isNewNumber()) {
+            <div class="text-danger small mt-1">
+              <i class="bi bi-exclamation-circle-fill me-1"></i>{{ phoneError() }}
+            </div>
+          }
+        </div>
+
+        @if (isNewNumber()) {
+          <div class="mb-3 animate-fade-in">
+            <label for="nameInput" class="field-label required-label">Full Name</label>
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0 text-muted">
+                <i class="bi bi-person-fill"></i>
+              </span>
+              <input
+                type="text"
+                id="nameInput"
+                class="form-control border-start-0 ps-0"
+                placeholder="e.g. Rajesh Kumar"
+                [value]="name()"
+                (input)="name.set($any($event.target).value)"
+                [class.is-invalid]="phoneError() && isNewNumber()"
+              />
+            </div>
+            @if (phoneError() && isNewNumber()) {
+              <div class="text-danger small mt-1">
+                <i class="bi bi-exclamation-circle-fill me-1"></i>{{ phoneError() }}
+              </div>
+            } @else {
+              <p class="text-success text-xs mt-1.5 fw-semibold">
+                <i class="bi bi-info-circle-fill me-1"></i>This number is not registered. Enter your name to start instantly!
+              </p>
+            }
+          </div>
+        }
+
+        <button 
+          type="submit" 
+          class="btn btn-success w-100 py-2.5 fw-semibold hover-lift shadow-xs d-flex align-items-center justify-content-center gap-2"
+        >
+          <i class="bi" [class.bi-box-arrow-in-right]="!isNewNumber()" [class.bi-person-plus-fill]="isNewNumber()"></i>
+          <span>{{ isNewNumber() ? 'Create Profile & Enter' : 'Access Account' }}</span>
+        </button>
+      </form>
+
+      <!-- Registration Link -->
+      <div class="text-center mt-4 border-top pt-3">
+        <p class="text-muted text-sm mb-0">
+          New to My Farm? 
+          <a routerLink="/register" class="text-success fw-bold text-decoration-none hover-underline ms-1">
+            Register Farmer Profile <i class="bi bi-arrow-right text-xs"></i>
+          </a>
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>

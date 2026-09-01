@@ -1,0 +1,46 @@
+.map-my-farm {
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: var(--bs-border-radius);
+  width: 14rem;
+}
+
+.map-my-farm__hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color);
+}
+
+.map-my-farm__area {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding: 0.5rem;
+  background: rgba(25, 135, 84, 0.1);
+  border-radius: var(--bs-border-radius);
+}
+
+.map-my-farm__area-title {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--bs-success);
+}
+
+.map-my-farm__area-value {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.map-my-farm__area-sub {
+  font-size: 0.8rem;
+  color: var(--bs-secondary-color);
+}
+
+.map-my-farm__note {
+  font-size: 0.65rem;
+  color: var(--bs-secondary-color);
+  line-height: 1.25;
+  text-align: center;
+  font-style: italic;
+}

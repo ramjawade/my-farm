@@ -1,0 +1,58 @@
+<div class="map-my-farm shadow-sm">
+  @if (draw.savedFarms().length === 0 && !draw.isDrawing() && !draw.isCompleted()) {
+    <div class="alert alert-success p-2.5 mb-2 border-0 rounded-3 text-start animate-fade-in" style="background-color: rgba(46, 125, 50, 0.09); font-size: 0.75rem; color: #1b5e20; line-height: 1.35;">
+      <div class="fw-bold mb-0.5"><i class="bi bi-pin-map-fill text-danger me-1"></i>Map Your Farm Boundary</div>
+      Draw your farm boundaries to resolve cultivation area and unlock high-resolution satellite views.
+    </div>
+  }
+
+  <button
+    type="button"
+    class="btn btn-sm w-100"
+    [class.btn-success]="draw.isDrawing()"
+    [class.btn-outline-success]="!draw.isDrawing()"
+    (click)="toggleMapMyFarm()"
+  >
+    Map my farm
+  </button>
+
+  @if (draw.isDrawing()) {
+    <p class="map-my-farm__hint mb-2">
+      Click the map to add points ({{ draw.pointCount() }}). Click the first point to complete.
+    </p>
+    <div class="map-my-farm__actions btn-group btn-group-sm w-100">
+      <button type="button" class="btn btn-outline-secondary" (click)="undo()" [disabled]="draw.pointCount() === 0">
+        Undo
+      </button>
+      <button type="button" class="btn btn-outline-danger" (click)="cancel()">Cancel</button>
+    </div>
+  }
+
+  @if (draw.isCompleted() && formattedArea(); as area) {
+    <div class="map-my-farm__area mt-2">
+      <span class="map-my-farm__area-title">Farm area</span>
+      <span class="map-my-farm__area-value">{{ area.hectares }} ha</span>
+      <span class="map-my-farm__area-sub">{{ area.acres }} acres</span>
+    </div>
+    <div class="map-my-farm__note mt-1">
+      Note: Calculated area is approximate and should not be considered actual acreage.
+    </div>
+    <div class="mt-2">
+      <input
+        type="text"
+        class="form-control form-control-sm mb-1"
+        placeholder="Enter farm name..."
+        [value]="farmName()"
+        (input)="onNameInput($event)"
+      />
+      <div class="btn-group btn-group-sm w-100">
+        <button type="button" class="btn btn-success" (click)="save()" [disabled]="!farmName().trim()">
+          Save
+        </button>
+        <button type="button" class="btn btn-outline-secondary" (click)="draw.startDrawing()">
+          Draw again
+        </button>
+      </div>
+    </div>
+  }
+</div>

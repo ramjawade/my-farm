@@ -1,0 +1,100 @@
+<div class="dashboard-header mf-header-pacing sticky-header d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 mb-4 border-bottom pb-3">
+  <!-- Title on the Left -->
+  <div class="text-start">
+    <h2 class="mf-crop-dashboard__page-title">
+      Crop Dashboard
+    </h2>
+  </div>
+
+  <!-- Search Bar in the Center -->
+  <div class="d-flex justify-content-center flex-grow-1 mx-md-4 w-100">
+    <div class="search-wrapper position-relative w-100" style="max-width: 380px;">
+      <span class="search-icon position-absolute top-50 start-0 translate-middle-y ms-3 text-muted">
+        <i class="bi bi-search"></i>
+      </span>
+      <input
+        type="text"
+        class="form-control ps-5 w-100"
+        placeholder="Search crops or fields..."
+        [ngModel]="searchTerm"
+        (ngModelChange)="onSearchTermChange($event)"
+      />
+    </div>
+  </div>
+
+  <!-- Add Crop Button on the Right -->
+  <div class="text-end d-none d-md-block">
+    <button class="btn btn-success d-flex align-items-center px-3 py-2 ms-auto" style="white-space: nowrap;" (click)="onAddCropClicked()">
+      <i class="bi bi-plus-lg me-2"></i>Add Crop
+    </button>
+  </div>
+</div>
+
+<!-- Active Crops Grid -->
+<div class="row g-3">
+  @for (crop of filteredCrops; track crop.id) {
+    <div class="col-12 col-sm-6 col-lg-4">
+      <div class="card card-glass card-interactive p-4 text-start h-100 position-relative d-flex flex-column justify-content-between" (click)="onCropSelected(crop)">
+        
+        <div>
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h4 class="mf-card-title m-0">{{ crop.name }}</h4>
+              <span class="badge bg-success mt-1.5">
+                <i class="bi bi-pin-map-fill me-1"></i>{{ crop.fieldId }}
+              </span>
+            </div>
+            <!-- Circular/Radial Stage Progress Widget -->
+            <div class="progress-ring-widget d-flex flex-column align-items-center justify-content-center">
+              <div class="progress-circle-inner d-flex flex-column align-items-center justify-content-center text-success">
+                <span class="font-monospace fw-bold text-success" style="font-size: 0.8rem;">
+                  {{ getStageIndex(crop.currentStage) + 1 }}/8
+                </span>
+                <span class="text-muted" style="font-size: 0.6rem; font-weight: 500;">Stage</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Growth Details List -->
+          <div class="py-3 border-top my-3 px-2 bg-light-green rounded flex-grow-1">
+            <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
+              <li class="d-flex justify-content-between align-items-center">
+                <span class="mf-meta-label">Age</span>
+                <strong class="mf-meta-value font-monospace" style="font-size: 0.95rem;">{{ getDaysAfterSowing(crop.sowingDate) }} Days</strong>
+              </li>
+              <li class="d-flex justify-content-between align-items-center">
+                <span class="mf-meta-label">Plot</span>
+                <strong class="mf-meta-value" style="font-size: 0.9rem;">{{ crop.area }} {{ crop.areaUnit === 'hectares' ? 'hec' : 'ac' }}</strong>
+              </li>
+              <li class="d-flex justify-content-between align-items-center">
+                <span class="mf-meta-label">Last Activity</span>
+                <strong class="mf-meta-value" style="font-size: 0.9rem;">{{ getDaysSinceLastActivity(crop.id) }}</strong>
+              </li>
+              <li class="d-flex justify-content-between align-items-center">
+                <span class="mf-meta-label">Next Activity</span>
+                <strong class="mf-meta-value text-success" style="font-size: 0.9rem; max-width: 60%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="crop.upcomingActivity || 'None scheduled'">
+                  {{ crop.upcomingActivity || 'None scheduled' }}
+                </strong>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+  @if (filteredCrops.length === 0) {
+    <div class="col-12">
+      <div class="card card-glass p-5 text-center">
+        <i class="bi bi-folder-x text-muted fs-1 d-block mb-3"></i>
+        <h5 class="text-dark font-semibold">No crop profiles match your search</h5>
+        <p class="text-muted mb-0">Try typing a different crop name, field, or add a new crop to get started.</p>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- FLOATING ACTION BUTTON (FAB) FOR ADDING CROP - MOBILE ONLY -->
+<button type="button" class="btn btn-success fab fab-button d-flex d-md-none align-items-center justify-content-center" 
+        (click)="onAddCropClicked()" title="Add Crop">
+  <i class="bi bi-plus-lg"></i>
+</button>

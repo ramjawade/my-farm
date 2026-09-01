@@ -1,0 +1,61 @@
+@import '../../../styles/bootstrap-config';
+
+.profile-page-container {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.welcome-card {
+  border: 1px solid rgba(46, 125, 50, 0.1) !important;
+  
+  .welcome-card-glow {
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(102, 187, 106, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+.profile-avatar-circle-large {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $farm-green-primary, $farm-green-dark);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 1.65rem;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
+}
+
+.text-xxs {
+  font-size: 0.6875rem;
+}
+
+.text-xxs.uppercase {
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.uppercase {
+  text-transform: uppercase;
+}
+
+.tracking-wider {
+  letter-spacing: 0.05em;
+}
+
+.field-label-sm {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 4px;
+  display: block;
+}
