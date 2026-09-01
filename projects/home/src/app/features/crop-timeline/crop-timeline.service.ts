@@ -228,7 +228,8 @@ export class CropTimelineService {
     const dateObj = ca.date ? new Date(ca.date) : new Date();
     const month = isNaN(dateObj.getTime()) ? new Date().getMonth() : dateObj.getMonth();
     let season = 'Kharif';
-    if (month >= 9 || month <= 0) season = 'Rabi'; // Oct, Nov, Dec, Jan
+    if (month >= 9 || month <= 0)
+      season = 'Rabi'; // Oct, Nov, Dec, Jan
     else if (month >= 1 && month <= 4) season = 'Summer'; // Feb, Mar, Apr, May
 
     // Map status

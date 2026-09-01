@@ -66,7 +66,8 @@ export function migrateActivityData(): void {
 
   // Migrate old farm-activity activities and expenses
   try {
-    const oldFarmActivities = localStorage.getItem('my_farm_farm_activities_old') ||
+    const oldFarmActivities =
+      localStorage.getItem('my_farm_farm_activities_old') ||
       localStorage.getItem('my_farm_activities_old');
     if (oldFarmActivities) {
       const oldActivities = JSON.parse(oldFarmActivities) as any[];
@@ -83,7 +84,7 @@ export function migrateActivityData(): void {
           season: oldAct.season,
           cropId: oldAct.cropId,
           fieldId: oldAct.fieldId,
-          type: oldAct.activityId === 'Custom' ? 'Custom' : ((oldAct.activityId as any) || 'Custom'),
+          type: oldAct.activityId === 'Custom' ? 'Custom' : (oldAct.activityId as any) || 'Custom',
           customActivityName: oldAct.activityId === 'Custom' ? oldAct.activityId : undefined,
           status: convertActivityStatus(oldAct.status),
           notes: oldAct.notes,
@@ -133,7 +134,7 @@ export function migrateActivityData(): void {
   localStorage.setItem(MIGRATION_FLAG, 'true');
 
   console.log(
-    `✓ Migrated ${activities.length} activities and ${expenses.length} expenses to unified model`
+    `✓ Migrated ${activities.length} activities and ${expenses.length} expenses to unified model`,
   );
 }
 

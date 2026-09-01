@@ -23,7 +23,7 @@ export class FarmActivityService {
 
   // Re-export ActivityService methods with compatible signatures
   addActivity(
-    activityData: Omit<Activity, 'createdAt' | 'updatedAt' | 'id'> & { id?: string }
+    activityData: Omit<Activity, 'createdAt' | 'updatedAt' | 'id'> & { id?: string },
   ): Activity {
     return this.activityService.addActivity(activityData as any);
   }
@@ -53,9 +53,7 @@ export class FarmActivityService {
   }
 
   // --- Expense API ---
-  addExpense(
-    expenseData: Omit<ActivityExpense, 'id' | 'createdAt'>
-  ): ActivityExpense {
+  addExpense(expenseData: Omit<ActivityExpense, 'id' | 'createdAt'>): ActivityExpense {
     return this.activityService.addExpense(expenseData);
   }
 

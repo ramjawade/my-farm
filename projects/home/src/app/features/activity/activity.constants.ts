@@ -28,10 +28,12 @@ export const ACTIVITY_STATUS_LABELS: Record<ActivityStatus, string> = {
   Cancelled: 'Cancelled',
 };
 
-export const ACTIVITY_STATUS_OPTIONS = Object.entries(ACTIVITY_STATUS_LABELS).map(([key, label]) => ({
-  value: key as ActivityStatus,
-  label,
-}));
+export const ACTIVITY_STATUS_OPTIONS = Object.entries(ACTIVITY_STATUS_LABELS).map(
+  ([key, label]) => ({
+    value: key as ActivityStatus,
+    label,
+  }),
+);
 
 export const EXPENSE_CATEGORIES = [
   'Machine Rent',
