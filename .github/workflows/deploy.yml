@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      skip_checks:
+        description: 'Skip lint/format/test checks and deploy directly'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -15,6 +21,7 @@ jobs:
   lint-test-build:
     runs-on: ubuntu-latest
     name: Lint, Test, Build
+    if: ${{ !inputs.skip_checks }}
 
     steps:
       - name: Checkout repository
@@ -44,6 +51,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: lint-test-build
+    if: ${{ always() && (needs.lint-test-build.result == 'success' || needs.lint-test-build.result == 'skipped') }}
 
     steps:
       - name: Checkout repository
