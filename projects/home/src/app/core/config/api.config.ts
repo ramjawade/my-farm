@@ -6,10 +6,9 @@ export const API_CONFIG = {
       forecast: '/forecast',
       alerts: '/weather/alerts',
     },
-    // Note: API key should be set from environment
-    // For local development, add to src/environments/environment.ts
-    // For production, add to src/environments/environment.prod.ts
+    // For local development: Set VITE_OPENWEATHER_API_KEY or use demo key
+    // For production: Add to environment.prod.ts
     // Phase 5: Move to backend proxy
-    apiKey: import.meta.env.VITE_OPENWEATHER_API_KEY || 'demo-key',
+    apiKey: 'demo-key',
   },
 };

@@ -84,7 +84,7 @@ export class WeatherComponent {
   // Weather data from service
   readonly weatherData = computed(() => {
     this.authService.currentUser();
-    return this.weatherService.weatherData?.();
+    return this.weatherService.weatherData();
   });
 
   // Today's weather computed signals
@@ -139,16 +139,14 @@ export class WeatherComponent {
   // Forecast from service
   readonly forecast = computed(() => {
     const days = this.weatherData()?.forecast.days ?? [];
-    return days
-      .slice(0, 7)
-      .map((day) => ({
-        dayName: day.dayName,
-        dateLabel: day.dateLabel,
-        temp: day.tempMax,
-        condition: day.condition,
-        iconClass: this.getIconClass(day.conditionCode),
-        iconColorClass: this.getIconColorClass(day.condition),
-      }));
+    return days.slice(0, 7).map((day: any) => ({
+      dayName: day.dayName,
+      dateLabel: day.dateLabel,
+      temp: day.tempMax,
+      condition: day.condition,
+      iconClass: this.getIconClass(day.conditionCode),
+      iconColorClass: this.getIconColorClass(day.condition),
+    }));
   });
 
   readonly currentRange = computed(() => {
@@ -168,24 +166,9 @@ export class WeatherComponent {
     this.activePeriod.set(1);
   }
 
-  // Soil metrics signal
-  readonly soilMoisture = signal<SoilMetric>({
-    name: 'Moisture',
-    value: 62,
-    unit: '%',
-    progressClass: 'bg-success',
-  });
-
-  readonly soilTemp = signal<SoilMetric>({
-    name: 'Soil Temperature',
-    value: 24,
-    unit: '°C',
-    progressClass: 'bg-warning',
-  });
-
   // Weather alerts
   readonly alerts = computed(() => this.weatherData()?.alerts ?? []);
-  readonly urgentAlerts = computed(() => this.alerts().filter((a) => a.severity === 'high'));
+  readonly urgentAlerts = computed(() => this.alerts().filter((a: any) => a.severity === 'high'));
   readonly showAlertBanner = computed(() => this.urgentAlerts().length > 0);
 
   // Crop advisory generated from weather
