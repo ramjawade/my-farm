@@ -1,5 +1,13 @@
 # MyFarm
 
+A farm-management app for smallholder farmers: register a farm, draw fields on a
+map, track crops through their lifecycle, log field activities/expenses, and
+check weather. Built with Angular 20 (standalone components, signals).
+
+See [ROADMAP.md](./ROADMAP.md) for current project state, known gaps, and the
+plan to get from here to a cohesive, production-ready product. `main` is the
+canonical branch going forward; `master` is legacy and will be retired.
+
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.2.1.
 
 ## Development server
@@ -57,4 +65,3 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
-# my-farm
