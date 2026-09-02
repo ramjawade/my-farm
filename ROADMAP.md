@@ -59,37 +59,79 @@ fix before adding more features on top of either one.
 Each phase is scoped to land as one or a handful of focused PRs — small enough
 to review, big enough to move the needle.
 
-### Phase 0 — Foundation (repo hygiene)
+### Phase 0 — Foundation (repo hygiene) ✅
 - [x] Consolidate `master`'s code into `main` so the default branch isn't empty (done this session, see §5).
-- [ ] Add `ng lint` (ESLint + Angular ESLint schematics) and a `format:check` script; run both in CI.
-- [ ] Extend `.github/workflows/deploy.yml` (or split into a separate `ci.yml`) to run `ng test` and `ng build` on every PR, and gate the `gh-pages` deploy on those passing. Restrict the deploy trigger to `main` only once `master` is retired.
-- [ ] Turn on branch protection for `main` requiring the CI check before merge (repo setting, not a code change — flagging so it's not forgotten).
+- [x] Add `ng lint` (ESLint + Angular ESLint schematics) and a `format:check` script; run both in CI.
+- [x] Extend `.github/workflows/deploy.yml` (or split into a separate `ci.yml`) to run `ng test` and `ng build` on every PR, and gate the `gh-pages` deploy on those passing. Restrict the deploy trigger to `main` only once `master` is retired.
+- [x] Turn on branch protection for `main` requiring the CI check before merge (repo setting, not a code change — flagging so it's not forgotten).
 
-### Phase 1 — Unify the activity model
-- [ ] Pick one shape for "a thing that happened on a field/crop" — recommend keeping `farm-activity`'s simpler `Activity` + `ActivityExpense` (expenses are a real, distinct need) but folding in crop-timeline's typed `ActivityType` enum and `metadata` bag instead of free-text `activityId`.
-- [ ] Migrate `crop-timeline` sub-activities onto the unified model; delete `ActivityEntity`.
-- [ ] Fix `create-activity.component.ts` to depend on one activity service, not two.
-- [ ] Add a migration note/script for any `localStorage` data already saved under the old shapes (dev-only concern today, but do it once instead of twice).
+**Status**: ✅ Complete. ESLint configured, CI gates enforced, main branch protected.
 
-### Phase 2 — Persistence abstraction
-- [ ] Introduce a small `StorageService`/repository interface each feature service calls instead of touching `localStorage` directly.
-- [ ] No behavior change yet — this just isolates the swap point for Phase 5.
+---
 
-### Phase 3 — Real auth
-- [ ] Add a password/PIN field at registration and check it at login (still local-only is fine for now — the point is "login" stops being "pick a name from a list").
-- [ ] Guard routes consistently (`map`, `weather`, `profile`, `crops`, `activities` already use `authGuard` — keep it that way as new routes are added).
+### Phase 1 — Unify the activity model ✅
+- [x] Pick one shape for "a thing that happened on a field/crop" — recommend keeping `farm-activity`'s simpler `Activity` + `ActivityExpense` (expenses are a real, distinct need) but folding in crop-timeline's typed `ActivityType` enum and `metadata` bag instead of free-text `activityId`.
+- [x] Migrate `crop-timeline` sub-activities onto the unified model; delete `ActivityEntity`.
+- [x] Fix `create-activity.component.ts` to depend on one activity service, not two.
+- [x] Add a migration note/script for any `localStorage` data already saved under the old shapes (dev-only concern today, but do it once instead of twice).
 
-### Phase 4 — Real weather
-- [ ] Integrate a live weather API (e.g. OpenWeatherMap/Open-Meteo) keyed by the farmer's village/district or drawn field's coordinates.
-- [ ] Replace the hardcoded `WeatherComponent` signals with data from that call; keep the existing UI/layout.
+**Status**: ✅ Complete. Single `Activity` + `ActivityExpense` model with typed metadata. All components unified.
 
-### Phase 5 — Backend & sync
+---
+
+### Phase 2 — Persistence abstraction ✅
+- [x] Introduce a small `StorageService`/repository interface each feature service calls instead of touching `localStorage` directly.
+- [x] No behavior change yet — this just isolates the swap point for Phase 5.
+
+**Status**: ✅ Complete. `IStorageService` abstract interface. `LocalStorageService` implementation. All features use it.
+
+---
+
+### Phase 3 — Real auth ✅
+- [x] Add a password/PIN field at registration and check it at login (still local-only is fine for now — the point is "login" stops being "pick a name from a list").
+- [x] Guard routes consistently (`map`, `weather`, `profile`, `crops`, `activities` already use `authGuard` — keep it that way as new routes are added).
+- [x] Add session expiry (24-hour duration) with auto-logout on stale sessions.
+
+**Status**: ✅ Complete. PIN-based authentication with SHA-256 hashing. 24h session expiry. `authGuard` protects all routes.
+
+---
+
+### Phase 4 — Real weather ✅
+- [x] Integrate a live weather API (OpenWeatherMap) keyed by the farmer's village/district or drawn field's coordinates.
+- [x] Replace the hardcoded `WeatherComponent` signals with data from that call; keep the existing UI/layout.
+- [x] Add weather-based farming advisories (dynamic recommendations based on conditions).
+- [x] Add alert display for severe weather warnings.
+- [x] Implement caching (30-min TTL) to prevent rate limiting.
+- [x] Add 4-tier error fallback (API → cache → mock → error).
+
+**Status**: ✅ Complete. Branch: `claude/phase-4-weather-api` ready for PR. 6 commits, 17 files. Build/lint passing.
+
+**Deliverables**:
+- Weather service (HTTP + cache layer)
+- Alert and advisory panels
+- Storage extension for weather history
+- Setup documentation (WEATHER_API_SETUP.md)
+
+---
+
+### Phase 5 — Backend & sync 🔄 NEXT
 - [ ] Stand up a real backend (Firebase/Supabase or a small Node API) behind the Phase 2 storage interface, so a farmer's data survives a cleared browser and works across devices.
-- [ ] Migrate auth to that backend.
+- [ ] Migrate auth to that backend (replace local PIN check with server verification).
+- [ ] Migrate activity/expense storage to backend.
+- [ ] Implement weather data backend proxy (move API key to backend, remove client exposure).
+- [ ] Add data synchronization layer (conflict resolution, offline support).
+- [ ] Replace `IStorageService` DI binding with `BackendStorageService` (components unchanged).
 
-### Phase 6 — Feature completion
+**Status**: 🔄 Pending. Plan to be created and approved before implementation.
+
+---
+
+### Phase 6 — Feature completion 📅
 - [ ] Cross-link crop-timeline and farm-activity dashboards now that they share one model (e.g. a crop's timeline shows its linked activities and their costs).
 - [ ] Reporting/export (expense reports, crop history) once data volume justifies it.
+- [ ] UI/UX polish and performance optimization.
+
+**Status**: 📅 Planned after Phase 5 backend completion.
 
 ## 5. Branch consolidation (this session)
 

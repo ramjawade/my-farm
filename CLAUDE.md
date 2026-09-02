@@ -3,6 +3,8 @@
 ## Overview
 This document outlines the workflow and rules for developing features with Claude Code on this project.
 
+**Note**: For project roadmap, phases, and feature planning, refer to [ROADMAP.md](./ROADMAP.md). This document covers workflow rules only.
+
 ## Plan-Then-Implement Workflow
 
 Every feature follows two distinct stages, each on a different model, in this order:
@@ -132,22 +134,3 @@ git push -u origin claude/feature-activity-export
 git branch -D claude/feature-activity-export
 ```
 
-## Current Status
-
-- Phase 0: ✅ Complete (ESLint, CI gates)
-- Phase 1: ✅ Complete (Unified Activity Model)
-- Phase 2: ✅ Complete (Storage abstraction layer)
-- Phase 3: ✅ Complete (PIN-based authentication + session expiry)
-- Phase 4: 🔄 Next (Real weather API integration) — Plan approved, awaiting implementation
-
-## Next Features
-
-Ready to work on testable features (each starts with an approved plan, per Plan-Then-Implement Workflow above):
-- Phase 4: Real weather API integration (OpenWeatherMap integration with caching & advisories)
-- Phase 5: Backend sync layer
-- Phase 6: Feature completion & polish
-
----
-
-**Last Updated**: 2026-09-01
-**Process**: Plan-Then-Implement (sonnet plan → approval → haiku implementation), Plan-commit rule added, Phase 4 plan approved
