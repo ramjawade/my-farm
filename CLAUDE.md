@@ -3,6 +3,8 @@
 ## Overview
 This document outlines the workflow and rules for developing features with Claude Code on this project.
 
+**Note**: For project roadmap, phases, and feature planning, refer to [ROADMAP.md](./ROADMAP.md). This document covers workflow rules only.
+
 ## Plan-Then-Implement Workflow
 
 Every feature follows two distinct stages, each on a different model, in this order:
