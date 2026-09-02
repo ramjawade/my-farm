@@ -1,3 +1,155 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+**MyFarm** is a farm-management web app for Indian smallholder farmers. It enables farmers to:
+- Register a farm and create a farmer profile
+- Draw and manage field boundaries on a map
+- Track crops through their lifecycle
+- Log field activities (irrigation, spraying, harvest, etc.) and expenses
+- Check live weather and receive weather-based farming advisories
+
+Built with **Angular 20** (standalone components, signals) as an `ng-workspace` with two projects:
+- `projects/home/` — the main application
+- `projects/shared/` — a shared component library (currently a confirm dialog)
+
+See [ROADMAP.md](./ROADMAP.md) for the full product plan, known gaps, and phased development strategy.
+
+## Technology Stack
+
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **Frontend** | Angular 20 | Framework, standalone components, signals, zoneless change detection |
+| **Styling** | Bootstrap 5, Bootstrap Icons | UI components and icons |
+| **Charting** | Chart.js | Activity cost trends |
+| **Mapping** | Leaflet, D3 | Field drawing and visualization |
+| **Networking** | RxJS, HttpClient | API calls (async operations) |
+| **Testing** | Jasmine, Karma | Unit tests and coverage |
+| **Build** | Angular CLI, ng-packagr | Project bundling and distribution |
+| **Linting** | ESLint, Angular ESLint, Prettier | Code quality and formatting |
+| **Persistence** | `localStorage` | Local data storage (Phase 5 will add backend sync) |
+
+## Common Development Commands
+
+```bash
+# Development
+npm run start              # Start dev server at http://localhost:4200
+npm run watch             # Build projects in watch mode
+
+# Building
+npm run build             # Build both shared and home projects
+npm run build:prod        # Optimized production build (for deployment)
+
+# Testing
+npm run test              # Run all unit tests (headless Chrome, no watch)
+
+# Linting & Formatting
+npm run lint              # Run ESLint on all TypeScript files
+npm run format:check      # Check if files are formatted per Prettier rules
+npm run format:fix        # Auto-format files
+
+# Quality Gates (all must pass before pushing)
+npm run lint && npm run build && npm run test
+```
+
+## Codebase Architecture
+
+### Core Services Layer (`projects/home/src/app/core/`)
+
+These are singleton services managing domain state and business logic:
+
+- **`auth/`** — User authentication (currently a facade; Phase 3 will add PIN-based auth)
+  - `AuthService` — manages current user session and login state
+  - `FarmerRegistrationService` — persists farmer profile data
+
+- **`weather/`** — Weather data fetching and caching
+  - `WeatherService` — fetches current weather and 5-day forecast from OpenWeatherMap API
+  - `WeatherCacheService` — caches weather data with TTL (30 min) and max age (2 hours)
+  - Models: `WeatherLocation`, `WeatherData`, `CurrentWeather`, `FiveDayForecast`
+
+- **`storage/`** — Persistence abstraction (Phase 2)
+  - `StorageService` — interface for localStorage operations
+  - `LocalStorageService` — implementation using browser `localStorage`
+
+- **`config/`** — App-level configuration (e.g., API keys, base URLs)
+
+### Feature Modules (`projects/home/src/app/features/`)
+
+Feature modules implement domain-specific screens and logic. Each typically has:
+- A service (managing state and API calls)
+- Components (UI and user interaction)
+- Models (TypeScript types for domain entities)
+
+**Key Modules:**
+
+- **`farmer-registration/`** — Initial farmer setup flow
+  - Collects farm details, location, crops, irrigation type, farming method
+  - Saves to `localStorage` and drives downstream features
+
+- **`weather/`** — Weather dashboard and advisories
+  - Real-time weather display with alerts
+  - Crop-specific farming advisories based on weather
+  - Sub-components: `sun-path`, `history-trend`, `advisory-panel`, `alert-panel`
+
+- **`crop-timeline/`** — Crop lifecycle tracking
+  - Add/edit crops for a field
+  - Track crop lifecycle stages (planting, growth, harvest, etc.)
+  - Sub-activities with typed metadata
+  - **Caveat:** Uses its own `ActivityEntity` model; Phase 1 unified this with farm-activity
+
+- **`farm-activity/`** — General activity and expense logging
+  - Log field activities (free-text name)
+  - Track associated expenses
+  - Dashboard with cost trends via Chart.js
+
+- **`profile/`** — Farmer profile management
+  - Edit registered farmer details
+  - Persist changes to `localStorage`
+
+- **`home/`** — Landing page and navigation hub
+
+- **`auth/`** — Auth UI (login, registration flows)
+
+- **`activity/`** — Generic activity model and utilities
+
+### Map Module (`projects/home/src/app/map/`)
+
+Leaflet-based field drawing and visualization:
+- `farm-draw/` — Interactive field boundary drawing
+- `component/` — Map display, search, saved farms UI
+- `controls/` — Custom map controls
+- `models/` — Shape and field data types
+
+### Layout Module (`projects/home/src/app/layout/`)
+
+Shared layout components:
+- `app-layout` — Main container
+- `sidebar`, `toolbar`, `footer` — Navigation and footer UI
+- `main` — Content area router
+
+## Directory Structure
+
+```
+projects/home/src/app/
+├── core/              # Singleton services (auth, weather, storage, config)
+├── features/          # Feature modules (weather, crops, activities, profile, registration)
+├── map/               # Leaflet-based field drawing and visualization
+├── layout/            # Shared layout components
+├── app.routes.ts      # Top-level routing configuration
+└── app.component.ts   # Root component
+```
+
+## Key Testing Patterns
+
+- **HTTP mocking:** Use `HttpClientTestingModule` and `HttpTestingController` to mock API calls
+- **Async/await in tests:** Use `async` / `await` keywords for Promise-based operations; use `setTimeout()` for timing-sensitive setups
+- **Signal testing:** Computed signals auto-update; test dependencies carefully to avoid stale values
+- **Cache testing:** Directly manipulate cache timestamps rather than using real `setTimeout` waits to avoid slow tests
+
+---
+
 # Claude Code Development Workflow
 
 ## Overview
@@ -149,5 +301,6 @@ Ready to work on testable features (each starts with an approved plan, per Plan-
 
 ---
 
-**Last Updated**: 2026-09-01
-**Process**: Plan-Then-Implement (sonnet plan → approval → haiku implementation), Plan-commit rule added, Phase 4 plan approved
+**Last Updated**: 2026-09-02
+**Process**: Plan-Then-Implement (sonnet plan → approval → haiku implementation)
+**Recent**: Added comprehensive architecture guide, technology stack, and testing patterns documentation
