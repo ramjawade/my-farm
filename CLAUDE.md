@@ -133,20 +133,45 @@ git branch -D claude/feature-activity-export
 
 ## Current Status
 
-- Phase 0: ✅ Complete (ESLint, CI gates)
-- Phase 1: ✅ Complete (Unified Activity Model)
-- Phase 2: ✅ Complete (Storage abstraction layer)
-- Phase 3: ✅ Complete (PIN-based authentication + session expiry)
-- Phase 4: 🔄 Next (Real weather API integration) — Plan approved, awaiting implementation
+### ✅ Completed Phases
 
-## Next Features
+- **Phase 0**: ✅ ESLint, CI gates
+- **Phase 1**: ✅ Unified Activity Model (Signals-based data structures)
+- **Phase 2**: ✅ Storage abstraction layer (IStorageService interface + LocalStorageService)
+- **Phase 3**: ✅ PIN-based authentication (24h session expiry, multi-step login flow)
+- **Phase 4**: ✅ Real weather API integration (OpenWeatherMap with caching, alerts, advisories)
+
+### 🔄 Next/Pending Features
 
 Ready to work on testable features (each starts with an approved plan, per Plan-Then-Implement Workflow above):
-- Phase 4: Real weather API integration (OpenWeatherMap integration with caching & advisories)
-- Phase 5: Backend sync layer
-- Phase 6: Feature completion & polish
+
+- **Phase 5** (Next): Backend sync layer
+  - Backend API integration for activities, expenses, weather history
+  - Server-side authentication & session management
+  - Data synchronization between client and server
+  - Remove localStorage dependency for core data
+  
+- **Phase 6**: Feature completion & polish
+  - UI/UX refinements
+  - Performance optimization
+  - Additional features based on feedback
+
+## Phase 4 Deliverables
+
+**Branch**: `claude/phase-4-weather-api` (ready for PR)
+**Commits**: 5 commits
+- PHASE_4_PLAN.md (first commit - plan document)
+- Core weather service (models, interface, HTTP client, cache)
+- Component integration (weather signals, advisories, alerts)
+- UI panels (alert display, advisory panel)
+- Storage extension (weather history)
+- Documentation (setup guide)
+
+**Files Changed**: 17 (13 new, 4 modified)
+**Verification**: ✅ Build passes, ✅ Lint passes, ✅ TypeScript strict mode
 
 ---
 
-**Last Updated**: 2026-09-01
-**Process**: Plan-Then-Implement (sonnet plan → approval → haiku implementation), Plan-commit rule added, Phase 4 plan approved
+**Last Updated**: 2026-09-02  
+**Process**: Plan-Then-Implement (sonnet plan → approval → haiku implementation)  
+**Workflow Rule**: PHASE_N_PLAN.md committed as first commit on each phase branch
