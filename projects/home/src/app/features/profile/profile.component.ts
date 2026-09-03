@@ -2,7 +2,7 @@ import { Component, inject, signal, computed, ChangeDetectionStrategy } from '@a
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/auth/auth.service';
 import { ProfileEditDialogComponent } from './components/profile-edit-dialog.component';
-import { ConfirmDialogComponent } from 'shared';
+import { ConfirmDialogComponent, ToastService } from 'shared';
 import { DemoDataService } from '../../core/demo/demo-data.service';
 import { isBackupFile } from '../../core/storage/backup.models';
 
@@ -17,6 +17,7 @@ import { isBackupFile } from '../../core/storage/backup.models';
 export class ProfileComponent {
   private readonly authService = inject(AuthService);
   private readonly demoData = inject(DemoDataService);
+  private readonly toast = inject(ToastService);
 
   // Read-only state
   readonly currentUser = this.authService.currentUser;
@@ -113,6 +114,7 @@ export class ProfileComponent {
     a.click();
     URL.revokeObjectURL(url);
     this.dataMessage.set({ kind: 'success', text: 'Backup downloaded.' });
+    this.toast.success('Backup downloaded.');
   }
 
   async onRestoreFileSelected(event: Event): Promise<void> {
@@ -144,6 +146,7 @@ export class ProfileComponent {
     try {
       await this.demoData.resetDemoData();
       this.dataMessage.set({ kind: 'success', text: 'Demo farm reset to its starting state.' });
+      this.toast.success('Demo farm reset.');
     } finally {
       this.dataBusy.set(false);
     }
@@ -154,6 +157,7 @@ export class ProfileComponent {
     try {
       await this.demoData.clearMyData();
       this.dataMessage.set({ kind: 'success', text: 'All farm data cleared.' });
+      this.toast.success('All farm data cleared.');
     } finally {
       this.dataBusy.set(false);
     }

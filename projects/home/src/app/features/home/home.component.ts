@@ -10,6 +10,7 @@ import { Activity } from '../activity/activity.models';
 
 import { ProfileEditDialogComponent } from '../profile/components/profile-edit-dialog.component';
 import { DemoDataService } from '../../core/demo/demo-data.service';
+import { ToastService } from 'shared';
 import {
   OnboardingChecklistComponent,
   OnboardingStep,
@@ -36,6 +37,7 @@ export class HomeComponent {
   private readonly farmDrawService = inject(FarmDrawService);
   private readonly router = inject(Router);
   private readonly demoData = inject(DemoDataService);
+  private readonly toast = inject(ToastService);
 
   // Authentication State
   readonly isLoggedIn = this.authService.isLoggedIn;
@@ -286,6 +288,7 @@ export class HomeComponent {
   // Quick Action: Complete an activity task from the list
   completeActivityTask(id: string): void {
     this.activityService.updateActivity(id, { status: 'Completed' });
+    this.toast.success('Task marked as completed.');
   }
 
   private formatDate(timestamp: number | undefined): string {

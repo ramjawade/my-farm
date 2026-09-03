@@ -105,3 +105,12 @@
     </div>
   }
 </div>
+
+<lib-confirm-dialog
+  [(isOpen)]="showDeleteConfirm"
+  [title]="'Delete land'"
+  [message]="'Remove this land outline? Activities logged directly on it keep their records.'"
+  [confirmText]="'Delete'"
+  [isDestructive]="true"
+  (confirm)="confirmDelete()"
+/>

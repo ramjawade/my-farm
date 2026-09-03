@@ -19,7 +19,7 @@ import {
   ActivityStatus,
 } from './crop-timeline.models';
 import { ACTIVITY_STATUS_OPTIONS } from '../activity/activity.constants';
-import { ConfirmDialogComponent } from 'shared';
+import { ConfirmDialogComponent, ToastService } from 'shared';
 
 @Component({
   standalone: true,
@@ -32,6 +32,7 @@ export class CropTimelineComponent {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   readonly timelineService = inject(CropTimelineService);
+  private readonly toast = inject(ToastService);
 
   // View state signals
   readonly currentView = signal<'dashboard' | 'timeline' | 'add-crop'>('dashboard');
@@ -366,6 +367,7 @@ export class CropTimelineComponent {
     if (id) {
       this.timelineService.deleteActivity(id);
       this.selectedActivityId.set(null);
+      this.toast.success('Activity deleted.');
     }
   }
 
@@ -379,6 +381,7 @@ export class CropTimelineComponent {
     if (id) {
       this.timelineService.deleteCrop(id);
       this.selectedCropIdToDelete.set(null);
+      this.toast.success('Crop and its activities deleted.');
       this.showDeleteCropConfirm.set(false);
       this.selectedCrop.set(null);
       this.router.navigate(['/crops']);

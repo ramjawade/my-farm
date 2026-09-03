@@ -16,6 +16,7 @@ import { CommonModule } from '@angular/common';
 import { ActivityService } from '../../activity/activity.service';
 import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
+import { ToastService } from 'shared';
 
 @Component({
   selector: 'app-create-activity',
@@ -32,6 +33,7 @@ export class CreateActivityComponent implements OnInit {
   private readonly activityService = inject(ActivityService);
   private readonly cropService = inject(CropTimelineService);
   private readonly farmDrawService = inject(FarmDrawService);
+  private readonly toast = inject(ToastService);
 
   @Input() cropId?: string;
   @Input() parentActivityId?: string;
@@ -231,6 +233,7 @@ export class CreateActivityComponent implements OnInit {
       }
       updates['fieldId'] = val.fieldId || undefined;
       this.activityService.updateActivity(this.activityId, updates);
+      this.toast.success('Activity updated.');
     } else {
       // Create activity
       const newAct = this.activityService.addActivity({
@@ -244,6 +247,8 @@ export class CreateActivityComponent implements OnInit {
         parentActivityId: val.parentActivityId || undefined,
         attachments: this.uploadedImages(),
       });
+
+      this.toast.success(`${newAct.type === 'Custom' ? 'Activity' : newAct.type} logged.`);
 
       if (!this.isModal) {
         this.router.navigate(['/activities', newAct.id]);
