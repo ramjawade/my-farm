@@ -1,0 +1,1 @@
+var t=2;function a(e){if(!e||typeof e!="object")return!1;let r=e;return r.app==="my-farm"&&typeof r.schemaVersion=="number"&&Array.isArray(r.farms)&&Array.isArray(r.crops)&&Array.isArray(r.activities)&&Array.isArray(r.expenses)}export{t as a,a as b};

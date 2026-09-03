@@ -1,0 +1,1 @@
+function i(n=Date.now()){let e=typeof n=="number"?new Date(n):n,r=isNaN(e.getTime())?new Date().getMonth():e.getMonth();return r>=5&&r<=9?"Kharif":r===3||r===4?"Zaid":"Rabi"}function t(n){if(!n)return;let e=n.trim().toLowerCase();if(e==="kharif")return"Kharif";if(e==="rabi")return"Rabi";if(e==="zaid"||e==="summer")return"Zaid"}export{i as a,t as b};
