@@ -37,40 +37,22 @@ export class FarmDrawService {
     });
   }
 
+  /** Re-read the signed-in user's lands from storage. */
+  reload(): Promise<void> {
+    const user = this.authService.currentUser();
+    return user ? this.loadSavedFarms(user.id) : Promise.resolve();
+  }
+
   private async loadSavedFarms(userId: string): Promise<void> {
     const generation = ++this.generation;
     try {
       const farms = await this.storage.getFarms(userId);
       if (generation !== this.generation) return;
-      if (farms.length === 0 && userId === 'f-default') {
-        this.setFarms(this.seedDefaultSavedFarm());
-        return;
-      }
       this.savedFarms.set(farms);
     } catch (e) {
       console.error('Failed to load saved farms', e);
       this.savedFarms.set([]);
     }
-  }
-
-  private seedDefaultSavedFarm(): SavedFarm[] {
-    const center = { lat: 20.5937, lng: 78.9629 };
-    const points = [
-      { lat: center.lat - 0.003, lng: center.lng - 0.003 },
-      { lat: center.lat - 0.003, lng: center.lng + 0.003 },
-      { lat: center.lat + 0.003, lng: center.lng + 0.003 },
-      { lat: center.lat + 0.003, lng: center.lng - 0.003 },
-    ];
-    return [
-      {
-        id: 'default-farm-1',
-        name: 'Green Valley Main Plot',
-        points,
-        area: { hectares: 6.5, acres: 16.06, squareMeters: 65000 },
-        geoJson: toGeoJsonPolygon(points),
-        createdAt: Date.now(),
-      },
-    ];
   }
 
   /** Apply a land mutation and persist it for the signed-in user. */

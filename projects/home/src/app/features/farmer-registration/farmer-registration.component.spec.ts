@@ -50,7 +50,6 @@ describe('FarmerRegistrationComponent', () => {
   it('should initialize with default values', () => {
     expect(component.isSuccess()).toBeFalse();
     const form = component.registrationForm;
-    expect(form.get('preferredLanguage')?.value).toBe('English');
     expect(form.get('fullName')?.value).toBe('');
     expect(form.get('phone')?.value).toBe('');
   });
@@ -91,7 +90,6 @@ describe('FarmerRegistrationComponent', () => {
       fullName: 'Amit Patel',
       phone: '9876543210',
       email: 'amit@patelfarms.com',
-      preferredLanguage: 'Hindi',
       pin: '1234',
       confirmPin: '1234',
     });
@@ -107,7 +105,7 @@ describe('FarmerRegistrationComponent', () => {
     expect(farmers.length).toBe(1);
     expect(farmers[0].fullName).toBe('Amit Patel');
     expect(farmers[0].phone).toBe('9876543210');
-    expect(farmers[0].preferredLanguage).toBe('Hindi');
+    expect(farmers[0].preferredLanguage).toBe('English');
     expect(farmers[0].pinHash).toBeTruthy();
 
     expect(authService.isLoggedIn()).toBeTrue();

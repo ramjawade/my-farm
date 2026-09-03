@@ -10,6 +10,8 @@ import { AuthService } from '../../core/auth/auth.service';
 import { IStorageService } from '../../core/storage/storage.interface';
 import { LocalStorageService } from '../../core/storage/local-storage.service';
 import { ActivityService } from '../activity/activity.service';
+import { DemoDataService } from '../../core/demo/demo-data.service';
+import { flushPromises } from '../../testing/flush-promises';
 
 describe('CropTimelineComponent', () => {
   let component: CropTimelineComponent;
@@ -41,26 +43,9 @@ describe('CropTimelineComponent', () => {
     timelineService = TestBed.inject(CropTimelineService);
     routerSpy = TestBed.inject(Router) as jasmine.SpyObj<Router>;
 
-    // Log in the default user so the service loads and seeds mock data
-    const authService = TestBed.inject(AuthService);
-    authService.login({
-      id: 'f-default',
-      fullName: 'Ram Jawade',
-      phone: '9876543210',
-      email: 'ram.jawade@myfarm.com',
-      preferredLanguage: 'English',
-      userRole: 'Farmer',
-      farmName: 'Green Valley Farm',
-      farmArea: 6.5,
-      farmAreaUnit: 'hectares',
-      primaryCrops: ['Soybeans', 'Wheat'],
-      waterSource: 'Borewell',
-      irrigationType: 'Drip',
-      farmingMethod: 'Organic',
-      locationType: 'map',
-      location: { lat: 20.5937, lng: 78.9629 },
-      createdAt: Date.now(),
-    });
+    // Sign in as the demo farmer; DemoDataService seeds the demo farm
+    await TestBed.inject(DemoDataService).enterDemo();
+    await flushPromises();
 
     fixture.detectChanges();
   });
@@ -72,8 +57,8 @@ describe('CropTimelineComponent', () => {
   it('should auto-seed and display default crops on init', () => {
     const seededCrops = timelineService.crops();
     expect(seededCrops.length).toBe(2);
-    expect(seededCrops.find((c) => c.name === 'Soybeans')).toBeTruthy();
-    expect(seededCrops.find((c) => c.name === 'Wheat')).toBeTruthy();
+    expect(seededCrops.find((c) => c.cropType === 'Soybeans')).toBeTruthy();
+    expect(seededCrops.find((c) => c.cropType === 'Wheat')).toBeTruthy();
 
     // Verify default view is dashboard
     expect(component.currentView()).toBe('dashboard');
@@ -95,7 +80,7 @@ describe('CropTimelineComponent', () => {
     // Filter for Soybean
     component.searchTerm.set('Soy');
     expect(component.filteredCrops().length).toBe(1);
-    expect(component.filteredCrops()[0].name).toBe('Soybeans');
+    expect(component.filteredCrops()[0].cropType).toBe('Soybeans');
 
     // Filter with no matches
     component.searchTerm.set('Apples');
@@ -168,7 +153,7 @@ describe('CropTimelineComponent', () => {
 
   it('should switch to timeline view and display chronological history upon crop selection', () => {
     const crops = timelineService.crops();
-    const soy = crops.find((c) => c.name === 'Soybeans')!;
+    const soy = crops.find((c) => c.cropType === 'Soybeans')!;
 
     component.selectCrop(soy);
     expect(component.selectedCrop()).toEqual(soy);
@@ -181,7 +166,7 @@ describe('CropTimelineComponent', () => {
 
   it('should dynamically advance crop growth stage on click and record Field Inspection diary entry', () => {
     const crops = timelineService.crops();
-    const soy = crops.find((c) => c.name === 'Soybeans')!;
+    const soy = crops.find((c) => c.cropType === 'Soybeans')!;
     component.selectCrop(soy);
 
     const initialStage = soy.currentStage;
@@ -202,7 +187,7 @@ describe('CropTimelineComponent', () => {
 
   it('should add, edit, and delete activities through forms', () => {
     const crops = timelineService.crops();
-    const soy = crops.find((c) => c.name === 'Soybeans')!;
+    const soy = crops.find((c) => c.cropType === 'Soybeans')!;
     component.selectCrop(soy);
 
     const initialHistoryCount = component.cropActivities().length;
@@ -260,7 +245,7 @@ describe('CropTimelineComponent', () => {
 
   it('should expose timeline activities from the unified ActivityService with cost from expenses', () => {
     const activityService = TestBed.inject(ActivityService);
-    const soy = timelineService.crops().find((c) => c.name === 'Soybeans')!;
+    const soy = timelineService.crops().find((c) => c.cropType === 'Soybeans')!;
     component.selectCrop(soy);
 
     const created = timelineService.addActivity({
@@ -286,27 +271,27 @@ describe('CropTimelineComponent', () => {
 
   it('should filter out subactivities (parentActivityId set) from computed activities list', () => {
     const crops = timelineService.crops();
-    const soy = crops.find((c) => c.name === 'Soybeans')!;
+    const soy = crops.find((c) => c.cropType === 'Soybeans')!;
     component.selectCrop(soy);
 
     // Verify subActivity exists in raw activities
     const allRawActs = timelineService.activities();
-    const subAct = allRawActs.find((a) => a.id === 'a-soy-1-sub1');
+    const subAct = allRawActs.find((a) => a.id === 'demo-act-soy-sowing-labour');
     expect(subAct).toBeTruthy();
-    expect(subAct!.parentActivityId).toBe('a-soy-1');
+    expect(subAct!.parentActivityId).toBe('demo-act-soy-sowing');
 
     // Verify subActivity is NOT in cropActivities
     const cropActs = component.cropActivities();
-    expect(cropActs.find((a) => a.id === 'a-soy-1-sub1')).toBeFalsy();
+    expect(cropActs.find((a) => a.id === 'demo-act-soy-sowing-labour')).toBeFalsy();
 
     // Verify subActivity is NOT in upcomingActivities
     const upcomingActs = component.upcomingActivities();
-    expect(upcomingActs.find((a) => a.id === 'a-soy-1-sub1')).toBeFalsy();
+    expect(upcomingActs.find((a) => a.id === 'demo-act-soy-sowing-labour')).toBeFalsy();
   });
 
   it('should update stage, retrieve/create main activity, and open log activity modal with parentActivityId set when updateStage is called', () => {
     const crops = timelineService.crops();
-    const soy = crops.find((c) => c.name === 'Soybeans')!;
+    const soy = crops.find((c) => c.cropType === 'Soybeans')!;
     component.selectCrop(soy);
 
     spyOn(component, 'openAddActivityModal').and.callThrough();
@@ -330,7 +315,7 @@ describe('CropTimelineComponent', () => {
 
   it('should show delete confirmation and delete the crop profile successfully', () => {
     const crops = timelineService.crops();
-    const soy = crops.find((c) => c.name === 'Soybeans')!;
+    const soy = crops.find((c) => c.cropType === 'Soybeans')!;
     const initialCropsCount = crops.length;
 
     // Trigger onDeleteCrop

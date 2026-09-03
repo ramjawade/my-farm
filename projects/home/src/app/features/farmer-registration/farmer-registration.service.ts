@@ -61,38 +61,11 @@ export class FarmerRegistrationService {
 
   private async loadFromStorage(): Promise<void> {
     try {
-      const stored = await this.storage.getFarmers();
-      if (stored.length > 0) {
-        this.farmersSignal.set(stored);
-        return;
-      }
-      this.seedDefaultFarmer();
+      this.farmersSignal.set(await this.storage.getFarmers());
     } catch (e) {
       console.error('Failed to load registered farmers', e);
-      this.seedDefaultFarmer();
+      this.farmersSignal.set([]);
     }
-  }
-
-  private seedDefaultFarmer(): void {
-    const defaultFarmer: FarmerRegistrationData = {
-      id: 'f-default',
-      fullName: 'Ram Jawade',
-      phone: '9876543210',
-      email: 'ram.jawade@myfarm.com',
-      preferredLanguage: 'English',
-      userRole: 'Farmer',
-      farmName: 'Green Valley Farm',
-      farmArea: 6.5,
-      farmAreaUnit: 'hectares',
-      primaryCrops: ['Soybeans', 'Wheat'],
-      waterSource: 'Borewell',
-      irrigationType: 'Drip',
-      farmingMethod: 'Organic',
-      locationType: 'map',
-      location: { lat: 20.5937, lng: 78.9629 },
-      createdAt: Date.now(),
-    };
-    this.setFarmers([defaultFarmer]);
   }
 
   private setFarmers(farmers: FarmerRegistrationData[]): void {

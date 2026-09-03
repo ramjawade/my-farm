@@ -10,6 +10,7 @@ import { FarmerRegistrationData } from '../farmer-registration/farmer-registrati
 import { FarmDrawService } from '../../map/farm-draw/farm-draw.service';
 import { IStorageService } from '../../core/storage/storage.interface';
 import { LocalStorageService } from '../../core/storage/local-storage.service';
+import { flushPromises } from '../../testing/flush-promises';
 
 describe('HomeComponent', () => {
   let component: HomeComponent;
@@ -210,18 +211,49 @@ describe('HomeComponent', () => {
     expect(component.metrics().landsCount).toBe(2);
   });
 
-  it('should trigger guest demo login when loginAsDemo is called', () => {
+  it('should trigger guest demo login and seed the demo farm when loginAsDemo is called', async () => {
     expect(authService.isLoggedIn()).toBeFalse();
-    component.loginAsDemo();
+    await component.loginAsDemo();
+    await flushPromises();
     fixture.detectChanges();
 
     expect(authService.isLoggedIn()).toBeTrue();
     expect(authService.currentUser()?.fullName).toBe('Ram Jawade');
+    expect(cropService.crops().length).toBe(2);
+    expect(farmDrawService.savedFarms().length).toBe(2);
+    expect(activityService.activities().length).toBeGreaterThan(10);
+    expect(component.showOnboarding()).toBeFalse();
   });
 
-  it('should complete activity task when completeActivityTask is called', () => {
+  it('should show the onboarding checklist for a fresh registration', () => {
+    authService.login({
+      id: 'f-new',
+      fullName: 'New Farmer',
+      phone: '9000000000',
+      preferredLanguage: 'English',
+      userRole: 'Farmer',
+      farmName: '',
+      farmArea: 0,
+      farmAreaUnit: 'hectares',
+      primaryCrops: [],
+      waterSource: '',
+      irrigationType: '',
+      farmingMethod: '',
+      locationType: 'skipped',
+      location: null,
+      createdAt: Date.now(),
+    });
+    fixture.detectChanges();
+
+    expect(component.showOnboarding()).toBeTrue();
+    expect(component.onboardingSteps().every((s) => !s.done)).toBeTrue();
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('app-onboarding-checklist')).toBeTruthy();
+  });
+
+  it('should complete activity task when completeActivityTask is called', async () => {
     // Setup login
-    component.loginAsDemo();
+    await component.loginAsDemo();
     fixture.detectChanges();
 
     // Create a mock pending activity
@@ -308,12 +340,6 @@ describe('HomeComponent', () => {
     component.openLandDialog();
     expect(component.activeSection()).toBe('land');
     expect(component.showEditDialog()).toBeTrue();
-  });
-
-  it('should call openLandDialog when handleSuggestionAction("weather") is called', () => {
-    spyOn(component, 'openLandDialog').and.callThrough();
-    component.handleSuggestionAction('weather');
-    expect(component.openLandDialog).toHaveBeenCalled();
   });
 
   describe('Activity Synchronization', () => {

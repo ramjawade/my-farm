@@ -305,16 +305,19 @@ export class CropTimelineService {
     this.updateCrop(cropId, { upcomingActivity: `${next.type} (${relative})` });
   }
 
-  // --- Storage & Seeding ---
+  // --- Storage ---
+  /** Re-read the signed-in user's crops from storage. */
+  reload(): Promise<void> {
+    const user = this.authService.currentUser();
+    return user ? this.loadForUser(user.id) : Promise.resolve();
+  }
+
   private async loadForUser(userId: string): Promise<void> {
     const generation = ++this.generation;
     try {
       const crops = await this.storage.getCrops(userId);
       if (generation !== this.generation) return; // a mutation or newer load won
       this.cropsSignal.set(crops);
-      if (userId === 'f-default' && crops.length === 0) {
-        this.seedMockData();
-      }
     } catch (e) {
       console.error('Failed to load crops from storage', e);
       this.cropsSignal.set([]);
@@ -329,157 +332,5 @@ export class CropTimelineService {
     if (user) {
       this.storage.saveCrops(user.id, crops).catch((e) => console.error('Failed to save crops', e));
     }
-  }
-
-  private seedMockData(): void {
-    const now = Date.now();
-    const sowingSoybean = now - 65 * ONE_DAY;
-    const sowingWheat = now - 15 * ONE_DAY;
-
-    const crops: CropEntity[] = [
-      {
-        id: 'c-mock-soybean',
-        fieldId: 'default-farm-1',
-        name: 'Soybeans',
-        cropType: 'Soybeans',
-        area: 2.0,
-        areaUnit: 'hectares',
-        season: 'Kharif',
-        sowingDate: sowingSoybean,
-        currentStage: 'Flowering',
-        status: 'Active',
-        expectedHarvestDate: now + 45 * ONE_DAY,
-      },
-      {
-        id: 'c-mock-wheat',
-        fieldId: 'default-farm-1',
-        name: 'Wheat',
-        cropType: 'Wheat',
-        area: 4.5,
-        areaUnit: 'hectares',
-        season: 'Rabi',
-        sowingDate: sowingWheat,
-        currentStage: 'Germination',
-        status: 'Active',
-      },
-    ];
-    this.setCrops(crops);
-
-    const seedStages = (cropId: string, sowing: number, current: CropStage): void => {
-      const currentIdx = CROP_STAGES.indexOf(current);
-      CROP_STAGES.forEach((stage, idx) => {
-        const reached = idx <= currentIdx;
-        this.addActivity({
-          id: `a-${cropId}-stage-${idx}`,
-          cropId,
-          type: stageActivityType(stage),
-          date: reached ? sowing + STAGE_OFFSET_DAYS[stage] * ONE_DAY : undefined,
-          status: reached ? 'Completed' : 'Scheduled',
-          cost: 0,
-          notes: stageNote(stage),
-        });
-      });
-    };
-    seedStages('c-mock-soybean', sowingSoybean, 'Flowering');
-    seedStages('c-mock-wheat', sowingWheat, 'Germination');
-
-    const work: CropActivityInput[] = [
-      {
-        id: 'a-soy-1',
-        cropId: 'c-mock-soybean',
-        type: 'Sowing',
-        date: sowingSoybean,
-        status: 'Completed',
-        cost: 4500,
-        notes: 'Soybean sown with a mechanical seed drill under good moisture.',
-      },
-      {
-        id: 'a-soy-1-sub1',
-        cropId: 'c-mock-soybean',
-        parentActivityId: 'a-soy-1',
-        type: 'Labour Activity',
-        date: sowingSoybean,
-        status: 'Completed',
-        cost: 500,
-        notes: 'Helpers loading seed and checking drill calibration.',
-      },
-      {
-        id: 'a-soy-2',
-        cropId: 'c-mock-soybean',
-        type: 'Weeding',
-        date: sowingSoybean + 20 * ONE_DAY,
-        status: 'Completed',
-        cost: 1500,
-        notes: 'Manual weeding done. Field clear of broadleaf weeds.',
-      },
-      {
-        id: 'a-soy-3',
-        cropId: 'c-mock-soybean',
-        type: 'Fertilizer Application',
-        date: sowingSoybean + 35 * ONE_DAY,
-        status: 'Completed',
-        cost: 2200,
-        notes: 'Applied NPK mix to promote vegetative growth.',
-        metadata: {
-          fertilizerName: 'NPK 19-19-19',
-          quantity: 50,
-          applicationMethod: 'Broadcasting',
-        },
-      },
-      {
-        id: 'a-soy-4',
-        cropId: 'c-mock-soybean',
-        type: 'Field Inspection',
-        date: sowingSoybean + 55 * ONE_DAY,
-        status: 'Completed',
-        cost: 0,
-        notes: 'Crop healthy. Early flowering seen. No pests.',
-      },
-      {
-        id: 'a-soy-5',
-        cropId: 'c-mock-soybean',
-        type: 'Irrigation',
-        date: now + ONE_DAY,
-        status: 'Scheduled',
-        cost: 250,
-        notes: 'Drip irrigation to support flowering.',
-        metadata: { irrigationMethod: 'Drip', duration: 45, waterQuantity: 1500 },
-      },
-      {
-        id: 'a-soy-6',
-        cropId: 'c-mock-soybean',
-        type: 'Spray Application',
-        date: now + 8 * ONE_DAY,
-        status: 'Scheduled',
-        cost: 1800,
-        notes: 'Preventive neem spray against sucking pests.',
-        metadata: {
-          chemicalName: 'Organic Neem Oil',
-          dosage: '500 ml/ha',
-          waterQuantity: 200,
-          targetPest: 'Aphids & Thrips',
-        },
-      },
-      {
-        id: 'a-wheat-1',
-        cropId: 'c-mock-wheat',
-        type: 'Sowing',
-        date: sowingWheat,
-        status: 'Completed',
-        cost: 8000,
-        notes: 'HD-2967 wheat variety sown.',
-      },
-      {
-        id: 'a-wheat-2',
-        cropId: 'c-mock-wheat',
-        type: 'Fertilizer Application',
-        date: now + 5 * ONE_DAY,
-        status: 'Scheduled',
-        cost: 3000,
-        notes: 'NPK top dressing after germination.',
-        metadata: { fertilizerName: 'Urea / NPK', quantity: 75, applicationMethod: 'Broadcasting' },
-      },
-    ];
-    work.forEach((w) => this.addActivity(w));
   }
 }

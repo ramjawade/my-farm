@@ -42,6 +42,11 @@ export class ActivityService {
     return user?.id || 'anonymous';
   }
 
+  /** Re-read the signed-in user's activities and expenses from storage. */
+  reload(): Promise<void> {
+    return this.loadFromStorage();
+  }
+
   private async loadFromStorage(): Promise<void> {
     const generation = ++this.mutationGeneration;
 

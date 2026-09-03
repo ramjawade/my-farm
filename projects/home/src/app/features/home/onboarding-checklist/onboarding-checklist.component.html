@@ -1,0 +1,71 @@
+<div class="card border-0 shadow-sm p-3 p-sm-4 bg-white onboarding-card animate-fade-in">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div>
+      <h3 class="h5 fw-bold text-success-dark mb-0">
+        <i class="bi bi-rocket-takeoff-fill me-2 text-success"></i>Set up your farm
+      </h3>
+      <span class="text-xs text-muted">
+        {{ doneCount() }} of {{ steps().length }} steps done
+        @if (nextStep(); as next) {
+          · next: <strong>{{ next.title }}</strong>
+        }
+      </span>
+    </div>
+    <span class="badge bg-success-subtle text-success rounded-pill fw-semibold">
+      {{ progress() }}%
+    </span>
+  </div>
+
+  <div class="progress mb-3" style="height: 6px">
+    <div
+      class="progress-bar bg-success"
+      role="progressbar"
+      [style.width.%]="progress()"
+      [attr.aria-valuenow]="progress()"
+      aria-valuemin="0"
+      aria-valuemax="100"
+    ></div>
+  </div>
+
+  <ol class="onboarding-steps list-unstyled mb-0 d-flex flex-column gap-2">
+    @for (step of steps(); track step.id; let i = $index) {
+      <li
+        class="onboarding-step d-flex align-items-center gap-3 p-2.5 rounded-3 border"
+        [class.is-done]="step.done"
+        [class.is-next]="!step.done && nextStep()?.id === step.id"
+      >
+        <div class="step-marker flex-shrink-0">
+          @if (step.done) {
+            <i class="bi bi-check-lg"></i>
+          } @else {
+            <span>{{ i + 1 }}</span>
+          }
+        </div>
+        <div class="flex-grow-1 min-w-0">
+          <div class="fw-bold text-sm text-dark">
+            <i class="bi me-1 text-muted" [class]="step.icon"></i>{{ step.title }}
+          </div>
+          <div class="text-xxs text-muted">{{ step.description }}</div>
+        </div>
+        @if (!step.done) {
+          @if (step.route) {
+            <a
+              [routerLink]="step.route"
+              class="btn btn-success btn-sm px-3 fw-semibold text-xs rounded-pill flex-shrink-0"
+            >
+              {{ step.actionLabel }}
+            </a>
+          } @else {
+            <button
+              type="button"
+              (click)="action.emit(step.id)"
+              class="btn btn-success btn-sm px-3 fw-semibold text-xs rounded-pill flex-shrink-0"
+            >
+              {{ step.actionLabel }}
+            </button>
+          }
+        }
+      </li>
+    }
+  </ol>
+</div>
