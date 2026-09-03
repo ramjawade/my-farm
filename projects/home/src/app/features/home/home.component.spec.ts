@@ -5,18 +5,19 @@ import { provideHttpClient } from '@angular/common/http';
 import { HomeComponent } from './home.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { CropTimelineService } from '../crop-timeline/crop-timeline.service';
-import { FarmActivityService } from '../farm-activity/farm-activity.service';
+import { ActivityService } from '../activity/activity.service';
 import { FarmerRegistrationData } from '../farmer-registration/farmer-registration.models';
 import { FarmDrawService } from '../../map/farm-draw/farm-draw.service';
 import { IStorageService } from '../../core/storage/storage.interface';
 import { LocalStorageService } from '../../core/storage/local-storage.service';
+import { flushPromises } from '../../testing/flush-promises';
 
 describe('HomeComponent', () => {
   let component: HomeComponent;
   let fixture: ComponentFixture<HomeComponent>;
   let authService: AuthService;
   let cropService: CropTimelineService;
-  let activityService: FarmActivityService;
+  let activityService: ActivityService;
   let farmDrawService: FarmDrawService;
 
   beforeEach(async () => {
@@ -31,7 +32,6 @@ describe('HomeComponent', () => {
         provideHttpClient(),
         AuthService,
         CropTimelineService,
-        FarmActivityService,
         FarmDrawService,
         { provide: IStorageService, useClass: LocalStorageService },
       ],
@@ -41,7 +41,7 @@ describe('HomeComponent', () => {
     component = fixture.componentInstance;
     authService = TestBed.inject(AuthService);
     cropService = TestBed.inject(CropTimelineService);
-    activityService = TestBed.inject(FarmActivityService);
+    activityService = TestBed.inject(ActivityService);
     farmDrawService = TestBed.inject(FarmDrawService);
     fixture.detectChanges();
   });
@@ -211,24 +211,55 @@ describe('HomeComponent', () => {
     expect(component.metrics().landsCount).toBe(2);
   });
 
-  it('should trigger guest demo login when loginAsDemo is called', () => {
+  it('should trigger guest demo login and seed the demo farm when loginAsDemo is called', async () => {
     expect(authService.isLoggedIn()).toBeFalse();
-    component.loginAsDemo();
+    await component.loginAsDemo();
+    await flushPromises();
     fixture.detectChanges();
 
     expect(authService.isLoggedIn()).toBeTrue();
     expect(authService.currentUser()?.fullName).toBe('Ram Jawade');
+    expect(cropService.crops().length).toBe(2);
+    expect(farmDrawService.savedFarms().length).toBe(2);
+    expect(activityService.activities().length).toBeGreaterThan(10);
+    expect(component.showOnboarding()).toBeFalse();
   });
 
-  it('should complete activity task when completeActivityTask is called', () => {
+  it('should show the onboarding checklist for a fresh registration', () => {
+    authService.login({
+      id: 'f-new',
+      fullName: 'New Farmer',
+      phone: '9000000000',
+      preferredLanguage: 'English',
+      userRole: 'Farmer',
+      farmName: '',
+      farmArea: 0,
+      farmAreaUnit: 'hectares',
+      primaryCrops: [],
+      waterSource: '',
+      irrigationType: '',
+      farmingMethod: '',
+      locationType: 'skipped',
+      location: null,
+      createdAt: Date.now(),
+    });
+    fixture.detectChanges();
+
+    expect(component.showOnboarding()).toBeTrue();
+    expect(component.onboardingSteps().every((s) => !s.done)).toBeTrue();
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('app-onboarding-checklist')).toBeTruthy();
+  });
+
+  it('should complete activity task when completeActivityTask is called', async () => {
     // Setup login
-    component.loginAsDemo();
+    await component.loginAsDemo();
     fixture.detectChanges();
 
     // Create a mock pending activity
     const mockActivity = activityService.addActivity({
       date: Date.now(),
-      season: 'Summer',
+      season: 'Zaid',
       type: 'Maintenance',
       status: 'In Progress',
     });
@@ -311,12 +342,6 @@ describe('HomeComponent', () => {
     expect(component.showEditDialog()).toBeTrue();
   });
 
-  it('should call openLandDialog when handleSuggestionAction("weather") is called', () => {
-    spyOn(component, 'openLandDialog').and.callThrough();
-    component.handleSuggestionAction('weather');
-    expect(component.openLandDialog).toHaveBeenCalled();
-  });
-
   describe('Activity Synchronization', () => {
     beforeEach(() => {
       // Login to establish user context for storage key calculations
@@ -341,9 +366,8 @@ describe('HomeComponent', () => {
       fixture.detectChanges();
     });
 
-    it('should synchronize activity created in CropTimelineService to FarmActivityService', () => {
+    it('should expose an activity logged on the crop timeline through ActivityService', () => {
       const initialCropActivitiesCount = cropService.activities().length;
-      const initialFarmActivitiesCount = activityService.activities().length;
 
       const newCropAct = cropService.addActivity({
         cropId: 'c-test-crop',
@@ -352,14 +376,13 @@ describe('HomeComponent', () => {
         status: 'Completed',
         cost: 250,
         notes: 'Irrigated for 30 minutes',
-        attachments: [],
         metadata: { duration: 30, irrigationMethod: 'Drip' },
       });
 
       // Assert synced in CropTimelineService
       expect(cropService.activities().length).toBe(initialCropActivitiesCount + 1);
 
-      // Assert synced to FarmActivityService
+      // Assert visible through ActivityService
       const syncedFarmAct = activityService.activities().find((a) => a.id === newCropAct.id);
       expect(syncedFarmAct).toBeTruthy();
       expect(syncedFarmAct?.type).toBe('Irrigation');
@@ -373,8 +396,7 @@ describe('HomeComponent', () => {
       expect(expenses[0].amount).toBe(250);
     });
 
-    it('should synchronize activity created in FarmActivityService to CropTimelineService', () => {
-      const initialCropActivitiesCount = cropService.activities().length;
+    it('should expose an activity created in ActivityService on the crop timeline', () => {
       const initialFarmActivitiesCount = activityService.activities().length;
 
       const newFarmAct = activityService.addActivity({
@@ -387,11 +409,9 @@ describe('HomeComponent', () => {
         notes: 'Manual mechanical weeding',
       });
 
-      // Assert synced to FarmActivityService
       expect(activityService.activities().length).toBe(initialFarmActivitiesCount + 1);
 
-      // Assert synced to CropTimelineService
-      const syncedCropAct = cropService.activities().find((a: any) => a.id === newFarmAct.id);
+      const syncedCropAct = cropService.activities().find((a) => a.id === newFarmAct.id);
       expect(syncedCropAct).toBeDefined();
       expect(syncedCropAct!.type).toBe('Weeding');
       expect(syncedCropAct!.cropId).toBe('c-test-crop');

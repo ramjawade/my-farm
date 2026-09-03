@@ -4,10 +4,13 @@ import { Subject } from 'rxjs';
 import { calculateFarmArea, toGeoJsonPolygon } from './farm-area.utils';
 import { FarmAreaResult, FarmDrawStatus, LatLngPoint, SavedFarm } from '../models/map.models';
 import { AuthService } from '../../core/auth/auth.service';
+import { IStorageService } from '../../core/storage/storage.interface';
 
 @Injectable({ providedIn: 'root' })
 export class FarmDrawService {
   private readonly authService = inject(AuthService);
+  private readonly storage = inject(IStorageService);
+  private generation = 0;
 
   readonly status = signal<FarmDrawStatus>('idle');
   readonly points = signal<LatLngPoint[]>([]);
@@ -26,8 +29,7 @@ export class FarmDrawService {
     effect(() => {
       const user = this.authService.currentUser();
       if (user) {
-        const loaded = this.loadSavedFarms(user.id);
-        this.savedFarms.set(loaded);
+        this.loadSavedFarms(user.id);
       } else {
         this.savedFarms.set([]);
         this.selectedSavedFarm.set(null);
@@ -35,59 +37,31 @@ export class FarmDrawService {
     });
   }
 
-  private getSavedFarmsKey(): string {
+  /** Re-read the signed-in user's lands from storage. */
+  reload(): Promise<void> {
     const user = this.authService.currentUser();
-    return user ? `my_farm_${user.id}_saved_farms` : 'saved_farms';
+    return user ? this.loadSavedFarms(user.id) : Promise.resolve();
   }
 
-  private loadSavedFarms(userId: string): SavedFarm[] {
+  private async loadSavedFarms(userId: string): Promise<void> {
+    const generation = ++this.generation;
     try {
-      const key = `my_farm_${userId}_saved_farms`;
-      const data = localStorage.getItem(key);
-      if (data) {
-        return JSON.parse(data);
-      }
-
-      // Seed default user if empty
-      if (userId === 'f-default') {
-        return this.seedDefaultSavedFarm();
-      }
-      return [];
-    } catch {
-      return [];
+      const farms = await this.storage.getFarms(userId);
+      if (generation !== this.generation) return;
+      this.savedFarms.set(farms);
+    } catch (e) {
+      console.error('Failed to load saved farms', e);
+      this.savedFarms.set([]);
     }
   }
 
-  private seedDefaultSavedFarm(): SavedFarm[] {
-    const center = { lat: 20.5937, lng: 78.9629 };
-    const points = [
-      { lat: center.lat - 0.003, lng: center.lng - 0.003 },
-      { lat: center.lat - 0.003, lng: center.lng + 0.003 },
-      { lat: center.lat + 0.003, lng: center.lng + 0.003 },
-      { lat: center.lat + 0.003, lng: center.lng - 0.003 },
-    ];
-    const defaultFarm: SavedFarm = {
-      id: 'default-farm-1',
-      name: 'Green Valley Main Plot',
-      points: points,
-      area: { hectares: 6.5, acres: 16.06, squareMeters: 65000 },
-      geoJson: toGeoJsonPolygon(points),
-      createdAt: Date.now(),
-    };
-    const farms = [defaultFarm];
-    try {
-      localStorage.setItem('my_farm_f-default_saved_farms', JSON.stringify(farms));
-    } catch (e) {
-      console.error('Failed to save default farm', e);
-    }
-    return farms;
-  }
-
-  private saveToStorage(farms: SavedFarm[]): void {
-    try {
-      localStorage.setItem(this.getSavedFarmsKey(), JSON.stringify(farms));
-    } catch (e) {
-      console.error('Could not save to localStorage', e);
+  /** Apply a land mutation and persist it for the signed-in user. */
+  private setFarms(farms: SavedFarm[]): void {
+    this.generation++;
+    this.savedFarms.set(farms);
+    const user = this.authService.currentUser();
+    if (user) {
+      this.storage.saveFarms(user.id, farms).catch((e) => console.error('Failed to save farms', e));
     }
   }
 
@@ -151,22 +125,14 @@ export class FarmDrawService {
       createdAt: Date.now(),
     };
 
-    this.savedFarms.update((current) => {
-      const updated = [newFarm, ...current];
-      this.saveToStorage(updated);
-      return updated;
-    });
+    this.setFarms([newFarm, ...this.savedFarms()]);
 
     this.selectedSavedFarm.set(newFarm);
     this.cancelDrawing();
   }
 
   deleteFarm(id: string): void {
-    this.savedFarms.update((current) => {
-      const updated = current.filter((f) => f.id !== id);
-      this.saveToStorage(updated);
-      return updated;
-    });
+    this.setFarms(this.savedFarms().filter((f) => f.id !== id));
     if (this.selectedSavedFarm()?.id === id) {
       this.selectedSavedFarm.set(null);
     }

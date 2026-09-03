@@ -17,6 +17,7 @@ import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
 import { getPolygonCentroid } from '../../../map/farm-draw/farm-area.utils';
 import { MapComponent } from '../../../map/map';
 import * as L from 'leaflet';
+import { ToastService } from 'shared';
 
 @Component({
   standalone: true,
@@ -28,6 +29,7 @@ import * as L from 'leaflet';
 })
 export class ProfileEditDialogComponent {
   private readonly authService = inject(AuthService);
+  private readonly toast = inject(ToastService);
   readonly drawService = inject(FarmDrawService);
 
   // Inputs using modern Signal API
@@ -412,6 +414,7 @@ export class ProfileEditDialogComponent {
     }
 
     this.authService.updateProfile(updates);
+    this.toast.success('Profile updated.');
     this.close();
   }
 

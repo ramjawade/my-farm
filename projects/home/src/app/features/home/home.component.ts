@@ -4,28 +4,28 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { CropTimelineService } from '../crop-timeline/crop-timeline.service';
-import { FarmActivityService } from '../farm-activity/farm-activity.service';
+import { ActivityService } from '../activity/activity.service';
 import { FarmDrawService } from '../../map/farm-draw/farm-draw.service';
-import { Activity } from '../farm-activity/farm-activity.models';
+import { Activity } from '../activity/activity.models';
 
 import { ProfileEditDialogComponent } from '../profile/components/profile-edit-dialog.component';
-
-interface Suggestion {
-  id: string;
-  icon: string;
-  title: string;
-  description: string;
-  alertClass: string;
-  btnClass: string;
-  btnText: string;
-  route?: string;
-  isAction?: boolean;
-}
+import { DemoDataService } from '../../core/demo/demo-data.service';
+import { ToastService } from 'shared';
+import {
+  OnboardingChecklistComponent,
+  OnboardingStep,
+} from './onboarding-checklist/onboarding-checklist.component';
 
 @Component({
   standalone: true,
   selector: 'app-home',
-  imports: [CommonModule, FormsModule, RouterLink, ProfileEditDialogComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    ProfileEditDialogComponent,
+    OnboardingChecklistComponent,
+  ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,9 +33,11 @@ interface Suggestion {
 export class HomeComponent {
   readonly authService = inject(AuthService);
   private readonly cropService = inject(CropTimelineService);
-  private readonly activityService = inject(FarmActivityService);
+  private readonly activityService = inject(ActivityService);
   private readonly farmDrawService = inject(FarmDrawService);
   private readonly router = inject(Router);
+  private readonly demoData = inject(DemoDataService);
+  private readonly toast = inject(ToastService);
 
   // Authentication State
   readonly isLoggedIn = this.authService.isLoggedIn;
@@ -52,56 +54,50 @@ export class HomeComponent {
     return user ? !user.farmSetupCompleted : false;
   });
 
-  readonly activeSuggestions = computed<Suggestion[]>(() => {
-    const list: Suggestion[] = [];
-
-    // 1. Weather Location Setup
-    if (!this.hasLocation()) {
-      list.push({
-        id: 'weather',
-        icon: 'bi-exclamation-triangle-fill text-warning',
-        title: 'Localized Weather Setup Needed',
-        description:
-          'Add your village and state to receive customized daily rainfall forecasts and localized humidity advisories.',
-        alertClass: 'alert-warning',
-        btnClass: 'btn-warning',
-        btnText: 'Configure Weather Location',
-        isAction: true,
-      });
-    }
-
-    // 2. Farm Boundary Mapping
-    if (!this.hasBoundary()) {
-      list.push({
-        id: 'boundary',
-        icon: 'bi-map-fill text-success',
-        title: 'Farm Boundary Mapped?',
-        description:
-          'Draw your crop field boundaries on the leaflet map to automatically calculate exact farm acreage and geo-coordinates.',
-        alertClass: 'alert-success',
-        btnClass: 'btn-success',
-        btnText: 'Draw Farm Boundary',
+  /** Setup steps for a new farmer; the card hides once every step is done. */
+  readonly onboardingSteps = computed<OnboardingStep[]>(() => {
+    const user = this.currentUser();
+    const hasActivity = this.activityService.activities().length > 0;
+    return [
+      {
+        id: 'profile',
+        title: 'Complete your farm profile',
+        description: 'Village, water source and farming method personalise weather and advice.',
+        icon: 'bi-person-gear',
+        done: !!(user?.farmSetupCompleted && this.hasLocation()),
+        actionLabel: 'Set up',
+      },
+      {
+        id: 'land',
+        title: 'Draw your first land',
+        description: 'Outline a plot on the map to get its exact area.',
+        icon: 'bi-map',
+        done: this.hasBoundary(),
         route: '/map',
-      });
-    }
-
-    // 3. Complete Farm Setup (Water / Irrigation / Method)
-    if (this.showFarmSetupPrompt()) {
-      list.push({
-        id: 'setup',
-        icon: 'bi-gear-fill text-info',
-        title: 'Complete Farm Setup',
-        description:
-          'Configure your water source, irrigation type, and farming method to personalize your crop timeline guidance.',
-        alertClass: 'alert-info',
-        btnClass: 'btn-info text-white',
-        btnText: 'Complete Setup',
-        isAction: true,
-      });
-    }
-
-    return list.slice(0, 2);
+        actionLabel: 'Open map',
+      },
+      {
+        id: 'crop',
+        title: 'Add a crop on that land',
+        description: 'Track it from land preparation to harvest.',
+        icon: 'bi-flower1',
+        done: this.cropService.crops().length > 0,
+        route: '/crops/add',
+        actionLabel: 'Add crop',
+      },
+      {
+        id: 'activity',
+        title: 'Log your first activity',
+        description: 'Record work and expenses so costs roll up per crop.',
+        icon: 'bi-journal-plus',
+        done: hasActivity,
+        route: '/activities/create',
+        actionLabel: 'Log activity',
+      },
+    ];
   });
+
+  readonly showOnboarding = computed(() => this.onboardingSteps().some((s) => !s.done));
 
   openSetupDialog(): void {
     this.activeSection.set('setup');
@@ -113,11 +109,9 @@ export class HomeComponent {
     this.showEditDialog.set(true);
   }
 
-  handleSuggestionAction(id: string): void {
-    if (id === 'setup') {
+  onOnboardingAction(id: string): void {
+    if (id === 'profile') {
       this.openSetupDialog();
-    } else if (id === 'weather') {
-      this.openLandDialog();
     }
   }
 
@@ -186,6 +180,7 @@ export class HomeComponent {
 
     // Calculate total expenses this month
     const currentMonth = new Date().getMonth();
+    const monthName = new Date().toLocaleDateString(undefined, { month: 'long' });
     const currentYear = new Date().getFullYear();
     const totalExpenses = this.activityService
       .expenses()
@@ -201,6 +196,7 @@ export class HomeComponent {
       todayTasks,
       totalExpenses,
       landsCount,
+      monthName,
     };
   });
 
@@ -284,34 +280,15 @@ export class HomeComponent {
     });
   });
 
-  // Guest Demo Auto-login
-  loginAsDemo(): void {
-    const demoUser = {
-      id: 'f-default',
-      fullName: 'Ram Jawade',
-      phone: '9876543210',
-      preferredLanguage: 'English',
-      userRole: 'Farmer',
-      farmName: "Ram's Organic Farm",
-      farmArea: 4.5,
-      farmAreaUnit: 'hectares' as const,
-      primaryCrops: ['Soybeans', 'Wheat'],
-      waterSource: 'Borewell',
-      irrigationType: 'Drip',
-      farmingMethod: 'Organic',
-      locationType: 'manual' as const,
-      village: 'Pune',
-      state: 'Maharashtra',
-      location: { lat: 18.5204, lng: 73.8567 },
-      createdAt: Date.now(),
-      farmSetupCompleted: true,
-    };
-    this.authService.login(demoUser);
+  // Guest demo: one coherent seeded farm, owned by DemoDataService
+  loginAsDemo(): Promise<void> {
+    return this.demoData.enterDemo();
   }
 
   // Quick Action: Complete an activity task from the list
   completeActivityTask(id: string): void {
     this.activityService.updateActivity(id, { status: 'Completed' });
+    this.toast.success('Task marked as completed.');
   }
 
   private formatDate(timestamp: number | undefined): string {

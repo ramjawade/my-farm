@@ -65,7 +65,7 @@
             <div
               class="list-group-item list-group-item-action d-flex align-items-center justify-content-between p-2 cursor-pointer position-relative"
               [class.active-farm]="farmDraw.selectedSavedFarm()?.id === farm.id"
-              (click)="farmDraw.selectFarm(farm)"
+              (click)="farmDraw.selectFarm(farm); showLandDetail(farm)"
             >
               <div class="d-flex flex-column min-width-0" style="flex: 1">
                 <span
@@ -105,3 +105,18 @@
     </div>
   }
 </div>
+
+<div *ngIf="selectedLandDetail() as landDetail">
+  <div class="mt-3 p-3 border rounded bg-light">
+    <app-land-detail [land]="landDetail" (closed)="selectedLandDetail.set(null)"></app-land-detail>
+  </div>
+</div>
+
+<lib-confirm-dialog
+  [(isOpen)]="showDeleteConfirm"
+  [title]="'Delete land'"
+  [message]="'Remove this land outline? Activities logged directly on it keep their records.'"
+  [confirmText]="'Delete'"
+  [isDestructive]="true"
+  (confirm)="confirmDelete()"
+/>

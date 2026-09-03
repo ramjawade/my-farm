@@ -4,56 +4,40 @@ import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { ActivitiesSummaryComponent } from './activities-summary.component';
 import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
-import { FarmActivityService } from '../farm-activity.service';
-import { ActivityEntity } from '../../crop-timeline/crop-timeline.models';
+import { Activity, ActivityExpense } from '../../activity/activity.models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { IStorageService } from '../../../core/storage/storage.interface';
 import { LocalStorageService } from '../../../core/storage/local-storage.service';
+import { flushPromises } from '../../../testing/flush-promises';
 
 describe('ActivitiesSummaryComponent', () => {
   let component: ActivitiesSummaryComponent;
   let fixture: ComponentFixture<ActivitiesSummaryComponent>;
   let componentRef: ComponentRef<ActivitiesSummaryComponent>;
 
-  const mockActivities: ActivityEntity[] = [
+  const base = { createdAt: 1, updatedAt: 1 };
+  const mockActivities: Activity[] = [
+    { ...base, id: 'act-s-1', cropId: 'c1', type: 'Irrigation', date: 1000, status: 'Completed' },
     {
-      id: 'act-s-1',
-      cropId: 'c1',
-      type: 'Irrigation',
-      date: 1000,
-      status: 'Completed',
-      cost: 500,
-      notes: 'Notes',
-      attachments: [],
-      metadata: {},
-    },
-    {
+      ...base,
       id: 'act-s-2',
       cropId: 'c2',
       type: 'Fertilizer Application',
       date: 2000,
       status: 'Completed',
-      cost: 1500,
-      notes: 'Notes',
-      attachments: [],
-      metadata: {},
     },
-    {
-      id: 'act-s-3',
-      cropId: 'c1',
-      type: 'Weeding',
-      date: 1500,
-      status: 'Scheduled',
-      cost: 300,
-      notes: 'Notes',
-      attachments: [],
-      metadata: {},
-    },
+    { ...base, id: 'act-s-3', cropId: 'c1', type: 'Weeding', date: 1500, status: 'Scheduled' },
+  ];
+  const mockExpenses: ActivityExpense[] = [
+    { id: 'e1', activityId: 'act-s-1', category: 'Water', amount: 500, createdAt: 1 },
+    { id: 'e2', activityId: 'act-s-2', category: 'Fertilizer', amount: 1500, createdAt: 1 },
+    { id: 'e3', activityId: 'act-s-3', category: 'Labour', amount: 300, createdAt: 1 },
   ];
 
   beforeEach(async () => {
     localStorage.clear();
-    localStorage.setItem('my_farm_f-test_crop_activities', JSON.stringify(mockActivities));
+    localStorage.setItem('my_farm_f-test_activities', JSON.stringify(mockActivities));
+    localStorage.setItem('my_farm_f-test_activity_expenses', JSON.stringify(mockExpenses));
 
     await TestBed.configureTestingModule({
       imports: [ActivitiesSummaryComponent],
@@ -61,7 +45,6 @@ describe('ActivitiesSummaryComponent', () => {
         provideZonelessChangeDetection(),
         provideRouter([]),
         CropTimelineService,
-        FarmActivityService,
         AuthService,
         { provide: IStorageService, useClass: LocalStorageService },
       ],
@@ -74,6 +57,8 @@ describe('ActivitiesSummaryComponent', () => {
     // Login mock user
     const authSvc = TestBed.inject(AuthService);
     authSvc.login({ id: 'f-test' } as any);
+    TestBed.flushEffects();
+    await flushPromises();
 
     fixture.detectChanges();
   });

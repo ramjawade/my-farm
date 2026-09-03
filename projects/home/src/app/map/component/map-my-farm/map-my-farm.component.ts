@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { formatArea, getPolygonCentroid } from '../../farm-draw/farm-area.utils';
 import { FarmDrawService } from '../../farm-draw/farm-draw.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { ToastService } from 'shared';
 
 @Component({
   standalone: true,
@@ -12,6 +13,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 })
 export class MapMyFarmComponent {
   readonly draw = inject(FarmDrawService);
+  private readonly toast = inject(ToastService);
   private readonly authService = inject(AuthService);
   readonly farmName = signal('');
 
@@ -47,6 +49,7 @@ export class MapMyFarmComponent {
   save(): void {
     const nameVal = this.farmName();
     this.draw.saveFarm(nameVal);
+    this.toast.success(`Land "${nameVal.trim() || 'Farm'}" saved.`);
 
     // Progressive Profiling: Update active user coordinates, farm name, and area if empty/default
     const user = this.authService.currentUser();

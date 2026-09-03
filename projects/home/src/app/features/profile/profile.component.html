@@ -286,7 +286,90 @@
           </div>
         </div>
       </div>
+
+      <!-- CARD 5: DATA & BACKUP -->
+      <div class="col-12">
+        <div class="card border-0 shadow-sm p-3 p-sm-4 bg-white">
+          <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+            <h3 class="h5 fw-bold text-success-dark mb-0">
+              <i class="bi bi-database-fill text-success me-2"></i>Data &amp; Backup
+            </h3>
+            @if (isDemoUser()) {
+              <span class="badge bg-warning-subtle text-warning rounded-pill fw-semibold text-xxs">
+                Demo account
+              </span>
+            }
+          </div>
+          <p class="text-xs text-muted mb-3">
+            Your farm data is stored on this device. Download a backup to keep it safe or move it to
+            another phone or computer.
+          </p>
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <button
+              type="button"
+              class="btn btn-success btn-sm px-3 fw-semibold rounded-pill hover-lift"
+              [disabled]="dataBusy()"
+              (click)="exportBackup()"
+            >
+              <i class="bi bi-download me-1"></i>Download backup
+            </button>
+            <label
+              class="btn btn-outline-success btn-sm px-3 fw-semibold rounded-pill bg-white mb-0"
+            >
+              <i class="bi bi-upload me-1"></i>Restore from file
+              <input
+                type="file"
+                accept="application/json,.json"
+                class="d-none"
+                [disabled]="dataBusy()"
+                (change)="onRestoreFileSelected($event)"
+              />
+            </label>
+            @if (isDemoUser()) {
+              <button
+                type="button"
+                class="btn btn-outline-warning btn-sm px-3 fw-semibold rounded-pill bg-white"
+                [disabled]="dataBusy()"
+                (click)="showResetConfirm.set(true)"
+              >
+                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset demo data
+              </button>
+            } @else {
+              <button
+                type="button"
+                class="btn btn-outline-danger btn-sm px-3 fw-semibold rounded-pill bg-white"
+                [disabled]="dataBusy()"
+                (click)="showClearConfirm.set(true)"
+              >
+                <i class="bi bi-trash3 me-1"></i>Clear all my data
+              </button>
+            }
+          </div>
+          @if (dataMessage(); as msg) {
+            <div class="alert py-2 px-3 mt-3 mb-0 text-xs" [class]="'alert-' + msg.kind">
+              {{ msg.text }}
+            </div>
+          }
+        </div>
+      </div>
     </div>
+
+    <lib-confirm-dialog
+      [(isOpen)]="showResetConfirm"
+      [title]="'Reset demo data'"
+      [message]="'This puts the demo farm back to its starting state. Any changes you made will be lost.'"
+      [confirmText]="'Reset'"
+      [isDestructive]="true"
+      (confirm)="confirmResetDemo()"
+    />
+    <lib-confirm-dialog
+      [(isOpen)]="showClearConfirm"
+      [title]="'Clear all my data'"
+      [message]="'This deletes every land, crop, activity and expense on this device. Download a backup first if you may need it.'"
+      [confirmText]="'Delete everything'"
+      [isDestructive]="true"
+      (confirm)="confirmClearData()"
+    />
 
     <!-- DIALOG COMPONENT FOR EDITING -->
     <app-profile-edit-dialog [section]="activeSection()" [(show)]="showEditDialog" />

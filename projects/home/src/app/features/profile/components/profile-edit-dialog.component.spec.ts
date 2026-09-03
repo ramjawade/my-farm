@@ -4,6 +4,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { ProfileEditDialogComponent } from './profile-edit-dialog.component';
 import { AuthService } from '../../../core/auth/auth.service';
 import { FarmerRegistrationData } from '../../farmer-registration/farmer-registration.models';
+import { IStorageService } from '../../../core/storage/storage.interface';
+import { LocalStorageService } from '../../../core/storage/local-storage.service';
 
 describe('ProfileEditDialogComponent', () => {
   let component: ProfileEditDialogComponent;
@@ -38,7 +40,12 @@ describe('ProfileEditDialogComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [ProfileEditDialogComponent],
-      providers: [provideZonelessChangeDetection(), provideHttpClient(), AuthService],
+      providers: [
+        { provide: IStorageService, useClass: LocalStorageService },
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        AuthService,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProfileEditDialogComponent);

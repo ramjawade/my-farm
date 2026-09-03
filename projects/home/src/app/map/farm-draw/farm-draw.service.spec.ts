@@ -2,6 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { FarmDrawService } from './farm-draw.service';
 import { LatLngPoint, SavedFarm } from '../models/map.models';
+import { IStorageService } from '../../core/storage/storage.interface';
+import { LocalStorageService } from '../../core/storage/local-storage.service';
 
 describe('FarmDrawService', () => {
   let service: FarmDrawService;
@@ -18,7 +20,11 @@ describe('FarmDrawService', () => {
     spyOn(localStorage, 'setItem');
 
     TestBed.configureTestingModule({
-      providers: [FarmDrawService, provideZonelessChangeDetection()],
+      providers: [
+        { provide: IStorageService, useClass: LocalStorageService },
+        FarmDrawService,
+        provideZonelessChangeDetection(),
+      ],
     });
     service = TestBed.inject(FarmDrawService);
   });

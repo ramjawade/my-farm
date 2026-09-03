@@ -163,26 +163,6 @@
                 <div class="text-danger small mt-1">PINs do not match.</div>
               }
             </div>
-
-            <div class="col-12">
-              <label for="preferredLanguage" class="field-label required-label"
-                >Preferred Language</label
-              >
-              <div class="input-group">
-                <span class="input-group-text bg-white border-end-0 text-muted"
-                  ><i class="bi bi-translate"></i
-                ></span>
-                <select
-                  id="preferredLanguage"
-                  class="form-select border-start-0 ps-0"
-                  formControlName="preferredLanguage"
-                >
-                  @for (lang of languages; track lang.value) {
-                    <option [value]="lang.value">{{ lang.label }}</option>
-                  }
-                </select>
-              </div>
-            </div>
           </div>
 
           <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">

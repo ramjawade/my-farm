@@ -1,0 +1,42 @@
+.onboarding-card {
+  border-left: 4px solid hsl(142, 52%, 42%) !important;
+}
+
+.onboarding-step {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+  border-color: hsl(150, 15%, 90%) !important;
+
+  &.is-done {
+    background: hsl(140, 45%, 97%);
+    opacity: 0.85;
+  }
+
+  &.is-next {
+    border-color: hsl(142, 52%, 42%) !important;
+    background: hsl(140, 60%, 98%);
+  }
+}
+
+.step-marker {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: hsl(150, 15%, 93%);
+  color: hsl(150, 10%, 40%);
+
+  .is-done & {
+    background: hsl(142, 52%, 42%);
+    color: #fff;
+  }
+
+  .is-next & {
+    background: hsl(142, 52%, 42%, 0.15);
+    color: hsl(142, 52%, 32%);
+  }
+}

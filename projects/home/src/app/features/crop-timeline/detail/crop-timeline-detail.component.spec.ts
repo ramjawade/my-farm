@@ -3,9 +3,8 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CropTimelineDetailComponent } from './crop-timeline-detail.component';
-import { CropEntity, ActivityEntity } from '../crop-timeline.models';
+import { CropEntity, CropActivity } from '../crop-timeline.models';
 import { CropTimelineService } from '../crop-timeline.service';
-import { FarmActivityService } from '../../farm-activity/farm-activity.service';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { IStorageService } from '../../../core/storage/storage.interface';
@@ -29,8 +28,8 @@ describe('CropTimelineDetailComponent', () => {
     status: 'Active',
   };
 
-  const mockUpcoming: ActivityEntity[] = [];
-  const mockActivities: ActivityEntity[] = [];
+  const mockUpcoming: CropActivity[] = [];
+  const mockActivities: CropActivity[] = [];
 
   beforeEach(async () => {
     const spyRouter = jasmine.createSpyObj('Router', ['navigate', 'createUrlTree', 'serializeUrl']);
@@ -49,7 +48,6 @@ describe('CropTimelineDetailComponent', () => {
         { provide: Router, useValue: spyRouter },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
         CropTimelineService,
-        FarmActivityService,
         FarmDrawService,
         AuthService,
         { provide: IStorageService, useClass: LocalStorageService },
@@ -120,6 +118,9 @@ describe('CropTimelineDetailComponent', () => {
   it('should not update stage immediately when onUpdateStageClicked is called, but should set parentActivityIdForModal', () => {
     const timelineSvc = TestBed.inject(CropTimelineService);
 
+    TestBed.inject(AuthService).login({ id: 'f-detail-test' } as any);
+    TestBed.flushEffects();
+
     // Seed default activities for the mock crop
     timelineSvc.addCrop(mockCrop);
 
@@ -141,7 +142,7 @@ describe('CropTimelineDetailComponent', () => {
     // Verify parentActivityIdForModal is set to the pre-created Maturity stage activity
     const maturityAct = timelineSvc.findMainActivityForStage(crop.id, 'Maturity')!;
     expect(maturityAct).toBeTruthy();
-    expect(maturityAct.status).toBe('Planned');
+    expect(maturityAct.status).toBe('Scheduled');
     expect(component.parentActivityIdForModal()).toBe(maturityAct.id);
 
     // Simulate submitting a subactivity under this parent activity
@@ -152,8 +153,6 @@ describe('CropTimelineDetailComponent', () => {
       status: 'Completed',
       cost: 0,
       notes: 'Subactivity notes',
-      attachments: [],
-      metadata: {},
       parentActivityId: maturityAct.id,
     });
 
@@ -166,17 +165,19 @@ describe('CropTimelineDetailComponent', () => {
   });
 
   it('should open edit modal locally with correct activity details when onEditActivityClicked is called', () => {
-    const mockActivity: ActivityEntity = {
+    const mockActivity: CropActivity = {
       id: 'act-edit-1',
       cropId: 'c1',
       type: 'Irrigation',
       date: Date.now(),
-      status: 'Planned',
+      status: 'Scheduled',
       cost: 0,
       notes: 'Test irrigation notes',
       attachments: [],
       metadata: {},
       parentActivityId: 'a-parent-id',
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
     };
 
     component.onEditActivityClicked(mockActivity);

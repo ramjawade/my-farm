@@ -12,8 +12,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
-import { FarmActivityService } from '../farm-activity.service';
-import { ActivityEntity, ActivityType } from '../../crop-timeline/crop-timeline.models';
+import { ActivityService } from '../../activity/activity.service';
+import { CropActivity, ActivityType } from '../../crop-timeline/crop-timeline.models';
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -28,14 +28,19 @@ Chart.register(...registerables);
 })
 export class ActivitiesSummaryComponent {
   private readonly timelineService = inject(CropTimelineService);
-  private readonly farmActivityService = inject(FarmActivityService);
+  private readonly activityService = inject(ActivityService);
   private readonly router = inject(Router);
 
   readonly cropId = input<string | undefined>();
   readonly isTimeline = input<boolean>(false);
 
-  readonly editActivity = output<ActivityEntity>();
+  readonly editActivity = output<CropActivity>();
   readonly markActivityCompleted = output<string>();
+
+  /** Scheduled/draft/in-progress work that has not been completed or cancelled. */
+  private isPending(a: CropActivity): boolean {
+    return a.status === 'Scheduled' || a.status === 'Draft' || a.status === 'In Progress';
+  }
 
   readonly allActivities = computed(() => {
     const cid = this.cropId();
@@ -51,11 +56,11 @@ export class ActivitiesSummaryComponent {
   });
 
   readonly activitiesCount = computed(() => {
-    return this.allActivities().filter((a) => a.status !== 'Planned').length;
+    return this.allActivities().filter((a) => a.status !== 'Draft').length;
   });
 
   readonly inProgressCount = computed(() => {
-    return this.allActivities().filter((a) => a.status === 'Scheduled').length;
+    return this.allActivities().filter((a) => this.isPending(a)).length;
   });
 
   readonly completedCount = computed(() => {
@@ -64,7 +69,7 @@ export class ActivitiesSummaryComponent {
 
   readonly upcomingActivities = computed(() => {
     return this.allActivities()
-      .filter((a) => (a.status === 'Planned' || a.status === 'Scheduled') && !a.parentActivityId)
+      .filter((a) => this.isPending(a) && !a.parentActivityId)
       .sort((a, b) => {
         const timeA = a.date !== undefined ? a.date : Infinity;
         const timeB = b.date !== undefined ? b.date : Infinity;
@@ -74,7 +79,7 @@ export class ActivitiesSummaryComponent {
 
   readonly recentActivities = computed(() => {
     return this.allActivities()
-      .filter((a) => a.status !== 'Planned')
+      .filter((a) => !this.isPending(a))
       .sort((a, b) => (b.date || 0) - (a.date || 0))
       .slice(0, 4);
   });
@@ -301,7 +306,7 @@ export class ActivitiesSummaryComponent {
   }
 
   getActivityTotalCost(activityId: string): number {
-    return this.farmActivityService.getTotalExpenseForActivity(activityId);
+    return this.activityService.getTotalExpenseForActivity(activityId);
   }
 
   getActivityIcon(type: ActivityType): string {
@@ -341,7 +346,7 @@ export class ActivitiesSummaryComponent {
     return item ? item.color : '#4a5568';
   }
 
-  onEditActivityClicked(act: ActivityEntity): void {
+  onEditActivityClicked(act: CropActivity): void {
     if (this.isTimeline()) {
       this.editActivity.emit(act);
     } else {

@@ -1,6 +1,45 @@
 import { Activity, ActivityExpense } from './activity.models';
+import { normalizeSeason } from '../../core/models/season';
 
 const MIGRATION_FLAG = 'my_farm_activity_migration_done';
+const SCHEMA_VERSION_KEY = 'my_farm_schema_version';
+const CURRENT_SCHEMA_VERSION = 2;
+
+/**
+ * Schema v2 (MVP 1): the crop timeline no longer keeps its own activity copy.
+ * - Drops every `my_farm_<user>_crop_activities` mirror key (records already
+ *   exist in the unified `my_farm_<user>_activities` store).
+ * - Normalises legacy season strings ("Summer") to the typed union.
+ * Idempotent; runs once per browser.
+ */
+export function migrateSchemaV2(): void {
+  const version = Number(localStorage.getItem(SCHEMA_VERSION_KEY) || '1');
+  if (version >= CURRENT_SCHEMA_VERSION) return;
+
+  const keys: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key) keys.push(key);
+  }
+
+  for (const key of keys) {
+    if (key.endsWith('_crop_activities') || key === 'my_farm_crop_activities') {
+      localStorage.removeItem(key);
+      continue;
+    }
+    if (key.endsWith('_activities')) {
+      try {
+        const list = JSON.parse(localStorage.getItem(key) || '[]') as Activity[];
+        const fixed = list.map((a) => ({ ...a, season: normalizeSeason(a.season as string) }));
+        localStorage.setItem(key, JSON.stringify(fixed));
+      } catch (e) {
+        console.error(`Failed to normalise seasons in ${key}`, e);
+      }
+    }
+  }
+
+  localStorage.setItem(SCHEMA_VERSION_KEY, String(CURRENT_SCHEMA_VERSION));
+}
 
 /**
  * Migrate old activity data from crop-timeline and farm-activity

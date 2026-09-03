@@ -95,22 +95,26 @@ describe('WeatherService', () => {
     });
 
     // Handle requests in order as they're queued
-    Promise.resolve().then(() => {
-      const currentReq = httpMock.expectOne((req) => req.url.includes('/weather') && !req.url.includes('/alerts'));
-      currentReq.flush(mockOpenWeatherResponse);
+    Promise.resolve()
+      .then(() => {
+        const currentReq = httpMock.expectOne(
+          (req) => req.url.includes('/weather') && !req.url.includes('/alerts'),
+        );
+        currentReq.flush(mockOpenWeatherResponse);
 
-      const forecastReq = httpMock.expectOne((req) => req.url.includes('/forecast'));
-      forecastReq.flush(mockForecastResponse);
-    }).then(() => {
-      // Wait for alerts request to be queued
-      return new Promise<void>((resolve) => {
-        setTimeout(() => {
-          const alertsReqs = httpMock.match((req) => req.url.includes('/weather/alerts'));
-          alertsReqs.forEach((req) => req.flush({ alerts: [] }));
-          resolve();
-        }, 10);
+        const forecastReq = httpMock.expectOne((req) => req.url.includes('/forecast'));
+        forecastReq.flush(mockForecastResponse);
+      })
+      .then(() => {
+        // Wait for alerts request to be queued
+        return new Promise<void>((resolve) => {
+          setTimeout(() => {
+            const alertsReqs = httpMock.match((req) => req.url.includes('/weather/alerts'));
+            alertsReqs.forEach((req) => req.flush({ alerts: [] }));
+            resolve();
+          }, 10);
+        });
       });
-    });
   });
 
   it('should return fresh data from cache', async () => {

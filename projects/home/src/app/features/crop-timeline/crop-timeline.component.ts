@@ -12,12 +12,14 @@ import { Router, RouterOutlet } from '@angular/router';
 import { CropTimelineService } from './crop-timeline.service';
 import {
   CropEntity,
-  ActivityEntity,
+  CropActivity,
   CropStage,
+  CROP_STAGES,
   ActivityType,
   ActivityStatus,
 } from './crop-timeline.models';
-import { ConfirmDialogComponent } from 'shared';
+import { ACTIVITY_STATUS_OPTIONS } from '../activity/activity.constants';
+import { ConfirmDialogComponent, ToastService } from 'shared';
 
 @Component({
   standalone: true,
@@ -30,13 +32,14 @@ export class CropTimelineComponent {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   readonly timelineService = inject(CropTimelineService);
+  private readonly toast = inject(ToastService);
 
   // View state signals
   readonly currentView = signal<'dashboard' | 'timeline' | 'add-crop'>('dashboard');
   readonly selectedCrop = signal<CropEntity | null>(null);
   readonly searchTerm = signal<string>('');
   readonly showActivityModal = signal<boolean>(false);
-  readonly editingActivity = signal<ActivityEntity | null>(null);
+  readonly editingActivity = signal<CropActivity | null>(null);
   readonly showDeleteConfirm = signal(false);
   readonly showDeleteCropConfirm = signal(false);
   readonly selectedActivityId = signal<string | null>(null);
@@ -47,16 +50,7 @@ export class CropTimelineComponent {
   readonly uploadedImages = signal<string[]>([]);
 
   // Constant arrays
-  readonly stages: CropStage[] = [
-    'Land Preparation',
-    'Sowing',
-    'Germination',
-    'Vegetative Growth',
-    'Flowering',
-    'Fruiting / Pod Formation',
-    'Maturity',
-    'Harvest',
-  ];
+  readonly stages: CropStage[] = [...CROP_STAGES];
 
   readonly activityTypes: { type: ActivityType; icon: string; color: string }[] = [
     { type: 'Sowing', icon: 'bi-seedling', color: '#38a169' },
@@ -71,7 +65,7 @@ export class CropTimelineComponent {
     { type: 'Weather Incident', icon: 'bi-lightning-charge-fill', color: '#e53e3e' },
   ];
 
-  readonly activityStatuses: ActivityStatus[] = ['Planned', 'Scheduled', 'Completed', 'Cancelled'];
+  readonly activityStatuses: ActivityStatus[] = ACTIVITY_STATUS_OPTIONS.map((o) => o.value);
 
   readonly cropNameOptions = [
     'Soybeans',
@@ -127,7 +121,7 @@ export class CropTimelineComponent {
       .filter(
         (a) =>
           a.cropId === activeCrop.id &&
-          (a.status === 'Planned' || a.status === 'Scheduled') &&
+          (a.status === 'Scheduled' || a.status === 'Draft') &&
           !a.parentActivityId,
       )
       .sort((a, b) => {
@@ -244,42 +238,9 @@ export class CropTimelineComponent {
   }
 
   // --- Growth Stage Operations ---
-  findOrCreateMainActivityForStage(stage: CropStage): ActivityEntity {
+  findOrCreateMainActivityForStage(stage: CropStage): CropActivity {
     const crop = this.selectedCrop()!;
-    const activities = this.timelineService.activities().filter((a) => a.cropId === crop.id);
-
-    // Look for an activity that represents this stage
-    let mainAct = activities.find(
-      (a) =>
-        (a.type === 'Field Inspection' && a.notes.includes(`advanced to: ${stage}`)) ||
-        (stage === 'Sowing' && a.type === 'Sowing') ||
-        (stage === 'Harvest' && a.type === 'Harvest'),
-    );
-
-    if (mainAct) {
-      if (mainAct.status !== 'Completed') {
-        this.timelineService.updateActivity(mainAct.id, {
-          status: 'Completed',
-          date: Date.now(),
-        });
-        // Retrieve the updated mainActivity record
-        mainAct = this.timelineService.activities().find((a) => a.id === mainAct!.id)!;
-      }
-    } else {
-      const type: ActivityType =
-        stage === 'Sowing' ? 'Sowing' : stage === 'Harvest' ? 'Harvest' : 'Field Inspection';
-      mainAct = this.timelineService.addActivity({
-        cropId: crop.id,
-        type,
-        status: 'Planned',
-        cost: 0,
-        notes: `Growth stage advanced to: ${stage}.`,
-        attachments: [],
-        metadata: {},
-      });
-    }
-
-    return mainAct;
+    return this.timelineService.findOrCreateMainActivityForStage(crop.id, stage);
   }
 
   updateStage(stage: CropStage): void {
@@ -358,7 +319,7 @@ export class CropTimelineComponent {
     this.showActivityModal.set(true);
   }
 
-  openEditActivityModal(act: ActivityEntity): void {
+  openEditActivityModal(act: CropActivity): void {
     this.currentParentActivityId.set(act.parentActivityId || null);
     this.editingActivity.set(act);
     this.uploadedImages.set(act.attachments || []);
@@ -406,6 +367,7 @@ export class CropTimelineComponent {
     if (id) {
       this.timelineService.deleteActivity(id);
       this.selectedActivityId.set(null);
+      this.toast.success('Activity deleted.');
     }
   }
 
@@ -419,6 +381,7 @@ export class CropTimelineComponent {
     if (id) {
       this.timelineService.deleteCrop(id);
       this.selectedCropIdToDelete.set(null);
+      this.toast.success('Crop and its activities deleted.');
       this.showDeleteCropConfirm.set(false);
       this.selectedCrop.set(null);
       this.router.navigate(['/crops']);
