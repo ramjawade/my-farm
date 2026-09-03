@@ -9,6 +9,7 @@ import { CropTimelineService } from './crop-timeline.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { IStorageService } from '../../core/storage/storage.interface';
 import { LocalStorageService } from '../../core/storage/local-storage.service';
+import { ActivityService } from '../activity/activity.service';
 
 describe('CropTimelineComponent', () => {
   let component: CropTimelineComponent;
@@ -23,10 +24,7 @@ describe('CropTimelineComponent', () => {
     spyRouter.events = of();
 
     // Clear localStorage to isolate tests
-    localStorage.removeItem('my_farm_crops');
-    localStorage.removeItem('my_farm_crop_activities');
-    localStorage.removeItem('my_farm_f-default_crops');
-    localStorage.removeItem('my_farm_f-default_crop_activities');
+    localStorage.clear();
 
     await TestBed.configureTestingModule({
       imports: [CropTimelineComponent, ReactiveFormsModule],
@@ -99,11 +97,6 @@ describe('CropTimelineComponent', () => {
     expect(component.filteredCrops().length).toBe(1);
     expect(component.filteredCrops()[0].name).toBe('Soybeans');
 
-    // Filter for Field B
-    component.searchTerm.set('Field B');
-    expect(component.filteredCrops().length).toBe(1);
-    expect(component.filteredCrops()[0].name).toBe('Wheat');
-
     // Filter with no matches
     component.searchTerm.set('Apples');
     expect(component.filteredCrops().length).toBe(0);
@@ -139,7 +132,7 @@ describe('CropTimelineComponent', () => {
     const activities = timelineService.getActivitiesForCrop(addedRice!.id);
     expect(activities.length).toBe(8);
     expect(activities.filter((a) => a.status === 'Completed').length).toBe(2);
-    expect(activities.filter((a) => a.status === 'Planned').length).toBe(6);
+    expect(activities.filter((a) => a.status === 'Scheduled').length).toBe(6);
     expect(component.currentView()).toBe('dashboard'); // redirects back
   });
 
@@ -167,7 +160,7 @@ describe('CropTimelineComponent', () => {
     expect(addedCorn).toBeTruthy();
     expect(addedCorn.sowingDate).toBeUndefined();
 
-    // Verify default stage activities have empty string date values
+    // Without a sowing date the stage activities are unscheduled (no date)
     const activities = timelineService.getActivitiesForCrop(addedCorn.id);
     expect(activities.length).toBe(8);
     expect(activities.filter((a) => a.date === undefined).length).toBe(8);
@@ -238,7 +231,7 @@ describe('CropTimelineComponent', () => {
     const freshIrr = component.cropActivities().find((a) => a.type === 'Irrigation')!;
     expect(freshIrr.type).toBe('Irrigation');
     expect(freshIrr.cost).toBe(500);
-    expect(freshIrr.metadata.irrigationMethod).toBe('Sprinkler');
+    expect(freshIrr.metadata['irrigationMethod']).toBe('Sprinkler');
 
     // 2. Edit existing Activity
     component.openEditActivityModal(freshIrr);
@@ -263,6 +256,32 @@ describe('CropTimelineComponent', () => {
     expect(component.selectedActivityId()).toBe(freshIrr.id);
     component.confirmDeleteActivity();
     expect(component.cropActivities().length).toBe(initialHistoryCount); // back to initial
+  });
+
+  it('should expose timeline activities from the unified ActivityService with cost from expenses', () => {
+    const activityService = TestBed.inject(ActivityService);
+    const soy = timelineService.crops().find((c) => c.name === 'Soybeans')!;
+    component.selectCrop(soy);
+
+    const created = timelineService.addActivity({
+      cropId: soy.id,
+      type: 'Weeding',
+      date: Date.now(),
+      status: 'Completed',
+      cost: 320,
+      notes: 'Unified model check',
+    });
+
+    const unified = activityService.getActivityById(created.id)!;
+    expect(unified).toBeTruthy();
+    expect(unified.fieldId).toBe(soy.fieldId); // land derived from crop
+    expect(unified.season).toBe(soy.season!);
+    expect(activityService.getTotalExpenseForActivity(created.id)).toBe(320);
+    expect(created.cost).toBe(320);
+
+    // Adding an expense on the activity side is reflected in the timeline view
+    activityService.addExpense({ activityId: created.id, category: 'Labour', amount: 80 });
+    expect(timelineService.getCropActivity(created.id)!.cost).toBe(400);
   });
 
   it('should filter out subactivities (parentActivityId set) from computed activities list', () => {

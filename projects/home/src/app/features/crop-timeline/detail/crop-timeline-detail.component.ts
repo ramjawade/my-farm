@@ -13,9 +13,8 @@ import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CropTimelineService } from '../crop-timeline.service';
 import { CropTimelineComponent } from '../crop-timeline.component';
-import { CropEntity, ActivityEntity, CropStage, ActivityType } from '../crop-timeline.models';
+import { CropEntity, CropActivity, CropStage, ActivityType } from '../crop-timeline.models';
 import { CreateActivityComponent } from '../../farm-activity/create/create-activity.component';
-import { FarmActivityService } from '../../farm-activity/farm-activity.service';
 import { ActivitiesSummaryComponent } from '../../farm-activity/summary/activities-summary.component';
 
 @Component({
@@ -36,7 +35,6 @@ export class CropTimelineDetailComponent implements OnInit {
   private readonly router = inject(Router, { optional: true });
   private readonly route = inject(ActivatedRoute, { optional: true });
   private readonly timelineService = inject(CropTimelineService, { optional: true });
-  private readonly farmActivityService = inject(FarmActivityService, { optional: true });
 
   readonly selectedCropInput = signal<CropEntity | null>(null);
   @Input() set selectedCrop(value: CropEntity | null) {
@@ -64,8 +62,8 @@ export class CropTimelineDetailComponent implements OnInit {
     return this.stagesSignal();
   }
 
-  readonly upcomingActivitiesInput = signal<ActivityEntity[] | null>(null);
-  @Input() set upcomingActivities(value: ActivityEntity[]) {
+  readonly upcomingActivitiesInput = signal<CropActivity[] | null>(null);
+  @Input() set upcomingActivities(value: CropActivity[]) {
     this.upcomingActivitiesInput.set(value);
   }
   readonly upcomingActivitiesSignal = computed(() => {
@@ -73,12 +71,12 @@ export class CropTimelineDetailComponent implements OnInit {
     if (inputVal !== null) return inputVal;
     return this.parent ? this.parent.upcomingActivities() : [];
   });
-  get upcomingActivities(): ActivityEntity[] {
+  get upcomingActivities(): CropActivity[] {
     return this.upcomingActivitiesSignal();
   }
 
-  readonly cropActivitiesInput = signal<ActivityEntity[] | null>(null);
-  @Input() set cropActivities(value: ActivityEntity[]) {
+  readonly cropActivitiesInput = signal<CropActivity[] | null>(null);
+  @Input() set cropActivities(value: CropActivity[]) {
     this.cropActivitiesInput.set(value);
   }
   readonly cropActivitiesSignal = computed(() => {
@@ -86,7 +84,7 @@ export class CropTimelineDetailComponent implements OnInit {
     if (inputVal !== null) return inputVal;
     return this.parent ? this.parent.cropActivities() : [];
   });
-  get cropActivities(): ActivityEntity[] {
+  get cropActivities(): CropActivity[] {
     return this.cropActivitiesSignal();
   }
 
@@ -111,8 +109,8 @@ export class CropTimelineDetailComponent implements OnInit {
     return this.showActivityModalSignal();
   }
 
-  readonly editingActivityInput = signal<ActivityEntity | null>(null);
-  @Input() set editingActivity(value: ActivityEntity | null) {
+  readonly editingActivityInput = signal<CropActivity | null>(null);
+  @Input() set editingActivity(value: CropActivity | null) {
     this.editingActivityInput.set(value);
   }
   readonly editingActivitySignal = computed(() => {
@@ -120,7 +118,7 @@ export class CropTimelineDetailComponent implements OnInit {
     if (inputVal !== null) return inputVal;
     return this.parent ? this.parent.editingActivity() : null;
   });
-  get editingActivity(): ActivityEntity | null {
+  get editingActivity(): CropActivity | null {
     return this.editingActivitySignal();
   }
 
@@ -140,7 +138,7 @@ export class CropTimelineDetailComponent implements OnInit {
   @Output() readonly backClicked = new EventEmitter<void>();
   @Output() readonly updateStageClicked = new EventEmitter<CropStage>();
   @Output() readonly addActivityClicked = new EventEmitter<void>();
-  @Output() readonly editActivityClicked = new EventEmitter<ActivityEntity>();
+  @Output() readonly editActivityClicked = new EventEmitter<CropActivity>();
   @Output() readonly deleteActivityClicked = new EventEmitter<string>();
   @Output() readonly deleteCropClicked = new EventEmitter<string>();
   @Output() readonly markActivityCompletedClicked = new EventEmitter<string>();
@@ -219,7 +217,7 @@ export class CropTimelineDetailComponent implements OnInit {
     }
   }
 
-  onEditActivityClicked(act: ActivityEntity): void {
+  onEditActivityClicked(act: CropActivity): void {
     this.editActivityClicked.emit(act);
     this.editingActivityIdForModal.set(act.id);
     this.parentActivityIdForModal.set(act.parentActivityId || null);

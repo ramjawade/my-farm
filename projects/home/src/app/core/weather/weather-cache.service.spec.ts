@@ -60,7 +60,7 @@ describe('WeatherCacheService', () => {
     const key = `${testLocation.lat},${testLocation.lng}`;
     const entry = cache.get(key);
     if (entry) {
-      entry.timestamp = Date.now() - (31 * 60 * 1000);
+      entry.timestamp = Date.now() - 31 * 60 * 1000;
     }
 
     expect(service.isFresh(testLocation)).toBeFalse();

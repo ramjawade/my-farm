@@ -99,7 +99,7 @@
               >
                 <option value="Kharif">Kharif</option>
                 <option value="Rabi">Rabi</option>
-                <option value="Summer">Summer</option>
+                <option value="Zaid">Zaid</option>
               </select>
               @if (form.get('season')?.invalid && form.get('season')?.touched) {
                 <div class="invalid-feedback">Season selection is required.</div>
@@ -131,9 +131,13 @@
                   <option [value]="f.id">{{ f.name }}</option>
                 }
               </select>
-              <span class="text-muted mt-1 d-block" style="font-size: 0.75rem"
-                >Associates this activity with a drawn farm layout.</span
-              >
+              <span class="text-muted mt-1 d-block" style="font-size: 0.75rem">
+                @if (fieldLockedToCrop()) {
+                  Set automatically from the linked crop's land.
+                } @else {
+                  Associates this activity with a drawn farm layout.
+                }
+              </span>
             </div>
 
             <!-- Parent Activity Select (User Request) -->

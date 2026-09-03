@@ -4,9 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { CropTimelineService } from '../crop-timeline/crop-timeline.service';
-import { FarmActivityService } from '../farm-activity/farm-activity.service';
+import { ActivityService } from '../activity/activity.service';
 import { FarmDrawService } from '../../map/farm-draw/farm-draw.service';
-import { Activity } from '../farm-activity/farm-activity.models';
+import { Activity } from '../activity/activity.models';
 
 import { ProfileEditDialogComponent } from '../profile/components/profile-edit-dialog.component';
 
@@ -33,7 +33,7 @@ interface Suggestion {
 export class HomeComponent {
   readonly authService = inject(AuthService);
   private readonly cropService = inject(CropTimelineService);
-  private readonly activityService = inject(FarmActivityService);
+  private readonly activityService = inject(ActivityService);
   private readonly farmDrawService = inject(FarmDrawService);
   private readonly router = inject(Router);
 

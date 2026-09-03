@@ -13,7 +13,7 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { FarmActivityService } from '../farm-activity.service';
+import { ActivityService } from '../../activity/activity.service';
 import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
 
@@ -29,7 +29,7 @@ export class CreateActivityComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
-  private readonly activityService = inject(FarmActivityService);
+  private readonly activityService = inject(ActivityService);
   private readonly cropService = inject(CropTimelineService);
   private readonly farmDrawService = inject(FarmDrawService);
 
@@ -157,10 +157,29 @@ export class CreateActivityComponent implements OnInit {
       }
     }
 
-    // Subscribe to form cropId changes to update the signal reactively
+    // Subscribe to form cropId changes to update the signal reactively.
+    // The land is derived from the crop (an activity can't be on a crop in one
+    // land and a different land), so the field control follows the crop.
     this.form.get('cropId')!.valueChanges.subscribe((val) => {
       this.selectedCropId.set(val || '');
+      this.applyFieldFromCrop(val || '');
     });
+    this.applyFieldFromCrop(this.form.get('cropId')?.value || '');
+  }
+
+  /** True when a crop is linked: the land is then derived and not user-editable. */
+  readonly fieldLockedToCrop = computed(() => !!this.selectedCropId());
+
+  private applyFieldFromCrop(cropId: string): void {
+    const fieldControl = this.form.get('fieldId');
+    if (!fieldControl) return;
+    if (!cropId) {
+      if (fieldControl.disabled) fieldControl.enable({ emitEvent: false });
+      return;
+    }
+    const crop = this.crops().find((c) => c.id === cropId);
+    fieldControl.setValue(crop?.fieldId || '', { emitEvent: false });
+    if (fieldControl.enabled) fieldControl.disable({ emitEvent: false });
   }
 
   selectSuggestion(val: string): void {
@@ -192,7 +211,7 @@ export class CreateActivityComponent implements OnInit {
       return;
     }
 
-    const val = this.form.value;
+    const val = this.form.getRawValue();
 
     if (this.activityId) {
       // Update existing activity
@@ -210,9 +229,7 @@ export class CreateActivityComponent implements OnInit {
       if (val.cropId) {
         updates['cropId'] = val.cropId;
       }
-      if (val.fieldId) {
-        updates['fieldId'] = val.fieldId;
-      }
+      updates['fieldId'] = val.fieldId || undefined;
       this.activityService.updateActivity(this.activityId, updates);
     } else {
       // Create activity
