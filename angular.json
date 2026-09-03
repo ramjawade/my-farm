@@ -67,7 +67,8 @@
                   "replace": "projects/home/src/environments/environment.ts",
                   "with": "projects/home/src/environments/environment.prod.ts"
                 }
-              ]
+              ],
+              "serviceWorker": "projects/home/ngsw-config.json"
             },
             "development": {
               "optimization": false,
