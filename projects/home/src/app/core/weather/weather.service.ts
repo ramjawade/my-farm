@@ -12,12 +12,16 @@ import {
   OpenWeatherForecastResponse,
 } from './weather.models';
 import { API_CONFIG } from '../config/api.config';
+import { FarmDrawService } from '../../map/farm-draw/farm-draw.service';
+
+type DataSource = 'live' | 'cache' | 'demo';
 
 @Injectable({ providedIn: 'root' })
 export class WeatherService extends IWeatherService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
   private readonly cacheService = inject(WeatherCacheService);
+  private readonly farmDraw = inject(FarmDrawService);
 
   private readonly weatherDataSignal = signal<WeatherData | null>(null);
   readonly weatherData = computed(() => this.weatherDataSignal());
@@ -28,7 +32,54 @@ export class WeatherService extends IWeatherService {
   private readonly errorSignal = signal<string | null>(null);
   readonly error = computed(() => this.errorSignal());
 
+  readonly sourceSignal = signal<DataSource>('demo');
+  readonly source = computed(() => this.sourceSignal());
+
   readonly currentWeather = computed(() => this.weatherDataSignal());
+
+  private getLocationForWeather(): WeatherLocation {
+    const user = this.authService.currentUser();
+
+    // Priority 1: Farm centroid (first saved land)
+    const savedFarms = this.farmDraw.savedFarms();
+    if (savedFarms.length > 0) {
+      const farm = savedFarms[0];
+      const centroid = this.calculateCentroid(farm.points);
+      return {
+        lat: centroid.lat,
+        lng: centroid.lng,
+        name: farm.name,
+        state: user?.state || 'Unknown',
+      };
+    }
+
+    // Priority 2: User profile location
+    if (user?.location) {
+      return {
+        lat: user.location.lat,
+        lng: user.location.lng,
+        name: user.village || 'Profile Location',
+        state: user.state || 'Unknown',
+      };
+    }
+
+    // Priority 3: Fallback
+    return {
+      lat: 19.1136,
+      lng: 79.0882,
+      name: 'Nashik',
+      state: 'Maharashtra',
+    };
+  }
+
+  private calculateCentroid(points: { lat: number; lng: number }[]): { lat: number; lng: number } {
+    if (points.length === 0) return { lat: 19.1136, lng: 79.0882 };
+    const sum = points.reduce(
+      (acc, p) => ({ lat: acc.lat + p.lat, lng: acc.lng + p.lng }),
+      { lat: 0, lng: 0 },
+    );
+    return { lat: sum.lat / points.length, lng: sum.lng / points.length };
+  }
 
   override async getWeatherData(location: WeatherLocation): Promise<WeatherData> {
     try {
@@ -39,32 +90,44 @@ export class WeatherService extends IWeatherService {
       if (this.cacheService.isFresh(location)) {
         const cached = this.cacheService.get(location);
         if (cached) {
+          this.sourceSignal.set('cache');
           this.weatherDataSignal.set(cached);
           this.loadingSignal.set(false);
           return cached;
         }
       }
 
-      // Fetch from API
-      const [current, forecast] = await Promise.all([
-        this.fetchCurrentWeather(location),
-        this.fetchForecast(location),
-      ]);
+      // Attempt to fetch from live API
+      if (API_CONFIG.openWeatherMap.apiKey && API_CONFIG.openWeatherMap.apiKey !== 'demo-key') {
+        try {
+          const [current, forecast] = await Promise.all([
+            this.fetchCurrentWeather(location),
+            this.fetchForecast(location),
+          ]);
 
-      const weatherData: WeatherData = {
-        location,
-        current,
-        forecast,
-        alerts: await this.fetchAlerts(location).catch(() => []),
-        lastRefreshed: Date.now(),
-        isStale: false,
-      };
+          const weatherData: WeatherData = {
+            location,
+            current,
+            forecast,
+            alerts: await this.fetchAlerts(location).catch(() => []),
+            lastRefreshed: Date.now(),
+            isStale: false,
+          };
 
-      this.cacheService.set(location, weatherData);
-      this.weatherDataSignal.set(weatherData);
+          this.cacheService.set(location, weatherData);
+          this.sourceSignal.set('live');
+          this.weatherDataSignal.set(weatherData);
+          this.loadingSignal.set(false);
+
+          return weatherData;
+        } catch (error) {
+          // Fall through to cache/demo
+        }
+      }
+
+      // Fallback to cache or demo
       this.loadingSignal.set(false);
-
-      return weatherData;
+      return this.handleError(new Error('API fetch failed'), location);
     } catch (error) {
       this.loadingSignal.set(false);
       return this.handleError(error, location);
@@ -225,12 +288,14 @@ export class WeatherService extends IWeatherService {
     const cached = this.cacheService.get(location);
     if (cached) {
       cached.isStale = true;
+      this.sourceSignal.set('cache');
       this.weatherDataSignal.set(cached);
       this.errorSignal.set('Using cached weather data (network error)');
       return cached;
     }
 
     // Tier 3: Mock data
+    this.sourceSignal.set('demo');
     this.errorSignal.set('Unable to fetch weather data');
     return this.getMockWeatherData(location);
   }

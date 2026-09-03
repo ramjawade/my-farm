@@ -9,6 +9,13 @@
         </h1>
         <p class="mf-subheading text-light-override mb-0">
           {{ locationName() }} • {{ locationSub() }}
+          <span
+            class="badge ms-2 text-white-50"
+            [class]="'badge-' + sourceBadgeClass()"
+            style="font-size: 0.7rem"
+            [attr.title]="'Data source: ' + sourceDisplay()"
+            >{{ sourceDisplay() }}
+          </span>
         </p>
       </div>
 
