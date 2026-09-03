@@ -1,13 +1,15 @@
 import { Component, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ConfirmDialogComponent, ToastService } from 'shared';
 import { FarmDrawService } from '../../farm-draw/farm-draw.service';
 import { FarmAreaResult } from '../../models/map.models';
 import { CropTimelineService } from '../../../features/crop-timeline/crop-timeline.service';
+import { LandDetailComponent } from '../land-detail/land-detail.component';
 
 @Component({
   standalone: true,
   selector: 'app-saved-farms',
-  imports: [ConfirmDialogComponent],
+  imports: [CommonModule, ConfirmDialogComponent, LandDetailComponent],
   templateUrl: './saved-farms.component.html',
   styleUrl: './saved-farms.component.scss',
 })
@@ -19,6 +21,7 @@ export class SavedFarmsComponent {
   readonly savedFarmsCollapsed = signal(false);
   readonly showDeleteConfirm = signal(false);
   readonly pendingDeleteId = signal<string | null>(null);
+  readonly selectedLandDetail = signal<any | null>(null);
 
   toggleSavedFarmsCollapse(): void {
     this.savedFarmsCollapsed.update((v) => !v);
@@ -31,6 +34,10 @@ export class SavedFarmsComponent {
   /** Number of crops growing on a land (a land with crops cannot be deleted). */
   cropCount(landId: string): number {
     return this.crops.cropsForField(landId).length;
+  }
+
+  showLandDetail(land: any): void {
+    this.selectedLandDetail.set(land);
   }
 
   onDeleteSavedFarm(event: Event, id: string): void {

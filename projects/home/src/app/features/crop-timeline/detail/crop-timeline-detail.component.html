@@ -4,13 +4,16 @@
   <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
     <div>
       <h2 class="mf-page-title">{{ selectedCrop?.name }} Timeline</h2>
-      <p class="text-muted small mt-1.5 mb-0">
+      <p class="text-muted small mt-1.5 mb-1">
         @if (selectedCrop?.sowingDate) {
           Sown on {{ selectedCrop?.sowingDate | date: 'mediumDate' }} ·
           <strong>{{ getDaysAfterSowing(selectedCrop?.sowingDate) }} Days After Sowing</strong>
         } @else {
           Sowing date not set
         }
+      </p>
+      <p class="text-success fw-bold mb-0">
+        <i class="bi bi-currency-rupee"></i> Total Cost: ₹{{ cropCost() | number: '1.0-0' }}
       </p>
     </div>
     <div class="d-flex gap-2">

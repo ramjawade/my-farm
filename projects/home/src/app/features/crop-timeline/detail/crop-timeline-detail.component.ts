@@ -135,6 +135,11 @@ export class CropTimelineDetailComponent implements OnInit {
     return this.uploadedImagesSignal();
   }
 
+  readonly cropCost = computed(() => {
+    const crop = this.selectedCropSignal();
+    return crop ? this.timelineService?.costForCrop(crop.id) ?? 0 : 0;
+  });
+
   @Output() readonly backClicked = new EventEmitter<void>();
   @Output() readonly updateStageClicked = new EventEmitter<CropStage>();
   @Output() readonly addActivityClicked = new EventEmitter<void>();
