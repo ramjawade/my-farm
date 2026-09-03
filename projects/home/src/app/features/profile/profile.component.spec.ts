@@ -6,6 +6,8 @@ import { ProfileComponent } from './profile.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { FarmerRegistrationData } from '../farmer-registration/farmer-registration.models';
 import { FarmerRegistrationService } from '../farmer-registration/farmer-registration.service';
+import { IStorageService } from '../../core/storage/storage.interface';
+import { LocalStorageService } from '../../core/storage/local-storage.service';
 
 describe('ProfileComponent', () => {
   let component: ProfileComponent;
@@ -41,6 +43,7 @@ describe('ProfileComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ProfileComponent],
       providers: [
+        { provide: IStorageService, useClass: LocalStorageService },
         provideZonelessChangeDetection(),
         provideRouter([]),
         provideHttpClient(),

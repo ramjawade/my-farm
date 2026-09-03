@@ -7,6 +7,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { FarmerRegistrationComponent } from './farmer-registration.component';
 import { FarmerRegistrationService } from './farmer-registration.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { IStorageService } from '../../core/storage/storage.interface';
+import { LocalStorageService } from '../../core/storage/local-storage.service';
 
 describe('FarmerRegistrationComponent', () => {
   let component: FarmerRegistrationComponent;
@@ -21,6 +23,7 @@ describe('FarmerRegistrationComponent', () => {
     await TestBed.configureTestingModule({
       imports: [FarmerRegistrationComponent, ReactiveFormsModule],
       providers: [
+        { provide: IStorageService, useClass: LocalStorageService },
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideRouter([]),
@@ -32,6 +35,7 @@ describe('FarmerRegistrationComponent', () => {
     fixture = TestBed.createComponent(FarmerRegistrationComponent);
     component = fixture.componentInstance;
     registrationService = TestBed.inject(FarmerRegistrationService);
+    await registrationService.ready;
     registrationService.clearAll();
     authService = TestBed.inject(AuthService);
     router = TestBed.inject(Router);

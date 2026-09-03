@@ -2,12 +2,18 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { App } from './app';
+import { IStorageService } from './core/storage/storage.interface';
+import { LocalStorageService } from './core/storage/local-storage.service';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideZonelessChangeDetection(), provideRouter([])],
+      providers: [
+        { provide: IStorageService, useClass: LocalStorageService },
+        provideZonelessChangeDetection(),
+        provideRouter([]),
+      ],
     }).compileComponents();
   });
 

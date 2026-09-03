@@ -11,8 +11,8 @@ import { AuthService } from '../../core/auth/auth.service';
 import { ActivityService } from '../activity/activity.service';
 import { Activity } from '../activity/activity.models';
 import { seasonForDate } from '../../core/models/season';
+import { IStorageService } from '../../core/storage/storage.interface';
 
-const CROPS_STORAGE_KEY = 'my_farm_crops';
 const STAGE_NOTE_PREFIX = 'Growth stage advanced to: ';
 const ONE_DAY = 24 * 60 * 60 * 1000;
 
@@ -66,7 +66,11 @@ function defaultExpenseCategory(type: ActivityType): string {
 export class CropTimelineService {
   private readonly authService = inject(AuthService);
   private readonly activityService = inject(ActivityService);
+  private readonly storage = inject(IStorageService);
   private readonly cropsSignal = signal<CropEntity[]>([]);
+
+  // Bumped on every load and mutation so a load that resolves late is discarded.
+  private generation = 0;
 
   readonly crops = this.cropsSignal.asReadonly();
 
@@ -96,11 +100,6 @@ export class CropTimelineService {
     });
   }
 
-  private getUserCropsKey(): string {
-    const user = this.authService.currentUser();
-    return user ? `my_farm_${user.id}_crops` : CROPS_STORAGE_KEY;
-  }
-
   // --- Crop API ---
   getCropById(id: string): CropEntity | undefined {
     return this.cropsSignal().find((c) => c.id === id);
@@ -125,9 +124,7 @@ export class CropTimelineService {
       id: 'c-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36),
     };
 
-    const updated = [newCrop, ...this.cropsSignal()];
-    this.cropsSignal.set(updated);
-    this.saveCropsToStorage(updated);
+    this.setCrops([newCrop, ...this.cropsSignal()]);
 
     // One activity per lifecycle stage: past stages completed, later ones scheduled.
     const hasSowingDate = newCrop.sowingDate !== undefined && newCrop.sowingDate !== null;
@@ -150,15 +147,11 @@ export class CropTimelineService {
   }
 
   updateCrop(id: string, updates: Partial<CropEntity>): void {
-    const updated = this.cropsSignal().map((c) => (c.id === id ? { ...c, ...updates } : c));
-    this.cropsSignal.set(updated);
-    this.saveCropsToStorage(updated);
+    this.setCrops(this.cropsSignal().map((c) => (c.id === id ? { ...c, ...updates } : c)));
   }
 
   deleteCrop(id: string): void {
-    const updatedCrops = this.cropsSignal().filter((c) => c.id !== id);
-    this.cropsSignal.set(updatedCrops);
-    this.saveCropsToStorage(updatedCrops);
+    this.setCrops(this.cropsSignal().filter((c) => c.id !== id));
     this.activityService.deleteActivitiesForCrop(id);
   }
 
@@ -313,10 +306,11 @@ export class CropTimelineService {
   }
 
   // --- Storage & Seeding ---
-  private loadForUser(userId: string): void {
+  private async loadForUser(userId: string): Promise<void> {
+    const generation = ++this.generation;
     try {
-      const storedCrops = localStorage.getItem(`my_farm_${userId}_crops`);
-      const crops: CropEntity[] = storedCrops ? JSON.parse(storedCrops) : [];
+      const crops = await this.storage.getCrops(userId);
+      if (generation !== this.generation) return; // a mutation or newer load won
       this.cropsSignal.set(crops);
       if (userId === 'f-default' && crops.length === 0) {
         this.seedMockData();
@@ -327,11 +321,13 @@ export class CropTimelineService {
     }
   }
 
-  private saveCropsToStorage(crops: CropEntity[]): void {
-    try {
-      localStorage.setItem(this.getUserCropsKey(), JSON.stringify(crops));
-    } catch (e) {
-      console.error('Failed to save crops to local storage', e);
+  /** Apply a crop mutation and persist it for the signed-in user. */
+  private setCrops(crops: CropEntity[]): void {
+    this.generation++;
+    this.cropsSignal.set(crops);
+    const user = this.authService.currentUser();
+    if (user) {
+      this.storage.saveCrops(user.id, crops).catch((e) => console.error('Failed to save crops', e));
     }
   }
 
@@ -367,8 +363,7 @@ export class CropTimelineService {
         status: 'Active',
       },
     ];
-    this.cropsSignal.set(crops);
-    this.saveCropsToStorage(crops);
+    this.setCrops(crops);
 
     const seedStages = (cropId: string, sowing: number, current: CropStage): void => {
       const currentIdx = CROP_STAGES.indexOf(current);
