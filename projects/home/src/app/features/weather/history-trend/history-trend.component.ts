@@ -110,6 +110,15 @@ export class HistoryTrendComponent {
     return '#F44336';                        // red
   }
 
+  /** Same color family as `getTemperatureColor`, as an rgba string for gradient stops. */
+  private temperatureColorRgba(tempValue: number, alpha: number): string {
+    const hex = this.getTemperatureColor(tempValue);
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
   constructor() {
     effect((onCleanup) => {
       const canvasEl = this.chartCanvas();
@@ -120,19 +129,11 @@ export class HistoryTrendComponent {
       const ctx = canvasEl.nativeElement.getContext('2d');
       if (!ctx) return;
 
-      // Define area gradient for Temperature (Warm: Blue → Orange → Red)
+      // Area gradient uses the same thresholds/colors as the line (getTemperatureColor).
       const avgTemp = this.avgTemp();
       const gradient = ctx.createLinearGradient(0, 0, 0, 200);
-      if (avgTemp < 20) {
-        gradient.addColorStop(0, 'rgba(33, 150, 243, 0.20)');   // blue
-        gradient.addColorStop(1, 'rgba(33, 150, 243, 0.002)');
-      } else if (avgTemp < 30) {
-        gradient.addColorStop(0, 'rgba(255, 152, 0, 0.20)');    // orange
-        gradient.addColorStop(1, 'rgba(255, 152, 0, 0.002)');
-      } else {
-        gradient.addColorStop(0, 'rgba(244, 67, 54, 0.20)');    // red
-        gradient.addColorStop(1, 'rgba(244, 67, 54, 0.002)');
-      }
+      gradient.addColorStop(0, this.temperatureColorRgba(avgTemp, 0.2));
+      gradient.addColorStop(1, this.temperatureColorRgba(avgTemp, 0.002));
 
       const chart = new Chart(ctx, {
         type: 'line',

@@ -233,7 +233,7 @@ export class CropTimelineDetailComponent implements OnInit {
       // Create a scheduled activity for the stage after that (if it exists)
       const nextNext = this.timelineService.getNextStage(next);
       if (nextNext) {
-        this.timelineService.findOrCreateMainActivityForStage(crop.id, nextNext);
+        this.timelineService.ensureScheduledActivityForStage(crop.id, nextNext);
       }
     }
   }
