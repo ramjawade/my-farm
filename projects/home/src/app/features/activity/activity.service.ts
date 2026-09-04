@@ -71,32 +71,43 @@ export class ActivityService {
     }
   }
 
+  // Serialize persistActivities/persistExpenses calls so a diff always reads
+  // storage after every earlier call's writes have landed, not a stale snapshot.
+  private activitiesPersistQueue: Promise<void> = Promise.resolve();
+  private expensesPersistQueue: Promise<void> = Promise.resolve();
+
   private persistActivities(): void {
     const userId = this.getCurrentUserId();
     const activities = this.activitiesSignal();
-    this.storage.getActivities(userId).then((stored) => {
+    this.activitiesPersistQueue = this.activitiesPersistQueue.then(async () => {
+      const stored = await this.storage.getActivities(userId);
       // Replace all stored activities with current signal state
       const toDelete = stored.filter((s) => !activities.find((a) => a.id === s.id));
       const toAdd = activities.filter((a) => !stored.find((s) => s.id === a.id));
       const toUpdate = activities.filter((a) => stored.find((s) => s.id === a.id));
 
-      toDelete.forEach((a) => this.storage.deleteActivity(userId, a.id));
-      toAdd.forEach((a) => this.storage.saveActivity(userId, a));
-      toUpdate.forEach((a) => this.storage.updateActivity(userId, a.id, a));
+      await Promise.all([
+        ...toDelete.map((a) => this.storage.deleteActivity(userId, a.id)),
+        ...toAdd.map((a) => this.storage.saveActivity(userId, a)),
+        ...toUpdate.map((a) => this.storage.updateActivity(userId, a.id, a)),
+      ]);
     });
   }
 
   private persistExpenses(): void {
     const userId = this.getCurrentUserId();
     const expenses = this.expensesSignal();
-    this.storage.getExpenses(userId).then((stored) => {
+    this.expensesPersistQueue = this.expensesPersistQueue.then(async () => {
+      const stored = await this.storage.getExpenses(userId);
       const toDelete = stored.filter((s) => !expenses.find((e) => e.id === s.id));
       const toAdd = expenses.filter((e) => !stored.find((s) => s.id === e.id));
       const toUpdate = expenses.filter((e) => stored.find((s) => s.id === e.id));
 
-      toDelete.forEach((e) => this.storage.deleteExpense(userId, e.id));
-      toAdd.forEach((e) => this.storage.saveExpense(userId, e));
-      toUpdate.forEach((e) => this.storage.updateExpense(userId, e.id, e));
+      await Promise.all([
+        ...toDelete.map((e) => this.storage.deleteExpense(userId, e.id)),
+        ...toAdd.map((e) => this.storage.saveExpense(userId, e)),
+        ...toUpdate.map((e) => this.storage.updateExpense(userId, e.id, e)),
+      ]);
     });
   }
 

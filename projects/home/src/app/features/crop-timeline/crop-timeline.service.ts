@@ -290,6 +290,19 @@ export class CropTimelineService {
     });
   }
 
+  /** Ensure a Scheduled placeholder activity exists for a stage, without completing an existing one. */
+  ensureScheduledActivityForStage(cropId: string, stage: CropStage): CropActivity {
+    const existing = this.findMainActivityForStage(cropId, stage);
+    if (existing) return existing;
+    return this.addActivity({
+      cropId,
+      type: stageActivityType(stage),
+      status: 'Scheduled',
+      cost: 0,
+      notes: stageNote(stage),
+    });
+  }
+
   // --- Helpers ---
   private stageFromNote(notes: string | undefined): CropStage | undefined {
     if (!notes) return undefined;
@@ -372,7 +385,9 @@ export class CropTimelineService {
 
       if (completedStages.length === 0) return crop;
 
-      const latestCompletedStage = completedStages[completedStages.length - 1];
+      const latestCompletedStage = completedStages.reduce((furthest, stage) =>
+        CROP_STAGES.indexOf(stage) > CROP_STAGES.indexOf(furthest) ? stage : furthest,
+      );
       const nextStage = this.getNextStage(latestCompletedStage);
 
       // If crop is still at the completed stage but a next stage exists, auto-advance it
