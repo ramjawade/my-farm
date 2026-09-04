@@ -22,13 +22,6 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
-    path: 'register',
-    loadComponent: () =>
-      import('./features/farmer-registration/farmer-registration.component').then(
-        (m) => m.FarmerRegistrationComponent,
-      ),
-  },
-  {
     path: 'profile',
     loadComponent: () =>
       import('./features/profile/profile.component').then((m) => m.ProfileComponent),
