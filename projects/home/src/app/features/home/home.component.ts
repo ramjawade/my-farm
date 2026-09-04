@@ -15,6 +15,7 @@ import {
   OnboardingChecklistComponent,
   OnboardingStep,
 } from './onboarding-checklist/onboarding-checklist.component';
+import { WorkflowProgressBarComponent } from '../shared/components/workflow-progress-bar.component';
 
 @Component({
   standalone: true,
@@ -25,6 +26,7 @@ import {
     RouterLink,
     ProfileEditDialogComponent,
     OnboardingChecklistComponent,
+    WorkflowProgressBarComponent,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',

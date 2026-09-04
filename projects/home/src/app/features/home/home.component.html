@@ -1,5 +1,10 @@
 <!-- HOME PAGE CONTAINER -->
 <div class="home-container py-4 px-3 px-md-5 animate-fade-in">
+  <!-- Workflow Progress Bar -->
+  @if (isLoggedIn()) {
+    <app-workflow-progress-bar />
+  }
+
   @if (!isLoggedIn()) {
     <!-- ================= PUBLIC MARKETING LANDING PAGE ================= -->
     <div class="landing-page">

@@ -16,6 +16,7 @@ import { LatLngPoint } from '../../../map/models/map.models';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
 import { getPolygonCentroid } from '../../../map/farm-draw/farm-area.utils';
 import { MapComponent } from '../../../map/map';
+import { WorkflowStateService } from '../../../core/workflow/workflow-state.service';
 import * as L from 'leaflet';
 import { ToastService } from 'shared';
 
@@ -30,6 +31,7 @@ import { ToastService } from 'shared';
 export class ProfileEditDialogComponent {
   private readonly authService = inject(AuthService);
   private readonly toast = inject(ToastService);
+  private readonly workflowService = inject(WorkflowStateService);
   readonly drawService = inject(FarmDrawService);
 
   // Inputs using modern Signal API
@@ -414,6 +416,15 @@ export class ProfileEditDialogComponent {
     }
 
     this.authService.updateProfile(updates);
+
+    // Mark workflow phases complete
+    if (secVal === 'land' && updates.village && updates.state) {
+      this.workflowService.markPhaseComplete('land');
+    }
+    if (secVal === 'setup') {
+      this.workflowService.markPhaseComplete('location');
+    }
+
     this.toast.success('Profile updated.');
     this.close();
   }

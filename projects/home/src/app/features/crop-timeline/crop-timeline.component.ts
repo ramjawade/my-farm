@@ -20,6 +20,7 @@ import {
 } from './crop-timeline.models';
 import { ACTIVITY_STATUS_OPTIONS } from '../activity/activity.constants';
 import { ConfirmDialogComponent, ToastService } from 'shared';
+import { WorkflowStateService } from '../../core/workflow/workflow-state.service';
 
 @Component({
   standalone: true,
@@ -33,6 +34,7 @@ export class CropTimelineComponent {
   private readonly router = inject(Router);
   readonly timelineService = inject(CropTimelineService);
   private readonly toast = inject(ToastService);
+  private readonly workflowService = inject(WorkflowStateService);
 
   // View state signals
   readonly currentView = signal<'dashboard' | 'timeline' | 'add-crop'>('dashboard');
@@ -276,6 +278,9 @@ export class CropTimelineComponent {
       currentStage: values.currentStage as CropStage,
       status: 'Active',
     });
+
+    // Mark crop workflow phase complete
+    this.workflowService.markPhaseComplete('crop');
 
     this.cropForm.reset({
       name: '',

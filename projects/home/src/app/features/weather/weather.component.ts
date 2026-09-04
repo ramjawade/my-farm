@@ -6,6 +6,9 @@ import { IWeatherService } from '../../core/weather/weather.interface';
 import { ProfileEditDialogComponent } from '../profile/components/profile-edit-dialog.component';
 import { FarmDrawService } from '../../map/farm-draw/farm-draw.service';
 import { WeatherService } from '../../core/weather/weather.service';
+import { WorkflowStateService } from '../../core/workflow/workflow-state.service';
+import { OnboardingGuideService } from '../../core/workflow/onboarding-guide.service';
+import { WorkflowPromptCardComponent } from '../shared/components/workflow-prompt-card.component';
 
 interface WeatherMetric {
   title: string;
@@ -32,7 +35,7 @@ interface SoilMetric {
 
 @Component({
   selector: 'app-weather',
-  imports: [SunPathComponent, HistoryTrendComponent, ProfileEditDialogComponent],
+  imports: [SunPathComponent, HistoryTrendComponent, ProfileEditDialogComponent, WorkflowPromptCardComponent],
   templateUrl: './weather.component.html',
   styleUrl: './weather.component.scss',
 })
@@ -40,8 +43,17 @@ export class WeatherComponent {
   private readonly authService = inject(AuthService);
   private readonly weatherService = inject(IWeatherService) as WeatherService;
   private readonly farmDraw = inject(FarmDrawService);
+  private readonly workflowService = inject(WorkflowStateService);
+  private readonly onboardingService = inject(OnboardingGuideService);
 
   // Progressive location profiling signals
+  readonly shouldShowLocationPrompt = computed(() => {
+    const user = this.authService.currentUser();
+    const hasLocation = user ? user.village && user.state : false;
+    const promptNotDismissed = this.onboardingService.shouldShowPrompt('location');
+    return !hasLocation && promptNotDismissed && this.workflowService.isFirstTime();
+  });
+
   readonly showLocationPrompt = computed(() => {
     const user = this.authService.currentUser();
     return user ? !user.village || !user.state : false;
@@ -51,6 +63,19 @@ export class WeatherComponent {
 
   openLandDialog(): void {
     this.showEditDialog.set(true);
+  }
+
+  onLocationPromptAction(): void {
+    this.openLandDialog();
+  }
+
+  onLocationPromptDismiss(): void {
+    this.onboardingService.dismissPrompt('location');
+  }
+
+  onLocationSet(): void {
+    this.workflowService.markPhaseComplete('location');
+    this.onboardingService.dismissPrompt('location');
   }
 
   // Dropdown open state signal

@@ -1,5 +1,19 @@
 <div class="map-my-farm shadow-sm">
-  @if (draw.savedFarms().length === 0 && !draw.isDrawing() && !draw.isCompleted()) {
+  <!-- Workflow Prompt: Land Setup -->
+  @if (shouldShowLandPrompt()) {
+    <app-workflow-prompt-card
+      title="Draw Your Farm Boundary"
+      message="Outline a plot on the map to get its exact area and unlock high-resolution satellite views."
+      actionLabel="Start Drawing"
+      icon="bi-pin-map-fill"
+      color="#2a6f47"
+      buttonStyle="btn-success"
+      (action)="onLandPromptAction()"
+      (dismiss)="onLandPromptDismiss()"
+    />
+  }
+
+  @if (draw.savedFarms().length === 0 && !draw.isDrawing() && !draw.isCompleted() && !shouldShowLandPrompt()) {
     <div
       class="alert alert-success p-2.5 mb-2 border-0 rounded-3 text-start animate-fade-in"
       style="
