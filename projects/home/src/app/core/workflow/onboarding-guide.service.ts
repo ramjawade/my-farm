@@ -7,11 +7,7 @@ interface PromptState {
 
 @Injectable({ providedIn: 'root' })
 export class OnboardingGuideService {
-  private readonly workflowService = import('../../core/workflow/workflow-state.service').then(
-    (m) => m.WorkflowStateService,
-  );
-
-  private readonly promptState = signal<PromptState>(() => {
+  private readonly getPromptState = (): PromptState => {
     const stored = localStorage.getItem('mf-prompt-state');
     if (stored) {
       try {
@@ -24,7 +20,9 @@ export class OnboardingGuideService {
       }
     }
     return { dismissedPhases: new Set() };
-  }());
+  };
+
+  private readonly promptState = signal<PromptState>(this.getPromptState());
 
   readonly dismissedPhases = computed(() => this.promptState().dismissedPhases);
 

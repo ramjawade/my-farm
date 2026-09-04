@@ -10,7 +10,7 @@ interface WorkflowState {
 
 @Injectable({ providedIn: 'root' })
 export class WorkflowStateService {
-  private readonly stateSignal = signal<WorkflowState>(() => {
+  private readonly getState = (): WorkflowState => {
     const stored = localStorage.getItem('mf-workflow-state');
     if (stored) {
       try {
@@ -20,7 +20,9 @@ export class WorkflowStateService {
       }
     }
     return this.getInitialState();
-  }());
+  };
+
+  private readonly stateSignal = signal<WorkflowState>(this.getState());
 
   readonly completedPhases = computed(() => this.stateSignal().completedPhases);
   readonly currentPhase = computed(() => this.stateSignal().currentPhase);
