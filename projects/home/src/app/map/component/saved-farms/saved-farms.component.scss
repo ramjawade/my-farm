@@ -120,22 +120,68 @@
   border: 1px solid rgba(255, 152, 0, 0.22);
 }
 
-.map-page__saved-farms-list .btn {
-  display: inline-flex;
+.map-page__saved-farm-actions {
+  flex-shrink: 0;
+  padding-top: 0.1875rem;
+}
+
+.icon-btn {
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
-  line-height: 1;
-  vertical-align: middle;
-}
-
-.map-page__saved-farms-list .btn svg {
-  flex-shrink: 0;
-  vertical-align: middle;
-  margin: 0;
+  width: 22px;
+  height: 22px;
   padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #94a3b8;
+  opacity: 0.85;
+  cursor: pointer;
+  transition:
+    opacity 0.15s ease,
+    background 0.15s ease;
 }
 
-.map-page__saved-farms-list .btn span {
-  vertical-align: middle;
+.icon-btn:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.icon-btn svg {
+  flex-shrink: 0;
+}
+
+.icon-btn--danger {
+  color: #d32f2f;
+}
+
+.icon-btn--save {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  color: #2e7d32;
+  background: rgba(46, 125, 50, 0.12);
+}
+
+.icon-btn--cancel {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  color: #64748b;
+  background: #f1f5f9;
+}
+
+.map-page__saved-farm-rename-input {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #2c3e50;
+  border: 1.5px solid var(--bs-success);
+  border-radius: 6px;
+  padding: 0.3rem 0.5rem;
+  font-family: inherit;
+  outline: none;
+  width: 100%;
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.12);
+  background: #fff;
 }

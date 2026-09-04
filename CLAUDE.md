@@ -41,6 +41,14 @@ To keep token/API cost down while developing on this repo:
 - Don't request `high`/`xhigh` reasoning effort by default — reserve it for genuinely hard design/debugging problems.
 - Don't duplicate work between the main thread and a delegated subagent (i.e., don't re-verify what an agent already reported unless the change is safety-critical).
 
+## Interaction & Styling Rules
+
+- **Don't drive the Browser pane unless asked.** After a code change, run a build to catch compile errors, but don't click through / navigate / screenshot the live app to visually verify unless the user explicitly requests it (e.g. "check in browser"). The user prefers to verify UI changes themselves.
+- **Prefer Bootstrap CSS over custom CSS.** This app uses Bootstrap utility classes (`d-flex`, `btn`, `badge`, `gap-2`, etc. — see `projects/home/src/styles/bootstrap-config`). When styling:
+  1. Use existing Bootstrap utility classes first.
+  2. If Bootstrap doesn't cover it, extend/compose Bootstrap utilities (combine classes, or add a small modifier class layered on top).
+  3. Only write custom CSS/SCSS as a last resort, when there's no reasonable Bootstrap path (e.g. bespoke icon-button sizing, Leaflet control styling).
+
 ## Branch Strategy
 
 ### Naming Convention

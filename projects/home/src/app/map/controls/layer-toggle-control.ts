@@ -15,7 +15,7 @@ export class LayerToggleControl extends L.Control {
   constructor(options: LayerToggleControlOptions) {
     const { activeView, setLayer, ...controlOptions } = options;
     super({
-      position: 'bottomright',
+      position: 'topright',
       ...controlOptions,
     });
     this.toggleOptions = options;
@@ -27,6 +27,7 @@ export class LayerToggleControl extends L.Control {
       position: absolute;
       top: 12px;
       right: 12px;
+      margin: 0;
       display: flex;
       background: rgba(255, 255, 255, 0.96);
       border-radius: 50rem;
