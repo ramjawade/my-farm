@@ -116,4 +116,8 @@ export class CropDashboardComponent implements OnInit {
   getStageIndex(stage: CropStage): number {
     return this.stages.indexOf(stage);
   }
+
+  getStagePercent(stage: CropStage): number {
+    return ((this.getStageIndex(stage) + 1) / this.stages.length) * 100;
+  }
 }

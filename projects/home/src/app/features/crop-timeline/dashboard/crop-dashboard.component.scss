@@ -8,10 +8,11 @@
 
 /* Circular Stage progress widget */
 .progress-ring-widget {
+  flex-shrink: 0;
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: conic-gradient(#3f9b65 75%, #e2e8f0 75%);
+  background: conic-gradient(#3f9b65 calc(var(--stage-percent, 0) * 1%), #e2e8f0 0);
   padding: 3px; /* border thickness */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
 

@@ -53,6 +53,7 @@
             <!-- Circular/Radial Stage Progress Widget -->
             <div
               class="progress-ring-widget d-flex flex-column align-items-center justify-content-center"
+              [style.--stage-percent]="getStagePercent(crop.currentStage)"
             >
               <div
                 class="progress-circle-inner d-flex flex-column align-items-center justify-content-center text-success"

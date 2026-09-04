@@ -5,13 +5,16 @@
       <div class="d-flex align-items-center flex-shrink-0">
         <button
           type="button"
-          class="btn btn-outline-secondary d-md-none me-2 transition"
-          [class.active]="menuExpanded()"
+          class="btn btn-link text-decoration-none d-lg-none me-2 p-0 d-flex align-items-center justify-content-center rounded-3 hover-bg-light"
+          [class.bg-success-subtle]="menuExpanded()"
+          [class.text-success]="menuExpanded()"
+          [class.text-secondary]="!menuExpanded()"
+          style="width: 38px; height: 38px; font-size: 1.2rem"
           aria-label="Toggle navigation menu"
           [attr.aria-expanded]="menuExpanded()"
           (click)="onMenuClick()"
         >
-          <span class="navbar-toggler-icon"></span>
+          <i class="bi bi-layout-sidebar"></i>
         </button>
         <a
           routerLink="/"

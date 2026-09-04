@@ -21,7 +21,7 @@
   position: relative;
 }
 
-@include media-breakpoint-down(md) {
+@include media-breakpoint-down(lg) {
   .app-layout__body {
     grid-template-columns: 1fr;
     grid-template-areas: 'main';
@@ -31,7 +31,7 @@
 .app-layout__backdrop {
   display: none;
 
-  @include media-breakpoint-down(md) {
+  @include media-breakpoint-down(lg) {
     display: block;
     position: absolute;
     inset: 0;
