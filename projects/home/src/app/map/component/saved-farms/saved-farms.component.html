@@ -55,49 +55,118 @@
 
   @if (!savedFarmsCollapsed()) {
     <div class="map-page__saved-farms-body">
+      <!-- Search Filter -->
+      @if (farmDraw.savedFarms().length > 0) {
+        <div class="map-page__saved-farms-search mb-2 px-2 pt-2">
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            placeholder="Search lands..."
+            [value]="searchFilter()"
+            (input)="searchFilter.set($any($event.target).value)"
+            style="font-size: 0.75rem"
+          />
+        </div>
+      }
+
       @if (farmDraw.savedFarms().length === 0) {
         <div class="map-page__saved-farms-empty text-muted">
           No saved farms yet. Draw on map and click <strong>Save</strong>.
         </div>
+      } @else if (filteredFarms().length === 0) {
+        <div class="map-page__saved-farms-empty text-muted">
+          No lands match your search.
+        </div>
       } @else {
         <div class="list-group list-group-flush map-page__saved-farms-list">
-          @for (farm of farmDraw.savedFarms(); track farm.id) {
+          @for (farm of filteredFarms(); track farm.id) {
             <div
-              class="list-group-item list-group-item-action d-flex align-items-center justify-content-between p-2 cursor-pointer position-relative"
+              class="list-group-item d-flex flex-column p-2 position-relative"
               [class.active-farm]="farmDraw.selectedSavedFarm()?.id === farm.id"
-              (click)="farmDraw.selectFarm(farm); showLandDetail(farm)"
             >
-              <div class="d-flex flex-column min-width-0" style="flex: 1">
-                <span
-                  class="map-page__saved-farm-name text-truncate text-dark fw-semibold"
-                  style="font-size: 0.8rem"
-                  >{{ farm.name }}</span
-                >
-                <span class="map-page__saved-farm-area text-secondary" style="font-size: 0.7rem">{{
-                  formatFarmArea(farm.area)
-                }}</span>
+              <!-- Rename Input Row -->
+              @if (renamingId() === farm.id) {
+                <div class="d-flex gap-1 align-items-center mb-1">
+                  <input
+                    type="text"
+                    class="form-control form-control-sm"
+                    [value]="renamingValue()"
+                    (input)="renamingValue.set($any($event.target).value)"
+                    (keydown.enter)="saveRename(farm.id)"
+                    (keydown.escape)="cancelRename()"
+                    autofocus
+                    style="font-size: 0.75rem"
+                  />
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-success"
+                    (click)="saveRename(farm.id)"
+                    style="padding: 0.25rem 0.5rem; font-size: 0.7rem"
+                  >
+                    ✓
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-secondary"
+                    (click)="cancelRename()"
+                    style="padding: 0.25rem 0.5rem; font-size: 0.7rem"
+                  >
+                    ✕
+                  </button>
+                </div>
+              }
+
+              <!-- Farm Name and Status Row -->
+              <div class="d-flex align-items-center justify-content-between mb-1 cursor-pointer" (click)="farmDraw.selectFarm(farm); showLandDetail(farm)">
+                <div class="d-flex align-items-center gap-2 min-width-0" style="flex: 1">
+                  <span
+                    class="map-page__saved-farm-name text-truncate text-dark fw-semibold"
+                    style="font-size: 0.8rem"
+                    >{{ farm.name }}</span
+                  >
+                  <span
+                    class="badge"
+                    [ngClass]="getStatusBadgeClass(getLandStatus(farm.id))"
+                    style="font-size: 0.65rem; white-space: nowrap"
+                  >
+                    {{ getStatusLabel(getLandStatus(farm.id)) }}
+                  </span>
+                </div>
               </div>
-              <button
-                type="button"
-                class="btn btn-sm btn-link p-0 text-danger ms-2 map-page__saved-farm-delete"
-                (click)="onDeleteSavedFarm($event, farm.id)"
-                title="Delete farm"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="13"
-                  height="13"
-                  fill="currentColor"
-                  viewBox="0 0 16 16"
+
+              <!-- Area Info -->
+              <span class="map-page__saved-farm-area text-secondary mb-1" style="font-size: 0.7rem">{{
+                formatFarmArea(farm.area)
+              }}</span>
+
+              <!-- Quick Actions -->
+              <div class="d-flex gap-1" style="font-size: 0.7rem">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary flex-grow-1"
+                  (click)="startRename($event, farm)"
+                  style="padding: 0.25rem 0.35rem"
                 >
-                  <path
-                    d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"
-                  />
-                  <path
-                    d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"
-                  />
-                </svg>
-              </button>
+                  Rename
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary flex-grow-1"
+                  (click)="farmDraw.selectFarm(farm); showLandDetail(farm); $event.stopPropagation()"
+                  style="padding: 0.25rem 0.35rem"
+                >
+                  View
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-danger flex-grow-1"
+                  (click)="onDeleteSavedFarm($event, farm.id)"
+                  style="padding: 0.25rem 0.35rem"
+                  title="Delete land"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           }
         </div>

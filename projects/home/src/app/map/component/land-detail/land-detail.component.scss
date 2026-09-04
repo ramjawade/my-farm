@@ -1,0 +1,33 @@
+.land-detail-panel {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.list-group-item {
+  cursor: pointer;
+}
+
+.notes-box {
+  background: linear-gradient(135deg, rgba(109, 76, 65, 0.08), rgba(141, 110, 99, 0.1));
+  border: 1px solid rgba(109, 76, 65, 0.15);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.status-planted {
+  background: linear-gradient(135deg, rgba(46, 125, 50, 0.14), rgba(102, 187, 106, 0.18));
+  color: #1b5e20;
+  border: 1px solid rgba(46, 125, 50, 0.22);
+}
+
+.status-fallow {
+  background: linear-gradient(135deg, rgba(109, 76, 65, 0.1), rgba(141, 110, 99, 0.12));
+  color: #4e342e;
+  border: 1px solid rgba(109, 76, 65, 0.18);
+}
+
+.status-multiple {
+  background: linear-gradient(135deg, rgba(255, 152, 0, 0.12), rgba(255, 193, 7, 0.14));
+  color: #e65100;
+  border: 1px solid rgba(255, 152, 0, 0.22);
+}

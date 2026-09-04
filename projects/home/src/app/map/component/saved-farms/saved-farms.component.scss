@@ -93,3 +93,29 @@
   opacity: 1;
   transform: scale(1.1);
 }
+
+.map-page__saved-farms-search {
+  border-bottom: 1px solid var(--bs-border-color-translucent);
+}
+
+.map-page__saved-farms-search input {
+  border-radius: 4px;
+}
+
+.status-planted {
+  background: linear-gradient(135deg, rgba(46, 125, 50, 0.14), rgba(102, 187, 106, 0.18));
+  color: #1b5e20;
+  border: 1px solid rgba(46, 125, 50, 0.22);
+}
+
+.status-fallow {
+  background: linear-gradient(135deg, rgba(109, 76, 65, 0.1), rgba(141, 110, 99, 0.12));
+  color: #4e342e;
+  border: 1px solid rgba(109, 76, 65, 0.18);
+}
+
+.status-multiple {
+  background: linear-gradient(135deg, rgba(255, 152, 0, 0.12), rgba(255, 193, 7, 0.14));
+  color: #e65100;
+  border: 1px solid rgba(255, 152, 0, 0.22);
+}

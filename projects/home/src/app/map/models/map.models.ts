@@ -25,6 +25,7 @@ export interface SavedFarm {
   area: FarmAreaResult;
   geoJson: any;
   createdAt: number;
+  notes?: string;
 }
 
 export type FarmDrawStatus = 'idle' | 'drawing' | 'completed';

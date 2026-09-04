@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, output, effect } from '@angular/core';
 
 import { formatArea, getPolygonCentroid } from '../../farm-draw/farm-area.utils';
 import { FarmDrawService } from '../../farm-draw/farm-draw.service';
@@ -22,6 +22,9 @@ export class MapMyFarmComponent {
   private readonly workflowService = inject(WorkflowStateService);
   private readonly onboardingService = inject(OnboardingGuideService);
   readonly farmName = signal('');
+  readonly setSatelliteLayer = output<void>();
+  readonly locateMeRequest = output<void>();
+  readonly geolocating = signal(false);
 
   readonly shouldShowLandPrompt = computed(() => {
     const hasNoFarms = this.draw.savedFarms().length === 0;
@@ -33,6 +36,14 @@ export class MapMyFarmComponent {
     const area = this.draw.area();
     return area ? formatArea(area) : null;
   };
+
+  constructor() {
+    effect(() => {
+      if (this.draw.isDrawing()) {
+        this.setSatelliteLayer.emit();
+      }
+    });
+  }
 
   toggleMapMyFarm(): void {
     if (this.draw.isDrawing()) {
@@ -52,6 +63,30 @@ export class MapMyFarmComponent {
 
   undo(): void {
     this.draw.undoLastPoint();
+  }
+
+  locateMe(): void {
+    if (!navigator.geolocation) {
+      this.toast.warning('Geolocation is not supported by your browser.');
+      return;
+    }
+
+    this.geolocating.set(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        this.locateMeRequest.emit();
+        this.geolocating.set(false);
+      },
+      (error) => {
+        this.geolocating.set(false);
+        const message =
+          error.code === 1
+            ? 'Please enable location access in your browser settings.'
+            : 'Unable to get your location. Please try again.';
+        this.toast.warning(message);
+      },
+      { timeout: 10000, enableHighAccuracy: true },
+    );
   }
 
   onNameInput(event: Event): void {
