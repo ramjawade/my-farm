@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap">
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Outfit','Segoe UI',sans-serif;color:#2c3e50;}
+  .frame{position:relative;width:1000px;height:680px;overflow:hidden;
+    background:
+      radial-gradient(ellipse 420px 320px at 66% 30%, rgba(102,187,106,.5), transparent 60%),
+      radial-gradient(ellipse 340px 260px at 24% 62%, rgba(141,110,99,.42), transparent 55%),
+      radial-gradient(ellipse 320px 300px at 80% 74%, rgba(46,125,50,.46), transparent 60%),
+      radial-gradient(ellipse 260px 220px at 12% 18%, rgba(46,125,50,.32), transparent 55%),
+      linear-gradient(135deg,#465a37,#33422a);
+  }
+  .grid-overlay{position:absolute;inset:0;pointer-events:none;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(255,255,255,.05) 0 1px, transparent 1px 56px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 1px, transparent 1px 56px);
+  }
+
+  .panel{position:absolute;top:24px;left:24px;width:260px;padding:14px;
+    background:rgba(255,255,255,.96);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.18);}
+  .draw-btn{width:100%;background:linear-gradient(135deg,#2e7d32,#1b5e20);color:#fff;
+    border-radius:8px;padding:.55rem 1rem;font-family:inherit;font-weight:600;font-size:.8rem;
+    text-align:center;box-shadow:0 4px 10px rgba(46,125,50,.2);}
+  .hint{margin:10px 0 0;font-size:.72rem;color:#64748b;line-height:1.4;}
+  .actions{display:flex;gap:6px;margin-top:10px;}
+  .action-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+    border:1px solid #e2e8f0;border-radius:8px;padding:6px 4px;font-size:.62rem;
+    font-weight:600;color:#2c3e50;background:#fff;}
+  .action-btn.locate{border-color:rgba(2,136,217,.35);color:#01579b;background:rgba(2,136,217,.06);}
+  .action-btn.danger{color:#d32f2f;border-color:rgba(211,47,47,.3);}
+  .action-btn svg{width:15px;height:15px;}
+
+  .basemap-toggle{position:absolute;top:24px;right:24px;display:flex;
+    background:rgba(255,255,255,.96);border-radius:50rem;padding:3px;
+    box-shadow:0 6px 16px rgba(0,0,0,.16);}
+  .basemap-opt{font-size:.68rem;font-weight:700;padding:.4rem .9rem;border-radius:50rem;
+    color:#64748b;}
+  .basemap-opt.active{background:linear-gradient(135deg,#2e7d32,#1b5e20);color:#fff;}
+
+  .polygon-svg{position:absolute;inset:0;}
+  .point{fill:#fff;stroke:#2e7d32;stroke-width:2;}
+  .point-label{fill:#fff;font-size:9px;font-weight:700;font-family:'Outfit',sans-serif;
+    text-anchor:middle;}
+
+  .locate-wrap{position:absolute;}
+  .locate-ring{width:34px;height:34px;border-radius:50%;background:rgba(2,136,217,.25);
+    display:flex;align-items:center;justify-content:center;}
+  .locate-dot{width:12px;height:12px;border-radius:50%;background:#0288d9;
+    border:2px solid #fff;box-shadow:0 0 0 2px rgba(2,136,217,.4);}
+  .locate-label{margin-top:4px;background:rgba(17,24,20,.75);color:#fff;font-size:.62rem;
+    font-weight:600;padding:.2rem .5rem;border-radius:6px;white-space:nowrap;text-align:center;}
+</style>
+</helmet>
+<div class="frame">
+  <div class="grid-overlay"></div>
+
+  <svg class="polygon-svg" width="1000" height="680" viewBox="0 0 1000 680">
+    <polyline points="560,170 690,150 760,260 700,380 590,340" fill="rgba(102,187,106,.28)" stroke="#2e7d32" stroke-width="2.5"/>
+    <line x1="590" y1="340" x2="560" y2="170" stroke="#2e7d32" stroke-width="2" stroke-dasharray="5,5"/>
+    <circle class="point" cx="560" cy="170" r="6"/>
+    <circle class="point" cx="690" cy="150" r="6"/>
+    <circle class="point" cx="760" cy="260" r="6"/>
+    <circle class="point" cx="700" cy="380" r="6"/>
+    <circle class="point" cx="590" cy="340" r="6"/>
+  </svg>
+
+  <div class="panel">
+    <div class="draw-btn">Map my farm</div>
+    <p class="hint">Click the map to add points (5). Click the first point to complete.</p>
+    <div class="actions">
+      <div class="action-btn locate">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="10" r="3"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="10" y1="16" x2="10" y2="19"/><line x1="1" y1="10" x2="4" y2="10"/><line x1="16" y1="10" x2="19" y2="10"/></svg>
+        Locate me
+      </div>
+      <div class="action-btn">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10a6 6 0 1 1 2 4.5"/><polyline points="4,6 4,10 8,10"/></svg>
+        Undo
+      </div>
+      <div class="action-btn danger">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg>
+        Cancel
+      </div>
+    </div>
+  </div>
+
+  <div class="basemap-toggle">
+    <span class="basemap-opt">Street</span>
+    <span class="basemap-opt active">Satellite</span>
+  </div>
+
+  <div class="locate-wrap" style="left:250px; top:470px;">
+    <div class="locate-ring"><div class="locate-dot"></div></div>
+    <div class="locate-label">You are here</div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

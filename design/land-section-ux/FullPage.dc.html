@@ -1,0 +1,238 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap">
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Outfit','Segoe UI',sans-serif;color:#2c3e50;}
+  .frame{position:relative;width:1200px;height:760px;overflow:hidden;
+    background:
+      radial-gradient(ellipse 340px 260px at 68% 24%, rgba(102,187,106,.5), transparent 60%),
+      radial-gradient(ellipse 280px 220px at 22% 58%, rgba(141,110,99,.4), transparent 55%),
+      radial-gradient(ellipse 300px 280px at 78% 72%, rgba(46,125,50,.44), transparent 60%),
+      radial-gradient(ellipse 240px 200px at 40% 82%, rgba(102,187,106,.3), transparent 55%),
+      radial-gradient(ellipse 220px 200px at 12% 16%, rgba(46,125,50,.3), transparent 55%),
+      linear-gradient(135deg,#465a37,#33422a);
+  }
+  .grid-overlay{position:absolute;inset:0;pointer-events:none;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(255,255,255,.05) 0 1px, transparent 1px 56px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 1px, transparent 1px 56px);
+  }
+
+  /* ---- callouts ---- */
+  .callout{position:absolute;border-radius:12px;pointer-events:none;}
+  .callout.unchanged{border:1.5px dashed rgba(255,255,255,.55);}
+  .callout.enhanced{border:1.5px dashed #66bb6a;}
+  .callout-tag{position:absolute;font-size:.62rem;font-weight:700;letter-spacing:.03em;
+    padding:.22rem .6rem;border-radius:50rem;white-space:nowrap;text-transform:uppercase;}
+  .callout-tag.unchanged{background:rgba(17,24,20,.72);color:#e2e8f0;}
+  .callout-tag.enhanced{background:linear-gradient(135deg,#2e7d32,#1b5e20);color:#fff;}
+
+  /* ---- saved lands panel (enhanced) ---- */
+  .panel{position:absolute;top:24px;left:24px;width:270px;background:rgba(255,255,255,.97);
+    border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.18);}
+  .panel-header{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 12px;background:#fff;border-bottom:1px solid rgba(0,0,0,.06);}
+  .panel-header-left{display:flex;align-items:center;gap:7px;}
+  .panel-title{font-size:.78rem;font-weight:700;color:#2c3e50;}
+  .count-badge{font-size:.62rem;font-weight:700;background:#2e7d32;color:#fff;
+    border-radius:50rem;padding:.12rem .45rem;}
+  .search-wrap{padding:8px 12px 5px;}
+  .search-box{display:flex;align-items:center;gap:7px;background:#f4f6f5;
+    border:1px solid #e5e9e7;border-radius:8px;padding:5px 9px;}
+  .search-box span{font-size:.72rem;color:#94a3b8;}
+  .list{padding:2px 0 6px;}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:6px;
+    padding:8px 12px;border-top:1px solid rgba(0,0,0,.045);}
+  .row:first-child{border-top:none;}
+  .row-main{display:flex;flex-direction:column;gap:3px;min-width:0;}
+  .row-name-line{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+  .row-name{font-size:.74rem;font-weight:600;color:#2c3e50;}
+  .row-area{font-size:.65rem;color:#64748b;}
+  .badge{font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+    border-radius:50rem;padding:.18em .5em;white-space:nowrap;}
+  .badge-planted{background:linear-gradient(135deg, rgba(46,125,50,.14), rgba(102,187,106,.18));
+    color:#1b5e20;border:1px solid rgba(46,125,50,.22);}
+  .badge-fallow{background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;}
+  .badge-multi{background:linear-gradient(135deg, rgba(2,136,217,.12), rgba(41,182,246,.15));
+    color:#01579b;border:1px solid rgba(2,136,217,.2);}
+  .row-actions{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+  .icon-btn{display:flex;align-items:center;justify-content:center;width:18px;height:18px;
+    color:#94a3b8;opacity:.85;}
+  .icon-btn.danger{color:#d32f2f;}
+  .icon-btn.accent{color:#2e7d32;}
+  .icon-btn svg{width:11px;height:11px;}
+
+  /* ---- top-center address search (existing, unchanged) ---- */
+  .top-search{position:absolute;top:24px;left:50%;transform:translateX(-50%);width:320px;}
+  .top-search-box{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.97);
+    border-radius:8px;padding:8px 12px;box-shadow:0 6px 16px rgba(0,0,0,.16);}
+  .top-search-box span{font-size:.76rem;color:#94a3b8;}
+
+  /* ---- bottom-center draw toolbar (existing, unchanged in idle state) ---- */
+  .bottom-toolbar{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);
+    width:224px;padding:12px;background:rgba(255,255,255,.96);border-radius:10px;
+    box-shadow:0 10px 26px rgba(0,0,0,.18);text-align:center;}
+  .bottom-toolbar .btn{border:1.5px solid #66bb6a;color:#2e7d32;border-radius:8px;
+    padding:.45rem 1rem;font-weight:600;font-size:.76rem;}
+
+  /* ---- bottom-right leaflet controls (existing, unchanged) ---- */
+  .leaflet-stack{position:absolute;bottom:24px;right:20px;display:flex;flex-direction:column;
+    gap:8px;align-items:flex-end;}
+  .leaflet-bar{background:rgba(255,255,255,.97);border-radius:6px;box-shadow:0 3px 10px rgba(0,0,0,.15);
+    overflow:hidden;}
+  .leaflet-bar.zoom{display:flex;flex-direction:column;}
+  .leaflet-bar .cell{width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+    color:#2c3e50;font-size:.9rem;font-weight:700;}
+  .leaflet-bar .cell + .cell{border-top:1px solid rgba(0,0,0,.08);}
+  .leaflet-bar.icon .cell{color:#2e7d32;}
+
+  /* ---- bottom-left scale (existing, unchanged) ---- */
+  .scale{position:absolute;bottom:20px;left:20px;font-size:.68rem;font-weight:600;color:#fff;
+    text-shadow:0 1px 3px rgba(0,0,0,.6);border-bottom:2px solid #fff;padding-bottom:2px;}
+
+  /* ---- field labels drawn on the map ---- */
+  .field-label{position:absolute;font-size:.72rem;font-weight:800;color:#fff;
+    text-shadow:-1.5px -1.5px 0 rgba(0,0,0,.55),1.5px -1.5px 0 rgba(0,0,0,.55),
+    -1.5px 1.5px 0 rgba(0,0,0,.55),1.5px 1.5px 0 rgba(0,0,0,.55);white-space:nowrap;}
+</style>
+</helmet>
+<div class="frame">
+  <div class="grid-overlay"></div>
+
+  <!-- field polygons -->
+  <svg class="polygon-svg" width="1200" height="760" viewBox="0 0 1200 760" style="position:absolute;inset:0">
+    <polygon points="620,150 720,130 760,220 700,270 610,240" fill="rgba(102,187,106,.4)" stroke="#dff5e2" stroke-width="1.5"/>
+    <polygon points="380,320 460,300 500,380 430,430 360,390" fill="rgba(141,110,99,.42)" stroke="#f2e6e0" stroke-width="1.5"/>
+    <polygon points="780,420 900,400 940,520 850,580 770,510" fill="rgba(46,125,50,.42)" stroke="#dff5e2" stroke-width="1.5"/>
+    <polygon points="500,540 550,530 560,570 520,585 490,565" fill="rgba(102,187,106,.4)" stroke="#dff5e2" stroke-width="1.5"/>
+  </svg>
+  <div class="field-label" style="left:640px; top:160px;">North Field</div>
+  <div class="field-label" style="left:390px; top:335px;">River Plot</div>
+  <div class="field-label" style="left:800px; top:440px;">South Terrace</div>
+  <div class="field-label" style="left:490px; top:522px;">Home Garden</div>
+
+  <!-- callouts -->
+  <div class="callout enhanced" style="top:16px; left:16px; width:286px; height:280px;"></div>
+  <div class="callout-tag enhanced" style="top:-8px; left:16px;">Enhanced</div>
+
+  <div class="callout unchanged" style="top:14px; left:calc(50% - 172px); width:344px; height:56px;"></div>
+  <div class="callout-tag unchanged" style="top:-8px; left:calc(50% - 60px);">Unchanged</div>
+
+  <div class="callout unchanged" style="bottom:14px; right:12px; width:60px; height:150px;"></div>
+  <div class="callout-tag unchanged" style="bottom:172px; right:-4px;">Unchanged</div>
+
+  <div class="callout unchanged" style="bottom:12px; left:calc(50% - 120px); width:240px; height:100px;"></div>
+  <div class="callout-tag unchanged" style="bottom:-8px; left:calc(50% - 55px);">Unchanged</div>
+
+  <!-- saved lands panel -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-header-left">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="#2e7d32"><path fill-rule="evenodd" d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.5.5 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103M10 1.91l-4-.8v12.98l4 .8zm1 12.98 4-.8V1.11l-4 .8zm-6-.8V1.11l-4 .8v12.98z"/></svg>
+        <span class="panel-title">My Saved Lands</span>
+      </div>
+      <span class="count-badge">4</span>
+    </div>
+    <div class="search-wrap">
+      <div class="search-box">
+        <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="9" r="6"/><line x1="14" y1="14" x2="18" y2="18"/></svg>
+        <span>Search lands...</span>
+      </div>
+    </div>
+    <div class="list">
+      <div class="row">
+        <div class="row-main">
+          <div class="row-name-line"><span class="row-name">North Field</span><span class="badge badge-planted">Planted</span></div>
+          <span class="row-area">2.4 ha</span>
+        </div>
+        <div class="row-actions">
+          <span class="icon-btn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5a1.5 1.5 0 0 1 2 2L6 16 2 17l1-4Z"/></svg></span>
+          <span class="icon-btn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 18s6-5.5 6-10a6 6 0 1 0-12 0c0 4.5 6 10 6 10Z"/><circle cx="10" cy="8" r="2"/></svg></span>
+          <span class="icon-btn accent"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg></span>
+          <span class="icon-btn danger"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg></span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-main">
+          <div class="row-name-line"><span class="row-name">River Plot</span><span class="badge badge-fallow">Fallow</span></div>
+          <span class="row-area">1.1 ha</span>
+        </div>
+        <div class="row-actions">
+          <span class="icon-btn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5a1.5 1.5 0 0 1 2 2L6 16 2 17l1-4Z"/></svg></span>
+          <span class="icon-btn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 18s6-5.5 6-10a6 6 0 1 0-12 0c0 4.5 6 10 6 10Z"/><circle cx="10" cy="8" r="2"/></svg></span>
+          <span class="icon-btn accent"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg></span>
+          <span class="icon-btn danger"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg></span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-main">
+          <div class="row-name-line"><span class="row-name">South Terrace</span><span class="badge badge-multi">Multi</span></div>
+          <span class="row-area">3.8 ha</span>
+        </div>
+        <div class="row-actions">
+          <span class="icon-btn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5a1.5 1.5 0 0 1 2 2L6 16 2 17l1-4Z"/></svg></span>
+          <span class="icon-btn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 18s6-5.5 6-10a6 6 0 1 0-12 0c0 4.5 6 10 6 10Z"/><circle cx="10" cy="8" r="2"/></svg></span>
+          <span class="icon-btn accent"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg></span>
+          <span class="icon-btn danger"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg></span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-main">
+          <div class="row-name-line"><span class="row-name">Home Garden</span><span class="badge badge-planted">Planted</span></div>
+          <span class="row-area">0.3 ha</span>
+        </div>
+        <div class="row-actions">
+          <span class="icon-btn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5a1.5 1.5 0 0 1 2 2L6 16 2 17l1-4Z"/></svg></span>
+          <span class="icon-btn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 18s6-5.5 6-10a6 6 0 1 0-12 0c0 4.5 6 10 6 10Z"/><circle cx="10" cy="8" r="2"/></svg></span>
+          <span class="icon-btn accent"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg></span>
+          <span class="icon-btn danger"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- top-center address search (existing) -->
+  <div class="top-search">
+    <div class="top-search-box">
+      <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="9" r="6"/><line x1="14" y1="14" x2="18" y2="18"/></svg>
+      <span>Street, city, postcode, place...</span>
+    </div>
+  </div>
+
+  <!-- bottom-center draw toolbar (existing) -->
+  <div class="bottom-toolbar">
+    <span class="btn">Map my farm</span>
+  </div>
+
+  <!-- bottom-right leaflet controls (existing) -->
+  <div class="leaflet-stack">
+    <div class="leaflet-bar zoom">
+      <div class="cell">+</div>
+      <div class="cell">–</div>
+    </div>
+    <div class="leaflet-bar icon">
+      <div class="cell">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="#2e7d32"><path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.598-.49L10.5.99 5.5-.01a.5.5 0 0 0-.196 0l-5 1A.5.5 0 0 0 0 1.5v14a.5.5 0 0 0 .598.49l4.902-.98 5 .98a.5.5 0 0 0 .196 0l5-1A.5.5 0 0 0 16 14.5zM5 14.09V1.11l.5-.1 4 .8v12.98l-4-.8z"/></svg>
+      </div>
+    </div>
+    <div class="leaflet-bar icon">
+      <div class="cell">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="#2e7d32"><path d="M6.5 14.5v-3.507c0-.235.19-.425.424-.425h2.152c.234 0 .424.19.424.425v3.507c0 .235-.19.425-.424.425H6.924a.424.424 0 0 1-.424-.425z"/><path d="M7.293 1.5a1 1 0 0 1 1.414 0l6.647 6.646a.5.5 0 0 1-.708.708L8 2.207 1.354 8.854a.5.5 0 1 1-.708-.708z"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- bottom-left scale (existing) -->
+  <div class="scale">500 m</div>
+</div>
+</x-dc>
+</body>
+</html>
