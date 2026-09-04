@@ -1,18 +1,7 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Injectable, signal, computed, inject, effect } from '@angular/core';
 import { Activity, ActivityExpense } from './activity.models';
 import { IStorageService } from '../../core/storage/storage.interface';
 import { AuthService } from '../../core/auth/auth.service';
-
-// Emitted synchronously whenever an activity (or its expenses/cost) changes,
-// so other services (e.g. CropTimelineService) can mirror the change without
-// ActivityService depending on them — avoids a circular DI dependency.
-export interface ActivityChangeEvent {
-  type: 'upsert' | 'delete';
-  id: string;
-  activity?: Activity;
-  cost?: number;
-}
 
 @Injectable({
   providedIn: 'root',
@@ -28,19 +17,34 @@ export class ActivityService {
   // later mutation (or a newer load) can detect it's stale and skip applying.
   private mutationGeneration = 0;
 
-  private readonly changesSubject = new Subject<ActivityChangeEvent>();
-  readonly changes$ = this.changesSubject.asObservable();
-
   readonly activities = this.activitiesSignal.asReadonly();
   readonly expenses = this.expensesSignal.asReadonly();
 
+  /** Total expense per activity id, recomputed whenever expenses change. */
+  readonly costByActivity = computed(() => {
+    const totals: Record<string, number> = {};
+    for (const e of this.expensesSignal()) {
+      totals[e.activityId] = (totals[e.activityId] || 0) + (e.amount || 0);
+    }
+    return totals;
+  });
+
   constructor() {
-    this.loadFromStorage();
+    // Reload whenever the signed-in user changes (login, logout, session restore).
+    effect(() => {
+      this.auth.currentUser();
+      this.loadFromStorage();
+    });
   }
 
   private getCurrentUserId(): string {
     const user = this.auth.currentUser();
     return user?.id || 'anonymous';
+  }
+
+  /** Re-read the signed-in user's activities and expenses from storage. */
+  reload(): Promise<void> {
+    return this.loadFromStorage();
   }
 
   private async loadFromStorage(): Promise<void> {
@@ -67,32 +71,43 @@ export class ActivityService {
     }
   }
 
+  // Serialize persistActivities/persistExpenses calls so a diff always reads
+  // storage after every earlier call's writes have landed, not a stale snapshot.
+  private activitiesPersistQueue: Promise<void> = Promise.resolve();
+  private expensesPersistQueue: Promise<void> = Promise.resolve();
+
   private persistActivities(): void {
     const userId = this.getCurrentUserId();
     const activities = this.activitiesSignal();
-    this.storage.getActivities(userId).then((stored) => {
+    this.activitiesPersistQueue = this.activitiesPersistQueue.then(async () => {
+      const stored = await this.storage.getActivities(userId);
       // Replace all stored activities with current signal state
       const toDelete = stored.filter((s) => !activities.find((a) => a.id === s.id));
       const toAdd = activities.filter((a) => !stored.find((s) => s.id === a.id));
       const toUpdate = activities.filter((a) => stored.find((s) => s.id === a.id));
 
-      toDelete.forEach((a) => this.storage.deleteActivity(userId, a.id));
-      toAdd.forEach((a) => this.storage.saveActivity(userId, a));
-      toUpdate.forEach((a) => this.storage.updateActivity(userId, a.id, a));
+      await Promise.all([
+        ...toDelete.map((a) => this.storage.deleteActivity(userId, a.id)),
+        ...toAdd.map((a) => this.storage.saveActivity(userId, a)),
+        ...toUpdate.map((a) => this.storage.updateActivity(userId, a.id, a)),
+      ]);
     });
   }
 
   private persistExpenses(): void {
     const userId = this.getCurrentUserId();
     const expenses = this.expensesSignal();
-    this.storage.getExpenses(userId).then((stored) => {
+    this.expensesPersistQueue = this.expensesPersistQueue.then(async () => {
+      const stored = await this.storage.getExpenses(userId);
       const toDelete = stored.filter((s) => !expenses.find((e) => e.id === s.id));
       const toAdd = expenses.filter((e) => !stored.find((s) => s.id === e.id));
       const toUpdate = expenses.filter((e) => stored.find((s) => s.id === e.id));
 
-      toDelete.forEach((e) => this.storage.deleteExpense(userId, e.id));
-      toAdd.forEach((e) => this.storage.saveExpense(userId, e));
-      toUpdate.forEach((e) => this.storage.updateExpense(userId, e.id, e));
+      await Promise.all([
+        ...toDelete.map((e) => this.storage.deleteExpense(userId, e.id)),
+        ...toAdd.map((e) => this.storage.saveExpense(userId, e)),
+        ...toUpdate.map((e) => this.storage.updateExpense(userId, e.id, e)),
+      ]);
     });
   }
 
@@ -108,7 +123,6 @@ export class ActivityService {
     this.mutationGeneration++;
     this.activitiesSignal.update((acts) => [...acts, activity]);
     this.persistActivities();
-    this.emitUpsert(activity);
     return activity;
   }
 
@@ -118,8 +132,6 @@ export class ActivityService {
       acts.map((act) => (act.id === id ? { ...act, ...updates, updatedAt: Date.now() } : act)),
     );
     this.persistActivities();
-    const updated = this.getActivityById(id);
-    if (updated) this.emitUpsert(updated);
   }
 
   deleteActivity(id: string): void {
@@ -128,21 +140,21 @@ export class ActivityService {
     this.expensesSignal.update((exps) => exps.filter((exp) => exp.activityId !== id));
     this.persistActivities();
     this.persistExpenses();
-    this.changesSubject.next({ type: 'delete', id });
   }
 
-  private emitUpsert(activity: Activity): void {
-    this.changesSubject.next({
-      type: 'upsert',
-      id: activity.id,
-      activity,
-      cost: this.getTotalExpenseForActivity(activity.id),
-    });
-  }
-
-  private emitCostChange(activityId: string): void {
-    const activity = this.getActivityById(activityId);
-    if (activity) this.emitUpsert(activity);
+  /** Remove every activity (and its expenses) linked to a crop. */
+  deleteActivitiesForCrop(cropId: string): void {
+    const ids = new Set(
+      this.activitiesSignal()
+        .filter((a) => a.cropId === cropId)
+        .map((a) => a.id),
+    );
+    if (ids.size === 0) return;
+    this.mutationGeneration++;
+    this.activitiesSignal.update((acts) => acts.filter((a) => !ids.has(a.id)));
+    this.expensesSignal.update((exps) => exps.filter((e) => !ids.has(e.activityId)));
+    this.persistActivities();
+    this.persistExpenses();
   }
 
   getActivityById(id: string): Activity | undefined {
@@ -171,26 +183,21 @@ export class ActivityService {
     this.mutationGeneration++;
     this.expensesSignal.update((exps) => [...exps, expense]);
     this.persistExpenses();
-    this.emitCostChange(expense.activityId);
     return expense;
   }
 
   updateExpense(id: string, updates: Partial<ActivityExpense>): void {
     this.mutationGeneration++;
-    const activityId = this.expensesSignal().find((exp) => exp.id === id)?.activityId;
     this.expensesSignal.update((exps) =>
       exps.map((exp) => (exp.id === id ? { ...exp, ...updates } : exp)),
     );
     this.persistExpenses();
-    if (activityId) this.emitCostChange(activityId);
   }
 
   deleteExpense(id: string): void {
     this.mutationGeneration++;
-    const activityId = this.expensesSignal().find((exp) => exp.id === id)?.activityId;
     this.expensesSignal.update((exps) => exps.filter((exp) => exp.id !== id));
     this.persistExpenses();
-    if (activityId) this.emitCostChange(activityId);
   }
 
   getExpensesForActivity(activityId: string): ActivityExpense[] {

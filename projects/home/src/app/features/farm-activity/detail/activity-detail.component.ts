@@ -4,11 +4,11 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule, DatePipe } from '@angular/common';
 import { map } from 'rxjs/operators';
-import { FarmActivityService } from '../farm-activity.service';
+import { ActivityService } from '../../activity/activity.service';
 import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
-import { ConfirmDialogComponent } from 'shared';
-import { ActivityStatus } from '../farm-activity.models';
+import { ConfirmDialogComponent, ToastService } from 'shared';
+import { ActivityStatus } from '../../activity/activity.models';
 
 @Component({
   selector: 'app-activity-detail',
@@ -23,7 +23,8 @@ export class ActivityDetailComponent {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
-  readonly activityService = inject(FarmActivityService);
+  readonly activityService = inject(ActivityService);
+  private readonly toast = inject(ToastService);
   private readonly cropService = inject(CropTimelineService);
   private readonly farmDrawService = inject(FarmDrawService);
 
@@ -191,6 +192,7 @@ export class ActivityDetailComponent {
     const act = this.activity();
     if (act) {
       this.activityService.deleteActivity(act.id);
+      this.toast.success('Activity deleted.');
       this.router.navigate(['/activities']);
     }
   }
@@ -247,6 +249,7 @@ export class ActivityDetailComponent {
     const expenseId = this.selectedExpenseId();
     if (expenseId) {
       this.activityService.deleteExpense(expenseId);
+      this.toast.success('Expense removed.');
       this.selectedExpenseId.set(null);
     }
   }

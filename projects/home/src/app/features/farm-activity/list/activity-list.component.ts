@@ -8,11 +8,11 @@ import {
 } from '@angular/core';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { DatePipe, CommonModule } from '@angular/common';
-import { FarmActivityService } from '../farm-activity.service';
+import { ActivityService } from '../../activity/activity.service';
 import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
-import { Activity } from '../farm-activity.models';
-import { ConfirmDialogComponent } from 'shared';
+import { Activity } from '../../activity/activity.models';
+import { ConfirmDialogComponent, ToastService } from 'shared';
 
 @Component({
   selector: 'app-activity-list',
@@ -23,7 +23,8 @@ import { ConfirmDialogComponent } from 'shared';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ActivityListComponent implements OnInit {
-  readonly activityService = inject(FarmActivityService);
+  readonly activityService = inject(ActivityService);
+  private readonly toast = inject(ToastService);
   private readonly cropService = inject(CropTimelineService);
   private readonly farmDrawService = inject(FarmDrawService);
   private readonly route = inject(ActivatedRoute);
@@ -231,6 +232,7 @@ export class ActivityListComponent implements OnInit {
     const id = this.selectedActivityId();
     if (id) {
       this.activityService.deleteActivity(id);
+      this.toast.success('Activity deleted.');
       this.selectedActivityId.set(null);
     }
   }

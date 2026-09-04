@@ -7,6 +7,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { FarmerRegistrationComponent } from './farmer-registration.component';
 import { FarmerRegistrationService } from './farmer-registration.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { IStorageService } from '../../core/storage/storage.interface';
+import { LocalStorageService } from '../../core/storage/local-storage.service';
 
 describe('FarmerRegistrationComponent', () => {
   let component: FarmerRegistrationComponent;
@@ -21,6 +23,7 @@ describe('FarmerRegistrationComponent', () => {
     await TestBed.configureTestingModule({
       imports: [FarmerRegistrationComponent, ReactiveFormsModule],
       providers: [
+        { provide: IStorageService, useClass: LocalStorageService },
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideRouter([]),
@@ -32,6 +35,7 @@ describe('FarmerRegistrationComponent', () => {
     fixture = TestBed.createComponent(FarmerRegistrationComponent);
     component = fixture.componentInstance;
     registrationService = TestBed.inject(FarmerRegistrationService);
+    await registrationService.ready;
     registrationService.clearAll();
     authService = TestBed.inject(AuthService);
     router = TestBed.inject(Router);
@@ -46,7 +50,6 @@ describe('FarmerRegistrationComponent', () => {
   it('should initialize with default values', () => {
     expect(component.isSuccess()).toBeFalse();
     const form = component.registrationForm;
-    expect(form.get('preferredLanguage')?.value).toBe('English');
     expect(form.get('fullName')?.value).toBe('');
     expect(form.get('phone')?.value).toBe('');
   });
@@ -87,7 +90,6 @@ describe('FarmerRegistrationComponent', () => {
       fullName: 'Amit Patel',
       phone: '9876543210',
       email: 'amit@patelfarms.com',
-      preferredLanguage: 'Hindi',
       pin: '1234',
       confirmPin: '1234',
     });
@@ -103,7 +105,7 @@ describe('FarmerRegistrationComponent', () => {
     expect(farmers.length).toBe(1);
     expect(farmers[0].fullName).toBe('Amit Patel');
     expect(farmers[0].phone).toBe('9876543210');
-    expect(farmers[0].preferredLanguage).toBe('Hindi');
+    expect(farmers[0].preferredLanguage).toBe('English');
     expect(farmers[0].pinHash).toBeTruthy();
 
     expect(authService.isLoggedIn()).toBeTrue();

@@ -1,17 +1,20 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { FarmerRegistrationData } from './farmer-registration.models';
-
-const STORAGE_KEY = 'my_farm_registered_farmers';
+import { IStorageService } from '../../core/storage/storage.interface';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FarmerRegistrationService {
+  private readonly storage = inject(IStorageService);
   private readonly farmersSignal = signal<FarmerRegistrationData[]>([]);
   readonly registeredFarmers = this.farmersSignal.asReadonly();
 
+  /** Resolves once the farmer list has been loaded from storage. */
+  readonly ready: Promise<void>;
+
   constructor() {
-    this.loadFromStorage();
+    this.ready = this.loadFromStorage();
   }
 
   registerFarmer(data: Omit<FarmerRegistrationData, 'id' | 'createdAt'>): FarmerRegistrationData {
@@ -20,19 +23,21 @@ export class FarmerRegistrationService {
       id: this.generateUUID(),
       createdAt: Date.now(),
     };
-
-    const currentFarmers = this.farmersSignal();
-    const updatedFarmers = [newFarmer, ...currentFarmers];
-
-    this.farmersSignal.set(updatedFarmers);
-    this.saveToStorage(updatedFarmers);
-
+    this.setFarmers([newFarmer, ...this.farmersSignal()]);
     return newFarmer;
   }
 
+  /** Insert or replace a farmer record by id (used for demo / restore). */
+  upsertFarmer(farmer: FarmerRegistrationData): void {
+    const current = this.farmersSignal();
+    const exists = current.some((f) => f.id === farmer.id);
+    this.setFarmers(
+      exists ? current.map((f) => (f.id === farmer.id ? farmer : f)) : [farmer, ...current],
+    );
+  }
+
   clearAll(): void {
-    this.farmersSignal.set([]);
-    localStorage.removeItem(STORAGE_KEY);
+    this.setFarmers([]);
   }
 
   updateFarmer(
@@ -40,8 +45,7 @@ export class FarmerRegistrationService {
     updates: Partial<FarmerRegistrationData>,
   ): FarmerRegistrationData | null {
     let updatedFarmer: FarmerRegistrationData | null = null;
-    const current = this.farmersSignal();
-    const updated = current.map((f) => {
+    const updated = this.farmersSignal().map((f) => {
       if (f.id === id) {
         updatedFarmer = { ...f, ...updates };
         return updatedFarmer;
@@ -50,58 +54,23 @@ export class FarmerRegistrationService {
     });
 
     if (updatedFarmer) {
-      this.farmersSignal.set(updated);
-      this.saveToStorage(updated);
+      this.setFarmers(updated);
     }
     return updatedFarmer;
   }
 
-  private loadFromStorage(): void {
+  private async loadFromStorage(): Promise<void> {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored) as FarmerRegistrationData[];
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          this.farmersSignal.set(parsed);
-          return;
-        }
-      }
-      this.seedDefaultFarmer();
+      this.farmersSignal.set(await this.storage.getFarmers());
     } catch (e) {
-      console.error('Failed to load registered farmers from localStorage', e);
-      this.seedDefaultFarmer();
+      console.error('Failed to load registered farmers', e);
+      this.farmersSignal.set([]);
     }
   }
 
-  private seedDefaultFarmer(): void {
-    const defaultFarmer: FarmerRegistrationData = {
-      id: 'f-default',
-      fullName: 'Ram Jawade',
-      phone: '9876543210',
-      email: 'ram.jawade@myfarm.com',
-      preferredLanguage: 'English',
-      userRole: 'Farmer',
-      farmName: 'Green Valley Farm',
-      farmArea: 6.5,
-      farmAreaUnit: 'hectares',
-      primaryCrops: ['Soybeans', 'Wheat'],
-      waterSource: 'Borewell',
-      irrigationType: 'Drip',
-      farmingMethod: 'Organic',
-      locationType: 'map',
-      location: { lat: 20.5937, lng: 78.9629 },
-      createdAt: Date.now(),
-    };
-    this.farmersSignal.set([defaultFarmer]);
-    this.saveToStorage([defaultFarmer]);
-  }
-
-  private saveToStorage(farmers: FarmerRegistrationData[]): void {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(farmers));
-    } catch (e) {
-      console.error('Failed to save registered farmers to localStorage', e);
-    }
+  private setFarmers(farmers: FarmerRegistrationData[]): void {
+    this.farmersSignal.set(farmers);
+    this.storage.saveFarmers(farmers).catch((e) => console.error('Failed to save farmers', e));
   }
 
   private generateUUID(): string {

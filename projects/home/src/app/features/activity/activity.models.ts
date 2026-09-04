@@ -1,3 +1,5 @@
+import { Season } from '../../core/models/season';
+
 export type ActivityType =
   | 'Sowing'
   | 'Irrigation'
@@ -19,10 +21,12 @@ export interface Activity {
   parentActivityId?: string;
 
   // Timing
-  date: number; // timestamp
-  season?: string; // 'Kharif' | 'Rabi' | 'Summer'
+  date?: number; // timestamp; undefined = not yet scheduled
+  season?: Season;
 
-  // Links (both optional)
+  // Links (both optional). When cropId is set, fieldId is derived from the crop's land
+  // (see ActivityService.resolveFieldId) so an activity can never point at a land that
+  // disagrees with its crop.
   cropId?: string; // Link to CropEntity
   fieldId?: string; // Link to SavedFarm
 
@@ -43,6 +47,7 @@ export interface Activity {
     duration?: number; // minutes
 
     // Fertilizer/Spray
+    fertilizerName?: string;
     chemicalName?: string;
     quantity?: number; // kg or liters
     dosage?: string;
@@ -52,6 +57,7 @@ export interface Activity {
     // Harvest
     yieldQuantity?: number;
     yieldUnit?: string; // kg, quintals, tons
+    unit?: string; // legacy alias of yieldUnit
     grade?: string; // A, B, C
     sellingPrice?: number; // per unit
 

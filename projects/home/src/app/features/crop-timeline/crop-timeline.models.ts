@@ -1,4 +1,9 @@
-import { LatLngPoint } from '../../map/models/map.models';
+import { Activity, ActivityType, ActivityStatus } from '../activity/activity.models';
+import { Season } from '../../core/models/season';
+
+// The crop timeline reads the unified activity model; these re-exports keep
+// the crop feature's imports local without defining a second model.
+export type { ActivityType, ActivityStatus };
 
 export type CropStage =
   | 'Land Preparation'
@@ -10,29 +15,27 @@ export type CropStage =
   | 'Maturity'
   | 'Harvest';
 
+export const CROP_STAGES: readonly CropStage[] = [
+  'Land Preparation',
+  'Sowing',
+  'Germination',
+  'Vegetative Growth',
+  'Flowering',
+  'Fruiting / Pod Formation',
+  'Maturity',
+  'Harvest',
+];
+
 export type CropStatus = 'Active' | 'Completed' | 'Archived';
-
-export type ActivityType =
-  | 'Sowing'
-  | 'Irrigation'
-  | 'Fertilizer Application'
-  | 'Spray Application'
-  | 'Weeding'
-  | 'Field Inspection'
-  | 'Labour Activity'
-  | 'Harvest'
-  | 'Sale'
-  | 'Weather Incident';
-
-export type ActivityStatus = 'Planned' | 'Scheduled' | 'Completed' | 'Cancelled';
 
 export interface CropEntity {
   id: string;
-  fieldId: string; // e.g. "Field A", "Field B"
+  fieldId: string; // SavedFarm.id of the land this crop grows on
   name: string; // User-friendly name
   cropType: string; // e.g. "Soybeans", "Wheat", "Rice"
-  area: number; // size value
+  area: number; // size value as entered
   areaUnit: 'acres' | 'hectares';
+  season?: Season; // derived from sowingDate when not given
   sowingDate?: number; // timestamp number
   currentStage: CropStage;
   status: CropStatus;
@@ -40,38 +43,28 @@ export interface CropEntity {
   upcomingActivity?: string; // Quick dashboard note
 }
 
-export interface ActivityEntity {
-  id: string;
-  parentActivityId?: string;
+/**
+ * Read-only view of a unified `Activity` that is linked to a crop, with its
+ * expense total folded in. Produced by `CropTimelineService.activities`.
+ */
+export interface CropActivity extends Activity {
   cropId: string;
-  type: ActivityType;
-  date?: number; // timestamp number
-  status: ActivityStatus;
-  cost: number; // in ₹
+  cost: number;
   notes: string;
-  attachments: string[]; // Base64 image URLs or simulated files
-  metadata: {
-    // Irrigation specific
-    irrigationMethod?: string; // e.g. "Drip", "Sprinkler", "Flood"
-    duration?: number; // in minutes
+  attachments: string[];
+  metadata: NonNullable<Activity['metadata']>;
+}
 
-    // Fertilizer specific
-    fertilizerName?: string;
-    quantity?: number; // in kg
-    applicationMethod?: string; // e.g. "Broadcasting", "Foliar Spray"
-
-    // Spray specific
-    chemicalName?: string;
-    dosage?: string; // e.g. "500 ml/acre"
-    targetPest?: string; // e.g. "Aphids", "Whiteflies"
-
-    // Shared fields
-    waterQuantity?: number; // in liters (Irrigation & Spray)
-
-    // Harvest specific
-    yieldQuantity?: number;
-    unit?: string; // e.g. "kg", "tons", "quintals"
-    grade?: string; // e.g. "A", "B", "C"
-    sellingPrice?: number; // in ₹ per unit
-  };
+/** Input shape for logging an activity from the crop timeline. */
+export interface CropActivityInput {
+  id?: string;
+  cropId: string;
+  parentActivityId?: string;
+  type: ActivityType;
+  date?: number;
+  status: ActivityStatus;
+  cost: number;
+  notes: string;
+  attachments?: string[];
+  metadata?: NonNullable<Activity['metadata']>;
 }

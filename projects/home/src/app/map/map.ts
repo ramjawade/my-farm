@@ -156,6 +156,23 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  locateMeGPS(): void {
+    if (!this.map || !navigator.geolocation) {
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        this.map?.flyTo([latitude, longitude], 17, { duration: 1.2 });
+      },
+      () => {
+        // Error handled by component toast
+      },
+      { timeout: 10000, enableHighAccuracy: true },
+    );
+  }
+
   private initMap(): void {
     const container = this.mapContainer().nativeElement;
 

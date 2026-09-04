@@ -1,5 +1,10 @@
 <!-- HOME PAGE CONTAINER -->
 <div class="home-container py-4 px-3 px-md-5 animate-fade-in">
+  <!-- Workflow Progress Bar -->
+  @if (isLoggedIn()) {
+    <app-workflow-progress-bar />
+  }
+
   @if (!isLoggedIn()) {
     <!-- ================= PUBLIC MARKETING LANDING PAGE ================= -->
     <div class="landing-page">
@@ -24,7 +29,7 @@
           </p>
           <div class="d-flex flex-wrap justify-content-center gap-3">
             <a
-              routerLink="/register"
+              routerLink="/login"
               class="btn btn-success btn-lg px-4 py-2.5 fw-semibold hover-lift shadow-md"
             >
               <i class="bi bi-person-plus-fill me-2"></i>Create Free Profile
@@ -38,28 +43,6 @@
           </div>
         </div>
       </header>
-
-      <!-- METRICS TICKER -->
-      <section class="row g-4 mb-5 justify-content-center text-center">
-        <div class="col-6 col-md-3">
-          <div class="card card-glass border-0 shadow-xs py-4 px-3">
-            <div class="h3 fw-bold text-success mb-1">15,000+</div>
-            <div class="text-xs text-muted uppercase tracking-wider">Active Farmers</div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3">
-          <div class="card card-glass border-0 shadow-xs py-4 px-3">
-            <div class="h3 fw-bold text-success mb-1">50,000+</div>
-            <div class="text-xs text-muted uppercase tracking-wider">Hectares Mapped</div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3">
-          <div class="card card-glass border-0 shadow-xs py-4 px-3">
-            <div class="h3 fw-bold text-success mb-1">98%</div>
-            <div class="text-xs text-muted uppercase tracking-wider">Retention Rate</div>
-          </div>
-        </div>
-      </section>
 
       <!-- CORE FEATURES -->
       <section class="mb-5">
@@ -133,7 +116,7 @@
           practical tools designed for real farmers.
         </p>
         <a
-          routerLink="/register"
+          routerLink="/login"
           class="btn btn-light text-success fw-bold px-4 py-2.5 hover-lift shadow-sm"
         >
           <i class="bi bi-person-plus-fill me-2"></i>Register My Farm
@@ -276,7 +259,9 @@
             <div class="h3 fw-bold text-danger-dark mb-0">
               ₹{{ metrics().totalExpenses | number }}
             </div>
-            <div class="text-xxs text-muted mt-1">Production costs logged in June</div>
+            <div class="text-xxs text-muted mt-1">
+              Production costs logged in {{ metrics().monthName }}
+            </div>
           </div>
         </div>
       </section>
@@ -482,40 +467,13 @@
         </div>
       </div>
 
-      <!-- PROGRESSIVE PROFILING BANNER WARNINGS -->
-      @if (activeSuggestions().length > 0) {
-        <div class="row g-3 mb-4">
-          @for (sug of activeSuggestions(); track sug.id) {
-            <div class="col-12 col-lg-6">
-              <div
-                class="alert border-0 shadow-sm rounded-4 p-3 p-sm-3.5 mb-0 h-100 d-flex gap-3 align-items-start animate-fade-in"
-                [class]="sug.alertClass"
-              >
-                <i class="bi fs-4 flex-shrink-0 mt-0.5" [class]="sug.icon"></i>
-                <div class="flex-grow-1">
-                  <h4 class="alert-heading h6 fw-bold mb-1">{{ sug.title }}</h4>
-                  <p class="text-xs text-muted mb-3">{{ sug.description }}</p>
-                  @if (sug.isAction) {
-                    <button
-                      (click)="handleSuggestionAction(sug.id)"
-                      class="btn btn-xs px-3 py-1.5 fw-bold text-xs rounded-pill shadow-xs hover-lift"
-                      [class]="sug.btnClass"
-                    >
-                      {{ sug.btnText }} <i class="bi-arrow-right bi ms-1"></i>
-                    </button>
-                  } @else {
-                    <a
-                      [routerLink]="sug.route"
-                      class="btn btn-xs px-3 py-1.5 fw-bold text-xs rounded-pill shadow-xs hover-lift"
-                      [class]="sug.btnClass"
-                    >
-                      {{ sug.btnText }} <i class="bi bi-arrow-right ms-1"></i>
-                    </a>
-                  }
-                </div>
-              </div>
-            </div>
-          }
+      <!-- ONBOARDING CHECKLIST (new farmers) -->
+      @if (showOnboarding()) {
+        <div class="mb-4">
+          <app-onboarding-checklist
+            [steps]="onboardingSteps()"
+            (action)="onOnboardingAction($event)"
+          />
         </div>
       }
     </div>

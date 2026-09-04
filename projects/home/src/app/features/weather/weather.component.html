@@ -9,6 +9,13 @@
         </h1>
         <p class="mf-subheading text-light-override mb-0">
           {{ locationName() }} • {{ locationSub() }}
+          <span
+            class="badge ms-2 text-white-50"
+            [class]="'badge-' + sourceBadgeClass()"
+            style="font-size: 0.7rem"
+            [attr.title]="'Data source: ' + sourceDisplay()"
+            >{{ sourceDisplay() }}
+          </span>
         </p>
       </div>
 
@@ -24,8 +31,22 @@
     </div>
   </div>
 
-  <!-- Progressive Profiling Location Prompt -->
-  @if (showLocationPrompt()) {
+  <!-- Workflow Prompt: Location Setup -->
+  @if (shouldShowLocationPrompt()) {
+    <app-workflow-prompt-card
+      title="Set Your Location"
+      message="Tell us your village and state to receive localized weather forecasts, precise satellite mapping coordinates, and customized agronomy advisories for your fields."
+      actionLabel="Configure Location"
+      icon="bi-geo-alt-fill"
+      color="#2e7d32"
+      buttonStyle="btn-success"
+      (action)="onLocationPromptAction()"
+      (dismiss)="onLocationPromptDismiss()"
+    />
+  }
+
+  <!-- Progressive Profiling Location Prompt (Legacy) -->
+  @if (showLocationPrompt() && !shouldShowLocationPrompt()) {
     <div
       class="card card-glass mb-4 p-4 border border-warning-subtle shadow-sm animate-fade-in"
       style="border-left: 4px solid #2e7d32 !important"

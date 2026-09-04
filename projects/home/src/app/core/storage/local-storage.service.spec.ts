@@ -166,4 +166,48 @@ describe('LocalStorageService', () => {
     const parsed = JSON.parse(stored!);
     expect(parsed[0].id).toBe('act-1');
   });
+
+  it('stores crops, farms and farmers', async () => {
+    await service.saveCrops(userId, [{ id: 'c1' } as any]);
+    await service.saveFarms(userId, [{ id: 'l1' } as any]);
+    await service.saveFarmers([{ id: userId, fullName: 'Test' } as any]);
+
+    expect((await service.getCrops(userId))[0].id).toBe('c1');
+    expect((await service.getFarms(userId))[0].id).toBe('l1');
+    expect((await service.getFarmers())[0].fullName).toBe('Test');
+    expect(await service.getCrops('someone-else')).toEqual([]);
+  });
+
+  it('exports, clears and restores a user backup', async () => {
+    await service.saveActivity(userId, mockActivity);
+    await service.saveExpense(userId, mockExpense);
+    await service.saveCrops(userId, [{ id: 'c1' } as any]);
+    await service.saveFarms(userId, [{ id: 'l1' } as any]);
+    await service.saveFarmers([{ id: userId, fullName: 'Test', pinHash: 'keep' } as any]);
+
+    const backup = await service.exportUserData(userId);
+    expect(backup.app).toBe('my-farm');
+    expect(backup.activities.length).toBe(1);
+    expect(backup.expenses.length).toBe(1);
+    expect(backup.crops.length).toBe(1);
+    expect(backup.farms.length).toBe(1);
+    expect(backup.farmer?.fullName).toBe('Test');
+
+    await service.clearUserData(userId);
+    expect(await service.getActivities(userId)).toEqual([]);
+    expect(await service.getCrops(userId)).toEqual([]);
+    expect(await service.getFarms(userId)).toEqual([]);
+    // Farmer accounts are not per-user keys and survive a clear
+    expect((await service.getFarmers()).length).toBe(1);
+
+    await service.importUserData(userId, {
+      ...backup,
+      farmer: { ...backup.farmer!, fullName: 'Restored' },
+    });
+    expect((await service.getActivities(userId))[0].id).toBe('act-1');
+    expect((await service.getCrops(userId))[0].id).toBe('c1');
+    const farmer = (await service.getFarmers())[0];
+    expect(farmer.fullName).toBe('Restored');
+    expect(farmer.pinHash).toBe('keep'); // identity/PIN preserved on restore
+  });
 });

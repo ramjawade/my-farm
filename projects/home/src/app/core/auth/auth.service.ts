@@ -2,6 +2,7 @@ import { Injectable, inject, signal, computed, effect } from '@angular/core';
 import { Router } from '@angular/router';
 import { FarmerRegistrationService } from '../../features/farmer-registration/farmer-registration.service';
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
+import { WorkflowStateService } from '../workflow/workflow-state.service';
 
 const ACTIVE_USER_ID_KEY = 'my_farm_active_user_id';
 const SESSION_EXPIRY_KEY = 'my_farm_session_expiry';
@@ -13,13 +14,21 @@ const SESSION_DURATION_MS = 24 * 60 * 60 * 1000;
 export class AuthService {
   private readonly router = inject(Router);
   private readonly registrationService = inject(FarmerRegistrationService);
+  private readonly workflowService = inject(WorkflowStateService);
 
   private readonly currentUserSignal = signal<FarmerRegistrationData | null>(null);
   readonly currentUser = this.currentUserSignal.asReadonly();
   readonly isLoggedIn = computed(() => this.currentUser() !== null);
 
+  /** False until the persisted session has been checked (guards wait on `whenReady`). */
+  readonly initialized = signal(false);
+  private readonly readyPromise: Promise<void>;
+
   constructor() {
-    this.loadSession();
+    this.readyPromise = this.registrationService.ready
+      .then(() => this.loadSession())
+      .catch((e) => console.error('Failed to restore session', e))
+      .then(() => this.initialized.set(true));
 
     effect(() => {
       const user = this.currentUserSignal();
@@ -32,18 +41,25 @@ export class AuthService {
     });
   }
 
+  /** Resolves once session restore has finished. */
+  whenReady(): Promise<void> {
+    return this.readyPromise;
+  }
+
   login(farmer: FarmerRegistrationData): void {
     this.currentUserSignal.set(farmer);
     localStorage.setItem(SESSION_EXPIRY_KEY, String(Date.now() + SESSION_DURATION_MS));
+    this.workflowService.markPhaseComplete('registration');
   }
 
   updateProfile(updates: Partial<FarmerRegistrationData>): void {
     const user = this.currentUserSignal();
     if (user) {
-      const updated = this.registrationService.updateFarmer(user.id, updates);
-      if (updated) {
-        this.currentUserSignal.set(updated);
-      }
+      // Upsert: the farmer list may still be loading (or the user came from a
+      // demo login), so never drop a profile edit on the floor.
+      const updated = { ...user, ...updates };
+      this.registrationService.upsertFarmer(updated);
+      this.currentUserSignal.set(updated);
     }
   }
 

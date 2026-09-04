@@ -1,0 +1,17 @@
+{
+  "artboards": [
+    { "file": "FullPage.dc.html", "x": 0, "y": 0, "w": 1200, "h": 760, "title": "Full map page" },
+    { "file": "Main.dc.html", "x": 1280, "y": 0, "w": 640, "h": 760, "title": "Saved Lands list" },
+    { "file": "RenameState.dc.html", "x": 2000, "y": 0, "w": 640, "h": 760, "title": "Inline rename" },
+    { "file": "LandDetail.dc.html", "x": 2720, "y": 0, "w": 480, "h": 760, "title": "Land detail" },
+    { "file": "DrawToolbar.dc.html", "x": 3280, "y": 0, "w": 1000, "h": 680, "title": "Draw mode toolbar" }
+  ],
+  "annotations": [
+    { "id": "note-full", "x": 0, "y": -100, "w": 900, "text": "Full /map page for context: existing address search, zoom, layer toggle, home button and scale control are all untouched — only the Saved Lands panel (dashed green) is enhanced" },
+    { "id": "note-main", "x": 1280, "y": -100, "w": 600, "text": "NEW: search filter + status badges (Planted / Fallow / Multiple crops) + per-land quick actions (rename, view, add crop, delete)" },
+    { "id": "note-rename", "x": 2000, "y": -100, "w": 600, "text": "NEW: inline rename — fix a rushed name without leaving the map or opening a form" },
+    { "id": "note-detail", "x": 2720, "y": -100, "w": 440, "text": "NEW: optional Notes field for soil type, irrigation source, lease info" },
+    { "id": "note-toolbar", "x": 3280, "y": -100, "w": 600, "text": "NEW: Locate-me GPS button + satellite view by default while drawing" }
+  ],
+  "launch": { "view": "canvas" }
+}

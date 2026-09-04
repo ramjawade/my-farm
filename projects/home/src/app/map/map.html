@@ -14,7 +14,11 @@
     }
 
     @if (!isPicker) {
-      <app-map-my-farm class="map-page__farm-draw" />
+      <app-map-my-farm
+        class="map-page__farm-draw"
+        (setSatelliteLayer)="setLayer('satellite')"
+        (locateMeRequest)="locateMeGPS()"
+      />
     }
 
     <div #mapContainer class="map-page__container" role="region" aria-label="Map"></div>

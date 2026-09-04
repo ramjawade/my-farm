@@ -22,13 +22,6 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
-    path: 'register',
-    loadComponent: () =>
-      import('./features/farmer-registration/farmer-registration.component').then(
-        (m) => m.FarmerRegistrationComponent,
-      ),
-  },
-  {
     path: 'profile',
     loadComponent: () =>
       import('./features/profile/profile.component').then((m) => m.ProfileComponent),
@@ -102,5 +95,16 @@ export const routes: Routes = [
           ),
       },
     ],
+  },
+  {
+    path: 'reports',
+    loadComponent: () =>
+      import('./features/reports/reports.component').then((m) => m.ReportsComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: '**',
+    loadComponent: () =>
+      import('./features/not-found/not-found.component').then((m) => m.NotFoundComponent),
   },
 ];

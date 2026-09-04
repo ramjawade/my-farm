@@ -103,6 +103,22 @@ export class HistoryTrendComponent {
         : 16;
   });
 
+  private getTemperatureColor(tempValue: number): string {
+    if (tempValue < 15) return '#2196F3';    // blue
+    if (tempValue < 25) return '#4CAF50';    // green
+    if (tempValue < 35) return '#FF9800';    // orange
+    return '#F44336';                        // red
+  }
+
+  /** Same color family as `getTemperatureColor`, as an rgba string for gradient stops. */
+  private temperatureColorRgba(tempValue: number, alpha: number): string {
+    const hex = this.getTemperatureColor(tempValue);
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
   constructor() {
     effect((onCleanup) => {
       const canvasEl = this.chartCanvas();
@@ -113,10 +129,11 @@ export class HistoryTrendComponent {
       const ctx = canvasEl.nativeElement.getContext('2d');
       if (!ctx) return;
 
-      // Define area gradient for Temperature (Green)
+      // Area gradient uses the same thresholds/colors as the line (getTemperatureColor).
+      const avgTemp = this.avgTemp();
       const gradient = ctx.createLinearGradient(0, 0, 0, 200);
-      gradient.addColorStop(0, 'rgba(46, 125, 50, 0.20)');
-      gradient.addColorStop(1, 'rgba(46, 125, 50, 0.002)');
+      gradient.addColorStop(0, this.temperatureColorRgba(avgTemp, 0.2));
+      gradient.addColorStop(1, this.temperatureColorRgba(avgTemp, 0.002));
 
       const chart = new Chart(ctx, {
         type: 'line',
@@ -127,13 +144,13 @@ export class HistoryTrendComponent {
               label: 'Temp (°C)',
               data: data.map((d) => d.temp),
               yAxisID: 'yTemp',
-              borderColor: '#2e7d32',
+              borderColor: this.getTemperatureColor(this.avgTemp()),
               backgroundColor: gradient,
               fill: true,
               tension: 0.3,
               borderWidth: 3,
               pointBackgroundColor: '#ffffff',
-              pointBorderColor: '#2e7d32',
+              pointBorderColor: this.getTemperatureColor(this.avgTemp()),
               pointBorderWidth: 2,
               pointRadius: 4.5,
               pointHoverRadius: 6.5,
@@ -295,7 +312,7 @@ export class HistoryTrendComponent {
               title: {
                 display: true,
                 text: 'Temp (°C)',
-                color: '#2e7d32',
+                color: this.getTemperatureColor(this.avgTemp()),
                 font: {
                   family: 'Outfit, sans-serif',
                   weight: 'bold',
@@ -306,7 +323,7 @@ export class HistoryTrendComponent {
                 color: '#f1f5f9',
               },
               ticks: {
-                color: '#2e7d32',
+                color: this.getTemperatureColor(this.avgTemp()),
                 font: {
                   family: 'Outfit, sans-serif',
                   size: 10,

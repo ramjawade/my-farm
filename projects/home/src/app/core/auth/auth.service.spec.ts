@@ -5,6 +5,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { AuthService } from './auth.service';
 import { FarmerRegistrationService } from '../../features/farmer-registration/farmer-registration.service';
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
+import { IStorageService } from '../storage/storage.interface';
+import { LocalStorageService } from '../storage/local-storage.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -32,6 +34,7 @@ describe('AuthService', () => {
     localStorage.clear();
     TestBed.configureTestingModule({
       providers: [
+        { provide: IStorageService, useClass: LocalStorageService },
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideRouter([]),

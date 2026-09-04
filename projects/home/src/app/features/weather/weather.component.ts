@@ -4,6 +4,11 @@ import { HistoryTrendComponent } from './history-trend/history-trend.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { IWeatherService } from '../../core/weather/weather.interface';
 import { ProfileEditDialogComponent } from '../profile/components/profile-edit-dialog.component';
+import { FarmDrawService } from '../../map/farm-draw/farm-draw.service';
+import { WeatherService } from '../../core/weather/weather.service';
+import { WorkflowStateService } from '../../core/workflow/workflow-state.service';
+import { OnboardingGuideService } from '../../core/workflow/onboarding-guide.service';
+import { WorkflowPromptCardComponent } from '../shared/components/workflow-prompt-card.component';
 
 interface WeatherMetric {
   title: string;
@@ -30,15 +35,25 @@ interface SoilMetric {
 
 @Component({
   selector: 'app-weather',
-  imports: [SunPathComponent, HistoryTrendComponent, ProfileEditDialogComponent],
+  imports: [SunPathComponent, HistoryTrendComponent, ProfileEditDialogComponent, WorkflowPromptCardComponent],
   templateUrl: './weather.component.html',
   styleUrl: './weather.component.scss',
 })
 export class WeatherComponent {
   private readonly authService = inject(AuthService);
-  private readonly weatherService = inject(IWeatherService);
+  private readonly weatherService = inject(IWeatherService) as WeatherService;
+  private readonly farmDraw = inject(FarmDrawService);
+  private readonly workflowService = inject(WorkflowStateService);
+  private readonly onboardingService = inject(OnboardingGuideService);
 
   // Progressive location profiling signals
+  readonly shouldShowLocationPrompt = computed(() => {
+    const user = this.authService.currentUser();
+    const hasLocation = user ? user.village && user.state : false;
+    const promptNotDismissed = this.onboardingService.shouldShowPrompt('location');
+    return !hasLocation && promptNotDismissed && this.workflowService.isFirstTime();
+  });
+
   readonly showLocationPrompt = computed(() => {
     const user = this.authService.currentUser();
     return user ? !user.village || !user.state : false;
@@ -48,6 +63,19 @@ export class WeatherComponent {
 
   openLandDialog(): void {
     this.showEditDialog.set(true);
+  }
+
+  onLocationPromptAction(): void {
+    this.openLandDialog();
+  }
+
+  onLocationPromptDismiss(): void {
+    this.onboardingService.dismissPrompt('location');
+  }
+
+  onLocationSet(): void {
+    this.workflowService.markPhaseComplete('location');
+    this.onboardingService.dismissPrompt('location');
   }
 
   // Dropdown open state signal
@@ -68,18 +96,35 @@ export class WeatherComponent {
   }
 
   // Location information
-  readonly locationName = computed(() => {
-    const user = this.authService.currentUser();
-    if (user) {
-      if (user.village && user.state) {
-        return `${user.village}, ${user.state}`;
-      } else if (user.farmName) {
-        return user.farmName;
-      }
+  private getLocationForDisplay(): { name: string; state: string } {
+    const savedFarms = this.farmDraw.savedFarms();
+    if (savedFarms.length > 0) {
+      return { name: savedFarms[0].name, state: this.authService.currentUser()?.state || 'Unknown' };
     }
-    return 'Nashik, Maharashtra';
+    const user = this.authService.currentUser();
+    if (user?.village && user?.state) {
+      return { name: user.village, state: user.state };
+    }
+    return { name: 'Nashik', state: 'Maharashtra' };
+  }
+
+  readonly locationName = computed(() => {
+    this.farmDraw.savedFarms();
+    this.authService.currentUser();
+    const loc = this.getLocationForDisplay();
+    return `${loc.name}, ${loc.state}`;
   });
   readonly locationSub = signal('Live Weather Monitoring');
+
+  readonly sourceDisplay = computed(() => {
+    const source = this.weatherService.source();
+    return source === 'live' ? 'Live' : source === 'cache' ? 'Cached' : 'Demo';
+  });
+
+  readonly sourceBadgeClass = computed(() => {
+    const source = this.weatherService.source();
+    return source === 'live' ? 'bg-success' : source === 'cache' ? 'bg-warning' : 'bg-secondary';
+  });
 
   // Weather data from service
   readonly weatherData = computed(() => {
@@ -217,15 +262,53 @@ export class WeatherComponent {
   constructor() {
     effect(() => {
       const user = this.authService.currentUser();
-      if (user?.location) {
-        this.weatherService.getWeatherData({
-          lat: user.location.lat,
-          lng: user.location.lng,
-          name: user.village,
-          state: user.state,
-        });
+      this.farmDraw.savedFarms();
+      if (user) {
+        const loc = this.getLocationForDisplay();
+        const location = this.getResolvedLocation();
+        this.weatherService.getWeatherData(location);
       }
     });
+  }
+
+  private getResolvedLocation(): { lat: number; lng: number; name: string; state: string } {
+    const savedFarms = this.farmDraw.savedFarms();
+    if (savedFarms.length > 0) {
+      const farm = savedFarms[0];
+      const centroid = this.calculateCentroid(farm.points);
+      return {
+        lat: centroid.lat,
+        lng: centroid.lng,
+        name: farm.name,
+        state: this.authService.currentUser()?.state || 'Unknown',
+      };
+    }
+
+    const user = this.authService.currentUser();
+    if (user?.location) {
+      return {
+        lat: user.location.lat,
+        lng: user.location.lng,
+        name: user.village || 'Profile Location',
+        state: user.state || 'Unknown',
+      };
+    }
+
+    return {
+      lat: 19.1136,
+      lng: 79.0882,
+      name: 'Nashik',
+      state: 'Maharashtra',
+    };
+  }
+
+  private calculateCentroid(points: { lat: number; lng: number }[]): { lat: number; lng: number } {
+    if (points.length === 0) return { lat: 19.1136, lng: 79.0882 };
+    const sum = points.reduce(
+      (acc, p) => ({ lat: acc.lat + p.lat, lng: acc.lng + p.lng }),
+      { lat: 0, lng: 0 },
+    );
+    return { lat: sum.lat / points.length, lng: sum.lng / points.length };
   }
 
   private generateAdvisory(weather: any, crops: string[]): string[] {

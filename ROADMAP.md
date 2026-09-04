@@ -124,6 +124,25 @@ to review, big enough to move the needle.
 - [ ] Add Firebase config injection + Cloud Functions deploy step to CI/CD.
 
 **Status**: 📋 Plan approved — see [PHASE_5_PLAN.md](./PHASE_5_PLAN.md). Implementation next.
+### Phase 4.5 — MVP 1 client-presentable prototype 🔄 NEXT
+Full plan, audit findings, decisions and PR breakdown: [MVP_1_PLAN.md](./MVP_1_PLAN.md).
+Pulls forward the cross-linking/reporting items from Phase 6 and completes the
+Phase 1/2 leftovers (`ActivityEntity` still exists; `IStorageService` only covers
+activities). Backend (Phase 5) is deferred until MVP 1 is demo-able.
+
+**Status**: 🔄 Plan drafted, awaiting approval.
+
+---
+
+### Phase 5 — Backend & sync 📅 (after MVP 1)
+- [ ] Stand up a real backend (Firebase/Supabase or a small Node API) behind the Phase 2 storage interface, so a farmer's data survives a cleared browser and works across devices.
+- [ ] Migrate auth to that backend (replace local PIN check with server verification).
+- [ ] Migrate activity/expense storage to backend.
+- [ ] Implement weather data backend proxy (move API key to backend, remove client exposure).
+- [ ] Add data synchronization layer (conflict resolution, offline support).
+- [ ] Replace `IStorageService` DI binding with `BackendStorageService` (components unchanged).
+
+**Status**: 📅 Deferred to MVP 2. Plan to be created and approved before implementation.
 
 ---
 

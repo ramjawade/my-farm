@@ -6,6 +6,7 @@ import { CropTimelineComponent } from '../crop-timeline.component';
 import { CropStage } from '../crop-timeline.models';
 import { CropTimelineService } from '../crop-timeline.service';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
+import { ToastService } from 'shared';
 
 @Component({
   standalone: true,
@@ -18,6 +19,7 @@ export class AddCropComponent implements OnInit {
   private readonly router = inject(Router, { optional: true });
   private readonly cropService = inject(CropTimelineService);
   private readonly farmDrawService = inject(FarmDrawService);
+  private readonly toast = inject(ToastService);
 
   readonly savedFarms = this.farmDrawService.savedFarms;
 
@@ -106,6 +108,7 @@ export class AddCropComponent implements OnInit {
       });
 
       this.submitCrop.emit();
+      this.toast.success(`${newCrop.name} added with its growth-stage timeline.`);
 
       this.cropForm.reset({
         name: '',

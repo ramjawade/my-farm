@@ -1,0 +1,163 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap">
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Outfit','Segoe UI',sans-serif;color:#2c3e50;}
+  a{color:#2e7d32;text-decoration:none;} a:hover{color:#1b5e20;}
+  .frame{position:relative;width:640px;height:760px;overflow:hidden;
+    background:
+      radial-gradient(ellipse 320px 240px at 72% 26%, rgba(102,187,106,.55), transparent 60%),
+      radial-gradient(ellipse 260px 210px at 26% 68%, rgba(141,110,99,.45), transparent 55%),
+      radial-gradient(ellipse 240px 260px at 82% 78%, rgba(46,125,50,.5), transparent 60%),
+      radial-gradient(ellipse 200px 180px at 15% 20%, rgba(46,125,50,.35), transparent 55%),
+      linear-gradient(135deg,#4a5d3a,#3b4a2e);
+  }
+  .grid-overlay{position:absolute;inset:0;pointer-events:none;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(255,255,255,.05) 0 1px, transparent 1px 64px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 1px, transparent 1px 64px);
+  }
+  .panel{position:absolute;top:24px;left:24px;width:300px;background:rgba(255,255,255,.97);
+    border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.18);}
+  .panel-header{display:flex;align-items:center;justify-content:space-between;
+    padding:12px 14px;background:#fff;border-bottom:1px solid rgba(0,0,0,.06);}
+  .panel-header-left{display:flex;align-items:center;gap:8px;}
+  .panel-title{font-size:.85rem;font-weight:700;color:#2c3e50;}
+  .count-badge{font-size:.68rem;font-weight:700;background:#2e7d32;color:#fff;
+    border-radius:50rem;padding:.15rem .5rem;}
+  .search-wrap{padding:10px 14px 6px;}
+  .search-box{display:flex;align-items:center;gap:8px;background:#f4f6f5;
+    border:1px solid #e5e9e7;border-radius:8px;padding:6px 10px;}
+  .search-box input{border:none;background:transparent;outline:none;font-size:.78rem;
+    font-family:inherit;color:#2c3e50;width:100%;}
+  .search-box input::placeholder{color:#94a3b8;}
+  .list{padding:4px 0 8px;}
+  .row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;
+    padding:10px 14px;border-top:1px solid rgba(0,0,0,.045);}
+  .row:first-child{border-top:none;}
+  .row.active{background:rgba(46,125,50,.08);border-left:3px solid #2e7d32;padding-left:11px;}
+  .row-main{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .row-name-line{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .row-name{font-size:.8rem;font-weight:600;color:#2c3e50;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;}
+  .row-area{font-size:.7rem;color:#64748b;}
+  .badge{display:inline-flex;align-items:center;gap:4px;font-size:.6rem;font-weight:700;
+    text-transform:uppercase;letter-spacing:.04em;border-radius:50rem;padding:.22em .6em;
+    box-shadow:0 2px 6px rgba(0,0,0,.04);white-space:nowrap;}
+  .badge-planted{background:linear-gradient(135deg, rgba(46,125,50,.14), rgba(102,187,106,.18));
+    color:#1b5e20;border:1px solid rgba(46,125,50,.22);}
+  .badge-fallow{background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;}
+  .badge-multi{background:linear-gradient(135deg, rgba(2,136,217,.12), rgba(41,182,246,.15));
+    color:#01579b;border:1px solid rgba(2,136,217,.2);}
+  .row-actions{display:flex;align-items:center;gap:7px;padding-top:3px;flex-shrink:0;}
+  .icon-btn{display:flex;align-items:center;justify-content:center;width:22px;height:22px;
+    border-radius:6px;color:#94a3b8;opacity:.85;}
+  .icon-btn.danger{color:#d32f2f;}
+  .icon-btn.accent{color:#2e7d32;}
+  .icon-btn svg{width:13px;height:13px;}
+  .hint-strip{margin:24px 24px 0;max-width:280px;background:rgba(255,255,255,.92);
+    border-radius:10px;padding:8px 12px;font-size:.68rem;color:#1b5e20;font-weight:600;
+    box-shadow:0 6px 16px rgba(0,0,0,.12);}
+</style>
+</helmet>
+<div class="frame">
+  <div class="grid-overlay"></div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-header-left">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="#2e7d32"><path fill-rule="evenodd" d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.5.5 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103M10 1.91l-4-.8v12.98l4 .8zm1 12.98 4-.8V1.11l-4 .8zm-6-.8V1.11l-4 .8v12.98z"/></svg>
+        <span class="panel-title">My Saved Lands</span>
+      </div>
+      <span class="count-badge">4</span>
+    </div>
+
+    <div class="search-wrap">
+      <div class="search-box">
+        <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="9" r="6"/><line x1="14" y1="14" x2="18" y2="18"/></svg>
+        <input type="text" placeholder="Search lands...">
+      </div>
+    </div>
+
+    <div class="list">
+
+      <div class="row active">
+        <div class="row-main">
+          <div class="row-name-line">
+            <span class="row-name">North Field</span>
+            <span class="badge badge-planted">Planted</span>
+          </div>
+          <span class="row-area">2.4 ha</span>
+        </div>
+        <div class="row-actions">
+          <span class="icon-btn" title="Rename"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5a1.5 1.5 0 0 1 2 2L6 16 2 17l1-4Z"/></svg></span>
+          <span class="icon-btn" title="View on map"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 18s6-5.5 6-10a6 6 0 1 0-12 0c0 4.5 6 10 6 10Z"/><circle cx="10" cy="8" r="2"/></svg></span>
+          <span class="icon-btn accent" title="Add crop"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg></span>
+          <span class="icon-btn danger" title="Delete"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg></span>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-main">
+          <div class="row-name-line">
+            <span class="row-name">River Plot</span>
+            <span class="badge badge-fallow">Fallow</span>
+          </div>
+          <span class="row-area">1.1 ha</span>
+        </div>
+        <div class="row-actions">
+          <span class="icon-btn" title="Rename"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5a1.5 1.5 0 0 1 2 2L6 16 2 17l1-4Z"/></svg></span>
+          <span class="icon-btn" title="View on map"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 18s6-5.5 6-10a6 6 0 1 0-12 0c0 4.5 6 10 6 10Z"/><circle cx="10" cy="8" r="2"/></svg></span>
+          <span class="icon-btn accent" title="Add crop"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg></span>
+          <span class="icon-btn danger" title="Delete"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg></span>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-main">
+          <div class="row-name-line">
+            <span class="row-name">South Terrace</span>
+            <span class="badge badge-multi">Multiple crops</span>
+          </div>
+          <span class="row-area">3.8 ha</span>
+        </div>
+        <div class="row-actions">
+          <span class="icon-btn" title="Rename"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5a1.5 1.5 0 0 1 2 2L6 16 2 17l1-4Z"/></svg></span>
+          <span class="icon-btn" title="View on map"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 18s6-5.5 6-10a6 6 0 1 0-12 0c0 4.5 6 10 6 10Z"/><circle cx="10" cy="8" r="2"/></svg></span>
+          <span class="icon-btn accent" title="Add crop"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg></span>
+          <span class="icon-btn danger" title="Delete"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg></span>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-main">
+          <div class="row-name-line">
+            <span class="row-name">Home Garden</span>
+            <span class="badge badge-planted">Planted</span>
+          </div>
+          <span class="row-area">0.3 ha</span>
+        </div>
+        <div class="row-actions">
+          <span class="icon-btn" title="Rename"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5a1.5 1.5 0 0 1 2 2L6 16 2 17l1-4Z"/></svg></span>
+          <span class="icon-btn" title="View on map"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 18s6-5.5 6-10a6 6 0 1 0-12 0c0 4.5 6 10 6 10Z"/><circle cx="10" cy="8" r="2"/></svg></span>
+          <span class="icon-btn accent" title="Add crop"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg></span>
+          <span class="icon-btn danger" title="Delete"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="hint-strip">4 lands · 7.6 ha total under management</div>
+</div>
+</x-dc>
+</body>
+</html>

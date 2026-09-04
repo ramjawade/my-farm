@@ -34,7 +34,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install --legacy-peer-deps
 
       - name: Run linter
         run: npm run lint
@@ -64,10 +64,21 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install --legacy-peer-deps
+
+      - name: Stamp build metadata and secrets into the production environment
+        env:
+          OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+        run: |
+          STAMP="$(date -u +%Y%m%d).${GITHUB_SHA::7}"
+          sed -i "s|__BUILD_STAMP__|${STAMP}|" projects/home/src/environments/environment.prod.ts
+          sed -i "s|__OPENWEATHER_API_KEY__|${OPENWEATHER_API_KEY}|" projects/home/src/environments/environment.prod.ts
 
       - name: Build production
         run: npm run build:prod
+
+      - name: Add SPA fallback for GitHub Pages deep links
+        run: cp dist/home/browser/index.html dist/home/browser/404.html
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4

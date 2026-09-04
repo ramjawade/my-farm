@@ -5,7 +5,8 @@
       <div class="d-flex align-items-center flex-shrink-0">
         <button
           type="button"
-          class="btn btn-outline-secondary d-md-none me-2"
+          class="btn btn-outline-secondary d-md-none me-2 transition"
+          [class.active]="menuExpanded()"
           aria-label="Toggle navigation menu"
           [attr.aria-expanded]="menuExpanded()"
           (click)="onMenuClick()"
