@@ -14,6 +14,7 @@ import { RouterLink, Router } from '@angular/router';
 import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
 import { ActivityService } from '../../activity/activity.service';
 import { CropActivity, ActivityType } from '../../crop-timeline/crop-timeline.models';
+import { WorkflowStateService } from '../../../core/workflow/workflow-state.service';
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -30,6 +31,7 @@ export class ActivitiesSummaryComponent {
   private readonly timelineService = inject(CropTimelineService);
   private readonly activityService = inject(ActivityService);
   private readonly router = inject(Router);
+  private readonly workflowService = inject(WorkflowStateService);
 
   readonly cropId = input<string | undefined>();
   readonly isTimeline = input<boolean>(false);
@@ -302,6 +304,14 @@ export class ActivitiesSummaryComponent {
       onCleanup(() => {
         chart.destroy();
       });
+    });
+
+    // Mark activity phase complete when first activity is created
+    effect(() => {
+      const count = this.activitiesCount();
+      if (count === 1) {
+        this.workflowService.markPhaseComplete('activity');
+      }
     });
   }
 

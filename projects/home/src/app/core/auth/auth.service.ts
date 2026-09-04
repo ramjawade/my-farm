@@ -2,6 +2,7 @@ import { Injectable, inject, signal, computed, effect } from '@angular/core';
 import { Router } from '@angular/router';
 import { FarmerRegistrationService } from '../../features/farmer-registration/farmer-registration.service';
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
+import { WorkflowStateService } from '../workflow/workflow-state.service';
 
 const ACTIVE_USER_ID_KEY = 'my_farm_active_user_id';
 const SESSION_EXPIRY_KEY = 'my_farm_session_expiry';
@@ -13,6 +14,7 @@ const SESSION_DURATION_MS = 24 * 60 * 60 * 1000;
 export class AuthService {
   private readonly router = inject(Router);
   private readonly registrationService = inject(FarmerRegistrationService);
+  private readonly workflowService = inject(WorkflowStateService);
 
   private readonly currentUserSignal = signal<FarmerRegistrationData | null>(null);
   readonly currentUser = this.currentUserSignal.asReadonly();
@@ -47,6 +49,7 @@ export class AuthService {
   login(farmer: FarmerRegistrationData): void {
     this.currentUserSignal.set(farmer);
     localStorage.setItem(SESSION_EXPIRY_KEY, String(Date.now() + SESSION_DURATION_MS));
+    this.workflowService.markPhaseComplete('registration');
   }
 
   updateProfile(updates: Partial<FarmerRegistrationData>): void {
