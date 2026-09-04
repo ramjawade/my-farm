@@ -117,7 +117,7 @@ export class FarmDrawService {
     }
 
     const newFarm: SavedFarm = {
-      id: Math.random().toString(36).substring(2, 9),
+      id: crypto.randomUUID(),
       name: name.trim() || `Farm #${this.savedFarms().length + 1}`,
       points: currentPoints,
       area: currentArea,
@@ -135,6 +135,26 @@ export class FarmDrawService {
     this.setFarms(this.savedFarms().filter((f) => f.id !== id));
     if (this.selectedSavedFarm()?.id === id) {
       this.selectedSavedFarm.set(null);
+    }
+  }
+
+  renameFarm(id: string, newName: string): void {
+    const trimmed = newName.trim();
+    if (!trimmed) return;
+    const farms = this.savedFarms().map((f) => (f.id === id ? { ...f, name: trimmed } : f));
+    this.setFarms(farms);
+    const updated = farms.find((f) => f.id === id);
+    if (updated) {
+      this.selectedSavedFarm.set(updated);
+    }
+  }
+
+  updateFarmNotes(id: string, notes: string): void {
+    const farms = this.savedFarms().map((f) => (f.id === id ? { ...f, notes } : f));
+    this.setFarms(farms);
+    const updated = farms.find((f) => f.id === id);
+    if (updated) {
+      this.selectedSavedFarm.set(updated);
     }
   }
 
