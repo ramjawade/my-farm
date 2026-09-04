@@ -139,32 +139,44 @@
                 formatFarmArea(farm.area)
               }}</span>
 
-              <!-- Quick Actions -->
-              <div class="d-flex gap-1" style="font-size: 0.7rem">
+              <!-- Quick Actions with Icons -->
+              <div class="d-flex gap-2" style="font-size: 0.65rem">
                 <button
                   type="button"
-                  class="btn btn-sm btn-outline-secondary flex-grow-1"
+                  class="btn btn-sm btn-outline-secondary flex-grow-1 d-flex align-items-center justify-content-center gap-1"
                   (click)="startRename($event, farm)"
-                  style="padding: 0.25rem 0.35rem"
+                  title="Rename land"
+                  style="padding: 0.35rem 0.25rem"
                 >
-                  Rename
+                  <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.5 3.5a1.5 1.5 0 0 1 2 2L6 16 2 17l1-4Z"/>
+                  </svg>
+                  <span class="d-none d-sm-inline">Rename</span>
                 </button>
                 <button
                   type="button"
-                  class="btn btn-sm btn-outline-secondary flex-grow-1"
+                  class="btn btn-sm btn-outline-secondary flex-grow-1 d-flex align-items-center justify-content-center gap-1"
                   (click)="farmDraw.selectFarm(farm); showLandDetail(farm); $event.stopPropagation()"
-                  style="padding: 0.25rem 0.35rem"
+                  title="View land details"
+                  style="padding: 0.35rem 0.25rem"
                 >
-                  View
+                  <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10 18s6-5.5 6-10a6 6 0 1 0-12 0c0 4.5 6 10 6 10Z"/>
+                    <circle cx="10" cy="8" r="2"/>
+                  </svg>
+                  <span class="d-none d-sm-inline">View</span>
                 </button>
                 <button
                   type="button"
-                  class="btn btn-sm btn-outline-danger flex-grow-1"
+                  class="btn btn-sm btn-outline-danger flex-grow-1 d-flex align-items-center justify-content-center gap-1"
                   (click)="onDeleteSavedFarm($event, farm.id)"
-                  style="padding: 0.25rem 0.35rem"
                   title="Delete land"
+                  style="padding: 0.35rem 0.25rem"
                 >
-                  Delete
+                  <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 5h12M8 5V3h4v2M5.5 5l.8 12a1 1 0 0 0 1 .9h5.4a1 1 0 0 0 1-.9l.8-12"/>
+                  </svg>
+                  <span class="d-none d-sm-inline">Delete</span>
                 </button>
               </div>
             </div>

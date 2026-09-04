@@ -119,3 +119,23 @@
   color: #e65100;
   border: 1px solid rgba(255, 152, 0, 0.22);
 }
+
+.map-page__saved-farms-list .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.map-page__saved-farms-list .btn svg {
+  flex-shrink: 0;
+  vertical-align: middle;
+  margin: 0;
+  padding: 0;
+}
+
+.map-page__saved-farms-list .btn span {
+  vertical-align: middle;
+}
