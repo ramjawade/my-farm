@@ -140,8 +140,18 @@ export class CropTimelineDetailComponent implements OnInit {
     return crop ? this.timelineService?.costForCrop(crop.id) ?? 0 : 0;
   });
 
+  readonly nextStage = computed(() => {
+    const crop = this.selectedCropSignal();
+    return crop && this.timelineService ? this.timelineService.getNextStage(crop.currentStage) : null;
+  });
+
+  readonly canAdvanceStage = computed(() => {
+    return this.nextStage() !== null;
+  });
+
   @Output() readonly backClicked = new EventEmitter<void>();
   @Output() readonly updateStageClicked = new EventEmitter<CropStage>();
+  @Output() readonly advanceStageClicked = new EventEmitter<CropStage>();
   @Output() readonly addActivityClicked = new EventEmitter<void>();
   @Output() readonly editActivityClicked = new EventEmitter<CropActivity>();
   @Output() readonly deleteActivityClicked = new EventEmitter<string>();
@@ -209,6 +219,21 @@ export class CropTimelineDetailComponent implements OnInit {
       this.editingActivityIdForModal.set(null);
       if (this.parent) {
         this.parent.showActivityModal.set(true);
+      }
+    }
+  }
+
+  onAdvanceStageClicked(): void {
+    const crop = this.selectedCrop;
+    const next = this.nextStage();
+    if (crop && next && this.timelineService) {
+      this.advanceStageClicked.emit(next);
+      // Manually advance to next stage
+      this.timelineService.updateCrop(crop.id, { currentStage: next });
+      // Create a scheduled activity for the stage after that (if it exists)
+      const nextNext = this.timelineService.getNextStage(next);
+      if (nextNext) {
+        this.timelineService.findOrCreateMainActivityForStage(crop.id, nextNext);
       }
     }
   }

@@ -150,6 +150,13 @@ export class CropTimelineService {
     this.setCrops(this.cropsSignal().map((c) => (c.id === id ? { ...c, ...updates } : c)));
   }
 
+  /** Get the next growth stage after the provided stage, or null if already at Harvest. */
+  getNextStage(currentStage: CropStage): CropStage | null {
+    const currentIdx = CROP_STAGES.indexOf(currentStage);
+    if (currentIdx < 0 || currentIdx >= CROP_STAGES.length - 1) return null;
+    return CROP_STAGES[currentIdx + 1];
+  }
+
   deleteCrop(id: string): void {
     this.setCrops(this.cropsSignal().filter((c) => c.id !== id));
     this.activityService.deleteActivitiesForCrop(id);
@@ -190,7 +197,33 @@ export class CropTimelineService {
           date: input.date ?? Date.now(),
         });
         const stage = this.stageFromNote(parent.notes);
-        if (stage) this.updateCrop(input.cropId, { currentStage: stage });
+        if (stage) {
+          this.updateCrop(input.cropId, { currentStage: stage });
+
+          // Auto-advance to next stage: create a scheduled activity for the next stage if it exists
+          const nextStage = this.getNextStage(stage);
+          if (nextStage) {
+            const crop = this.getCropById(input.cropId);
+            const sowingTime = crop?.sowingDate ? Number(crop.sowingDate) : 0;
+            const nextStageDate =
+              crop?.sowingDate && crop.sowingDate > 0
+                ? sowingTime + STAGE_OFFSET_DAYS[nextStage] * ONE_DAY
+                : undefined;
+
+            // Create scheduled activity for next stage if one doesn't already exist
+            const existingNext = this.findMainActivityForStage(input.cropId, nextStage);
+            if (!existingNext) {
+              this.addActivity({
+                cropId: input.cropId,
+                type: stageActivityType(nextStage),
+                date: nextStageDate,
+                status: 'Scheduled',
+                cost: 0,
+                notes: stageNote(nextStage),
+              });
+            }
+          }
+        }
       }
     }
 
@@ -315,13 +348,40 @@ export class CropTimelineService {
   private async loadForUser(userId: string): Promise<void> {
     const generation = ++this.generation;
     try {
-      const crops = await this.storage.getCrops(userId);
+      let crops = await this.storage.getCrops(userId);
       if (generation !== this.generation) return; // a mutation or newer load won
+
+      // Backward compatibility: scan existing crops for auto-advancement eligibility
+      crops = this.migrateAutoAdvancedCrops(crops);
+
       this.cropsSignal.set(crops);
     } catch (e) {
       console.error('Failed to load crops from storage', e);
       this.cropsSignal.set([]);
     }
+  }
+
+  /** Backward compatibility: migrate crops by checking for completed stages and auto-advancing if needed. */
+  private migrateAutoAdvancedCrops(crops: CropEntity[]): CropEntity[] {
+    return crops.map((crop) => {
+      // Find the latest completed stage activity
+      const completedStages = this.getActivitiesForCrop(crop.id)
+        .filter((a) => !a.parentActivityId && a.status === 'Completed' && a.notes.includes('Growth stage advanced to'))
+        .map((a) => this.stageFromNote(a.notes))
+        .filter((stage): stage is CropStage => !!stage);
+
+      if (completedStages.length === 0) return crop;
+
+      const latestCompletedStage = completedStages[completedStages.length - 1];
+      const nextStage = this.getNextStage(latestCompletedStage);
+
+      // If crop is still at the completed stage but a next stage exists, auto-advance it
+      if (crop.currentStage === latestCompletedStage && nextStage) {
+        return { ...crop, currentStage: nextStage };
+      }
+
+      return crop;
+    });
   }
 
   /** Apply a crop mutation and persist it for the signed-in user. */
