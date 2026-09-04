@@ -1,1 +1,0 @@
-async function a(n){let t=new TextEncoder().encode(n),e=await crypto.subtle.digest("SHA-256",t);return Array.from(new Uint8Array(e)).map(o=>o.toString(16).padStart(2,"0")).join("")}async function i(n,r){return await a(n)===r}export{a,i as b};
