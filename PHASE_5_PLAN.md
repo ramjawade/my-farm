@@ -72,6 +72,34 @@ server-verified credentials.
 - **MVP1 scope**: Phase 5 only. Phase 6 (cross-linked dashboards, reporting)
   is deferred to a later phase.
 
+## Schema design (finalized)
+
+Visual ER diagram, field reference, architecture, and auth/migration flow
+diagrams: [MyFarm Firestore Schema](https://claude.ai/code/artifact/261b1e80-742d-4e4a-9bc3-90bcbe29da40)
+(multi-page canvas — ER Diagram / Field Reference / Architecture / Flows).
+
+- **`farmers/{uid}`** — root profile document, doc id = Firebase Auth `uid`.
+  Groups: Identity (name, phone, email, role), Farm Profile (name, area,
+  primary crops), Practices (water source, irrigation, farming method),
+  Location (state/district/village/pincode, lat/lng), Account (createdAt,
+  `pinHash` for the local re-lock, `localDataMigrated`/`migratedAt`).
+- **`farmers/{uid}/activities/{activityId}`**, **`.../expenses/{expenseId}`**,
+  **`.../crops/{cropId}`**, **`.../fields/{fieldId}`** (Firestore rename of
+  today's `SavedFarm`), **`.../weatherHistory/{entryId}`** — one subcollection
+  per feature, all owned 1-farmer-to-N under `farmers/{uid}`.
+- **Cross-references** (by stored id, not Firestore refs): `expenses.activityId`
+  → `activities`; `activities.cropId`/`activities.fieldId` → `crops`/`fields`;
+  `crops.fieldId` → `fields`. Note: `crops.fieldId` is a field-**name** string
+  today, not a doc id — migrate it to the `fields` doc id as part of this
+  phase's data model cleanup, not just a storage-layer swap.
+- **`weatherProxy`** is a Cloud Function, not a Firestore collection — it
+  holds `OPENWEATHERMAP_API_KEY` server-side and is the only secret in the
+  system; all Firebase client config (apiKey, projectId, …) ships in the
+  bundle by design and is protected by Firestore Security Rules, not secrecy.
+- **Security rule pattern**: `match /farmers/{uid}/{document=**} { allow
+  read, write: if request.auth != null && request.auth.uid == uid; }` covers
+  the root doc and every subcollection above.
+
 ## Approach
 
 ### Target architecture
@@ -164,7 +192,8 @@ one piece of this plan that isn't purely client + BaaS: a Cloud Function.
 - Extend `IStorageService` (or add parallel interfaces following the same
   pattern) to cover farmer profile, crop-timeline, and farm-draw data, not
   just activities/expenses — this is required for "backend & sync" to
-  actually be true app-wide, not just for one feature.
+  actually be true app-wide, not just for one feature. Collection shapes
+  are finalized above under "Schema design."
 - New `FirestoreStorageService` implementing the (widened) interface(s),
   swapped in via the existing DI binding point in `app.config.ts`
   (`{ provide: IStorageService, useClass: FirestoreStorageService }`) —
