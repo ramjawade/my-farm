@@ -24,35 +24,57 @@ design; this is Stage 2 (API skeleton) of that plan's delivery stages.
 No models, no migrations, no `/api/v1/me` — those are Stage 3, once there's
 a `farmer` table to build them against.
 
-## What I could not do: provision Neon and Render
+## Neon: provisioned
 
-Provisioning a Neon project and a Render service each need an account,
-sign-up, and (for Render) connecting this GitHub repository — actions on
-infrastructure I have no credentials for and cannot take on your behalf.
-This section is the runbook for doing that; the code above already reads
-its configuration from environment variables, so nothing changes once it's
-done.
+Project `my-farm` (id `round-cake-95874663`) exists in **Singapore**
+(`aws-ap-southeast-1`), database `myfarm`, default role `myfarm_app`. Two
+things worth knowing before using it:
 
-### 1. Neon (Postgres)
+**The connection string needs a small fix for asyncpg.** Neon's console
+gives you `...?channel_binding=require&sslmode=require` — both are
+libpq/psycopg conventions asyncpg doesn't parse the same way
+(`channel_binding` isn't a recognized asyncpg connect argument at all, and
+`sslmode` isn't either). Drop `channel_binding` and change `sslmode=require`
+to `ssl=require`:
 
-1. Create an account at neon.tech, then a project in the **Singapore**
-   region — the closest free region to India, and the same region Render
-   should be provisioned in (BACKEND_PLAN.md §3.2: keeping API↔DB traffic
-   in one region matters for latency).
-2. From the project dashboard, copy the **pooled** connection string (the
-   one with `-pooler` in the hostname) — the unpooled one will exhaust
-   connections fast against a 0.1-CPU API instance.
-3. Convert its scheme from `postgresql://` to `postgresql+asyncpg://` (the
-   driver `core/db.py` expects) and set it as `DATABASE_URL`.
+```
+postgresql+asyncpg://myfarm_app:<password>@ep-calm-glade-b31ecycf-pooler.c-4.ap-southeast-1.aws.neon.tech/myfarm?ssl=require
+```
 
-### 2. Render (API host)
+Set that (with the real password from the Neon console — Settings →
+Connection Details) as `DATABASE_URL` wherever the app runs. It's a secret;
+this repo never commits it.
+
+**Row-Level Security cannot be a real defense layer here — Neon-specific,
+confirmed, not a configuration mistake to fix.** Every role Neon lets you
+create for a direct connection is added to `neon_superuser` and carries
+`BYPASSRLS`, and neither can be revoked — `ALTER ROLE ... NOBYPASSRLS` and
+`REVOKE neon_superuser FROM ...` both fail with "permission denied," even
+from a role with `CREATEROLE`. Postgres superusers and `BYPASSRLS` roles
+skip Row-Level Security unconditionally, regardless of `FORCE ROW LEVEL
+SECURITY` — so on Neon, a service connecting directly (not through Neon's
+separate hosted Data API, which provisions its own non-bypassing roles for
+its own use) gets no RLS enforcement no matter how the policies are
+written. `set_rls_farmer()` and `tests/test_rls.py` still exist and still
+pass — they're correct against real self-hosted Postgres and worth keeping
+for a future migration off Neon — but **layer 2 of BACKEND_PLAN.md §5.2's
+three-layer tenant isolation does not hold on this database as deployed.**
+Layers 1 (`TenantScopedRepository`) and 3 (a cross-tenant test per
+endpoint) are load-bearing here; Stage 3 should treat endpoint tests as
+non-negotiable, not a nice-to-have, because they're what's actually
+standing in for layer 2 on this platform.
+
+### Render (API host) — still needs your action
+
+Provisioning a Render service needs an account and connecting this GitHub
+repository — I have no credentials for that and can't do it on your behalf.
 
 1. Create an account at render.com, connect this GitHub repository, and
    create a **Web Service** rooted at `projects/backend/` using the
    `Dockerfile` in this directory, in the **Singapore** region, on the free
    instance type.
 2. Set these environment variables on the service:
-   - `DATABASE_URL` — from step 1.
+   - `DATABASE_URL` — the corrected Neon connection string above.
    - `FIREBASE_PROJECT_ID` — the Firebase project id (BACKEND_PLAN.md §5.1
      — this is a public identifier, not a secret; it's what `verify_id_token`
      checks the token's audience against).
@@ -60,7 +82,7 @@ done.
      `https://ramjawade.github.io`.
 3. Render's health check path should be `/health`.
 
-### 3. Firebase Auth
+### Firebase Auth — still needs your action
 
 A Firebase project with phone-number sign-in enabled is required for real
 tokens to verify against. This app's backend only ever *verifies* tokens —
