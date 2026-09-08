@@ -395,19 +395,25 @@ synced**, so they cannot conflict.
 
 ---
 
-## 9. Type generation
+## 9. Frontend API contract types
 
-FastAPI publishes OpenAPI from the Pydantic schemas; CI runs
-`openapi-typescript` to generate the Angular client's types.
+FastAPI still publishes OpenAPI from the Pydantic schemas, but the frontend
+does **not** consume it. `projects/home/src/app/core/api/contracts/` holds
+hand-written interface modules — one per resource — that state what the
+frontend expects from each endpoint. They are authored when an endpoint is
+built (issue #49).
 
 ```
 SQLAlchemy models ──Alembic──▶ Postgres
-        └── Pydantic ──▶ OpenAPI ──openapi-typescript──▶ Angular types
+        └── Pydantic ──▶ OpenAPI  (published; not consumed by the client)
+
+projects/home/src/app/core/api/contracts/*.ts   ← hand-written, frontend-owned
 ```
 
-**CI fails if the generated types are stale**, so a backend field change
-cannot merge without the frontend seeing it. This is why no hand-maintained
-shared schema file exists.
+Nothing generates or diff-checks these against the spec. Contract drift — a
+renamed or newly-nullable backend field — is caught by the Playwright
+golden-path E2E and on staging, not at build time. This is a deliberate
+trade for keeping the frontend build fully decoupled from the backend.
 
 ---
 

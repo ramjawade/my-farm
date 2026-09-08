@@ -11,7 +11,9 @@ store any application data). There is no Firestore anywhere in this codebase.
 
 ```
 SQLAlchemy models ──Alembic──▶ Postgres
-        └── Pydantic ──▶ OpenAPI ──openapi-typescript──▶ Angular types
+        └── Pydantic ──▶ OpenAPI  (published; the frontend does not consume it)
+
+projects/home/src/app/core/api/contracts/*.ts   ← hand-written, frontend-owned
 ```
 
 | Concern | Source of truth |
@@ -19,15 +21,15 @@ SQLAlchemy models ──Alembic──▶ Postgres
 | Table/column definitions | `projects/backend/myfarm_api/models.py` (SQLAlchemy 2.0) |
 | Schema migrations | `projects/backend/migrations/versions/` (Alembic) |
 | Request/response validation | `projects/backend/myfarm_api/schemas/` (Pydantic v2) |
-| Frontend types | Generated from the FastAPI OpenAPI output via `openapi-typescript` — CI fails if generated types are stale |
+| Frontend API types | Hand-written per-resource modules in `projects/home/src/app/core/api/contracts/` (issue #49) — not generated, not diff-checked against the spec; drift is caught by the Playwright golden-path E2E and staging |
 | Full data model, normalisation rationale, and table list | [`../BACKEND_PLAN.md`](../BACKEND_PLAN.md) §6 |
 
-There is no separate hand-maintained schema file to keep in sync — the
-SQLAlchemy models are edited directly, Alembic generates the migration, and
-everything downstream (Postgres DDL, the OpenAPI contract, the TS client
-types) is generated from that one place. This intentionally replaces the
-older "single TypeScript source feeding two backends" approach: with only
-one backend (Postgres) there is nothing left to keep in sync manually.
+On the backend side the SQLAlchemy models are the single source: they are
+edited directly, Alembic generates the migration, and the Postgres DDL and
+the OpenAPI document follow from that one place. The frontend keeps its own
+hand-written view of the API (see [`../BACKEND_PLAN.md`](../BACKEND_PLAN.md)
+§9) rather than importing generated types, so the two builds stay
+decoupled.
 
 ## History
 
