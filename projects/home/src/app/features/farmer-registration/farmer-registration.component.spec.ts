@@ -35,8 +35,6 @@ describe('FarmerRegistrationComponent', () => {
     fixture = TestBed.createComponent(FarmerRegistrationComponent);
     component = fixture.componentInstance;
     registrationService = TestBed.inject(FarmerRegistrationService);
-    await registrationService.ready;
-    registrationService.clearAll();
     authService = TestBed.inject(AuthService);
     router = TestBed.inject(Router);
     spyOn(router, 'navigate');
@@ -101,12 +99,12 @@ describe('FarmerRegistrationComponent', () => {
     expect(component.isSuccess()).toBeTrue();
     expect(component.registeredName()).toBe('Amit Patel');
 
-    const farmers = registrationService.registeredFarmers();
-    expect(farmers.length).toBe(1);
-    expect(farmers[0].fullName).toBe('Amit Patel');
-    expect(farmers[0].phone).toBe('9876543210');
-    expect(farmers[0].preferredLanguage).toBe('English');
-    expect(farmers[0].pinHash).toBeTruthy();
+    const farmer = await registrationService.findByPhone('9876543210');
+    expect(farmer).toBeTruthy();
+    expect(farmer!.fullName).toBe('Amit Patel');
+    expect(farmer!.phone).toBe('9876543210');
+    expect(farmer!.preferredLanguage).toBe('English');
+    expect(farmer!.pinHash).toBeTruthy();
 
     expect(authService.isLoggedIn()).toBeTrue();
     expect(authService.currentUser()?.fullName).toBe('Amit Patel');

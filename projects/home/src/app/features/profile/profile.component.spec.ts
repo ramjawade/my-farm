@@ -5,7 +5,6 @@ import { provideHttpClient } from '@angular/common/http';
 import { ProfileComponent } from './profile.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { FarmerRegistrationData } from '../farmer-registration/farmer-registration.models';
-import { FarmerRegistrationService } from '../farmer-registration/farmer-registration.service';
 import { IStorageService } from '../../core/storage/storage.interface';
 import { LocalStorageService } from '../../core/storage/local-storage.service';
 
@@ -54,10 +53,6 @@ describe('ProfileComponent', () => {
     fixture = TestBed.createComponent(ProfileComponent);
     component = fixture.componentInstance;
     authService = TestBed.inject(AuthService);
-
-    // Seed mockUser in the registration service
-    const registrationSvc = TestBed.inject(FarmerRegistrationService);
-    (registrationSvc as any).farmersSignal.set([mockUser]);
 
     // Login mock user
     authService.login(mockUser);

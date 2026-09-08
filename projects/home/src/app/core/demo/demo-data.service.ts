@@ -26,7 +26,6 @@ export class DemoDataService {
 
   /** Sign in as the demo farmer, seeding the demo farm on first use. */
   async enterDemo(): Promise<void> {
-    await this.farmers.ready;
     this.farmers.upsertFarmer(DEMO_FARMER);
     await this.seedIfEmpty();
     this.auth.login(DEMO_FARMER);
@@ -82,8 +81,6 @@ export class DemoDataService {
 
   private async writeSeed(): Promise<void> {
     const data = buildDemoDataset();
-    await this.storage.saveFarms(DEMO_USER_ID, data.farms);
-    await this.storage.saveCrops(DEMO_USER_ID, data.crops);
     await this.storage.importUserData(DEMO_USER_ID, {
       app: 'my-farm',
       schemaVersion: 2,

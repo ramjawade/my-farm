@@ -25,10 +25,7 @@ export class AuthService {
   private readonly readyPromise: Promise<void>;
 
   constructor() {
-    this.readyPromise = this.registrationService.ready
-      .then(() => this.loadSession())
-      .catch((e) => console.error('Failed to restore session', e))
-      .then(() => this.initialized.set(true));
+    this.readyPromise = this.loadSession().then(() => this.initialized.set(true));
 
     effect(() => {
       const user = this.currentUserSignal();
@@ -84,14 +81,13 @@ export class AuthService {
     return true;
   }
 
-  private loadSession(): void {
+  private async loadSession(): Promise<void> {
     try {
       const activeId = localStorage.getItem(ACTIVE_USER_ID_KEY);
       const expiry = localStorage.getItem(SESSION_EXPIRY_KEY);
 
       if (activeId && expiry && Date.now() <= Number(expiry)) {
-        const farmers = this.registrationService.registeredFarmers();
-        const found = farmers.find((f) => f.id === activeId);
+        const found = await this.registrationService.findById(activeId);
         if (found) {
           this.currentUserSignal.set(found);
           return;

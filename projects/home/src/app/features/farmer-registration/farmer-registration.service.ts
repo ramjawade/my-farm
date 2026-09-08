@@ -1,21 +1,24 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { FarmerRegistrationData } from './farmer-registration.models';
 import { IStorageService } from '../../core/storage/storage.interface';
 
+/** Normalise to the last 10 digits so formatting differences don't break lookup. */
+function normalizePhone(phone: string): string {
+  const digitsOnly = phone.replace(/\D/g, '');
+  return digitsOnly.length > 10 ? digitsOnly.slice(-10) : digitsOnly;
+}
+
+/**
+ * Farmer accounts are looked up, never listed: there is no in-memory roster
+ * here, and nothing in this service can dump every registered farmer.
+ * `AuthService` resolves the signed-in user by id; `LoginComponent` resolves
+ * a phone number to an account through `findByPhone`.
+ */
 @Injectable({
   providedIn: 'root',
 })
 export class FarmerRegistrationService {
   private readonly storage = inject(IStorageService);
-  private readonly farmersSignal = signal<FarmerRegistrationData[]>([]);
-  readonly registeredFarmers = this.farmersSignal.asReadonly();
-
-  /** Resolves once the farmer list has been loaded from storage. */
-  readonly ready: Promise<void>;
-
-  constructor() {
-    this.ready = this.loadFromStorage();
-  }
 
   registerFarmer(data: Omit<FarmerRegistrationData, 'id' | 'createdAt'>): FarmerRegistrationData {
     const newFarmer: FarmerRegistrationData = {
@@ -23,54 +26,32 @@ export class FarmerRegistrationService {
       id: this.generateUUID(),
       createdAt: Date.now(),
     };
-    this.setFarmers([newFarmer, ...this.farmersSignal()]);
+    this.storage.saveFarmer(newFarmer).catch((e) => console.error('Failed to save farmer', e));
     return newFarmer;
   }
 
   /** Insert or replace a farmer record by id (used for demo / restore). */
   upsertFarmer(farmer: FarmerRegistrationData): void {
-    const current = this.farmersSignal();
-    const exists = current.some((f) => f.id === farmer.id);
-    this.setFarmers(
-      exists ? current.map((f) => (f.id === farmer.id ? farmer : f)) : [farmer, ...current],
-    );
+    this.storage.saveFarmer(farmer).catch((e) => console.error('Failed to save farmer', e));
   }
 
-  clearAll(): void {
-    this.setFarmers([]);
-  }
-
-  updateFarmer(
+  async updateFarmer(
     id: string,
     updates: Partial<FarmerRegistrationData>,
-  ): FarmerRegistrationData | null {
-    let updatedFarmer: FarmerRegistrationData | null = null;
-    const updated = this.farmersSignal().map((f) => {
-      if (f.id === id) {
-        updatedFarmer = { ...f, ...updates };
-        return updatedFarmer;
-      }
-      return f;
-    });
-
-    if (updatedFarmer) {
-      this.setFarmers(updated);
-    }
-    return updatedFarmer;
+  ): Promise<FarmerRegistrationData | null> {
+    const existing = await this.storage.getFarmerById(id);
+    if (!existing) return null;
+    const updated = { ...existing, ...updates };
+    await this.storage.saveFarmer(updated);
+    return updated;
   }
 
-  private async loadFromStorage(): Promise<void> {
-    try {
-      this.farmersSignal.set(await this.storage.getFarmers());
-    } catch (e) {
-      console.error('Failed to load registered farmers', e);
-      this.farmersSignal.set([]);
-    }
+  findById(id: string): Promise<FarmerRegistrationData | undefined> {
+    return this.storage.getFarmerById(id);
   }
 
-  private setFarmers(farmers: FarmerRegistrationData[]): void {
-    this.farmersSignal.set(farmers);
-    this.storage.saveFarmers(farmers).catch((e) => console.error('Failed to save farmers', e));
+  findByPhone(phone: string): Promise<FarmerRegistrationData | undefined> {
+    return this.storage.getFarmerByPhone(normalizePhone(phone));
   }
 
   private generateUUID(): string {

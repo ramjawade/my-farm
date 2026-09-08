@@ -124,7 +124,9 @@ export class CropTimelineService {
       id: 'c-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36),
     };
 
-    this.setCrops([newCrop, ...this.cropsSignal()]);
+    this.generation++;
+    this.cropsSignal.set([newCrop, ...this.cropsSignal()]);
+    this.persistNewCrop(newCrop);
 
     // One activity per lifecycle stage: past stages completed, later ones scheduled.
     const hasSowingDate = newCrop.sowingDate !== undefined && newCrop.sowingDate !== null;
@@ -147,7 +149,9 @@ export class CropTimelineService {
   }
 
   updateCrop(id: string, updates: Partial<CropEntity>): void {
-    this.setCrops(this.cropsSignal().map((c) => (c.id === id ? { ...c, ...updates } : c)));
+    this.generation++;
+    this.cropsSignal.set(this.cropsSignal().map((c) => (c.id === id ? { ...c, ...updates } : c)));
+    this.persistCropUpdate(id, updates);
   }
 
   /** Get the next growth stage after the provided stage, or null if already at Harvest. */
@@ -158,7 +162,9 @@ export class CropTimelineService {
   }
 
   deleteCrop(id: string): void {
-    this.setCrops(this.cropsSignal().filter((c) => c.id !== id));
+    this.generation++;
+    this.cropsSignal.set(this.cropsSignal().filter((c) => c.id !== id));
+    this.persistCropDelete(id);
     this.activityService.deleteActivitiesForCrop(id);
   }
 
@@ -379,7 +385,12 @@ export class CropTimelineService {
     return crops.map((crop) => {
       // Find the latest completed stage activity
       const completedStages = this.getActivitiesForCrop(crop.id)
-        .filter((a) => !a.parentActivityId && a.status === 'Completed' && a.notes.includes('Growth stage advanced to'))
+        .filter(
+          (a) =>
+            !a.parentActivityId &&
+            a.status === 'Completed' &&
+            a.notes.includes('Growth stage advanced to'),
+        )
         .map((a) => this.stageFromNote(a.notes))
         .filter((stage): stage is CropStage => !!stage);
 
@@ -399,13 +410,26 @@ export class CropTimelineService {
     });
   }
 
-  /** Apply a crop mutation and persist it for the signed-in user. */
-  private setCrops(crops: CropEntity[]): void {
-    this.generation++;
-    this.cropsSignal.set(crops);
+  private persistNewCrop(crop: CropEntity): void {
     const user = this.authService.currentUser();
     if (user) {
-      this.storage.saveCrops(user.id, crops).catch((e) => console.error('Failed to save crops', e));
+      this.storage.saveCrop(user.id, crop).catch((e) => console.error('Failed to save crop', e));
+    }
+  }
+
+  private persistCropUpdate(id: string, updates: Partial<CropEntity>): void {
+    const user = this.authService.currentUser();
+    if (user) {
+      this.storage
+        .updateCrop(user.id, id, updates)
+        .catch((e) => console.error('Failed to update crop', e));
+    }
+  }
+
+  private persistCropDelete(id: string): void {
+    const user = this.authService.currentUser();
+    if (user) {
+      this.storage.deleteCrop(user.id, id).catch((e) => console.error('Failed to delete crop', e));
     }
   }
 }
