@@ -30,7 +30,7 @@ so the repo keeps the source of truth under version control.
 ## History
 
 An earlier version of this canvas described a **Firestore** schema, matching
-the superseded plan in `PHASE_5_PLAN.md`. The backend is now FastAPI over
+the original backend plan (superseded — see `ROADMAP.md` §6). The backend is now FastAPI over
 PostgreSQL; Firebase Auth is the only Firebase component retained. The single
 remaining mention of Firestore, in the ER diagram's security note, is
 deliberate — it explains that rules used to enforce tenant isolation at the

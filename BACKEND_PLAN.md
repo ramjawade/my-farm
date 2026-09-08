@@ -6,8 +6,9 @@ The single canonical backend plan. Every decision here is settled — where a
 choice existed, it has been made and the reasoning recorded. Nothing in this
 document is left open.
 
-**Status:** supersedes `PHASE_5_PLAN.md` (its Firestore decision) and
-`.diagram/er.md` (an earlier, inaccurate ER sketch). Both carry pointers here.
+**Status:** supersedes the original Firestore-backed plan (was
+`PHASE_5_PLAN.md`, now removed — see `ROADMAP.md` §6) and `.diagram/er.md`
+(an earlier, inaccurate ER sketch, kept with a pointer here).
 
 ---
 

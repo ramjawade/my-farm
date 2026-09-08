@@ -1,163 +1,135 @@
-# MyFarm — Product Roadmap
+# MyFarm — Project Status & Roadmap
 
-This document exists because the project grew feature-by-feature without a shared
-plan: modules were added in isolated sessions ("new moduels" x3 in the git log),
-each solving its own slice without checking what the previous one built. This is
-the map back to one coherent product. Update it whenever priorities change —
-it should stay the single source of truth for "what are we building and why."
+This is the single status document for the project: what MyFarm is, what's
+actually built today, and what's left. It replaces the earlier trail of
+phase-by-phase planning docs (`PHASE_1_PLAN.md` through `PHASE_5_PLAN.md`,
+`MVP_1_PLAN.md`, `implementation_plan.md`) now that their work has landed —
+that history lives in git, not as files to read through here. Update this
+doc whenever real status changes; it should stay the one place that tells
+you what's real.
 
 ## 1. What MyFarm is
 
-A farm-management web app for Indian smallholder farmers: register a farm, draw
-its fields on a map, track crops through their lifecycle, log field activities
-and expenses, and check weather/soil conditions. Built with Angular 20
-(standalone components, signals) as an `ng-workspace` with two projects:
-`home` (the app) and `shared` (a component library, currently just a confirm
-dialog).
+A farm-management web app for Indian smallholder farmers: register a farm,
+draw its lands on a map, track crops through their lifecycle, log field
+activities and expenses, check weather, and run season expense reports.
+Angular 20 (standalone components, signals) as an `ng-workspace` with
+`home` (the app) and `shared` (a component library — confirm dialog, toast).
+Installable as a PWA. A Python/FastAPI backend now sits behind it.
 
-## 2. Current state — what's real vs. what's a facade
+## 2. Architecture today
 
-Being blunt about this is the point of the exercise; you can't sequence fixes
-without knowing which floors are load-bearing.
+```
+Angular 20 PWA (GitHub Pages, static)
+   │
+   ├── Firebase Auth ──────────▶ phone OTP → ID token   [identity only]
+   │
+   │   Authorization: Bearer <Firebase ID token>
+   ▼
+FastAPI  (Render · Singapore)
+   │   verify_id_token() · Pydantic validation · tenant-scoped repository
+   ├──────────────▶ OpenWeatherMap   [server holds the key — Stage 7, not yet wired]
+   ▼
+SQLAlchemy 2.0 async + asyncpg
+   ▼
+Neon Postgres (Singapore · pooled)
+```
 
-| Area | State |
+Client writes commit to an IndexedDB **outbox** first and drain to the API
+in the background — the UI never blocks on the network. Full architecture,
+every table, every decision and its reasoning: **[`BACKEND_PLAN.md`](./BACKEND_PLAN.md)**
+(canonical, kept current — update it, not this section, when the backend
+changes). Visual counterpart: the
+[MyFarm Data Architecture canvas](https://claude.ai/code/artifact/261b1e80-742d-4e4a-9bc3-90bcbe29da40)
+(source in `design/database-schema/`).
+
+## 3. Completed
+
+**Frontend foundation**
+- One unified `Activity` + `ActivityExpense` model (typed `ActivityType`,
+  `ActivityStatus`, `metadata`) — the old duplicate `ActivityEntity` is gone
+  from the crop-timeline models (a reference survives only in
+  `features/activity/migration.ts`, for migrating old localStorage data).
+- `IStorageService` is the single persistence boundary — activities,
+  expenses, crops, lands, farmer profiles, weather, backup/restore. No
+  feature talks to `localStorage` directly any more.
+- PIN-based auth (`AuthService`, `authGuard`) gates every route.
+- Live weather (OpenWeatherMap), 30-min cache, 4-tier fallback
+  (API → cache → mock → error), farming advisories, severe-weather alerts.
+  Key is currently a CI-injected, origin-restricted client key (see
+  `WEATHER_API_SETUP.md`) — moving it fully server-side is Backend Stage 7.
+
+**MVP1 — client-presentable prototype** (full findings/decisions history:
+git log for `claude/mvp1-*` branches)
+- Demo dataset + reset (`DemoDataService`), onboarding checklist with empty
+  states, JSON backup/restore.
+- Toast notifications, confirm-on-delete everywhere, wildcard route +
+  `NotFoundComponent`, sidebar IA, real dashboard KPIs (fabricated marketing
+  numbers removed).
+- Reports page: expenses by crop/category/month, CSV export.
+- Land ↔ crop ↔ activity cross-linking (cost roll-ups on crop/land detail).
+- PWA: manifest, icons, service worker (`ngsw-config.json`).
+- **Not done**: the Playwright golden-path smoke test (CI `e2e` job) from
+  the original plan was never added — the golden path is currently only
+  exercised by hand, per `DEMO_SCRIPT.md`.
+
+**Backend — Stages 1–5 of 7** (canonical plan and stage gates:
+`BACKEND_PLAN.md` §12)
+- Stage 1 — Storage seam repaired to per-entity CRUD ahead of the network swap.
+- Stage 2 — FastAPI skeleton on Render; Firebase token verification; Neon
+  provisioned; tenant-scoped base repository.
+- Stage 3 — SQLAlchemy models, Alembic migrations, CRUD routers (farmers,
+  farms, lands, crops, activities, expenses, attachments), reference data,
+  a cross-tenant 404 test on every endpoint.
+- Stage 4 — Generated TS types from the OpenAPI contract; `ApiStorageService`
+  wired in behind `IStorageService`; online-only at this point.
+- Stage 5 — Offline outbox: IndexedDB outbox + sync worker,
+  `/api/v1/sync/push` + `/api/v1/sync/pull`, tombstoned deletes.
+
+## 4. Remaining work
+
+- **Backend Stage 6 — Data migration.** One-time localStorage → Postgres
+  migration on first authenticated login (UUIDv7 remap, FK-order push,
+  fail-loud on an unresolved reference). Plan: `BACKEND_PLAN.md` §10.
+- **Backend Stage 7 — Weather + attachments.** Move the OpenWeatherMap key
+  server-side (shared cache keyed by location grid, not per farmer); wire
+  Cloudflare R2 for activity photo attachments (currently disabled in the
+  UI — see `BACKEND_PLAN.md` §7 for the R2 decision).
+- **E2E smoke test.** Add the Playwright golden-path spec against mobile +
+  desktop viewports, gated in CI on PRs (the one MVP1 item that didn't land).
+- **Known gaps carried forward from `BACKEND_PLAN.md` §13**, worth closing
+  before they bite:
+  - Render runs a native buildpack build, not the `Dockerfile` CI verifies —
+    the two can drift silently (§3.2).
+  - Render's `autoDeploy` fires on every push to `main` regardless of the
+    GitHub Actions result — a red CI run does not currently block a deploy.
+  - Postgres RLS does not apply on Neon's hosted roles (confirmed, not a
+    misconfiguration); tenant isolation is enforced by the base repository
+    and the per-endpoint cross-tenant test only — treat any new endpoint's
+    404 test as load-bearing, not a formality.
+
+## 5. Where things live
+
+| Concern | Doc |
 |---|---|
-| Farmer registration | Real. Persists to `localStorage`, drives everything downstream. |
-| Auth (`core/auth`) | **Facade.** `login()` just stores whichever registered farmer was picked — no password, no credential check. `AuthService` and `FarmerRegistrationService` are the closest thing to a session model. |
-| Map / field drawing (`map/farm-draw`) | Real. Leaflet-based drawing, saved to `localStorage`, has unit tests. |
-| Crop timeline (`features/crop-timeline`) | Real CRUD, but defines **its own** `ActivityEntity` model for sub-activities (irrigation, spraying, harvest, etc. with typed `metadata`). |
-| Farm activity (`features/farm-activity`) | Real CRUD, but defines a **second, different** `Activity` + `ActivityExpense` model, built later, that overlaps in purpose with crop-timeline's `ActivityEntity` but has a different status enum, a free-text activity name instead of a typed enum, and its own expense sub-model. `create-activity.component.ts` even reaches into `CropTimelineService.activities()` to populate a "parent activity" dropdown — mixing the two models in one screen. |
-| Weather (`features/weather`) | **100% hardcoded.** Signals are seeded with fixed values and fixed May dates. No `HttpClient` call anywhere in the app — there is no live weather integration at all. |
-| Profile | Real, edits the registered-farmer record. |
-| Persistence | Every feature talks to `localStorage` directly from its own service. No shared repository/storage abstraction, no backend, no sync — data lives in one browser only and is one "clear site data" away from gone. |
-| Tests | 21 spec files exist (decent instinct), but no lint config (`eslint`/`prettier` config) is committed, and there's no CI step that runs `ng test` — the deploy workflow only builds. |
-| CI/CD | `.github/workflows/deploy.yml` builds and deploys to `gh-pages` on every push to **either** `main` or `master` — no test gate, no PR requirement, so broken code can ship straight to production. |
-| Branches | `main` (GitHub's default) was empty; all real work was on `master`, committed directly (no PRs). This session merged `master`'s history into this branch so `main` can become canonical — see §5. |
+| Backend architecture, data model, API, sync protocol, delivery stages | [`BACKEND_PLAN.md`](./BACKEND_PLAN.md) |
+| Visual schema / architecture / flow diagrams | [`design/database-schema/`](./design/database-schema/) → [published canvas](https://claude.ai/code/artifact/261b1e80-742d-4e4a-9bc3-90bcbe29da40) |
+| Weather API key setup | [`WEATHER_API_SETUP.md`](./WEATHER_API_SETUP.md) |
+| Manual demo walkthrough | [`DEMO_SCRIPT.md`](./DEMO_SCRIPT.md) |
+| Backend service README (local dev, endpoints) | [`projects/backend/README.md`](./projects/backend/README.md) |
+| Land-drawing UX exploration | [`design/land-section-ux/`](./design/land-section-ux/) |
+| Day-to-day workflow rules (branching, CI gates, model stages) | [`CLAUDE.md`](./CLAUDE.md) |
 
-**The core structural problem**: two competing "activity" models
-(`crop-timeline.models.ts#ActivityEntity` vs `farm-activity.models.ts#Activity`)
-covering the same real-world concept — something a farmer did on a field —
-because each was built without checking what already existed. This is the
-concrete symptom of "modules created randomly," and it's the first thing to
-fix before adding more features on top of either one.
+## 6. Superseded / removed
 
-## 3. Definition of "successful project" here
-
-- One activity model, one source of truth, used everywhere (crop screens,
-  activity screens, dashboards, future reports).
-- A persistence layer that isn't hand-rolled per feature, so swapping
-  `localStorage` for a real backend later is a service-layer change, not a
-  rewrite.
-- Auth that actually authenticates, even if the backend is minimal at first.
-- Weather that reflects the farmer's real location, not fixed May dates.
-- CI that blocks a broken build/test from reaching `gh-pages`.
-- A single default branch (`main`) that is always deployable, changed only
-  through PRs.
-
-## 4. Phased plan
-
-Each phase is scoped to land as one or a handful of focused PRs — small enough
-to review, big enough to move the needle.
-
-### Phase 0 — Foundation (repo hygiene) ✅
-- [x] Consolidate `master`'s code into `main` so the default branch isn't empty (done this session, see §5).
-- [x] Add `ng lint` (ESLint + Angular ESLint schematics) and a `format:check` script; run both in CI.
-- [x] Extend `.github/workflows/deploy.yml` (or split into a separate `ci.yml`) to run `ng test` and `ng build` on every PR, and gate the `gh-pages` deploy on those passing. Restrict the deploy trigger to `main` only once `master` is retired.
-- [x] Turn on branch protection for `main` requiring the CI check before merge (repo setting, not a code change — flagging so it's not forgotten).
-
-**Status**: ✅ Complete. ESLint configured, CI gates enforced, main branch protected.
-
----
-
-### Phase 1 — Unify the activity model ✅
-- [x] Pick one shape for "a thing that happened on a field/crop" — recommend keeping `farm-activity`'s simpler `Activity` + `ActivityExpense` (expenses are a real, distinct need) but folding in crop-timeline's typed `ActivityType` enum and `metadata` bag instead of free-text `activityId`.
-- [x] Migrate `crop-timeline` sub-activities onto the unified model; delete `ActivityEntity`.
-- [x] Fix `create-activity.component.ts` to depend on one activity service, not two.
-- [x] Add a migration note/script for any `localStorage` data already saved under the old shapes (dev-only concern today, but do it once instead of twice).
-
-**Status**: ✅ Complete. Single `Activity` + `ActivityExpense` model with typed metadata. All components unified.
-
----
-
-### Phase 2 — Persistence abstraction ✅
-- [x] Introduce a small `StorageService`/repository interface each feature service calls instead of touching `localStorage` directly.
-- [x] No behavior change yet — this just isolates the swap point for Phase 5.
-
-**Status**: ✅ Complete. `IStorageService` abstract interface. `LocalStorageService` implementation. All features use it.
-
----
-
-### Phase 3 — Real auth ✅
-- [x] Add a password/PIN field at registration and check it at login (still local-only is fine for now — the point is "login" stops being "pick a name from a list").
-- [x] Guard routes consistently (`map`, `weather`, `profile`, `crops`, `activities` already use `authGuard` — keep it that way as new routes are added).
-- [x] Add session expiry (24-hour duration) with auto-logout on stale sessions.
-
-**Status**: ✅ Complete. PIN-based authentication with SHA-256 hashing. 24h session expiry. `authGuard` protects all routes.
-
----
-
-### Phase 4 — Real weather ✅
-- [x] Integrate a live weather API (OpenWeatherMap) keyed by the farmer's village/district or drawn field's coordinates.
-- [x] Replace the hardcoded `WeatherComponent` signals with data from that call; keep the existing UI/layout.
-- [x] Add weather-based farming advisories (dynamic recommendations based on conditions).
-- [x] Add alert display for severe weather warnings.
-- [x] Implement caching (30-min TTL) to prevent rate limiting.
-- [x] Add 4-tier error fallback (API → cache → mock → error).
-
-**Status**: ✅ Complete. Branch: `claude/phase-4-weather-api` ready for PR. 6 commits, 17 files. Build/lint passing.
-
-**Deliverables**:
-- Weather service (HTTP + cache layer)
-- Alert and advisory panels
-- Storage extension for weather history
-- Setup documentation (WEATHER_API_SETUP.md)
-
----
-
-### Phase 4.5 — MVP 1 client-presentable prototype 🔄 NEXT
-Full plan, audit findings, decisions and PR breakdown: [MVP_1_PLAN.md](./MVP_1_PLAN.md).
-Pulls forward the cross-linking/reporting items from Phase 6 and completes the
-Phase 1/2 leftovers (`ActivityEntity` still exists; `IStorageService` only covers
-activities). Backend (Phase 5) is deferred until MVP 1 is demo-able.
-
-**Status**: 🔄 Plan drafted, awaiting approval.
-
----
-
-### Phase 5 — Backend & sync 🚧 IN PROGRESS
-Canonical, settled plan: [BACKEND_PLAN.md](./BACKEND_PLAN.md) — supersedes the
-Firestore-based [PHASE_5_PLAN.md](./PHASE_5_PLAN.md). Architecture is
-**FastAPI + Neon Postgres** for all application data, with **Firebase Auth**
-(phone OTP) retained for identity only — no Firestore is used anywhere.
-
-- [x] Stage 1 — Seam repair: per-entity CRUD on `IStorageService`
-- [x] Stage 2 — API skeleton: FastAPI app, Firebase token verification, tenant-scoped repository, Neon + Render provisioned
-- [x] Stage 3 — Domain endpoints: SQLAlchemy models, Alembic migrations, CRUD routers (farmers, farms, lands, crops, activities, expenses, attachments), reference data, cross-tenant tests
-- [x] Stage 4 — Client integration: generated TS types, `ApiStorageService`, online-only
-- [x] Stage 5 — Offline outbox: IndexedDB outbox, sync worker, `/api/v1/sync/*`, tombstones
-- [ ] Stage 6 — Data migration: one-time localStorage → Postgres per `BACKEND_PLAN.md` §10
-- [ ] Stage 7 — Weather + attachments: server-cached weather endpoint, R2 uploads
-
-**Status**: 🚧 Stages 1–5 complete; Stages 6–7 remaining. See `BACKEND_PLAN.md` §12 for gates.
-
----
-
-### Phase 6 — Feature completion 📅
-- [ ] Cross-link crop-timeline and farm-activity dashboards now that they share one model (e.g. a crop's timeline shows its linked activities and their costs).
-- [ ] Reporting/export (expense reports, crop history) once data volume justifies it.
-- [ ] UI/UX polish and performance optimization.
-
-**Status**: 📅 Planned after Phase 5 backend completion.
-
-## 5. Branch consolidation (this session)
-
-- `main` was GitHub's default branch but contained only `README.md`/`LICENSE`/`.gitignore`.
-- `master` held all real development, committed directly without PRs.
-- This branch (`claude/hosted-information-v82lag`) merged `origin/master` in cleanly (no conflicts — `master`'s history already descends from `main`'s initial commit), so it now carries the full app.
-- Recommendation: once this branch is merged into `main`, treat `master` as legacy — stop pushing to it, and after a grace period delete it so there's one unambiguous source of truth.
-
-## 6. Immediate next actions
-
-1. Merge this branch to `main` (PR), making `main` the real default branch.
-2. Land Phase 0 (lint + CI test gate) before anything else — it's what stops the *next* random module from landing unreviewed.
-3. Pick the unified activity shape (Phase 1) as the first feature-level PR.
+- `PHASE_1_PLAN.md`, `PHASE_2_PLAN.md`, `PHASE_4_PLAN.md` — unify activity
+  model, persistence abstraction, live weather. All complete; folded into
+  §3 above. Removed as files — see git history for the original plans.
+- `PHASE_5_PLAN.md` — the original Firestore-backed plan. Superseded by
+  `BACKEND_PLAN.md` (FastAPI + Postgres) before implementation began on it.
+  Removed as a file; `db/README.md` and `.diagram/er.md` carry the same
+  pointer for anyone who lands there from an old link.
+- `MVP_1_PLAN.md` — client-presentable prototype plan. Implemented (§3);
+  removed as a file now that it's status, not a plan.
+- `implementation_plan.md` — the original farm-activity module plan,
+  predating the unified activity model. Long superseded; removed.

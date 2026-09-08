@@ -101,7 +101,7 @@ attempts. All support cursor pagination over (updated_at DESC, id DESC).
   backwards traversal without OFFSET. Cursor format: `<ISO_8601_timestamp>:<UUID>`
 
 - **Soft-delete:** All farmer-owned entities exclude `deleted_at IS NOT NULL` rows.
-  Hard deletes never used (required for offline sync per PHASE_5_PLAN.md §6).
+  Hard deletes never used (required for offline sync per `BACKEND_PLAN.md` §6.3).
 
 - **Error responses:** RFC 9457 `application/problem+json` format with HTTP status code.
 
