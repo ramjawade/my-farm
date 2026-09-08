@@ -1,0 +1,63 @@
+[project]
+name = "myfarm-api"
+version = "0.1.0"
+description = "MyFarm backend — FastAPI over PostgreSQL, Firebase Auth for identity"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi==0.141.1",
+    "uvicorn[standard]==0.52.4",
+    "sqlalchemy[asyncio]==2.0.52",
+    "asyncpg==0.31.0",
+    "alembic==1.19.2",
+    "pydantic==2.13.5",
+    "pydantic-settings==2.15.0",
+    "firebase-admin==7.5.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.1.1",
+    "pytest-asyncio==1.4.0",
+    "httpx==0.28.1",
+    "ruff==0.16.6",
+    "mypy==2.3.1",
+    "pyjwt==2.10.1",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["myfarm_api*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+# One event loop for the whole test session — both knobs, since
+# pytest-asyncio scopes fixtures and test bodies independently, and setting
+# only one leaves fixtures on the session loop while tests run on a fresh
+# per-test loop, which is the exact mismatch that produces "Future attached
+# to a different loop". This matches production anyway: the app creates its
+# engine once for the process's lifetime (core/db.py's module-level cache),
+# not once per request.
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI's DI idiom is exactly Depends(...) as an argument default; B008
+# exists to catch mutable-default-style bugs, not this pattern.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.Header"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+disallow_untyped_defs = true
+ignore_missing_imports = true

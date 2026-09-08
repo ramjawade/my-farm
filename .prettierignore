@@ -1,0 +1,6 @@
+# format:check globs projects/**/*.{ts,html,scss}, which would otherwise
+# pull the Python backend's .html files (Jinja templates, coverage reports)
+# into a JS/TS formatter. Nothing else under projects/backend/ matches those
+# extensions, but this stays broad rather than assuming that never changes.
+# See BACKEND_PLAN.md §4.1.
+projects/backend/
