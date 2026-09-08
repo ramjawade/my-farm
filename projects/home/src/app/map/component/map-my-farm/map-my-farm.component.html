@@ -13,7 +13,12 @@
     />
   }
 
-  @if (draw.savedFarms().length === 0 && !draw.isDrawing() && !draw.isCompleted() && !shouldShowLandPrompt()) {
+  @if (
+    draw.savedFarms().length === 0 &&
+    !draw.isDrawing() &&
+    !draw.isCompleted() &&
+    !shouldShowLandPrompt()
+  ) {
     <div
       class="alert alert-success p-2.5 mb-2 border-0 rounded-3 text-start animate-fade-in"
       style="
@@ -52,9 +57,18 @@
         (click)="locateMe()"
         [disabled]="geolocating()"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16" class="me-1">
-          <path d="M8 0a1 1 0 0 1 1 1v1.06a7 7 0 0 1 5.94 5.94H15a1 1 0 1 1 0 2h-1.06a7 7 0 0 1-5.94 5.94V15a1 1 0 1 1-2 0v-1.06A7 7 0 0 1 2.06 9H1a1 1 0 0 1 0-2h1.06A7 7 0 0 1 7 2.06V1a1 1 0 0 1 1-1zm0 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/>
-          <circle cx="8" cy="8" r="2" fill="currentColor"/>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="13"
+          height="13"
+          fill="currentColor"
+          viewBox="0 0 16 16"
+          class="me-1"
+        >
+          <path
+            d="M8 0a1 1 0 0 1 1 1v1.06a7 7 0 0 1 5.94 5.94H15a1 1 0 1 1 0 2h-1.06a7 7 0 0 1-5.94 5.94V15a1 1 0 1 1-2 0v-1.06A7 7 0 0 1 2.06 9H1a1 1 0 0 1 0-2h1.06A7 7 0 0 1 7 2.06V1a1 1 0 0 1 1-1zm0 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"
+          />
+          <circle cx="8" cy="8" r="2" fill="currentColor" />
         </svg>
         {{ geolocating() ? 'Locating...' : 'Locate me' }}
       </button>

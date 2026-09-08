@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { ReportService } from './report.service';
 import { ActivityService } from '../activity/activity.service';
 import { CropTimelineService } from '../crop-timeline/crop-timeline.service';
@@ -11,6 +12,7 @@ describe('ReportService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
+        provideZonelessChangeDetection(),
         ReportService,
         ActivityService,
         CropTimelineService,
@@ -34,9 +36,7 @@ describe('ReportService', () => {
   });
 
   it('should escape CSV quotes correctly', () => {
-    const csv = service.reportToCSV(
-      service.generateSeasonReport('Kharif', 2026),
-    );
+    const csv = service.reportToCSV(service.generateSeasonReport('Kharif', 2026));
     expect(csv).toContain('Kharif 2026');
     expect(csv).toContain('Total Expenses');
   });

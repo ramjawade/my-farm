@@ -36,7 +36,10 @@ export class LandDetailComponent {
   });
 
   readonly totalLandCost = computed(() => {
-    return this.cropsOnLand().reduce((sum, c) => sum + (this.cropService.costForCrop(c.id) || 0), 0);
+    return this.cropsOnLand().reduce(
+      (sum, c) => sum + (this.cropService.costForCrop(c.id) || 0),
+      0,
+    );
   });
 
   getLandStatus(): LandStatus {

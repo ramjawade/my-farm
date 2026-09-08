@@ -84,7 +84,11 @@ export class LayerToggleControl extends L.Control {
     return container;
   }
 
-  updateUI(view: 'street' | 'satellite', streetBtn?: HTMLElement, satelliteBtn?: HTMLElement): void {
+  updateUI(
+    view: 'street' | 'satellite',
+    streetBtn?: HTMLElement,
+    satelliteBtn?: HTMLElement,
+  ): void {
     if (!streetBtn || !satelliteBtn) return;
 
     if (view === 'street') {

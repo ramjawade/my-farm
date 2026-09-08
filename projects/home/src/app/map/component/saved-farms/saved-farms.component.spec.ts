@@ -4,6 +4,8 @@ import { SavedFarmsComponent } from './saved-farms.component';
 import { FarmDrawService } from '../../farm-draw/farm-draw.service';
 import { FarmAreaResult, SavedFarm } from '../../models/map.models';
 import { signal } from '@angular/core';
+import { IStorageService } from '../../../core/storage/storage.interface';
+import { LocalStorageService } from '../../../core/storage/local-storage.service';
 
 describe('SavedFarmsComponent', () => {
   let mockFarmDraw: jasmine.SpyObj<FarmDrawService>;
@@ -34,6 +36,7 @@ describe('SavedFarmsComponent', () => {
       providers: [
         provideZonelessChangeDetection(),
         { provide: FarmDrawService, useValue: mockFarmDraw },
+        { provide: IStorageService, useClass: LocalStorageService },
       ],
     }).compileComponents();
   });
@@ -71,6 +74,8 @@ describe('SavedFarmsComponent', () => {
     spyOn(clickEvent, 'stopPropagation');
 
     component.onDeleteSavedFarm(clickEvent, 'farm-1');
+    // Deletion is now behind a confirm dialog — simulate the user confirming.
+    component.confirmDelete();
 
     expect(clickEvent.stopPropagation).toHaveBeenCalled();
     expect(mockFarmDraw.deleteFarm).toHaveBeenCalledWith('farm-1');

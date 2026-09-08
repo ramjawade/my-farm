@@ -169,8 +169,10 @@ describe('CropTimelineComponent', () => {
     const soy = crops.find((c) => c.cropType === 'Soybeans')!;
     component.selectCrop(soy);
 
+    // The demo soybean is sown 65 days ago with Flowering already logged as a
+    // completed milestone, so the service auto-advances it to the next stage.
     const initialStage = soy.currentStage;
-    expect(initialStage).toBe('Flowering');
+    expect(initialStage).toBe('Fruiting / Pod Formation');
 
     // Click to advance stage to Maturity
     const initialActsCount = component.cropActivities().length;

@@ -74,9 +74,7 @@
           No saved farms yet. Draw on map and click <strong>Save</strong>.
         </div>
       } @else if (filteredFarms().length === 0) {
-        <div class="map-page__saved-farms-empty text-muted">
-          No lands match your search.
-        </div>
+        <div class="map-page__saved-farms-empty text-muted">No lands match your search.</div>
       } @else {
         <div class="list-group list-group-flush map-page__saved-farms-list">
           @for (farm of filteredFarms(); track farm.id) {
@@ -96,19 +94,32 @@
                     (keydown.escape)="cancelRename()"
                     autofocus
                   />
-                  <span class="map-page__saved-farm-area text-secondary" style="font-size: 0.7rem">{{
-                    formatFarmArea(farm.area)
-                  }}</span>
+                  <span
+                    class="map-page__saved-farm-area text-secondary"
+                    style="font-size: 0.7rem"
+                    >{{ formatFarmArea(farm.area) }}</span
+                  >
                 </div>
-                <div class="map-page__saved-farm-actions map-page__saved-farm-actions--confirm d-flex align-items-center gap-1">
+                <div
+                  class="map-page__saved-farm-actions map-page__saved-farm-actions--confirm d-flex align-items-center gap-1"
+                >
                   <button
                     type="button"
                     class="icon-btn icon-btn--save"
                     (click)="saveRename(farm.id)"
                     title="Save name"
                   >
-                    <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="4,10 8,14 16,5"/>
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <polyline points="4,10 8,14 16,5" />
                     </svg>
                   </button>
                   <button
@@ -117,15 +128,27 @@
                     (click)="cancelRename()"
                     title="Cancel"
                   >
-                    <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-                      <line x1="5" y1="5" x2="15" y2="15"/>
-                      <line x1="15" y1="5" x2="5" y2="15"/>
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                    >
+                      <line x1="5" y1="5" x2="15" y2="15" />
+                      <line x1="15" y1="5" x2="5" y2="15" />
                     </svg>
                   </button>
                 </div>
               } @else {
                 <!-- Farm Name, Status and Area -->
-                <div class="d-flex flex-column gap-1 min-width-0 cursor-pointer" style="flex: 1" (click)="farmDraw.selectFarm(farm)">
+                <div
+                  class="d-flex flex-column gap-1 min-width-0 cursor-pointer"
+                  style="flex: 1"
+                  (click)="farmDraw.selectFarm(farm)"
+                >
                   <div class="d-flex align-items-center gap-2 flex-wrap">
                     <span
                       class="map-page__saved-farm-name text-truncate text-dark fw-semibold"
@@ -140,9 +163,11 @@
                       {{ getStatusLabel(getLandStatus(farm.id)) }}
                     </span>
                   </div>
-                  <span class="map-page__saved-farm-area text-secondary" style="font-size: 0.7rem">{{
-                    formatFarmArea(farm.area)
-                  }}</span>
+                  <span
+                    class="map-page__saved-farm-area text-secondary"
+                    style="font-size: 0.7rem"
+                    >{{ formatFarmArea(farm.area) }}</span
+                  >
                 </div>
 
                 <!-- Quick Actions -->
@@ -153,19 +178,39 @@
                     (click)="startRename($event, farm)"
                     title="Rename land"
                   >
-                    <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M14.5 3.5a1.5 1.5 0 0 1 2 2L6 16 2 17l1-4Z"/>
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.6"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M14.5 3.5a1.5 1.5 0 0 1 2 2L6 16 2 17l1-4Z" />
                     </svg>
                   </button>
                   <button
                     type="button"
                     class="icon-btn"
-                    (click)="farmDraw.selectFarm(farm); showLandDetail(farm); $event.stopPropagation()"
+                    (click)="
+                      farmDraw.selectFarm(farm); showLandDetail(farm); $event.stopPropagation()
+                    "
                     title="View land details"
                   >
-                    <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M10 18s6-5.5 6-10a6 6 0 1 0-12 0c0 4.5 6 10 6 10Z"/>
-                      <circle cx="10" cy="8" r="2"/>
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.6"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M10 18s6-5.5 6-10a6 6 0 1 0-12 0c0 4.5 6 10 6 10Z" />
+                      <circle cx="10" cy="8" r="2" />
                     </svg>
                   </button>
                   <button
@@ -174,8 +219,19 @@
                     (click)="onDeleteSavedFarm($event, farm.id)"
                     title="Delete land"
                   >
-                    <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M4 5h12M8 5V3h4v2M5.5 5l.8 12a1 1 0 0 0 1 .9h5.4a1 1 0 0 0 1-.9l.8-12"/>
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.6"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M4 5h12M8 5V3h4v2M5.5 5l.8 12a1 1 0 0 0 1 .9h5.4a1 1 0 0 0 1-.9l.8-12"
+                      />
                     </svg>
                   </button>
                 </div>

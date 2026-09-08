@@ -74,10 +74,10 @@ export class WeatherService extends IWeatherService {
 
   private calculateCentroid(points: { lat: number; lng: number }[]): { lat: number; lng: number } {
     if (points.length === 0) return { lat: 19.1136, lng: 79.0882 };
-    const sum = points.reduce(
-      (acc, p) => ({ lat: acc.lat + p.lat, lng: acc.lng + p.lng }),
-      { lat: 0, lng: 0 },
-    );
+    const sum = points.reduce((acc, p) => ({ lat: acc.lat + p.lat, lng: acc.lng + p.lng }), {
+      lat: 0,
+      lng: 0,
+    });
     return { lat: sum.lat / points.length, lng: sum.lng / points.length };
   }
 

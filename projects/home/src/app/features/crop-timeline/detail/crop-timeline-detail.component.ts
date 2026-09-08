@@ -137,12 +137,14 @@ export class CropTimelineDetailComponent implements OnInit {
 
   readonly cropCost = computed(() => {
     const crop = this.selectedCropSignal();
-    return crop ? this.timelineService?.costForCrop(crop.id) ?? 0 : 0;
+    return crop ? (this.timelineService?.costForCrop(crop.id) ?? 0) : 0;
   });
 
   readonly nextStage = computed(() => {
     const crop = this.selectedCropSignal();
-    return crop && this.timelineService ? this.timelineService.getNextStage(crop.currentStage) : null;
+    return crop && this.timelineService
+      ? this.timelineService.getNextStage(crop.currentStage)
+      : null;
   });
 
   readonly canAdvanceStage = computed(() => {

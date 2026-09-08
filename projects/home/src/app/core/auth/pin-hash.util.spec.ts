@@ -20,9 +20,7 @@ describe('pin-hash.util', () => {
 
   it('should verify a pin against a legacy unsalted sha-256 hash', async () => {
     const legacyHash = Array.from(
-      new Uint8Array(
-        await crypto.subtle.digest('SHA-256', new TextEncoder().encode('9012')),
-      ),
+      new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode('9012'))),
     )
       .map((b) => b.toString(16).padStart(2, '0'))
       .join('');
