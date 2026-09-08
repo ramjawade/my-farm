@@ -41,7 +41,7 @@ document is left open.
 | Database | **PostgreSQL on Neon**, Singapore, pooled endpoint |
 | API host | **Render**, Singapore, free instance |
 | Authentication | **Firebase Auth** phone OTP, retained; FastAPI verifies the ID token |
-| Authorization | Application-level tenant scoping **plus Postgres RLS** |
+| Authorization | Base-repository tenant scoping + per-endpoint cross-tenant 404 test (Postgres RLS designed in but **inert on Neon** — §5.2) |
 | ORM / migrations | **SQLAlchemy 2.0 async + asyncpg**, **Alembic** |
 | Schema source of truth | **SQLAlchemy models** → Alembic for the DB, OpenAPI → generated TS for the client |
 | Identifiers | **UUIDv7**, client-generated, native `uuid` columns |
@@ -58,7 +58,7 @@ document is left open.
 | Attachment storage | **Cloudflare R2** | Firebase has moved Cloud Storage behind the paid plan for newer projects, so it is not reliably free. R2's zero egress matters because field photos are re-read on mobile. |
 | Test database | **GitHub Actions `services: postgres:16`** | Real Postgres in CI without Neon credentials or branch cleanup. |
 | Alembic execution | **From CI, before the new image goes live** | A failed migration blocks the deploy instead of crash-looping a started container. |
-| Postgres RLS | **Required, not optional** | Costs almost nothing and converts a code bug into a denied query. |
+| Postgres RLS | Designed in; **does not apply on Neon** | Every Neon role for a direct connection carries non-revocable BYPASSRLS (§5.2). The base repository and the per-endpoint 404 test are the enforced layers; the RLS code stays, correct against self-hosted Postgres. |
 | Weather storage | **Shared server-side cache keyed by location grid** | Under a real backend, farmers near each other share a forecast. Removes per-tenant weather rows entirely. |
 | `crop.name` vs catalog | **`crop_catalog_id` FK + optional `crop.label`** | Species is reference data; the farmer's own nickname ("North plot soy") is not. |
 | RBAC tables | **Out of v1** | `farmer.user_role` is free text nothing reads. Shipping unused permission tables adds schema without behaviour. |
@@ -76,13 +76,15 @@ Browser — Angular 20 PWA (GitHub Pages, static)
    ▼
 FastAPI  (Render · Singapore)
    │   verify_id_token() · Pydantic validation · tenant scoping · business rules
-   ├──────────────▶ Cloudflare R2          [attachment blobs]
-   ├──────────────▶ OpenWeatherMap         [server holds the API key]
+   ├──────────────▶ Cloudflare R2          [attachment blobs] [Stage 7]
+   ├──────────────▶ OpenWeatherMap         [server holds the API key] [Stage 7]
    ▼
 SQLAlchemy 2.0 async + asyncpg
    ▼
-Neon Postgres (Singapore · pooled · RLS)
+Neon Postgres (Singapore · pooled)
 ```
+
+This is the target architecture; §12 tracks what is built (Stages 1–5 done). Cloudflare R2 and the server-side OpenWeatherMap key are Stage 7.
 
 Client writes never block on the network: they commit to an **IndexedDB
 outbox** and drain in the background (§8).
@@ -186,11 +188,11 @@ projects/
     pyproject.toml             dependencies · ruff · mypy config
     Dockerfile
     alembic.ini
-    alembic/versions/          migration history (tooling, not library code)
+    migrations/versions/       migration history (tooling, not library code)
     myfarm_api/                the importable package
       main.py                  app, CORS, lifespan
       core/      config.py · security.py (Firebase) · db.py (engine/session)
-      models/                  SQLAlchemy — schema source of truth
+      models.py                SQLAlchemy — schema source of truth
       schemas/                 Pydantic request/response
       repositories/base.py     tenant scoping enforced here (§5.2)
       routers/   farmers · farms · lands · crops · activities · expenses · weather · sync
@@ -200,6 +202,8 @@ projects/
 
 Every deliverable sits under `projects/`, one directory per project —
 `home` and `shared` are the Angular pair, `backend` is the service.
+
+### 4.1 Tooling-collision guard
 
 **This is safe, with one guard.** `angular.json` lists its projects
 explicitly (`home`, `shared`) and does no directory discovery, so the CLI
@@ -235,16 +239,13 @@ share a directory.
 
 ### 5.1 Flow
 
-1. Angular runs Firebase phone OTP → Firebase ID token (JWT).
-2. Client sends `Authorization: Bearer <token>`.
-3. A FastAPI dependency verifies signature, expiry and audience via
-   `firebase_admin.auth.verify_id_token()` and extracts `uid`.
-4. The farmer row is fetched by `auth_uid`, **created on first call**
-   (just-in-time provisioning) — no separate registration endpoint.
-5. The request carries a `CurrentFarmer` holding the internal UUIDv7 `id`.
+1. **Registration & PIN recovery** — Firebase phone OTP verifies the phone and establishes a persisted Firebase session (retained by the SDK).
+2. **Day-to-day app open** — local 4-digit PIN gates the unlock (fast, offline).
+3. **Every API request** — carries `Authorization: Bearer <Firebase ID token>` (from the persisted, auto-refreshed session).
+4. FastAPI dependency verifies token signature, expiry and audience via `firebase_admin.auth.verify_id_token()`, extracts `uid`, and fetches/creates the farmer row (just-in-time provisioning).
+5. Request carries `CurrentFarmer` holding the internal UUIDv7 `id`.
 
-Google's signing keys are cached by `firebase-admin`; a cold start costs one
-extra fetch.
+Google's signing keys are cached by `firebase-admin`; a cold start costs one extra fetch.
 
 ### 5.2 Tenant isolation — the top risk
 
@@ -452,13 +453,14 @@ GitHub Pages origin for CORS.
 
 | Stage | Scope | Gate |
 |---|---|---|
-| **1 — Seam repair** | Per-entity CRUD on `IStorageService`; delete `getFarmers()`/`saveFarmers()`; still on localStorage | 29 specs green |
-| **2 — API skeleton** | FastAPI app under `projects/backend/`; `.prettierignore` guard (§4.1); Neon + Render provisioned; `/health`; Firebase token dependency; base repository + RLS; CI | CORS + token rejection proven; `format:check` still passes |
+| **1 — Seam repair** | Per-entity CRUD on `IStorageService`; delete `getFarmers()`/`saveFarmers()`; still on localStorage | frontend Karma suite green (35 specs at time of writing) |
+| **2 — API skeleton** | FastAPI app under `projects/backend/`; `.prettierignore` guard (§4.1); Neon + Render provisioned; `/health`; Firebase token dependency; base repository (RLS designed in, inert on Neon — §5.2); CI | CORS + token rejection proven; `format:check` still passes |
 | **3 — Domain endpoints** | Models, Alembic migrations, CRUD routers, reference data | **Cross-tenant test per endpoint** |
 | **4 — Client integration** | Generated types; `ApiStorageService`; online-only | End-to-end online |
 | **5 — Offline outbox** | IndexedDB outbox, sync worker, `/sync/*`, tombstones | Airplane-mode convergence |
 | **6 — Data migration** | localStorage → Postgres per §10, behind a flag | Fixture migrates intact |
 | **7 — Weather + attachments** | Server-cached weather endpoint (retires the client-side key); R2 uploads | Key absent from the bundle |
+| **8 — Client auth: OTP registration + PIN recovery** | Add Firebase phone OTP at registration and for PIN recovery; keep the local PIN for day-to-day unlock; retire the standalone PIN-only identity | Registration issues a persisted Firebase session; API rejects a tokenless request; PIN unlock still works offline |
 
 Stage 1 is deliberately first and separate: refactoring the seam *while*
 introducing a network backend is how these migrations fail.
@@ -478,13 +480,13 @@ introducing a network backend is how these migrations fail.
 | LWW loses a concurrent edit | Sound for single-device-per-record use; losers logged; totals recomputed, never synced |
 | Offline is the largest item and gets underestimated | It has its own stage (5), not a checkbox inside another |
 | Alembic autogenerate emits a destructive migration | Every migration hand-reviewed; CI runs it against a scratch database first |
-| Firebase Auth remains a dependency | Deliberate — the only piece giving working phone OTP; the token boundary is thin enough to replace later |
+| Firebase Auth remains a dependency | OTP is used for registration + PIN recovery only; PIN handles day-to-day unlock. The token boundary stays thin enough to replace later. |
 
 ---
 
 ## 14. Verification
 
-- **Stage 1** — existing 29 Karma specs stay green through the interface change.
+- **Stage 1** — the existing frontend Karma suite (35 specs at time of writing) stays green through the interface change.
 - **Stage 2** — `/health` reachable from the GitHub Pages origin (proves
   CORS); forged and expired tokens are rejected.
 - **Stage 3** — pytest against real Postgres; **every endpoint has a
@@ -495,5 +497,6 @@ introducing a network backend is how these migrations fail.
 - **Stage 6** — migrate a seeded localStorage fixture; assert row counts, id
   remapping, referential integrity.
 - **Stage 7** — grep the built bundle to confirm no OpenWeatherMap key.
+- **Stage 8** — OTP at registration and PIN-recovery flow gates behind feature flag; PIN unlock still works; old PIN-only flows deprecated.
 - Full gate: `ruff`, `mypy`, `pytest`, `npm run lint`, `format:check`,
   `test`, `build`.
