@@ -11,7 +11,7 @@
     "format:check": "prettier --check \"projects/**/*.{ts,html,scss}\"",
     "format:fix": "prettier --write \"projects/**/*.{ts,html,scss}\"",
     "build:prod": "ng build shared && ng build home --configuration production --base-href /my-farm/",
-    "generate:types": "openapi-typescript http://localhost:8000/openapi.json -o projects/home/src/app/core/api/generated-types.ts"
+    "generate:types": "openapi-typescript \"${API_OPENAPI_URL:-http://localhost:8000/openapi.json}\" -o projects/home/src/app/core/api/generated-types.ts"
   },
   "prettier": {
     "printWidth": 100,

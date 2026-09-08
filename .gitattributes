@@ -1,0 +1,3 @@
+# The OpenAPI type file is regenerated in CI (linux, LF) and diff-checked;
+# pin its line endings so a Windows checkout does not make it look stale.
+projects/home/src/app/core/api/generated-types.ts text eol=lf

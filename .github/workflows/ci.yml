@@ -35,3 +35,42 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  openapi-contract:
+    runs-on: ubuntu-latest
+    name: OpenAPI types up to date
+    # Regenerate generated-types.ts from the backend's live spec and fail if
+    # it differs from what's committed — a Pydantic schema change that skips
+    # `npm run generate:types` is caught here (BACKEND_PLAN.md §9, issue #49).
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install backend
+        run: pip install -e ./projects/backend
+
+      - name: Dump OpenAPI spec
+        run: python -c "import json; from myfarm_api.main import app; open('openapi.json', 'w').write(json.dumps(app.openapi()))"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Regenerate types
+        run: npm run generate:types
+        env:
+          API_OPENAPI_URL: ./openapi.json
+
+      - name: Fail if generated types are stale
+        run: git diff --exit-code -- projects/home/src/app/core/api/generated-types.ts

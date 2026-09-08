@@ -3,6 +3,11 @@ const angularPlugin = require('@angular-eslint/eslint-plugin');
 
 module.exports = [
   {
+    // Auto-generated from the backend OpenAPI spec (npm run generate:types),
+    // regenerated and diff-checked in CI — not ours to lint or format.
+    ignores: ['projects/home/src/app/core/api/generated-types.ts'],
+  },
+  {
     files: ['projects/home/**/*.ts'],
     languageOptions: {
       parser: tsParser,

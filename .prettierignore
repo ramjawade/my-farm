@@ -4,3 +4,7 @@
 # extensions, but this stays broad rather than assuming that never changes.
 # See BACKEND_PLAN.md §4.1.
 projects/backend/
+
+# Auto-generated from the backend OpenAPI spec (npm run generate:types).
+# Regenerated and diff-checked in CI; never hand-edit or hand-format.
+projects/home/src/app/core/api/generated-types.ts
