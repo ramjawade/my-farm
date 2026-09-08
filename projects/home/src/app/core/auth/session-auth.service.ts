@@ -5,7 +5,6 @@ import { environment } from '../../../environments/environment';
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
 import {
   FarmerResponse,
-  PhoneLookupResponse,
   RegisterRequest as RegisterBody,
   SessionRequest,
   SessionResponse,
@@ -15,6 +14,18 @@ export interface SessionResult {
   token: string;
   farmer: FarmerRegistrationData;
 }
+
+/** Outcome of a sign-in attempt (issue #50). `unreachable` is a real
+ * network failure — never treated as "new user". */
+export type SessionOutcome =
+  | { status: 'ok'; result: SessionResult }
+  | { status: 'no-account' }
+  | { status: 'wrong-pin' }
+  | { status: 'unreachable' };
+
+/** Outcome of a registration attempt. */
+export type RegisterOutcome =
+  { status: 'ok'; result: SessionResult } | { status: 'phone-taken' } | { status: 'unreachable' };
 
 /** App-facing input to `register()` (camelCase); mapped to the wire
  * `RegisterBody` from the API contracts before the request goes out. */
@@ -50,58 +61,43 @@ function mapFarmer(f: FarmerResponse): FarmerRegistrationData {
 }
 
 /**
- * Talks to the backend PIN auth endpoints (issue #45). The raw PIN crosses
- * the wire over TLS; the backend stores only a salted hash and hands back a
- * short-lived session JWT that `AuthService` then attaches to every API
- * request.
+ * The backend PIN auth endpoints (issues #45, #50).
  *
- * Every method fails soft: a network error (offline, backend down) resolves
- * to `null` / rethrows a typed marker so `LoginComponent` can fall back to
- * the local-only PIN path that still works against `LocalStorageService`.
+ * **Auth is online-only.** The raw PIN crosses the wire over TLS; the
+ * backend stores only a salted hash and returns a short-lived session JWT
+ * that `AuthService` attaches to every API request. There is deliberately
+ * no offline path: an identity can't be minted offline and reconciled
+ * later (phone uniqueness and the JWT are server-only, and there's no OTP
+ * to prove ownership on merge). A network failure returns `unreachable`
+ * and the login screen asks the user to retry — it never falls through to
+ * creating a local account.
  */
 @Injectable({ providedIn: 'root' })
 export class SessionAuthService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.apiBaseUrl;
 
-  /** True/false if the backend answered; `null` if it could not be reached. */
-  async phoneExists(phone: string): Promise<boolean | null> {
-    try {
-      const resp = await firstValueFrom(
-        this.http.get<PhoneLookupResponse>(`${this.baseUrl}/auth/lookup`, {
-          params: { phone },
-        }),
-      );
-      return resp.exists;
-    } catch {
-      return null;
-    }
-  }
-
-  /**
-   * Exchange phone + PIN for a session. `null` means the backend rejected
-   * the credentials (401); a thrown error means it could not be reached.
-   */
-  async createSession(phone: string, pin: string): Promise<SessionResult | null> {
+  /** Exchange phone + PIN for a session. The backend's status code maps
+   * straight to the outcome — `404 -> no-account`, `401 -> wrong-pin` — so
+   * there is no separate "does this phone exist" pre-check. */
+  async createSession(phone: string, pin: string): Promise<SessionOutcome> {
     try {
       const body: SessionRequest = { phone, pin };
       const resp = await firstValueFrom(
         this.http.post<SessionResponse>(`${this.baseUrl}/auth/session`, body),
       );
-      return { token: resp.token, farmer: mapFarmer(resp.farmer) };
+      return { status: 'ok', result: { token: resp.token, farmer: mapFarmer(resp.farmer) } };
     } catch (err) {
-      if (err instanceof HttpErrorResponse && err.status === 401) {
-        return null;
+      if (err instanceof HttpErrorResponse) {
+        if (err.status === 404) return { status: 'no-account' };
+        if (err.status === 401) return { status: 'wrong-pin' };
       }
-      throw err;
+      return { status: 'unreachable' };
     }
   }
 
-  /**
-   * Register a new PIN account. `'phone-taken'` if the backend returned 409;
-   * a thrown error means it could not be reached.
-   */
-  async register(req: RegisterRequest): Promise<SessionResult | 'phone-taken'> {
+  /** Create a PIN account and return its session. */
+  async register(req: RegisterRequest): Promise<RegisterOutcome> {
     try {
       const body: RegisterBody = {
         phone: req.phone,
@@ -112,12 +108,12 @@ export class SessionAuthService {
       const resp = await firstValueFrom(
         this.http.post<SessionResponse>(`${this.baseUrl}/auth/register`, body),
       );
-      return { token: resp.token, farmer: mapFarmer(resp.farmer) };
+      return { status: 'ok', result: { token: resp.token, farmer: mapFarmer(resp.farmer) } };
     } catch (err) {
       if (err instanceof HttpErrorResponse && err.status === 409) {
-        return 'phone-taken';
+        return { status: 'phone-taken' };
       }
-      throw err;
+      return { status: 'unreachable' };
     }
   }
 }

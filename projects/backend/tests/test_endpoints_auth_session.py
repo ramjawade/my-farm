@@ -77,23 +77,12 @@ async def test_session_with_wrong_pin_is_401(client: AsyncClient) -> None:
     assert resp.headers["content-type"] == "application/problem+json"
 
 
-async def test_session_for_unknown_phone_is_401(client: AsyncClient) -> None:
+async def test_session_for_unknown_phone_is_404(client: AsyncClient) -> None:
+    """404 (not 401) so the login screen can offer to register without a
+    separate lookup call (issue #50)."""
     resp = await client.post("/api/v1/auth/session", json={"phone": _phone(), "pin": "1234"})
-    assert resp.status_code == 401
-
-
-async def test_lookup_reports_existence(client: AsyncClient) -> None:
-    phone = _phone()
-    assert (await client.get("/api/v1/auth/lookup", params={"phone": phone})).json() == {
-        "exists": False
-    }
-    await client.post(
-        "/api/v1/auth/register",
-        json={"phone": phone, "full_name": "Lookup User", "pin": "1234"},
-    )
-    assert (await client.get("/api/v1/auth/lookup", params={"phone": phone})).json() == {
-        "exists": True
-    }
+    assert resp.status_code == 404
+    assert resp.headers["content-type"] == "application/problem+json"
 
 
 async def test_malformed_pin_is_rejected_before_any_db_work(client: AsyncClient) -> None:

@@ -35,6 +35,38 @@ async def test_get_me_jit_provisions_farmer(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
+async def test_patch_me_updates_profile_fields(client: AsyncClient) -> None:
+    """PATCH /api/v1/me applies a partial update and persists it."""
+    uid = f"firebase_user_{uuid4()}"
+    with patch.object(
+        firebase_auth,
+        "verify_id_token",
+        return_value={"uid": uid, "phone_number": None},
+    ):
+        await client.get("/api/v1/me", headers={"Authorization": "Bearer t"})
+
+        resp = await client.patch(
+            "/api/v1/me",
+            headers={"Authorization": "Bearer t"},
+            json={"full_name": "Meera Patil", "preferred_language": "mr"},
+        )
+        assert resp.status_code == 200
+        assert resp.json()["full_name"] == "Meera Patil"
+        assert resp.json()["preferred_language"] == "mr"
+        # email was not in the body — left untouched (still null)
+        assert resp.json()["email"] is None
+
+        again = await client.get("/api/v1/me", headers={"Authorization": "Bearer t"})
+        assert again.json()["full_name"] == "Meera Patil"
+
+
+@pytest.mark.asyncio
+async def test_patch_me_rejected_without_token(client: AsyncClient) -> None:
+    resp = await client.patch("/api/v1/me", json={"full_name": "x"})
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
 async def test_get_me_rejected_without_token(client: AsyncClient) -> None:
     """GET /api/v1/me without Authorization header returns 401."""
     response = await client.get("/api/v1/me")

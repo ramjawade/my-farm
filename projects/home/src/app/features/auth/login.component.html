@@ -85,66 +85,11 @@
 
           <button
             type="submit"
+            [disabled]="busy()"
             class="btn btn-success w-100 py-2.5 fw-semibold hover-lift shadow-xs d-flex align-items-center justify-content-center gap-2"
           >
             <i class="bi bi-box-arrow-in-right"></i>
-            <span>Access Account</span>
-          </button>
-
-          <button
-            type="button"
-            class="btn btn-link w-100 mt-2 text-muted"
-            (click)="resetToPhoneStep()"
-          >
-            <i class="bi bi-arrow-left me-1"></i>Use a different number
-          </button>
-        </form>
-      }
-
-      @if (step() === 'setupPin') {
-        <form (ngSubmit)="onSubmitPinSetup()" class="login-form animate-fade-in">
-          <p class="text-muted text-sm mb-3">
-            Set a PIN to secure <strong>{{ phone() }}</strong> for future logins.
-          </p>
-          <div class="mb-3">
-            <label for="setupPinInput" class="field-label required-label">New PIN</label>
-            <input
-              type="password"
-              inputmode="numeric"
-              maxlength="6"
-              id="setupPinInput"
-              class="form-control"
-              placeholder="4-6 digit PIN"
-              [value]="pin()"
-              (input)="pin.set($any($event.target).value)"
-            />
-          </div>
-          <div class="mb-3">
-            <label for="confirmSetupPinInput" class="field-label required-label">Confirm PIN</label>
-            <input
-              type="password"
-              inputmode="numeric"
-              maxlength="6"
-              id="confirmSetupPinInput"
-              class="form-control"
-              placeholder="Re-enter PIN"
-              [value]="confirmPin()"
-              (input)="confirmPin.set($any($event.target).value)"
-              [class.is-invalid]="errorMessage()"
-            />
-          </div>
-          @if (errorMessage()) {
-            <div class="text-danger small mt-1">
-              <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errorMessage() }}
-            </div>
-          }
-
-          <button
-            type="submit"
-            class="btn btn-success w-100 py-2.5 fw-semibold hover-lift shadow-xs d-flex align-items-center justify-content-center gap-2"
-          >
-            <i class="bi bi-shield-check"></i>
-            <span>Set PIN & Continue</span>
+            <span>{{ busy() ? 'Signing in…' : 'Access Account' }}</span>
           </button>
 
           <button
@@ -211,10 +156,11 @@
 
           <button
             type="submit"
+            [disabled]="busy()"
             class="btn btn-success w-100 py-2.5 fw-semibold hover-lift shadow-xs d-flex align-items-center justify-content-center gap-2"
           >
             <i class="bi bi-person-plus-fill"></i>
-            <span>Create Profile & Enter</span>
+            <span>{{ busy() ? 'Creating…' : 'Create Profile & Enter' }}</span>
           </button>
 
           <button
@@ -227,18 +173,13 @@
         </form>
       }
 
-      <!-- Registration Link -->
-      <div class="text-center mt-4 border-top pt-3">
-        <p class="text-muted text-sm mb-0">
-          New to My Farm?
-          <a
-            routerLink="/register"
-            class="text-success fw-bold text-decoration-none hover-underline ms-1"
-          >
-            Register Farmer Profile <i class="bi bi-arrow-right text-xs"></i>
-          </a>
-        </p>
-      </div>
+      @if (step() === 'phone') {
+        <div class="text-center mt-4 border-top pt-3">
+          <p class="text-muted text-sm mb-0">
+            New to My Farm? Enter your number and PIN — we'll set up your profile.
+          </p>
+        </div>
+      }
     </div>
   </div>
 </div>

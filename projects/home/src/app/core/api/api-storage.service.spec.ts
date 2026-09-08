@@ -108,4 +108,58 @@ describe('ApiStorageService', () => {
       expect(farms.map((f) => f.id)).toEqual(['l1']);
     });
   });
+
+  describe('farmer profile', () => {
+    it('saveFarmer PATCHes /me with the backend-owned fields only', async () => {
+      service.setAuthToken('token-a');
+      const promise = service.saveFarmer({
+        id: 'f1',
+        fullName: 'Asha Rao',
+        phone: '9876500000',
+        email: 'asha@example.com',
+        preferredLanguage: 'hi',
+        userRole: 'Farmer',
+        farmName: "Asha's Farm",
+        farmArea: 3,
+        farmAreaUnit: 'acres',
+        primaryCrops: ['Rice'],
+        waterSource: 'Well',
+        irrigationType: 'Drip',
+        farmingMethod: 'Organic',
+        locationType: 'skipped',
+        location: null,
+        createdAt: 0,
+      });
+
+      const req = httpMock.expectOne('/api/v1/me');
+      expect(req.request.method).toBe('PATCH');
+      expect(req.request.body).toEqual({
+        full_name: 'Asha Rao',
+        email: 'asha@example.com',
+        preferred_language: 'hi',
+      });
+      req.flush({
+        id: 'f1',
+        auth_uid: 'pin:1',
+        user_role: 'farmer',
+        full_name: 'Asha Rao',
+        email: 'asha@example.com',
+        preferred_language: 'hi',
+        phone: '9876500000',
+        created_at: '2026-01-01T00:00:00Z',
+        updated_at: '2026-01-01T00:00:00Z',
+        deleted_at: null,
+      });
+
+      const saved = await promise;
+      expect(saved.fullName).toBe('Asha Rao');
+      expect(saved.preferredLanguage).toBe('hi');
+    });
+
+    it('getFarmerByPhone is a no-op on the API path (sign-in is one online call)', async () => {
+      const found = await service.getFarmerByPhone('9876500000');
+      expect(found).toBeUndefined();
+      httpMock.expectNone(() => true);
+    });
+  });
 });

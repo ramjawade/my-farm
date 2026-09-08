@@ -3,9 +3,10 @@
 This directory used to hold a hand-maintained, dual-backend schema mirror
 (Firestore + a "future" Postgres SQL file). That plan was superseded — see
 [`../BACKEND_PLAN.md`](../BACKEND_PLAN.md), the single canonical backend
-plan. The backend is **FastAPI over Neon Postgres**; **Firebase Auth** is
-retained for phone-OTP identity only (it verifies the ID token — it does not
-store any application data). There is no Firestore anywhere in this codebase.
+plan. The backend is **FastAPI over Neon Postgres**. Identity is a
+**backend-issued PIN session JWT** (online-only; `BACKEND_PLAN.md` §5.1);
+`firebase-admin` stays in as a fallback token verifier for a future phone-OTP
+step. There is no Firestore anywhere in this codebase.
 
 ## Where the schema actually lives now
 
