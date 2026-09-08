@@ -114,16 +114,6 @@ to review, big enough to move the needle.
 
 ---
 
-### Phase 5 — Backend & sync 📋 PLANNED
-- [ ] Stand up Firebase (Auth + Firestore) behind a widened `IStorageService` (extended to cover farmer profile, crop-timeline, and farm-draw data, not just activities/expenses), so a farmer's data survives a cleared browser and works across devices.
-- [ ] Migrate auth to Firebase Auth phone-number OTP (replace local PIN check with server verification); keep the existing PIN as a local device re-lock on top of it.
-- [ ] Migrate activity/expense/crop/field storage to Firestore, with offline persistence enabled.
-- [ ] Implement weather data backend proxy via a Firebase Cloud Function (move API key off the client, remove client exposure).
-- [ ] One-time local→cloud data migration for existing localStorage data, reusing the `features/activity/migration.ts` pattern.
-- [ ] Replace `IStorageService` DI binding with `FirestoreStorageService` (components unchanged).
-- [ ] Add Firebase config injection + Cloud Functions deploy step to CI/CD.
-
-**Status**: 📋 Plan approved — see [PHASE_5_PLAN.md](./PHASE_5_PLAN.md). Implementation next.
 ### Phase 4.5 — MVP 1 client-presentable prototype 🔄 NEXT
 Full plan, audit findings, decisions and PR breakdown: [MVP_1_PLAN.md](./MVP_1_PLAN.md).
 Pulls forward the cross-linking/reporting items from Phase 6 and completes the
@@ -134,15 +124,21 @@ activities). Backend (Phase 5) is deferred until MVP 1 is demo-able.
 
 ---
 
-### Phase 5 — Backend & sync 📅 (after MVP 1)
-- [ ] Stand up a real backend (Firebase/Supabase or a small Node API) behind the Phase 2 storage interface, so a farmer's data survives a cleared browser and works across devices.
-- [ ] Migrate auth to that backend (replace local PIN check with server verification).
-- [ ] Migrate activity/expense storage to backend.
-- [ ] Implement weather data backend proxy (move API key to backend, remove client exposure).
-- [ ] Add data synchronization layer (conflict resolution, offline support).
-- [ ] Replace `IStorageService` DI binding with `BackendStorageService` (components unchanged).
+### Phase 5 — Backend & sync 🚧 IN PROGRESS
+Canonical, settled plan: [BACKEND_PLAN.md](./BACKEND_PLAN.md) — supersedes the
+Firestore-based [PHASE_5_PLAN.md](./PHASE_5_PLAN.md). Architecture is
+**FastAPI + Neon Postgres** for all application data, with **Firebase Auth**
+(phone OTP) retained for identity only — no Firestore is used anywhere.
 
-**Status**: 📅 Deferred to MVP 2. Plan to be created and approved before implementation.
+- [x] Stage 1 — Seam repair: per-entity CRUD on `IStorageService`
+- [x] Stage 2 — API skeleton: FastAPI app, Firebase token verification, tenant-scoped repository, Neon + Render provisioned
+- [x] Stage 3 — Domain endpoints: SQLAlchemy models, Alembic migrations, CRUD routers (farmers, farms, lands, crops, activities, expenses, attachments), reference data, cross-tenant tests
+- [x] Stage 4 — Client integration: generated TS types, `ApiStorageService`, online-only
+- [x] Stage 5 — Offline outbox: IndexedDB outbox, sync worker, `/api/v1/sync/*`, tombstones
+- [ ] Stage 6 — Data migration: one-time localStorage → Postgres per `BACKEND_PLAN.md` §10
+- [ ] Stage 7 — Weather + attachments: server-cached weather endpoint, R2 uploads
+
+**Status**: 🚧 Stages 1–5 complete; Stages 6–7 remaining. See `BACKEND_PLAN.md` §12 for gates.
 
 ---
 
