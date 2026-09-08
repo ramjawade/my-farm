@@ -76,7 +76,30 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build image
-        # Proves the Dockerfile builds; pushing to a registry and deploying
-        # to Render is wired once the Render service and its deploy hook
-        # exist — see projects/backend/README.md.
+        # Build-parity check only — Render runs a native Python buildpack,
+        # not this image (BACKEND_PLAN.md §3.2). Keeps the Dockerfile honest.
         run: docker build -t myfarm-api:ci .
+
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Render
+    needs: [lint-and-test, build-image]
+    # CI-gated deploy (issue #41): only a green push to main deploys, and
+    # only if RENDER_DEPLOY_HOOK_URL is configured. autoDeploy is off on the
+    # Render service, so this is the single path to production.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - name: Trigger Render deploy
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::warning::RENDER_DEPLOY_HOOK_URL is not set — skipping deploy"
+            exit 0
+          fi
+          curl -fsS -X POST "$HOOK"
+          echo "Render deploy triggered."
