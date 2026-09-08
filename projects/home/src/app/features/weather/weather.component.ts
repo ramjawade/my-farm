@@ -35,7 +35,12 @@ interface SoilMetric {
 
 @Component({
   selector: 'app-weather',
-  imports: [SunPathComponent, HistoryTrendComponent, ProfileEditDialogComponent, WorkflowPromptCardComponent],
+  imports: [
+    SunPathComponent,
+    HistoryTrendComponent,
+    ProfileEditDialogComponent,
+    WorkflowPromptCardComponent,
+  ],
   templateUrl: './weather.component.html',
   styleUrl: './weather.component.scss',
 })
@@ -99,7 +104,10 @@ export class WeatherComponent {
   private getLocationForDisplay(): { name: string; state: string } {
     const savedFarms = this.farmDraw.savedFarms();
     if (savedFarms.length > 0) {
-      return { name: savedFarms[0].name, state: this.authService.currentUser()?.state || 'Unknown' };
+      return {
+        name: savedFarms[0].name,
+        state: this.authService.currentUser()?.state || 'Unknown',
+      };
     }
     const user = this.authService.currentUser();
     if (user?.village && user?.state) {
@@ -304,10 +312,10 @@ export class WeatherComponent {
 
   private calculateCentroid(points: { lat: number; lng: number }[]): { lat: number; lng: number } {
     if (points.length === 0) return { lat: 19.1136, lng: 79.0882 };
-    const sum = points.reduce(
-      (acc, p) => ({ lat: acc.lat + p.lat, lng: acc.lng + p.lng }),
-      { lat: 0, lng: 0 },
-    );
+    const sum = points.reduce((acc, p) => ({ lat: acc.lat + p.lat, lng: acc.lng + p.lng }), {
+      lat: 0,
+      lng: 0,
+    });
     return { lat: sum.lat / points.length, lng: sum.lng / points.length };
   }
 

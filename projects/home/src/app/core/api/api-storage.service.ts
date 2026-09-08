@@ -248,7 +248,9 @@ export class ApiStorageService extends IStorageService {
         const items = await this.fetchAllPages<unknown>(
           `${this.baseUrl}/activities/${activity.id}/expenses`,
         );
-        allExpenses.push(...(await Promise.all(items.map((item) => this.mapFromBackendExpense(item)))));
+        allExpenses.push(
+          ...(await Promise.all(items.map((item) => this.mapFromBackendExpense(item)))),
+        );
       }
       return allExpenses;
     } catch (error) {

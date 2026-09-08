@@ -36,9 +36,7 @@ describe('ReportService', () => {
   });
 
   it('should escape CSV quotes correctly', () => {
-    const csv = service.reportToCSV(
-      service.generateSeasonReport('Kharif', 2026),
-    );
+    const csv = service.reportToCSV(service.generateSeasonReport('Kharif', 2026));
     expect(csv).toContain('Kharif 2026');
     expect(csv).toContain('Total Expenses');
   });

@@ -39,14 +39,14 @@ export class ReportService {
   generateSeasonReport(season: Season, year: number): SeasonReport {
     const seasonActivities = this.activityService
       .activities()
-      .filter((a) => a.season === season && a.createdAt && new Date(a.createdAt).getFullYear() === year);
+      .filter(
+        (a) => a.season === season && a.createdAt && new Date(a.createdAt).getFullYear() === year,
+      );
 
-    const expenses = this.activityService
-      .expenses()
-      .filter((e) => {
-        const a = this.activityService.getActivityById(e.activityId);
-        return a && a.season === season && new Date(a.createdAt).getFullYear() === year;
-      });
+    const expenses = this.activityService.expenses().filter((e) => {
+      const a = this.activityService.getActivityById(e.activityId);
+      return a && a.season === season && new Date(a.createdAt).getFullYear() === year;
+    });
 
     const totalExpense = expenses.reduce((sum, e) => sum + e.amount, 0);
 

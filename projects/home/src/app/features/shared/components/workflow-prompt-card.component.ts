@@ -26,11 +26,7 @@ import { CommonModule } from '@angular/common';
           >
             {{ actionLabel }}
           </button>
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-secondary"
-            (click)="onDismiss()"
-          >
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="onDismiss()">
             Later
           </button>
         </div>

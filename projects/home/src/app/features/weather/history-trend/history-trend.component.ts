@@ -104,10 +104,10 @@ export class HistoryTrendComponent {
   });
 
   private getTemperatureColor(tempValue: number): string {
-    if (tempValue < 15) return '#2196F3';    // blue
-    if (tempValue < 25) return '#4CAF50';    // green
-    if (tempValue < 35) return '#FF9800';    // orange
-    return '#F44336';                        // red
+    if (tempValue < 15) return '#2196F3'; // blue
+    if (tempValue < 25) return '#4CAF50'; // green
+    if (tempValue < 35) return '#FF9800'; // orange
+    return '#F44336'; // red
   }
 
   /** Same color family as `getTemperatureColor`, as an rgba string for gradient stops. */

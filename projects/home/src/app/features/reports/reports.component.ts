@@ -37,7 +37,11 @@ import { ReportService, SeasonReport } from './report.service';
             <button class="btn btn-success fw-semibold" (click)="generateReport()">
               <i class="bi bi-refresh me-1"></i>Generate Report
             </button>
-            <button *ngIf="report()" class="btn btn-outline-success fw-semibold ms-2" (click)="exportCSV()">
+            <button
+              *ngIf="report()"
+              class="btn btn-outline-success fw-semibold ms-2"
+              (click)="exportCSV()"
+            >
               <i class="bi bi-download me-1"></i>Export CSV
             </button>
           </div>
@@ -87,12 +91,16 @@ import { ReportService, SeasonReport } from './report.service';
                   <td class="fw-medium">{{ cat.category }}</td>
                   <td class="text-end">₹{{ cat.total | number: '1.2-2' }}</td>
                   <td class="text-end">{{ cat.count }}</td>
-                  <td class="text-end">{{ (cat.total / r.totalExpense * 100) | number: '1.0-1' }}%</td>
+                  <td class="text-end">
+                    {{ (cat.total / r.totalExpense) * 100 | number: '1.0-1' }}%
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <p *ngIf="r.byCategory.length === 0" class="text-muted mb-0">No expenses recorded for this season.</p>
+          <p *ngIf="r.byCategory.length === 0" class="text-muted mb-0">
+            No expenses recorded for this season.
+          </p>
         </div>
 
         <!-- Expenses by Crop -->
@@ -115,12 +123,14 @@ import { ReportService, SeasonReport } from './report.service';
                   <td class="fw-medium">{{ crop.cropName }}</td>
                   <td class="text-end">₹{{ crop.total | number: '1.2-2' }}</td>
                   <td class="text-end">{{ crop.activities }}</td>
-                  <td class="text-end">₹{{ (crop.total / crop.activities) | number: '1.0-0' }}</td>
+                  <td class="text-end">₹{{ crop.total / crop.activities | number: '1.0-0' }}</td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <p *ngIf="r.byCrop.length === 0" class="text-muted mb-0">No crops found for this season.</p>
+          <p *ngIf="r.byCrop.length === 0" class="text-muted mb-0">
+            No crops found for this season.
+          </p>
         </div>
 
         <!-- Expenses by Month -->
@@ -144,18 +154,22 @@ import { ReportService, SeasonReport } from './report.service';
               </tbody>
             </table>
           </div>
-          <p *ngIf="r.byMonth.length === 0" class="text-muted mb-0">No data available for this period.</p>
+          <p *ngIf="r.byMonth.length === 0" class="text-muted mb-0">
+            No data available for this period.
+          </p>
         </div>
       </ng-container>
     </div>
   `,
-  styles: [`
-    .mf-page-title {
-      font-size: 1.75rem;
-      font-weight: 700;
-      color: hsl(142, 52%, 38%);
-    }
-  `],
+  styles: [
+    `
+      .mf-page-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: hsl(142, 52%, 38%);
+      }
+    `,
+  ],
 })
 export class ReportsComponent {
   private readonly reportService = inject(ReportService);

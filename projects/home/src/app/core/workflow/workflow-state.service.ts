@@ -29,13 +29,27 @@ export class WorkflowStateService {
   readonly isFirstTime = computed(() => this.stateSignal().isFirstTime);
 
   readonly progressPercent = computed(() => {
-    const phases: WorkflowPhase[] = ['registration', 'location', 'land', 'crop', 'activity', 'report'];
+    const phases: WorkflowPhase[] = [
+      'registration',
+      'location',
+      'land',
+      'crop',
+      'activity',
+      'report',
+    ];
     const completed = this.completedPhases().length;
     return Math.round((completed / phases.length) * 100);
   });
 
   readonly allPhasesComplete = computed(() => {
-    const phases: WorkflowPhase[] = ['registration', 'location', 'land', 'crop', 'activity', 'report'];
+    const phases: WorkflowPhase[] = [
+      'registration',
+      'location',
+      'land',
+      'crop',
+      'activity',
+      'report',
+    ];
     return this.completedPhases().length === phases.length;
   });
 
