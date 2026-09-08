@@ -47,7 +47,7 @@ document is left open.
 | Offline | **IndexedDB outbox** + delta pull; last-write-wins |
 | Attachments | **Cloudflare R2** (10 GB free, zero egress) |
 | Weather cache | **Server-side, shared by location grid** — not per farmer |
-| Repository | **Monorepo** — `api/` beside the Angular workspace |
+| Repository | **Monorepo** — `backend/` beside the Angular workspace |
 | RBAC (`role`/`module`) | **Excluded from v1** |
 
 ### Previously-open items, now settled
@@ -135,7 +135,7 @@ If offline were ever descoped, the API host becomes a paid-tier decision.
 
 | Ceiling | Trigger | Response |
 |---|---|---|
-| Neon 0.5 GB | ~1–2 M activity rows; attachments would blow it instantly | Blobs live in R2; Postgres stores only `storage_path` |
+| Neon 0.5 GB | ~1–2 M activity rows; attachments would blow it instantly | Blobs live in R2; Postgres stores only `storage_key` |
 | Neon 100 CU-h | Sustained traffic or a query keeping compute awake | Scale-to-zero, indexed queries; Launch tier $19/mo |
 | Render 750 h | One always-on service ≈730 h — fits, but only one | A second service forces a paid plan |
 | 0.1 CPU / 512 MB | Concurrency, not throughput | Single worker, fully async, no blocking calls |
@@ -163,8 +163,12 @@ use more, and `pool_pre_ping` absorbs connections dropped while the database
 was scaled to zero.
 
 ```
-api/
-  app/
+backend/                       Python project root — its own venv, deps, tooling
+  pyproject.toml               dependencies · ruff · mypy config
+  Dockerfile
+  alembic.ini
+  alembic/versions/            migration history (tooling, not library code)
+  myfarm_api/                  the importable package
     main.py                    app, CORS, lifespan
     core/        config.py · security.py (Firebase) · db.py (engine/session)
     models/                    SQLAlchemy — schema source of truth
@@ -172,11 +176,28 @@ api/
     repositories/base.py       tenant scoping enforced here (§5.2)
     routers/     farmers · farms · lands · crops · activities · expenses · weather · sync
     services/                  business rules, derived fields
-  alembic/versions/
   tests/
-  pyproject.toml · Dockerfile
-projects/home/                 existing Angular workspace
+projects/home/                 existing Angular workspace (Angular CLI owns projects/)
 ```
+
+Three naming choices worth stating, since they are easy to get wrong later:
+
+- **`backend/`, not `api/`** — the directory holds the data layer, migrations,
+  business services and tests, not only HTTP routes, and it pairs obviously
+  with the Angular frontend. It also leaves room for a second deployable (a
+  scheduled weather refresher, say) without the name reading wrongly.
+- **Not under `projects/`** — Angular CLI owns that directory via
+  `angular.json`, and the `lint` and `format:check` scripts glob
+  `projects/**`. A Python tree there would muddy a workspace the JS tooling
+  assumes is entirely its own.
+- **`myfarm_api/`, not `app/`** — imports read `from myfarm_api.models import
+  Farmer`, which is self-describing in tracebacks and test output. `app` is
+  the FastAPI tutorial default and says nothing about whose app it is.
+
+Keeping `pyproject.toml` inside `backend/` rather than at the repo root
+matters too: the root already carries `package.json`, `tsconfig.json` and
+`eslint.config.js` for the JS side, and the two toolchains should not have to
+share a directory.
 
 ---
 
