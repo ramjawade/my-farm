@@ -1,0 +1,93 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "activities",
+      "queryScope": "Collection",
+      "fields": [
+        {
+          "fieldPath": "farmer_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "date",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "activities",
+      "queryScope": "Collection",
+      "fields": [
+        {
+          "fieldPath": "farmer_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "activities",
+      "queryScope": "Collection",
+      "fields": [
+        {
+          "fieldPath": "farmer_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "parent_activity_id",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "crops",
+      "queryScope": "Collection",
+      "fields": [
+        {
+          "fieldPath": "farmer_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "land_id",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "snapshots",
+      "queryScope": "Collection",
+      "fields": [
+        {
+          "fieldPath": "farmer_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "location",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "date",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "forecasts",
+      "queryScope": "Collection",
+      "fields": [
+        {
+          "fieldPath": "farmer_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "forecast_date",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

@@ -1,0 +1,106 @@
+rules_version = '2';
+
+/**
+ * Firestore security rules for MyFarm application
+ *
+ * Access model:
+ * - Each farmer owns a /farmers/{uid} subtree containing all their data
+ * - Global reference data (/roles, /modules, /role_modules) is read-only for all authenticated users
+ * - Only authenticated farmers can access their own data; cross-farmer access is denied
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Utility functions
+
+    /// Check if the current user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    /// Check if the current user is the farmer owning this subtree
+    function isFarmer(farmerId) {
+      return isAuthenticated() && request.auth.uid == farmerId;
+    }
+
+    // Per-farmer data subtrees
+
+    match /farmers/{farmerId} {
+      /// Root farmer document: only the farmer can read/write
+      allow read, write: if isFarmer(farmerId);
+
+      // Lands subcollection
+      match /lands/{landId} {
+        allow read, write: if isFarmer(farmerId);
+        allow delete: if isFarmer(farmerId);
+      }
+
+      // Crops subcollection
+      match /crops/{cropId} {
+        allow read, write: if isFarmer(farmerId);
+        allow delete: if isFarmer(farmerId);
+      }
+
+      // Activities subcollection (+ nested expenses and attachments)
+      match /activities/{activityId} {
+        allow read, write: if isFarmer(farmerId);
+        allow delete: if isFarmer(farmerId);
+
+        // Expenses subcollection
+        match /expenses/{expenseId} {
+          allow read, write: if isFarmer(farmerId);
+          allow delete: if isFarmer(farmerId);
+        }
+
+        // Attachments subcollection
+        match /attachments/{attachmentId} {
+          allow read, write: if isFarmer(farmerId);
+          allow delete: if isFarmer(farmerId);
+        }
+      }
+
+      // Weather subcollection
+      match /weather/{weatherDoc} {
+        allow read, write: if isFarmer(farmerId);
+
+        // Weather snapshots
+        match /snapshots/{snapshotId} {
+          allow read, write: if isFarmer(farmerId);
+        }
+
+        // Weather forecasts
+        match /forecasts/{forecastId} {
+          allow read, write: if isFarmer(farmerId);
+        }
+
+        // Weather alerts
+        match /alerts/{alertId} {
+          allow read, write: if isFarmer(farmerId);
+        }
+      }
+    }
+
+    // Global reference data (read-only for all authenticated users)
+
+    match /roles/{roleId} {
+      allow read: if isAuthenticated();
+      allow write: if false;  // Admin-only; manage via backend
+    }
+
+    match /modules/{moduleId} {
+      allow read: if isAuthenticated();
+      allow write: if false;  // Admin-only; manage via backend
+    }
+
+    match /role_modules/{roleModuleId} {
+      allow read: if isAuthenticated();
+      allow write: if false;  // Admin-only; manage via backend
+    }
+
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
