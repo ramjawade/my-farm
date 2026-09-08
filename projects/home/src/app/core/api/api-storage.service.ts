@@ -66,10 +66,12 @@ export class ApiStorageService extends IStorageService {
   }
 
   /**
-   * Set the Firebase ID token for subsequent requests.
-   * Called by the auth service after sign-in.
+   * Set (or, with `null`, clear) the Firebase ID token for subsequent
+   * requests. Called by the auth service after sign-in, and on logout /
+   * session expiry — this service is a root singleton, so a token left
+   * behind on logout would be sent as the next farmer's credentials.
    */
-  setAuthToken(token: string): void {
+  setAuthToken(token: string | null): void {
     this.token = token;
     this.referenceData.setAuthToken(token);
   }
@@ -80,6 +82,30 @@ export class ApiStorageService extends IStorageService {
       headers['Authorization'] = `Bearer ${this.token}`;
     }
     return new HttpHeaders(headers);
+  }
+
+  /**
+   * Read every page of a cursor-paginated list endpoint (same `cursor` /
+   * `has_more` envelope as `ReferenceDataService.fetchAll`). The backend
+   * defaults to `limit=20`, so without this every list silently stopped at
+   * the first 20 records.
+   */
+  private async fetchAllPages<T>(url: string): Promise<T[]> {
+    const items: T[] = [];
+    let cursor: string | null = null;
+    do {
+      const params: Record<string, string> = { limit: '100' };
+      if (cursor) params['cursor'] = cursor;
+      const resp = await firstValueFrom(
+        this.http.get<{ items: T[]; cursor: string | null; has_more: boolean }>(url, {
+          headers: this.getHeaders(),
+          params,
+        }),
+      );
+      items.push(...resp.items);
+      cursor = resp.has_more ? resp.cursor : null;
+    } while (cursor);
+    return items;
   }
 
   /**
@@ -139,12 +165,8 @@ export class ApiStorageService extends IStorageService {
 
   async getActivities(userId: string): Promise<Activity[]> {
     try {
-      const response = await firstValueFrom(
-        this.http.get<{ items: unknown[] }>(`${this.baseUrl}/activities`, {
-          headers: this.getHeaders(),
-        }),
-      );
-      return await Promise.all(response.items.map((item) => this.mapFromBackendActivity(item)));
+      const items = await this.fetchAllPages<unknown>(`${this.baseUrl}/activities`);
+      return await Promise.all(items.map((item) => this.mapFromBackendActivity(item)));
     } catch (error) {
       console.error('Failed to get activities:', error);
       return [];
@@ -203,12 +225,10 @@ export class ApiStorageService extends IStorageService {
 
   async syncExpensesForActivity(userId: string, activityId: string): Promise<ActivityExpense[]> {
     try {
-      const response = await firstValueFrom(
-        this.http.get<{ items: unknown[] }>(`${this.baseUrl}/activities/${activityId}/expenses`, {
-          headers: this.getHeaders(),
-        }),
+      const items = await this.fetchAllPages<unknown>(
+        `${this.baseUrl}/activities/${activityId}/expenses`,
       );
-      return await Promise.all(response.items.map((item) => this.mapFromBackendExpense(item)));
+      return await Promise.all(items.map((item) => this.mapFromBackendExpense(item)));
     } catch (error) {
       console.error('Failed to sync expenses for activity:', error);
       return [];
@@ -224,17 +244,10 @@ export class ApiStorageService extends IStorageService {
       const activities = await this.getActivities(userId);
       const allExpenses: ActivityExpense[] = [];
       for (const activity of activities) {
-        const response = await firstValueFrom(
-          this.http.get<{ items: unknown[] }>(
-            `${this.baseUrl}/activities/${activity.id}/expenses`,
-            {
-              headers: this.getHeaders(),
-            },
-          ),
+        const items = await this.fetchAllPages<unknown>(
+          `${this.baseUrl}/activities/${activity.id}/expenses`,
         );
-        allExpenses.push(
-          ...(await Promise.all(response.items.map((item) => this.mapFromBackendExpense(item)))),
-        );
+        allExpenses.push(...(await Promise.all(items.map((item) => this.mapFromBackendExpense(item)))));
       }
       return allExpenses;
     } catch (error) {
@@ -307,13 +320,10 @@ export class ApiStorageService extends IStorageService {
     const activities = await this.getActivities('');
     for (const activity of activities) {
       try {
-        const response = await firstValueFrom(
-          this.http.get<{ items: { id: string }[] }>(
-            `${this.baseUrl}/activities/${activity.id}/expenses`,
-            { headers: this.getHeaders() },
-          ),
+        const items = await this.fetchAllPages<{ id: string }>(
+          `${this.baseUrl}/activities/${activity.id}/expenses`,
         );
-        if (response.items.some((item) => item.id === expenseId)) {
+        if (items.some((item) => item.id === expenseId)) {
           return activity.id;
         }
       } catch {
@@ -329,12 +339,8 @@ export class ApiStorageService extends IStorageService {
 
   async getCrops(userId: string): Promise<CropEntity[]> {
     try {
-      const response = await firstValueFrom(
-        this.http.get<{ items: unknown[] }>(`${this.baseUrl}/crops`, {
-          headers: this.getHeaders(),
-        }),
-      );
-      return await Promise.all(response.items.map((item) => this.mapFromBackendCrop(item)));
+      const items = await this.fetchAllPages<unknown>(`${this.baseUrl}/crops`);
+      return await Promise.all(items.map((item) => this.mapFromBackendCrop(item)));
     } catch (error) {
       console.error('Failed to get crops:', error);
       return [];
@@ -383,12 +389,8 @@ export class ApiStorageService extends IStorageService {
 
   async getFarms(userId: string): Promise<SavedFarm[]> {
     try {
-      const response = await firstValueFrom(
-        this.http.get<{ items: unknown[] }>(`${this.baseUrl}/lands`, {
-          headers: this.getHeaders(),
-        }),
-      );
-      return response.items.map((item) => this.mapFromBackendLand(item));
+      const items = await this.fetchAllPages<unknown>(`${this.baseUrl}/lands`);
+      return items.map((item) => this.mapFromBackendLand(item));
     } catch (error) {
       console.error('Failed to get farms:', error);
       return [];

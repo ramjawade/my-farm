@@ -78,7 +78,7 @@ export class OutboxStorageService extends IStorageService {
     window.addEventListener('online', () => this.onConnectivityRestored());
   }
 
-  setAuthToken(token: string): void {
+  setAuthToken(token: string | null): void {
     this.token = token;
     this.apiStorage.setAuthToken(token);
   }

@@ -7,6 +7,7 @@ import { IStorageService } from '../storage/storage.interface';
 
 const ACTIVE_USER_ID_KEY = 'my_farm_active_user_id';
 const SESSION_EXPIRY_KEY = 'my_farm_session_expiry';
+const FIREBASE_TOKEN_KEY = 'my_farm_firebase_token';
 const SESSION_DURATION_MS = 24 * 60 * 60 * 1000;
 
 @Injectable({
@@ -54,13 +55,32 @@ export class AuthService {
     this.currentUserSignal.set(farmer);
     localStorage.setItem(SESSION_EXPIRY_KEY, String(Date.now() + SESSION_DURATION_MS));
 
-    // Stage 4: Inject Firebase token into API storage service
-    if (firebaseToken && this.isApiStorageService(this.storageService)) {
-      this.storageService.setAuthToken(firebaseToken);
-      localStorage.setItem('my_farm_firebase_token', firebaseToken);
+    // Stage 4: always rebind the API credential to *this* login. The storage
+    // service is a root singleton, so without the else-branch a tokenless
+    // login (PIN, demo) would keep the previous farmer's bearer token and
+    // read their data.
+    if (firebaseToken) {
+      localStorage.setItem(FIREBASE_TOKEN_KEY, firebaseToken);
+    } else {
+      localStorage.removeItem(FIREBASE_TOKEN_KEY);
+    }
+    if (this.isApiStorageService(this.storageService)) {
+      this.storageService.setAuthToken(firebaseToken ?? null);
     }
 
     this.workflowService.markPhaseComplete('registration');
+  }
+
+  /**
+   * Drop the Firebase token from both localStorage and the storage
+   * singleton. Called on logout, on session expiry, and on a failed
+   * session restore — anywhere the current identity stops being valid.
+   */
+  private clearFirebaseToken(): void {
+    localStorage.removeItem(FIREBASE_TOKEN_KEY);
+    if (this.isApiStorageService(this.storageService)) {
+      this.storageService.setAuthToken(null);
+    }
   }
 
   /**
@@ -68,7 +88,7 @@ export class AuthService {
    * Called during session initialization.
    */
   private restoreFirebaseToken(): void {
-    const token = localStorage.getItem('my_farm_firebase_token');
+    const token = localStorage.getItem(FIREBASE_TOKEN_KEY);
     if (token && this.isApiStorageService(this.storageService)) {
       this.storageService.setAuthToken(token);
     }
@@ -78,7 +98,7 @@ export class AuthService {
    * or anything else layered on top of it, e.g. the offline outbox). */
   private isApiStorageService(
     service: IStorageService,
-  ): service is IStorageService & { setAuthToken(token: string): void } {
+  ): service is IStorageService & { setAuthToken(token: string | null): void } {
     return typeof (service as { setAuthToken?: unknown }).setAuthToken === 'function';
   }
 
@@ -96,6 +116,7 @@ export class AuthService {
   logout(): void {
     this.currentUserSignal.set(null);
     localStorage.removeItem(SESSION_EXPIRY_KEY);
+    this.clearFirebaseToken();
     this.router.navigate(['/login']);
   }
 
@@ -109,6 +130,7 @@ export class AuthService {
       this.currentUserSignal.set(null);
       localStorage.removeItem(ACTIVE_USER_ID_KEY);
       localStorage.removeItem(SESSION_EXPIRY_KEY);
+      this.clearFirebaseToken();
       return false;
     }
     return true;
@@ -132,7 +154,7 @@ export class AuthService {
       if (activeId || expiry) {
         localStorage.removeItem(ACTIVE_USER_ID_KEY);
         localStorage.removeItem(SESSION_EXPIRY_KEY);
-        localStorage.removeItem('my_farm_firebase_token');
+        this.clearFirebaseToken();
       }
     } catch (e) {
       console.error('Failed to load auth session', e);
