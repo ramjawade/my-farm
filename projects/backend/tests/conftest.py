@@ -3,16 +3,21 @@
 """
 
 import os
+import subprocess
+import sys
 
 os.environ.setdefault(
     "DATABASE_URL", "postgresql+asyncpg://postgres:postgres@localhost:5432/myfarm_test"
 )
 os.environ.setdefault("FIREBASE_PROJECT_ID", "myfarm-test")
 os.environ.setdefault("CORS_ORIGINS", "https://ramjawade.github.io")
+os.environ.setdefault("SESSION_JWT_SECRET", "test-session-secret")
 
 from collections.abc import AsyncIterator  # noqa: E402
+from pathlib import Path  # noqa: E402
 from uuid import uuid4  # noqa: E402
 
+import pytest  # noqa: E402
 import pytest_asyncio  # noqa: E402
 from httpx import ASGITransport, AsyncClient  # noqa: E402
 from sqlalchemy.ext.asyncio import (  # noqa: E402
@@ -45,6 +50,27 @@ APP_ROLE_DATABASE_URL = "postgresql+asyncpg://myfarm_app:myfarm_app@localhost:54
 # "Event loop is closed" / "manually started transaction" errors — a fresh
 # engine per test doesn't match how asyncpg connections or the real app's
 # process-lifetime engine behave.
+
+
+_BACKEND_ROOT = Path(__file__).resolve().parent.parent
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _apply_migrations() -> None:
+    """Bring the test database to head before anything runs.
+
+    Nothing else creates the real schema — the app's tables only exist as
+    Alembic migrations — so without this every DB-backed test fails with
+    `relation "farmer" does not exist`. `alembic upgrade head` is
+    idempotent, and a subprocess sidesteps env.py's own `asyncio.run()`
+    clashing with the pytest-asyncio session loop.
+    """
+    subprocess.run(
+        [sys.executable, "-m", "alembic", "upgrade", "head"],
+        cwd=_BACKEND_ROOT,
+        check=True,
+        env=os.environ,
+    )
 
 
 @pytest_asyncio.fixture(scope="session")
