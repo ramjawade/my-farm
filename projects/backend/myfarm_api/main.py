@@ -7,7 +7,17 @@ from fastapi.responses import JSONResponse
 
 from myfarm_api.core.config import get_settings
 from myfarm_api.core.db import get_engine
-from myfarm_api.routers import auth, health, me
+from myfarm_api.routers import (
+    activities,
+    admin,
+    auth,
+    crops,
+    farms,
+    health,
+    lands,
+    me,
+    reference,
+)
 from myfarm_api.schemas.common import ProblemDetail
 
 
@@ -45,7 +55,13 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router)
     app.include_router(auth.router)
+    app.include_router(reference.router)
+    app.include_router(admin.router)
     app.include_router(me.router)
+    app.include_router(farms.router)
+    app.include_router(lands.router)
+    app.include_router(crops.router)
+    app.include_router(activities.router)
 
     return app
 

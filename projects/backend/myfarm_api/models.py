@@ -7,6 +7,8 @@ from uuid import UUID
 
 from sqlalchemy import (
     UUID as SQLUuid,
+)
+from sqlalchemy import (
     DateTime,
     ForeignKey,
     Index,

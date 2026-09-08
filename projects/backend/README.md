@@ -24,6 +24,90 @@ design; this is Stage 2 (API skeleton) of that plan's delivery stages.
 No models, no migrations, no `/api/v1/me` — those are Stage 3, once there's
 a `farmer` table to build them against.
 
+## What exists after Stage 3 (CRUD endpoints & cross-tenant tests)
+
+### Core domain endpoints
+
+All farmer-owned endpoints require Firebase token verification and use JIT farmer
+provisioning (`/api/v1/me`). All return 404 (never 403) for cross-tenant access
+attempts. All support cursor pagination over (updated_at DESC, id DESC).
+
+**Farmer profile:**
+- `GET /api/v1/me` — get or provision current farmer (JIT)
+
+**Farms (top-level entity):**
+- `GET /api/v1/farms` — list farms (cursor-paginated)
+- `GET /api/v1/farms/{farm_id}` — get single farm
+- `POST /api/v1/farms` — create farm
+- `PATCH /api/v1/farms/{farm_id}` — update farm
+- `DELETE /api/v1/farms/{farm_id}` — soft-delete farm
+
+**Lands (plots within a farm):**
+- `GET /api/v1/lands` — list lands (cursor-paginated)
+- `GET /api/v1/lands/{land_id}` — get single land
+- `POST /api/v1/lands` — create land
+- `PATCH /api/v1/lands/{land_id}` — update land
+- `DELETE /api/v1/lands/{land_id}` — soft-delete land
+
+**Crops (plantings on a land):**
+- `GET /api/v1/crops` — list crops (cursor-paginated)
+- `GET /api/v1/crops/{crop_id}` — get single crop
+- `POST /api/v1/crops` — create crop
+- `PATCH /api/v1/crops/{crop_id}` — update crop
+- `DELETE /api/v1/crops/{crop_id}` — soft-delete crop
+
+**Activities (farm operations):**
+- `GET /api/v1/activities` — list activities (cursor-paginated)
+- `GET /api/v1/activities/{activity_id}` — get single activity
+- `POST /api/v1/activities` — create activity
+- `PATCH /api/v1/activities/{activity_id}` — update activity
+- `DELETE /api/v1/activities/{activity_id}` — soft-delete activity
+
+**Nested: Activity Expenses:**
+- `GET /api/v1/activities/{activity_id}/expenses` — list expenses for activity
+- `POST /api/v1/activities/{activity_id}/expenses` — add expense to activity
+- `PATCH /api/v1/activities/{activity_id}/expenses/{expense_id}` — update expense
+- `DELETE /api/v1/activities/{activity_id}/expenses/{expense_id}` — delete expense
+
+**Nested: Activity Attachments:**
+- `GET /api/v1/activities/{activity_id}/attachments` — list attachments for activity
+- `POST /api/v1/activities/{activity_id}/attachments` — add attachment to activity
+- `DELETE /api/v1/activities/{activity_id}/attachments/{attachment_id}` — delete attachment
+
+### Reference data endpoints (unauthenticated, shared across farmers)
+
+**Crops catalog:**
+- `GET /api/v1/reference/crops` — list crop species (name-based cursor pagination)
+
+**Expense categories:**
+- `GET /api/v1/reference/expense-categories` — list expense types
+
+**Activity types:**
+- `GET /api/v1/reference/activity-types` — list activity types
+
+### Admin endpoints
+
+**Data initialization:**
+- `POST /api/v1/admin/seed-reference-data` — seed crops, expenses, and activity types (idempotent)
+
+### Technical details
+
+- **Tenant isolation:** Three-layer defense per BACKEND_PLAN.md §5.2:
+  1. App-level filtering in `TenantScopedCRUD[T]` repository
+  2. Postgres RLS (unavailable on Neon, see limitation below)
+  3. Cross-tenant tests verify every endpoint (load-bearing on Neon)
+
+- **Pagination:** Cursor-based over (updated_at DESC, id DESC) tuple for efficient
+  backwards traversal without OFFSET. Cursor format: `<ISO_8601_timestamp>:<UUID>`
+
+- **Soft-delete:** All farmer-owned entities exclude `deleted_at IS NOT NULL` rows.
+  Hard deletes never used (required for offline sync per PHASE_5_PLAN.md §6).
+
+- **Error responses:** RFC 9457 `application/problem+json` format with HTTP status code.
+
+- **Test coverage:** Each endpoint has 3+ cross-tenant tests (create/list, isolation,
+  update/delete) — 30+ test cases across all entities.
+
 ## Neon: provisioned
 
 Project `my-farm` (id `round-cake-95874663`) exists in **Singapore**
