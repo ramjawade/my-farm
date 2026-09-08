@@ -14,6 +14,7 @@ import { SavedFarm, FarmAreaResult } from '../../map/models/map.models';
 import { WeatherData } from '../weather/weather.models';
 import { BackupFile } from '../storage/backup.models';
 import { ReferenceDataService } from './reference-data.service';
+import { CursorPage } from './contracts';
 
 const SQ_M_PER_HECTARE = 10_000;
 const SQ_M_PER_ACRE = 4_046.8564224;
@@ -98,7 +99,7 @@ export class ApiStorageService extends IStorageService {
       const params: Record<string, string> = { limit: '100' };
       if (cursor) params['cursor'] = cursor;
       const resp = await firstValueFrom(
-        this.http.get<{ items: T[]; cursor: string | null; has_more: boolean }>(url, {
+        this.http.get<CursorPage<T>>(url, {
           headers: this.getHeaders(),
           params,
         }),
