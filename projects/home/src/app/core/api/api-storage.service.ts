@@ -532,6 +532,9 @@ export class ApiStorageService extends IStorageService {
           : undefined,
       crop_id: activity.cropId,
       land_id: activity.fieldId,
+      // mapFromBackendActivity has always read this back; not sending it
+      // meant a sub-activity's parent link was silently dropped on write.
+      parent_activity_id: activity.parentActivityId,
       custom_activity_name: activity.customActivityName,
       date: timestampToDateString(activity.date),
       season: activity.season,
