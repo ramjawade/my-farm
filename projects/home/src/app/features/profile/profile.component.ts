@@ -27,7 +27,6 @@ export class ProfileComponent {
   readonly dataMessage = signal<{ kind: 'success' | 'danger'; text: string } | null>(null);
   readonly dataBusy = signal(false);
   readonly showResetConfirm = signal(false);
-  readonly showClearConfirm = signal(false);
 
   // Modal dialog trigger states
   readonly activeSection = signal<'account' | 'agronomic' | 'land' | 'operations'>('account');
@@ -147,17 +146,6 @@ export class ProfileComponent {
       await this.demoData.resetDemoData();
       this.dataMessage.set({ kind: 'success', text: 'Demo farm reset to its starting state.' });
       this.toast.success('Demo farm reset.');
-    } finally {
-      this.dataBusy.set(false);
-    }
-  }
-
-  async confirmClearData(): Promise<void> {
-    this.dataBusy.set(true);
-    try {
-      await this.demoData.clearMyData();
-      this.dataMessage.set({ kind: 'success', text: 'All farm data cleared.' });
-      this.toast.success('All farm data cleared.');
     } finally {
       this.dataBusy.set(false);
     }

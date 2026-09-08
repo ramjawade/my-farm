@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from myfarm_api.core.security import (
     FirebaseIdentity,
@@ -12,11 +12,9 @@ from myfarm_api.repositories.farmer import (
     PhoneAlreadyRegisteredError,
 )
 from myfarm_api.schemas.auth import (
-    PhoneLookupResponse,
     RegisterRequest,
     SessionRequest,
     SessionResponse,
-    normalize_phone,
 )
 from myfarm_api.schemas.farmer import FarmerRead
 
@@ -32,22 +30,6 @@ async def whoami(
     exactly what was verified.
     """
     return {"uid": identity.uid, "phone_number": identity.phone_number}
-
-
-@router.get("/lookup", response_model=PhoneLookupResponse)
-async def lookup_phone(phone: str = Query(min_length=1, max_length=20)) -> PhoneLookupResponse:
-    """Whether a farmer with this phone exists — lets the login screen pick
-    the "enter PIN" vs "register" path. Deliberately says nothing about
-    whether a PIN is set or anything else about the account.
-    """
-    normalized = normalize_phone(phone)
-    if len(normalized) != 10:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="phone must be a 10-digit mobile number",
-        )
-    farmer = await FarmerRepository.get_by_phone(normalized)
-    return PhoneLookupResponse(exists=farmer is not None)
 
 
 @router.post("/register", response_model=SessionResponse, status_code=status.HTTP_201_CREATED)
@@ -76,14 +58,23 @@ async def register(body: RegisterRequest) -> SessionResponse:
 async def create_session(body: SessionRequest) -> SessionResponse:
     """Verify phone + PIN, issue a session JWT.
 
-    One 401 for both "no such phone" and "wrong PIN" — the caller learns
-    nothing it couldn't already get from `/auth/lookup`.
+    The status code tells the login screen what to do next, so it never has
+    to pre-check whether an account exists (issue #50):
+
+    - **404** — no account for this phone → the client offers to register.
+    - **401** — account exists, wrong PIN → the client says "incorrect PIN".
+    - **200** — `{ token, farmer }`.
     """
     farmer = await FarmerRepository.get_by_phone(body.phone)
-    if farmer is None or not verify_pin(body.pin, farmer.pin_hash):
+    if farmer is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No account for that phone number",
+        )
+    if not verify_pin(body.pin, farmer.pin_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect phone number or PIN",
+            detail="Incorrect PIN",
         )
 
     return SessionResponse(

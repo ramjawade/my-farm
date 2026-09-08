@@ -3,13 +3,19 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
-import { SessionAuthService } from '../../core/auth/session-auth.service';
+import { SessionAuthService, SessionResult } from '../../core/auth/session-auth.service';
 import { FarmerRegistrationService } from '../farmer-registration/farmer-registration.service';
-import { FarmerRegistrationData } from '../farmer-registration/farmer-registration.models';
-import { hashPin, verifyPin } from '../../core/auth/pin-hash.util';
 
-type LoginStep = 'phone' | 'pin' | 'setupPin' | 'register';
+type LoginStep = 'phone' | 'pin' | 'register';
 
+const PIN_RE = /^[0-9]{4,6}$/;
+const UNREACHABLE = 'Cannot reach the server. Check your connection and try again.';
+
+/**
+ * PIN sign-in (issues #45, #50). **Online-only**: every step needs the
+ * backend. A network failure shows a retry message and never creates a
+ * local account — an identity can't be minted offline and reconciled later.
+ */
 @Component({
   standalone: true,
   selector: 'app-login',
@@ -30,12 +36,7 @@ export class LoginComponent {
   readonly pin = signal('');
   readonly confirmPin = signal('');
   readonly errorMessage = signal('');
-
-  private matchedFarmer: FarmerRegistrationData | null = null;
-
-  /** True once the backend has confirmed this phone maps to a real account
-   * — the PIN step then verifies against `/auth/session`, not a local hash. */
-  private backendAccount = false;
+  readonly busy = signal(false);
 
   constructor() {
     if (this.authService.isLoggedIn()) {
@@ -43,14 +44,8 @@ export class LoginComponent {
     }
   }
 
-  async onSubmitPhone(): Promise<void> {
-    const rawPhone = this.phone().trim();
-    if (!rawPhone) {
-      this.errorMessage.set('Please enter your phone number.');
-      return;
-    }
-
-    const digitsOnly = rawPhone.replace(/\D/g, '');
+  onSubmitPhone(): void {
+    const digitsOnly = this.phone().trim().replace(/\D/g, '');
     const phoneVal = digitsOnly.length > 10 ? digitsOnly.slice(-10) : digitsOnly;
 
     if (phoneVal.length !== 10) {
@@ -58,100 +53,41 @@ export class LoginComponent {
       return;
     }
 
-    this.errorMessage.set('');
     this.phone.set(phoneVal);
-
-    this.backendAccount = false;
-    this.matchedFarmer = null;
-
-    // Ask the backend first (issue #45). If it's reachable its answer wins;
-    // if not, fall back to whatever this device has locally so the app
-    // still works offline / against LocalStorageService.
-    const existsRemotely = await this.sessionAuth.phoneExists(phoneVal);
-    if (existsRemotely === true) {
-      this.backendAccount = true;
-      this.step.set('pin');
-      return;
-    }
-    if (existsRemotely === false) {
-      this.step.set('register');
-      return;
-    }
-
-    const found = await this.farmerService.findByPhone(phoneVal);
-    if (found) {
-      this.matchedFarmer = found;
-      this.step.set(found.pinHash ? 'pin' : 'setupPin');
-    } else {
-      this.step.set('register');
-    }
+    this.errorMessage.set('');
+    this.step.set('pin');
   }
 
   async onSubmitPin(): Promise<void> {
     const pinVal = this.pin().trim();
-    if (!/^[0-9]{4,6}$/.test(pinVal)) {
+    if (!PIN_RE.test(pinVal)) {
       this.errorMessage.set('Please enter a valid 4-6 digit PIN.');
       return;
     }
 
-    if (this.backendAccount) {
-      try {
-        const session = await this.sessionAuth.createSession(this.phone(), pinVal);
-        if (!session) {
+    this.errorMessage.set('');
+    this.busy.set(true);
+    try {
+      const outcome = await this.sessionAuth.createSession(this.phone(), pinVal);
+      switch (outcome.status) {
+        case 'ok':
+          this.enter(outcome.result);
+          return;
+        case 'no-account':
+          // First time on this number — collect a name and register.
+          this.name.set('');
+          this.confirmPin.set('');
+          this.step.set('register');
+          return;
+        case 'wrong-pin':
           this.errorMessage.set('Incorrect PIN. Please try again.');
           return;
-        }
-        this.errorMessage.set('');
-        this.farmerService.upsertFarmer(session.farmer);
-        this.authService.login(session.farmer, session.token);
-        this.router.navigate(['/map']);
-        return;
-      } catch {
-        this.errorMessage.set('Could not reach the server. Please try again.');
-        return;
+        case 'unreachable':
+          this.errorMessage.set(UNREACHABLE);
+          return;
       }
-    }
-
-    if (!this.matchedFarmer?.pinHash) {
-      this.errorMessage.set('Something went wrong. Please try again.');
-      return;
-    }
-
-    const isValid = await verifyPin(pinVal, this.matchedFarmer.pinHash);
-    if (!isValid) {
-      this.errorMessage.set('Incorrect PIN. Please try again.');
-      return;
-    }
-
-    this.errorMessage.set('');
-    this.authService.login(this.matchedFarmer);
-    this.router.navigate(['/map']);
-  }
-
-  async onSubmitPinSetup(): Promise<void> {
-    const pinVal = this.pin().trim();
-    const confirmVal = this.confirmPin().trim();
-
-    if (!/^[0-9]{4,6}$/.test(pinVal)) {
-      this.errorMessage.set('Please enter a valid 4-6 digit PIN.');
-      return;
-    }
-    if (pinVal !== confirmVal) {
-      this.errorMessage.set('PINs do not match.');
-      return;
-    }
-
-    if (!this.matchedFarmer) {
-      this.errorMessage.set('Something went wrong. Please try again.');
-      return;
-    }
-
-    this.errorMessage.set('');
-    const pinHash = await hashPin(pinVal);
-    const updated = await this.farmerService.updateFarmer(this.matchedFarmer.id, { pinHash });
-    if (updated) {
-      this.authService.login(updated);
-      this.router.navigate(['/map']);
+    } finally {
+      this.busy.set(false);
     }
   }
 
@@ -160,11 +96,11 @@ export class LoginComponent {
     const pinVal = this.pin().trim();
     const confirmVal = this.confirmPin().trim();
 
-    if (!nameVal || nameVal.length < 3) {
+    if (nameVal.length < 3) {
       this.errorMessage.set('Please enter your full name (minimum 3 characters).');
       return;
     }
-    if (!/^[0-9]{4,6}$/.test(pinVal)) {
+    if (!PIN_RE.test(pinVal)) {
       this.errorMessage.set('Please enter a valid 4-6 digit PIN.');
       return;
     }
@@ -174,52 +110,30 @@ export class LoginComponent {
     }
 
     this.errorMessage.set('');
-
-    // Backend-first (issue #45): register there and take the session JWT it
-    // returns. Fall back to a local-only account if the backend is
-    // unreachable, so onboarding still works offline.
+    this.busy.set(true);
     try {
-      const result = await this.sessionAuth.register({
+      const outcome = await this.sessionAuth.register({
         phone: this.phone(),
         fullName: nameVal,
         pin: pinVal,
       });
-      if (result === 'phone-taken') {
-        this.backendAccount = true;
-        this.step.set('pin');
-        this.pin.set('');
-        this.confirmPin.set('');
-        this.errorMessage.set('That number is already registered. Enter your PIN to sign in.');
-        return;
+      switch (outcome.status) {
+        case 'ok':
+          this.enter(outcome.result);
+          return;
+        case 'phone-taken':
+          this.pin.set('');
+          this.confirmPin.set('');
+          this.step.set('pin');
+          this.errorMessage.set('That number is already registered. Enter your PIN to sign in.');
+          return;
+        case 'unreachable':
+          this.errorMessage.set(UNREACHABLE);
+          return;
       }
-      this.farmerService.upsertFarmer(result.farmer);
-      this.authService.login(result.farmer, result.token);
-      this.router.navigate(['/map']);
-      return;
-    } catch {
-      // Offline / backend down — create the account locally.
+    } finally {
+      this.busy.set(false);
     }
-
-    const pinHash = await hashPin(pinVal);
-    const newFarmer = this.farmerService.registerFarmer({
-      fullName: nameVal,
-      phone: this.phone(),
-      preferredLanguage: 'English',
-      userRole: 'Farmer',
-      farmName: `${nameVal}'s Farm`,
-      farmArea: 0,
-      farmAreaUnit: 'hectares',
-      primaryCrops: [],
-      waterSource: 'Rainfed',
-      irrigationType: 'Manual',
-      farmingMethod: 'Organic',
-      locationType: 'skipped',
-      location: null,
-      pinHash,
-    });
-
-    this.authService.login(newFarmer);
-    this.router.navigate(['/map']);
   }
 
   resetToPhoneStep(): void {
@@ -228,7 +142,14 @@ export class LoginComponent {
     this.confirmPin.set('');
     this.name.set('');
     this.errorMessage.set('');
-    this.matchedFarmer = null;
-    this.backendAccount = false;
+  }
+
+  /** login() first so the API session token is bound before upsertFarmer()
+   * triggers a PATCH /me through the storage layer. */
+  private enter(session: SessionResult): void {
+    this.errorMessage.set('');
+    this.authService.login(session.farmer, session.token);
+    this.farmerService.upsertFarmer(session.farmer);
+    this.router.navigate(['/map']);
   }
 }

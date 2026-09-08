@@ -41,6 +41,28 @@ class FarmerRepository:
             return farmer
 
     @staticmethod
+    async def update_by_auth_uid(auth_uid: str, fields: dict[str, object]) -> Farmer | None:
+        """Apply a partial profile update to the live farmer for `auth_uid`.
+
+        `fields` is already filtered to the caller-supplied keys (Pydantic
+        `exclude_unset`), so an absent key is left untouched. Returns the
+        updated row, or None if there is no such farmer.
+        """
+        session_factory = get_session_factory()
+        async with session_factory() as session:
+            stmt = select(Farmer).where(
+                Farmer.auth_uid == auth_uid, Farmer.deleted_at.is_(None)
+            )
+            farmer = (await session.execute(stmt)).scalar_one_or_none()
+            if farmer is None:
+                return None
+            for key, value in fields.items():
+                setattr(farmer, key, value)
+            await session.commit()
+            await session.refresh(farmer)
+            return farmer
+
+    @staticmethod
     async def get_by_phone(phone: str) -> Farmer | None:
         """Look up a live farmer by phone number (UNIQUE column)."""
         session_factory = get_session_factory()

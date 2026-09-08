@@ -14,7 +14,7 @@ import { SavedFarm, FarmAreaResult } from '../../map/models/map.models';
 import { WeatherData } from '../weather/weather.models';
 import { BackupFile } from '../storage/backup.models';
 import { ReferenceDataService } from './reference-data.service';
-import { CursorPage } from './contracts';
+import { CursorPage, FarmerResponse, FarmerUpdateRequest } from './contracts';
 
 const SQ_M_PER_HECTARE = 10_000;
 const SQ_M_PER_ACRE = 4_046.8564224;
@@ -446,64 +446,88 @@ export class ApiStorageService extends IStorageService {
   // ============================================================================
 
   async getFarmerById(id: string): Promise<FarmerRegistrationData | undefined> {
-    // The backend doesn't expose a GET /farmers/:id endpoint.
-    // For now, return the current farmer via /me.
+    // The backend has no GET /farmers/{id} — the only farmer this token can
+    // read is its own, via /me. `AuthService.loadSession` passes the active
+    // user's id here, so a match is the normal case.
     try {
       const response = await firstValueFrom(
-        this.http.get<Record<string, unknown>>(`${this.baseUrl}/me`, {
+        this.http.get<FarmerResponse>(`${this.baseUrl}/me`, {
           headers: this.getHeaders(),
         }),
       );
-      if (response['id'] === id) {
-        return this.mapFromBackendFarmer(response);
-      }
-      return undefined;
+      return response.id === id ? this.mapFromBackendFarmer(response) : undefined;
     } catch (error) {
       console.error('Failed to get farmer by id:', error);
       return undefined;
     }
   }
 
+  /**
+   * Not supported on the API path. Sign-in is a single online
+   * `POST /auth/session` (issue #50) — the login screen never resolves a
+   * phone to a farmer record first, so there is nothing to return here.
+   * `LocalStorageService` still implements this for the demo user.
+   */
   async getFarmerByPhone(phone: string): Promise<FarmerRegistrationData | undefined> {
-    // The backend doesn't expose a phone lookup endpoint.
-    console.warn('getFarmerByPhone not implemented — backend has no phone lookup');
     return undefined;
   }
 
   async saveFarmer(farmer: FarmerRegistrationData): Promise<FarmerRegistrationData> {
-    // /api/v1/me is GET-only (JIT-provisioned) — there is no update endpoint yet.
-    console.warn('saveFarmer is a no-op — /api/v1/me has no update endpoint yet');
-    return farmer;
+    // Only the columns the backend Farmer row actually has (PATCH /me,
+    // issue #50). Farm-setup fields live on the Farm entity, not here.
+    const body: FarmerUpdateRequest = {
+      full_name: farmer.fullName || null,
+      email: farmer.email ?? null,
+      preferred_language: farmer.preferredLanguage || null,
+    };
+    try {
+      const response = await firstValueFrom(
+        this.http.patch<FarmerResponse>(`${this.baseUrl}/me`, body, {
+          headers: this.getHeaders(),
+        }),
+      );
+      return this.mapFromBackendFarmer(response);
+    } catch (error) {
+      console.error('Failed to save farmer profile:', error);
+      // Don't lose the caller's optimistic copy on a transient failure.
+      return farmer;
+    }
   }
 
   // ============================================================================
   // Weather (Stage 7: server-cached weather endpoint)
   // ============================================================================
 
+  // Weather history isn't persisted server-side — the live client-side
+  // OpenWeather path (WeatherService) covers the MVP. Deliberate no-ops,
+  // not errors: callers treat "no history" as normal.
   async getWeatherHistory(userId: string): Promise<WeatherData[]> {
-    console.warn('getWeatherHistory not implemented — backend has no history endpoint');
     return [];
   }
 
   async saveWeatherSnapshot(userId: string, snapshot: WeatherData): Promise<WeatherData> {
-    console.warn('saveWeatherSnapshot is a no-op — server manages weather');
     return snapshot;
   }
 
   // ============================================================================
   // Whole-account operations
+  //
+  // Backup / restore / bulk-delete are LocalStorage / demo-account features
+  // only — the Profile "Data & Backup" card is hidden when the API storage
+  // path is active (issue #50). Server-side account export/import is MVP 2.
+  // These stay hard failures so a stray call is loud, not silently wrong.
   // ============================================================================
 
   async exportUserData(userId: string): Promise<BackupFile> {
-    throw new Error('exportUserData not implemented');
+    throw new Error('Account backup is not available on the API storage path (MVP 2)');
   }
 
   async importUserData(userId: string, backup: BackupFile): Promise<void> {
-    throw new Error('importUserData not implemented');
+    throw new Error('Account restore is not available on the API storage path (MVP 2)');
   }
 
   async clearUserData(userId: string): Promise<void> {
-    throw new Error('clearUserData not implemented');
+    throw new Error('Bulk data deletion is not available on the API storage path');
   }
 
   // ============================================================================
@@ -651,16 +675,16 @@ export class ApiStorageService extends IStorageService {
     };
   }
 
-  private mapFromBackendFarmer(item: Record<string, unknown>): FarmerRegistrationData {
+  /** The farm-setup half of `FarmerRegistrationData` — the backend Farmer
+   * row has none of these (Farm is a separate entity), so every farmer
+   * mapped from the API starts here. */
+  private blankFarmer(): FarmerRegistrationData {
     return {
-      id: item['id'] as string,
-      fullName: (item['full_name'] as string) ?? '',
-      phone: (item['phone'] as string) ?? '',
-      email: (item['email'] as string) ?? undefined,
-      preferredLanguage: (item['preferred_language'] as string) ?? 'en',
-      userRole: (item['user_role'] as string) ?? 'farmer',
-      // The backend Farmer table has no farm-setup fields (Farm is a
-      // separate entity) — these stay unset from this mapper.
+      id: '',
+      fullName: '',
+      phone: '',
+      preferredLanguage: 'en',
+      userRole: 'farmer',
       farmName: '',
       farmArea: 0,
       farmAreaUnit: 'acres',
@@ -670,7 +694,20 @@ export class ApiStorageService extends IStorageService {
       farmingMethod: '',
       locationType: 'skipped',
       location: null,
-      createdAt: new Date(item['created_at'] as string).getTime(),
+      createdAt: Date.now(),
+    };
+  }
+
+  private mapFromBackendFarmer(item: FarmerResponse): FarmerRegistrationData {
+    return {
+      ...this.blankFarmer(),
+      id: item.id,
+      fullName: item.full_name ?? '',
+      phone: item.phone ?? '',
+      email: item.email ?? undefined,
+      preferredLanguage: item.preferred_language ?? 'en',
+      userRole: item.user_role ?? 'farmer',
+      createdAt: new Date(item.created_at).getTime(),
     };
   }
 }

@@ -52,7 +52,3 @@ class SessionResponse(BaseModel):
 
     token: str
     farmer: FarmerRead
-
-
-class PhoneLookupResponse(BaseModel):
-    exists: bool
