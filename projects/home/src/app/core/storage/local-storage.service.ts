@@ -118,8 +118,28 @@ export class LocalStorageService extends IStorageService {
     return this.read<CropEntity[]>(this.userKey(userId, 'crops'), []);
   }
 
-  async saveCrops(userId: string, crops: CropEntity[]): Promise<void> {
+  async saveCrop(userId: string, crop: CropEntity): Promise<CropEntity> {
+    const crops = await this.getCrops(userId);
+    crops.push(crop);
     this.write(this.userKey(userId, 'crops'), crops);
+    return crop;
+  }
+
+  async updateCrop(userId: string, id: string, updates: Partial<CropEntity>): Promise<void> {
+    const crops = await this.getCrops(userId);
+    const index = crops.findIndex((c) => c.id === id);
+    if (index !== -1) {
+      crops[index] = { ...crops[index], ...updates };
+      this.write(this.userKey(userId, 'crops'), crops);
+    }
+  }
+
+  async deleteCrop(userId: string, id: string): Promise<void> {
+    const crops = await this.getCrops(userId);
+    this.write(
+      this.userKey(userId, 'crops'),
+      crops.filter((c) => c.id !== id),
+    );
   }
 
   // --- Lands ---
@@ -127,18 +147,51 @@ export class LocalStorageService extends IStorageService {
     return this.read<SavedFarm[]>(this.userKey(userId, 'saved_farms'), []);
   }
 
-  async saveFarms(userId: string, farms: SavedFarm[]): Promise<void> {
+  async saveFarm(userId: string, farm: SavedFarm): Promise<SavedFarm> {
+    const farms = await this.getFarms(userId);
+    farms.push(farm);
     this.write(this.userKey(userId, 'saved_farms'), farms);
+    return farm;
+  }
+
+  async updateFarm(userId: string, id: string, updates: Partial<SavedFarm>): Promise<void> {
+    const farms = await this.getFarms(userId);
+    const index = farms.findIndex((f) => f.id === id);
+    if (index !== -1) {
+      farms[index] = { ...farms[index], ...updates };
+      this.write(this.userKey(userId, 'saved_farms'), farms);
+    }
+  }
+
+  async deleteFarm(userId: string, id: string): Promise<void> {
+    const farms = await this.getFarms(userId);
+    this.write(
+      this.userKey(userId, 'saved_farms'),
+      farms.filter((f) => f.id !== id),
+    );
   }
 
   // --- Farmers ---
-  async getFarmers(): Promise<FarmerRegistrationData[]> {
+  private async readFarmers(): Promise<FarmerRegistrationData[]> {
     const list = this.read<FarmerRegistrationData[]>(FARMERS_KEY, []);
     return Array.isArray(list) ? list : [];
   }
 
-  async saveFarmers(farmers: FarmerRegistrationData[]): Promise<void> {
+  async getFarmerById(id: string): Promise<FarmerRegistrationData | undefined> {
+    return (await this.readFarmers()).find((f) => f.id === id);
+  }
+
+  async getFarmerByPhone(phone: string): Promise<FarmerRegistrationData | undefined> {
+    return (await this.readFarmers()).find((f) => f.phone === phone);
+  }
+
+  async saveFarmer(farmer: FarmerRegistrationData): Promise<FarmerRegistrationData> {
+    const farmers = await this.readFarmers();
+    const index = farmers.findIndex((f) => f.id === farmer.id);
+    if (index === -1) farmers.unshift(farmer);
+    else farmers[index] = farmer;
     this.write(FARMERS_KEY, farmers);
+    return farmer;
   }
 
   // --- Weather ---
@@ -146,19 +199,24 @@ export class LocalStorageService extends IStorageService {
     return this.read<WeatherData[]>(this.userKey(userId, 'weather_history'), []);
   }
 
-  async saveWeatherHistory(userId: string, history: WeatherData[]): Promise<void> {
+  async saveWeatherSnapshot(userId: string, snapshot: WeatherData): Promise<WeatherData> {
+    const history = await this.getWeatherHistory(userId);
+    history.push(snapshot);
     this.write(this.userKey(userId, 'weather_history'), history);
+    return snapshot;
   }
 
   // --- Whole-account operations ---
+  // These are deliberately bulk: import/export/reset are whole-account
+  // operations by nature (a backup file *is* every record at once), unlike
+  // the per-entity methods above that back day-to-day feature writes.
   async exportUserData(userId: string): Promise<BackupFile> {
-    const farmers = await this.getFarmers();
     return {
       app: 'my-farm',
       schemaVersion: BACKUP_SCHEMA_VERSION,
       exportedAt: Date.now(),
       userId,
-      farmer: farmers.find((f) => f.id === userId),
+      farmer: await this.getFarmerById(userId),
       farms: await this.getFarms(userId),
       crops: await this.getCrops(userId),
       activities: await this.getActivities(userId),
@@ -169,19 +227,15 @@ export class LocalStorageService extends IStorageService {
 
   async importUserData(userId: string, backup: BackupFile): Promise<void> {
     await this.clearUserData(userId);
-    await this.saveFarms(userId, backup.farms);
-    await this.saveCrops(userId, backup.crops);
+    this.write(this.userKey(userId, 'saved_farms'), backup.farms);
+    this.write(this.userKey(userId, 'crops'), backup.crops);
     this.write(this.getActivitiesKey(userId), backup.activities);
     this.write(this.getExpensesKey(userId), backup.expenses);
-    await this.saveWeatherHistory(userId, backup.weatherHistory ?? []);
+    this.write(this.userKey(userId, 'weather_history'), backup.weatherHistory ?? []);
     if (backup.farmer) {
-      const farmers = await this.getFarmers();
-      const idx = farmers.findIndex((f) => f.id === userId);
+      const existing = await this.getFarmerById(userId);
       // Keep the current account identity/PIN; restore the farm profile fields.
-      const merged = { ...backup.farmer, id: userId, pinHash: farmers[idx]?.pinHash };
-      if (idx === -1) farmers.push(merged);
-      else farmers[idx] = { ...farmers[idx], ...merged };
-      await this.saveFarmers(farmers);
+      await this.saveFarmer({ ...backup.farmer, id: userId, pinHash: existing?.pinHash });
     }
   }
 

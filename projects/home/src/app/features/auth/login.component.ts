@@ -37,7 +37,7 @@ export class LoginComponent {
     }
   }
 
-  onSubmitPhone(): void {
+  async onSubmitPhone(): Promise<void> {
     const rawPhone = this.phone().trim();
     if (!rawPhone) {
       this.errorMessage.set('Please enter your phone number.');
@@ -55,12 +55,7 @@ export class LoginComponent {
     this.errorMessage.set('');
     this.phone.set(phoneVal);
 
-    const registered = this.farmerService.registeredFarmers();
-    const found = registered.find((f) => {
-      const fPhoneClean = f.phone.replace(/\D/g, '');
-      const fPhone10 = fPhoneClean.length > 10 ? fPhoneClean.slice(-10) : fPhoneClean;
-      return fPhone10 === phoneVal;
-    });
+    const found = await this.farmerService.findByPhone(phoneVal);
 
     if (found) {
       this.matchedFarmer = found;
@@ -113,7 +108,7 @@ export class LoginComponent {
 
     this.errorMessage.set('');
     const pinHash = await hashPin(pinVal);
-    const updated = this.farmerService.updateFarmer(this.matchedFarmer.id, { pinHash });
+    const updated = await this.farmerService.updateFarmer(this.matchedFarmer.id, { pinHash });
     if (updated) {
       this.authService.login(updated);
       this.router.navigate(['/map']);

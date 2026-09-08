@@ -168,22 +168,69 @@ describe('LocalStorageService', () => {
   });
 
   it('stores crops, farms and farmers', async () => {
-    await service.saveCrops(userId, [{ id: 'c1' } as any]);
-    await service.saveFarms(userId, [{ id: 'l1' } as any]);
-    await service.saveFarmers([{ id: userId, fullName: 'Test' } as any]);
+    await service.saveCrop(userId, { id: 'c1' } as any);
+    await service.saveFarm(userId, { id: 'l1' } as any);
+    await service.saveFarmer({ id: userId, fullName: 'Test', phone: '9998887776' } as any);
 
     expect((await service.getCrops(userId))[0].id).toBe('c1');
     expect((await service.getFarms(userId))[0].id).toBe('l1');
-    expect((await service.getFarmers())[0].fullName).toBe('Test');
+    expect((await service.getFarmerById(userId))?.fullName).toBe('Test');
+    expect((await service.getFarmerByPhone('9998887776'))?.fullName).toBe('Test');
     expect(await service.getCrops('someone-else')).toEqual([]);
+  });
+
+  it('should update a crop', async () => {
+    await service.saveCrop(userId, { id: 'c1', name: 'Wheat' } as any);
+    await service.updateCrop(userId, 'c1', { name: 'Soybean' } as any);
+
+    const crops = await service.getCrops(userId);
+    expect(crops[0].name).toBe('Soybean');
+  });
+
+  it('should delete a crop', async () => {
+    await service.saveCrop(userId, { id: 'c1' } as any);
+    await service.deleteCrop(userId, 'c1');
+
+    expect(await service.getCrops(userId)).toEqual([]);
+  });
+
+  it('should update a farm', async () => {
+    await service.saveFarm(userId, { id: 'l1', name: 'North Field' } as any);
+    await service.updateFarm(userId, 'l1', { name: 'South Field' } as any);
+
+    const farms = await service.getFarms(userId);
+    expect(farms[0].name).toBe('South Field');
+  });
+
+  it('should delete a farm', async () => {
+    await service.saveFarm(userId, { id: 'l1' } as any);
+    await service.deleteFarm(userId, 'l1');
+
+    expect(await service.getFarms(userId)).toEqual([]);
+  });
+
+  it('should upsert a farmer by id rather than duplicate it', async () => {
+    await service.saveFarmer({ id: userId, fullName: 'Test', phone: '9998887776' } as any);
+    await service.saveFarmer({ id: userId, fullName: 'Renamed', phone: '9998887776' } as any);
+
+    expect((await service.getFarmerById(userId))?.fullName).toBe('Renamed');
+  });
+
+  it('should append a weather snapshot without overwriting history', async () => {
+    await service.saveWeatherSnapshot(userId, { lastRefreshed: 1 } as any);
+    await service.saveWeatherSnapshot(userId, { lastRefreshed: 2 } as any);
+
+    const history = await service.getWeatherHistory(userId);
+    expect(history.length).toBe(2);
+    expect(history.map((h) => h.lastRefreshed)).toEqual([1, 2]);
   });
 
   it('exports, clears and restores a user backup', async () => {
     await service.saveActivity(userId, mockActivity);
     await service.saveExpense(userId, mockExpense);
-    await service.saveCrops(userId, [{ id: 'c1' } as any]);
-    await service.saveFarms(userId, [{ id: 'l1' } as any]);
-    await service.saveFarmers([{ id: userId, fullName: 'Test', pinHash: 'keep' } as any]);
+    await service.saveCrop(userId, { id: 'c1' } as any);
+    await service.saveFarm(userId, { id: 'l1' } as any);
+    await service.saveFarmer({ id: userId, fullName: 'Test', pinHash: 'keep' } as any);
 
     const backup = await service.exportUserData(userId);
     expect(backup.app).toBe('my-farm');
@@ -198,7 +245,7 @@ describe('LocalStorageService', () => {
     expect(await service.getCrops(userId)).toEqual([]);
     expect(await service.getFarms(userId)).toEqual([]);
     // Farmer accounts are not per-user keys and survive a clear
-    expect((await service.getFarmers()).length).toBe(1);
+    expect(await service.getFarmerById(userId)).toBeTruthy();
 
     await service.importUserData(userId, {
       ...backup,
@@ -206,8 +253,8 @@ describe('LocalStorageService', () => {
     });
     expect((await service.getActivities(userId))[0].id).toBe('act-1');
     expect((await service.getCrops(userId))[0].id).toBe('c1');
-    const farmer = (await service.getFarmers())[0];
-    expect(farmer.fullName).toBe('Restored');
-    expect(farmer.pinHash).toBe('keep'); // identity/PIN preserved on restore
+    const farmer = await service.getFarmerById(userId);
+    expect(farmer!.fullName).toBe('Restored');
+    expect(farmer!.pinHash).toBe('keep'); // identity/PIN preserved on restore
   });
 });

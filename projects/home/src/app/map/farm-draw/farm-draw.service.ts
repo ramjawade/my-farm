@@ -55,13 +55,26 @@ export class FarmDrawService {
     }
   }
 
-  /** Apply a land mutation and persist it for the signed-in user. */
-  private setFarms(farms: SavedFarm[]): void {
-    this.generation++;
-    this.savedFarms.set(farms);
+  private persistNewFarm(farm: SavedFarm): void {
     const user = this.authService.currentUser();
     if (user) {
-      this.storage.saveFarms(user.id, farms).catch((e) => console.error('Failed to save farms', e));
+      this.storage.saveFarm(user.id, farm).catch((e) => console.error('Failed to save farm', e));
+    }
+  }
+
+  private persistFarmUpdate(id: string, updates: Partial<SavedFarm>): void {
+    const user = this.authService.currentUser();
+    if (user) {
+      this.storage
+        .updateFarm(user.id, id, updates)
+        .catch((e) => console.error('Failed to update farm', e));
+    }
+  }
+
+  private persistFarmDelete(id: string): void {
+    const user = this.authService.currentUser();
+    if (user) {
+      this.storage.deleteFarm(user.id, id).catch((e) => console.error('Failed to delete farm', e));
     }
   }
 
@@ -125,14 +138,18 @@ export class FarmDrawService {
       createdAt: Date.now(),
     };
 
-    this.setFarms([newFarm, ...this.savedFarms()]);
+    this.generation++;
+    this.savedFarms.set([newFarm, ...this.savedFarms()]);
+    this.persistNewFarm(newFarm);
 
     this.selectedSavedFarm.set(newFarm);
     this.cancelDrawing();
   }
 
   deleteFarm(id: string): void {
-    this.setFarms(this.savedFarms().filter((f) => f.id !== id));
+    this.generation++;
+    this.savedFarms.set(this.savedFarms().filter((f) => f.id !== id));
+    this.persistFarmDelete(id);
     if (this.selectedSavedFarm()?.id === id) {
       this.selectedSavedFarm.set(null);
     }
@@ -141,8 +158,10 @@ export class FarmDrawService {
   renameFarm(id: string, newName: string): void {
     const trimmed = newName.trim();
     if (!trimmed) return;
+    this.generation++;
     const farms = this.savedFarms().map((f) => (f.id === id ? { ...f, name: trimmed } : f));
-    this.setFarms(farms);
+    this.savedFarms.set(farms);
+    this.persistFarmUpdate(id, { name: trimmed });
     const updated = farms.find((f) => f.id === id);
     if (updated) {
       this.selectedSavedFarm.set(updated);
@@ -150,8 +169,10 @@ export class FarmDrawService {
   }
 
   updateFarmNotes(id: string, notes: string): void {
+    this.generation++;
     const farms = this.savedFarms().map((f) => (f.id === id ? { ...f, notes } : f));
-    this.setFarms(farms);
+    this.savedFarms.set(farms);
+    this.persistFarmUpdate(id, { notes });
     const updated = farms.find((f) => f.id === id);
     if (updated) {
       this.selectedSavedFarm.set(updated);
