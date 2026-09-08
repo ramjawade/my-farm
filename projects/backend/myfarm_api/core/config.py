@@ -27,6 +27,13 @@ class Settings(BaseSettings):
     # unless later work needs the Admin SDK for something privileged.
     firebase_project_id: str = ""
 
+    # HS256 signing key for backend-issued PIN session tokens (issue #45).
+    # No default in production — a blank secret makes `/api/v1/auth/session`
+    # and `/api/v1/auth/register` refuse to issue tokens. Set on Render and
+    # in CI (see .github/workflows/backend.yml).
+    session_jwt_secret: str = ""
+    session_jwt_ttl_seconds: int = 24 * 60 * 60
+
     # Comma-separated allowlist. The GitHub Pages origin in production;
     # localhost during development.
     cors_origins: str = "http://localhost:4200"

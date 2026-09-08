@@ -138,7 +138,7 @@ describe('AuthService — API token lifecycle', () => {
     service.login(mockFarmer, 'token-a');
 
     expect(storage.authToken).toBe('token-a');
-    expect(localStorage.getItem('my_farm_firebase_token')).toBe('token-a');
+    expect(localStorage.getItem('my_farm_session_token')).toBe('token-a');
   });
 
   it('should clear the token on logout', () => {
@@ -146,7 +146,7 @@ describe('AuthService — API token lifecycle', () => {
     service.logout();
 
     expect(storage.authToken).toBeNull();
-    expect(localStorage.getItem('my_farm_firebase_token')).toBeFalsy();
+    expect(localStorage.getItem('my_farm_session_token')).toBeFalsy();
   });
 
   it('should not let a tokenless login inherit the previous farmer token', () => {
@@ -157,7 +157,7 @@ describe('AuthService — API token lifecycle', () => {
     service.login(otherFarmer);
 
     expect(storage.authToken).toBeNull();
-    expect(localStorage.getItem('my_farm_firebase_token')).toBeFalsy();
+    expect(localStorage.getItem('my_farm_session_token')).toBeFalsy();
   });
 
   it('should rebind the token when a second farmer logs in with their own', () => {
@@ -173,6 +173,6 @@ describe('AuthService — API token lifecycle', () => {
 
     expect(service.isSessionValid()).toBeFalse();
     expect(storage.authToken).toBeNull();
-    expect(localStorage.getItem('my_farm_firebase_token')).toBeFalsy();
+    expect(localStorage.getItem('my_farm_session_token')).toBeFalsy();
   });
 });

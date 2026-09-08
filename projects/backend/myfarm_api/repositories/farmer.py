@@ -1,14 +1,20 @@
-"""Farmer repository — JIT provisioning and retrieval."""
+"""Farmer repository — JIT provisioning, PIN registration, and retrieval."""
 
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
 from myfarm_api.core.db import get_session_factory
+from myfarm_api.core.security import new_pin_auth_uid
 from myfarm_api.models import Farmer
 
 
+class PhoneAlreadyRegisteredError(Exception):
+    """A `farmer` row with this phone number already exists."""
+
+
 class FarmerRepository:
-    """Get-or-create a farmer by Firebase auth_uid."""
+    """Get-or-create a farmer by Firebase auth_uid, plus PIN-account paths."""
 
     @staticmethod
     async def get_or_create(auth_uid: str) -> Farmer:
@@ -31,5 +37,47 @@ class FarmerRepository:
             farmer = Farmer(auth_uid=auth_uid)
             session.add(farmer)
             await session.commit()
+            await session.refresh(farmer)
+            return farmer
+
+    @staticmethod
+    async def get_by_phone(phone: str) -> Farmer | None:
+        """Look up a live farmer by phone number (UNIQUE column)."""
+        session_factory = get_session_factory()
+        async with session_factory() as session:
+            stmt = select(Farmer).where(
+                Farmer.phone == phone, Farmer.deleted_at.is_(None)
+            )
+            result = await session.execute(stmt)
+            return result.scalar_one_or_none()
+
+    @staticmethod
+    async def create_pin_farmer(
+        *,
+        phone: str,
+        full_name: str,
+        pin_hash: str,
+        preferred_language: str = "en",
+    ) -> Farmer:
+        """Provision a PIN account: a stable `pin:` auth_uid + the PIN hash.
+
+        Raises `PhoneAlreadyRegisteredError` if the phone is taken — the
+        UNIQUE constraint is the race-safe check, not a prior SELECT.
+        """
+        session_factory = get_session_factory()
+        async with session_factory() as session:
+            farmer = Farmer(
+                auth_uid=new_pin_auth_uid(),
+                phone=phone,
+                full_name=full_name,
+                pin_hash=pin_hash,
+                preferred_language=preferred_language,
+            )
+            session.add(farmer)
+            try:
+                await session.commit()
+            except IntegrityError as exc:
+                await session.rollback()
+                raise PhoneAlreadyRegisteredError(phone) from exc
             await session.refresh(farmer)
             return farmer

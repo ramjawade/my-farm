@@ -61,6 +61,10 @@ class Farmer(Base):
     )
     auth_uid: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)
     phone: Mapped[str | None] = mapped_column(String(20), unique=True, nullable=True)
+    # Set only for PIN accounts (auth_uid starts "pin:"). PBKDF2-SHA256,
+    # `pbkdf2_sha256$<iterations>$<salt_hex>$<hash_hex>` — see core/security.py.
+    # Firebase-token accounts never carry one.
+    pin_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     full_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     email: Mapped[str | None] = mapped_column(String(255), nullable=True)
     preferred_language: Mapped[str] = mapped_column(String(10), default="en")

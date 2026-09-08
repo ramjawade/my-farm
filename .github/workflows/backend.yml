@@ -43,6 +43,7 @@ jobs:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/myfarm_test
       FIREBASE_PROJECT_ID: myfarm-test
       CORS_ORIGINS: https://ramjawade.github.io
+      SESSION_JWT_SECRET: test-session-secret
 
     steps:
       - name: Checkout repository

@@ -20,6 +20,13 @@ function normalizePhone(phone: string): string {
 export class FarmerRegistrationService {
   private readonly storage = inject(IStorageService);
 
+  /**
+   * Local-only account creation. The backend registration path (issue #45)
+   * lives in `SessionAuthService.register` — it has to, because the backend
+   * hands back a session JWT that `AuthService` needs. `LoginComponent`
+   * calls this only as the offline fallback, and `upsertFarmer` caches the
+   * backend-created farmer so `findById` works after a reload.
+   */
   registerFarmer(data: Omit<FarmerRegistrationData, 'id' | 'createdAt'>): FarmerRegistrationData {
     const newFarmer: FarmerRegistrationData = {
       ...data,
