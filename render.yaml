@@ -1,0 +1,35 @@
+# Render blueprint for the MyFarm backend (issue #41).
+#
+# The service already exists (myfarm-api, srv-dafrtrn40ujc73cmjpog) and was
+# created through Render's API as a native Python service — Render's API has
+# no Docker/registry deploy path (BACKEND_PLAN.md §3.2). This file pins that
+# configuration so it is reviewable in the repo and reproducible.
+#
+# Deploys are **CI-gated**: autoDeploy is off, and `.github/workflows/backend.yml`
+# POSTs a Render deploy hook only after ruff + mypy + pytest pass on `main`.
+# `RENDER_DEPLOY_HOOK_URL` must be set as a GitHub Actions secret.
+#
+# `startCommand` runs `alembic upgrade head` before uvicorn: the free plan
+# has no pre-deploy hook, and `upgrade head` is a fast no-op once the schema
+# is current.
+services:
+  - type: web
+    name: myfarm-api
+    runtime: python
+    region: singapore
+    plan: free
+    branch: main
+    rootDir: projects/backend
+    autoDeploy: false
+    buildCommand: pip install .
+    startCommand: alembic upgrade head && uvicorn myfarm_api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false # Neon pooled endpoint, postgresql+asyncpg://…
+      - key: SESSION_JWT_SECRET
+        sync: false # HS256 signing key for PIN session tokens (issue #45)
+      - key: FIREBASE_PROJECT_ID
+        sync: false # may be "" — the session JWT path does not need it
+      - key: CORS_ORIGINS
+        value: https://ramjawade.github.io
