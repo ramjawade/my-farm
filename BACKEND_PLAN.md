@@ -1,0 +1,433 @@
+# MyFarm Backend Plan
+
+**FastAPI · PostgreSQL (Neon) · Firebase Auth · offline-first client**
+
+The single canonical backend plan. Every decision here is settled — where a
+choice existed, it has been made and the reasoning recorded. Nothing in this
+document is left open.
+
+**Status:** supersedes `PHASE_5_PLAN.md` (its Firestore decision) and
+`.diagram/er.md` (an earlier, inaccurate ER sketch). Both carry pointers here.
+
+---
+
+## Table of contents
+
+| § | Section |
+|---|---|
+| 1 | [Decisions at a glance](#1-decisions-at-a-glance) |
+| 2 | [Architecture](#2-architecture) |
+| 3 | [Hosting and the free tier](#3-hosting-and-the-free-tier) |
+| 4 | [Backend stack and layout](#4-backend-stack-and-layout) |
+| 5 | [Authentication and tenancy](#5-authentication-and-tenancy) |
+| 6 | [Data model](#6-data-model) |
+| 7 | [API design](#7-api-design) |
+| 8 | [Offline sync](#8-offline-sync) |
+| 9 | [Type generation](#9-type-generation) |
+| 10 | [Data migration](#10-data-migration) |
+| 11 | [CI/CD](#11-cicd) |
+| 12 | [Delivery stages](#12-delivery-stages) |
+| 13 | [Risks](#13-risks) |
+| 14 | [Verification](#14-verification) |
+
+---
+
+## 1. Decisions at a glance
+
+| Area | Decision |
+|---|---|
+| Server framework | **FastAPI** (Python 3.12), single Uvicorn worker |
+| Database | **PostgreSQL on Neon**, Singapore, pooled endpoint |
+| API host | **Render**, Singapore, free instance |
+| Authentication | **Firebase Auth** phone OTP, retained; FastAPI verifies the ID token |
+| Authorization | Application-level tenant scoping **plus Postgres RLS** |
+| ORM / migrations | **SQLAlchemy 2.0 async + asyncpg**, **Alembic** |
+| Schema source of truth | **SQLAlchemy models** → Alembic for the DB, OpenAPI → generated TS for the client |
+| Identifiers | **UUIDv7**, client-generated, native `uuid` columns |
+| Offline | **IndexedDB outbox** + delta pull; last-write-wins |
+| Attachments | **Cloudflare R2** (10 GB free, zero egress) |
+| Weather cache | **Server-side, shared by location grid** — not per farmer |
+| Repository | **Monorepo** — `api/` beside the Angular workspace |
+| RBAC (`role`/`module`) | **Excluded from v1** |
+
+### Previously-open items, now settled
+
+| Item | Decision | Why |
+|---|---|---|
+| Attachment storage | **Cloudflare R2** | Firebase has moved Cloud Storage behind the paid plan for newer projects, so it is not reliably free. R2's zero egress matters because field photos are re-read on mobile. |
+| Test database | **GitHub Actions `services: postgres:16`** | Real Postgres in CI without Neon credentials or branch cleanup. |
+| Alembic execution | **From CI, before the new image goes live** | A failed migration blocks the deploy instead of crash-looping a started container. |
+| Postgres RLS | **Required, not optional** | Costs almost nothing and converts a code bug into a denied query. |
+| Weather storage | **Shared server-side cache keyed by location grid** | Under a real backend, farmers near each other share a forecast. Removes per-tenant weather rows entirely. |
+| `crop.name` vs catalog | **`crop_catalog_id` FK + optional `crop.label`** | Species is reference data; the farmer's own nickname ("North plot soy") is not. |
+| RBAC tables | **Out of v1** | `farmer.user_role` is free text nothing reads. Shipping unused permission tables adds schema without behaviour. |
+
+---
+
+## 2. Architecture
+
+```
+Browser — Angular 20 PWA (GitHub Pages, static)
+   │
+   ├── Firebase Auth SDK ──────▶ Firebase Auth        [phone OTP → ID token]
+   │
+   │   Authorization: Bearer <Firebase ID token>
+   ▼
+FastAPI  (Render · Singapore)
+   │   verify_id_token() · Pydantic validation · tenant scoping · business rules
+   ├──────────────▶ Cloudflare R2          [attachment blobs]
+   ├──────────────▶ OpenWeatherMap         [server holds the API key]
+   ▼
+SQLAlchemy 2.0 async + asyncpg
+   ▼
+Neon Postgres (Singapore · pooled · RLS)
+```
+
+Client writes never block on the network: they commit to an **IndexedDB
+outbox** and drain in the background (§8).
+
+---
+
+## 3. Hosting and the free tier
+
+Figures verified **September 2026**; re-verify at Stage 2.
+
+### 3.1 Database — Neon
+
+| | **Neon** | Supabase |
+|---|---|---|
+| Storage | 0.5 GB / project | 500 MB |
+| Projects | up to 100 | 2 |
+| Compute | 100 CU-hours/mo, autoscale to 2 CU | — |
+| Idle | **scale-to-zero, wakes on connection** | **pauses after 1 week idle, manual unpause** (tightened Feb 2026) |
+| Nearest region | **Singapore** (no India region) | Singapore |
+| Card / expiry | none / never expires / commercial use OK | none |
+
+Supabase is ruled out by the **idle pause**, not by its limits. This is a
+seasonal app — quiet fortnights between sowing and harvest are normal, and a
+farmer returning to a dead app that needs a dashboard login is not a
+product.
+
+### 3.2 API host — Render
+
+| | **Render** | Koyeb | Fly.io |
+|---|---|---|---|
+| Free instance | 512 MB, 0.1 CPU | 512 MB, 0.1 vCPU | **no free tier for new signups** |
+| Allowance | 750 instance-h / workspace / month | 1 instance per org | — |
+| Idle | spins down at 15 min, **~1 min cold start** | scale-to-zero at 1 h | — |
+| Regions | Oregon, Ohio, Virginia, Frankfurt, **Singapore** | **Frankfurt / Washington DC only** | — |
+
+Koyeb cannot run in Asia on the free plan, which is disqualifying for an
+India-facing app. Render and Neon both in Singapore keeps API↔DB latency
+inside one region.
+
+### 3.3 Why a one-minute cold start is acceptable
+
+For a synchronous app it would not be. **The offline outbox makes it
+invisible** — a write completes locally and the sync worker retries through
+the wake-up. Reads render from the local cache first and reconcile when the
+delta pull lands.
+
+This is the load-bearing reason the architecture fits free infrastructure.
+If offline were ever descoped, the API host becomes a paid-tier decision.
+
+### 3.4 Ceilings and responses
+
+| Ceiling | Trigger | Response |
+|---|---|---|
+| Neon 0.5 GB | ~1–2 M activity rows; attachments would blow it instantly | Blobs live in R2; Postgres stores only `storage_path` |
+| Neon 100 CU-h | Sustained traffic or a query keeping compute awake | Scale-to-zero, indexed queries; Launch tier $19/mo |
+| Render 750 h | One always-on service ≈730 h — fits, but only one | A second service forces a paid plan |
+| 0.1 CPU / 512 MB | Concurrency, not throughput | Single worker, fully async, no blocking calls |
+
+---
+
+## 4. Backend stack and layout
+
+| Concern | Choice | Rationale |
+|---|---|---|
+| Runtime | Python **3.12** | — |
+| Framework | **FastAPI** + Uvicorn, 1 worker | Async; its OpenAPI output drives §9 |
+| ORM | **SQLAlchemy 2.0 async** | Typed; async so 0.1 CPU is never blocked on I/O |
+| Driver | **asyncpg** | Fastest async Postgres driver |
+| Migrations | **Alembic** | Autogenerated, hand-reviewed |
+| Schemas | **Pydantic v2** | Validation and the OpenAPI contract |
+| Auth | **firebase-admin** | `verify_id_token()` |
+| Object storage | **boto3** (S3 API) | R2 is S3-compatible |
+| Tests | **pytest** + `httpx.AsyncClient` + Postgres service container | Real Postgres, never SQLite |
+| Lint/format/types | **ruff** + **mypy** | Mirrors the frontend's eslint/prettier gate |
+
+**Pooling is mandatory.** Use Neon's `-pooler` endpoint with
+`pool_size=5, max_overflow=0, pool_pre_ping=True` — a 0.1-CPU instance cannot
+use more, and `pool_pre_ping` absorbs connections dropped while the database
+was scaled to zero.
+
+```
+api/
+  app/
+    main.py                    app, CORS, lifespan
+    core/        config.py · security.py (Firebase) · db.py (engine/session)
+    models/                    SQLAlchemy — schema source of truth
+    schemas/                   Pydantic request/response
+    repositories/base.py       tenant scoping enforced here (§5.2)
+    routers/     farmers · farms · lands · crops · activities · expenses · weather · sync
+    services/                  business rules, derived fields
+  alembic/versions/
+  tests/
+  pyproject.toml · Dockerfile
+projects/home/                 existing Angular workspace
+```
+
+---
+
+## 5. Authentication and tenancy
+
+### 5.1 Flow
+
+1. Angular runs Firebase phone OTP → Firebase ID token (JWT).
+2. Client sends `Authorization: Bearer <token>`.
+3. A FastAPI dependency verifies signature, expiry and audience via
+   `firebase_admin.auth.verify_id_token()` and extracts `uid`.
+4. The farmer row is fetched by `auth_uid`, **created on first call**
+   (just-in-time provisioning) — no separate registration endpoint.
+5. The request carries a `CurrentFarmer` holding the internal UUIDv7 `id`.
+
+Google's signing keys are cached by `firebase-admin`; a cold start costs one
+extra fetch.
+
+### 5.2 Tenant isolation — the top risk
+
+Firestore rules made cross-tenant access impossible **at the database**.
+That guarantee is gone. A single missing `WHERE farmer_id = :id` is a
+cross-farmer data leak, and it passes every happy-path test.
+
+Three layers, all required:
+
+1. **A base repository that cannot be constructed unscoped.** It takes
+   `farmer_id` and injects the predicate into every query. Routers never
+   write raw filters.
+2. **Postgres Row-Level Security** — a session variable set per request and
+   a policy on every farmer-owned table.
+3. **A cross-tenant test per endpoint** — farmer A requests farmer B's row
+   and must receive **404**, not 403 (403 confirms the row exists). A merge
+   requirement, not a nice-to-have.
+
+No endpoint accepts a farmer id in its path or body. Tenancy comes from the
+token, only.
+
+---
+
+## 6. Data model
+
+Normalised to 3NF. SQLAlchemy models are the source of truth; Alembic
+generates migrations.
+
+### 6.1 Tables
+
+**Reference (seeded):** `crop_catalog` · `expense_category` · `activity_type`
+
+| Table | Key columns |
+|---|---|
+| `farmer` | `id` uuid PK · `auth_uid` varchar(128) UNIQUE · `phone` UNIQUE · `full_name` · `email` · `preferred_language` · `user_role` · `created_at` |
+| `farm` | `id` PK · `farmer_id` FK · `name` · `area` · `area_unit` · `water_source` · `irrigation_type` · `farming_method` · `location_type` · `state` · `district` · `village` · `pincode` · `lat` · `lng` · `setup_completed` |
+| `farm_crop` | `farm_id` FK + `crop_catalog_id` FK (composite PK) |
+| `land` | `id` PK · `farmer_id` FK · `farm_id` FK · `name` · `area_sq_m` · `area_hectares` GENERATED · `area_acres` GENERATED · `notes` |
+| `land_point` | `land_id` FK + `seq` (composite PK) · `lat` · `lng` |
+| `crop` | `id` PK · `farmer_id` FK · `land_id` FK · `crop_catalog_id` FK · `label` NULL · `area` · `area_unit` · `season` · `sowing_date` · `current_stage` · `status` · `expected_harvest_date` |
+| `activity` | `id` PK · `farmer_id` FK · `parent_activity_id` FK NULL · `crop_id` FK NULL · `land_id` FK NULL · `activity_type_id` FK · `custom_activity_name` NULL · **`date` NULL** · `season` · `status` · `notes` · `metadata` jsonb |
+| `activity_expense` | `id` PK · `activity_id` FK · `expense_category_id` FK · `item_id` · `resource_id` · `quantity` · `unit` · `rate` · `amount` · `remarks` |
+| `activity_attachment` | `id` PK · `activity_id` FK · `storage_key` · `content_type` · `size_bytes` |
+| `weather_cache` | `id` PK · `grid_lat` · `grid_lng` (rounded, **UNIQUE together**) · `place_name` · `current` jsonb · `forecast` jsonb · `alerts` jsonb · `fetched_at` |
+
+Every farmer-owned table also carries `created_at`, `updated_at`, and
+`deleted_at` (§6.3).
+
+### 6.2 Normalisation decisions
+
+| Decision | Reason |
+|---|---|
+| `farmer` split from `farm` | Farm attributes describe a farm, not a person; also unblocks multi-farm accounts |
+| `crop_catalog` / `expense_category` / `activity_type` lookups | Remove repeated free text |
+| `land.geo_json` dropped | Fully redundant with `land_point`; regenerated on read |
+| `area_hectares` / `area_acres` **GENERATED** | Transitive dependency on `area_sq_m` — keeps read speed without the 3NF violation |
+| `crop.upcoming_activity` dropped | Derived — the crop's next scheduled activity |
+| `activity.metadata` stays `jsonb` | Deliberate exception: 12 activity types with disjoint sparse fields; alternatives are 12 sparse tables or EAV |
+| `status` / `stage` / `season` / `area_unit` stay `CHECK` | Code-coupled state machines whose truth is the TypeScript union |
+| **Weather is one shared cache, not per farmer** | Neighbouring farmers share a forecast. Keyed by rounded lat/lng, TTL 30 min, no tenant column, no per-farmer rows |
+
+`activity.date` is **nullable** — `Activity.date` is `date?: number`,
+"undefined = not yet scheduled". Ids are **UUIDv7** in native `uuid`
+columns; `farmer.id` is UUIDv7 with `auth_uid` holding the Firebase uid.
+UUIDv7 is load-bearing here because **the client mints ids offline**.
+
+### 6.3 Columns required by sync
+
+| Column | Purpose |
+|---|---|
+| `updated_at timestamptz NOT NULL` | Delta-pull watermark and last-write-wins comparison |
+| `deleted_at timestamptz NULL` | **Soft delete.** A hard delete is invisible to a client that was offline when it happened, so deletes must propagate as tombstones |
+
+---
+
+## 7. API design
+
+`/api/v1/...` — REST, resource-per-entity, cursor-paginated.
+
+```
+GET    /api/v1/me                              current farmer (JIT-provisioned)
+CRUD   /api/v1/farms | lands | crops | activities
+CRUD   /api/v1/activities/{id}/expenses | attachments
+GET    /api/v1/weather?lat=&lng=               server-cached, key never shipped
+GET    /api/v1/reference/{crops|expense-categories|activity-types}
+POST   /api/v1/sync/push                       outbox batch
+GET    /api/v1/sync/pull?since=<ts>            delta
+```
+
+- **Per-entity CRUD only.** No endpoint can express a whole-collection
+  replace, because that shape causes lost updates between devices.
+- **Pagination** `?cursor=&limit=` over `(updated_at, id)` — never `OFFSET`.
+- **Errors** RFC 9457 `application/problem+json` — one shape for the client.
+- **Attachments** upload via a short-lived R2 presigned URL; the API records
+  only `storage_key`.
+
+---
+
+## 8. Offline sync
+
+### 8.1 Client
+
+Behind the existing service worker:
+
+- **IndexedDB stores** — `outbox` (pending mutations) and `cache`
+  (last-known server state).
+- Feature services write locally and enqueue; the UI reads local state and
+  never waits on the network.
+- A sync worker drains the outbox on reconnect with exponential backoff,
+  then runs a delta pull.
+- **`ApiStorageService`** implements the existing `IStorageService`, so
+  components and feature services are untouched.
+
+**Prerequisite (Stage 1):** `IStorageService`'s bulk-replace methods
+(`saveCrops`, `saveFarms`, `saveWeatherHistory`) become per-entity CRUD, and
+`getFarmers()` / `saveFarmers()` are **deleted** — they read the global
+farmer registry, which no authenticated API may expose. Firebase Auth owns
+identity lookup.
+
+### 8.2 Protocol
+
+**Push** — a batch of mutations, each carrying its client-generated UUIDv7.
+The server **upserts by primary key**, so a retried batch is a no-op;
+idempotency falls out of client-side ids for free. Per-item results, so one
+bad item cannot fail the batch.
+
+**Pull** — `GET /sync/pull?since=<updated_at>` returns rows changed since
+the watermark, tombstones included, ordered by `updated_at` with a cursor.
+
+**Conflicts** — last-write-wins on `updated_at`, with the **server as clock
+authority** (field device clocks are unreliable). Losing versions are
+logged. LWW is sound here because one farmer edits one record from one
+device in practice. Expense totals are **derived and recomputed, never
+synced**, so they cannot conflict.
+
+---
+
+## 9. Type generation
+
+FastAPI publishes OpenAPI from the Pydantic schemas; CI runs
+`openapi-typescript` to generate the Angular client's types.
+
+```
+SQLAlchemy models ──Alembic──▶ Postgres
+        └── Pydantic ──▶ OpenAPI ──openapi-typescript──▶ Angular types
+```
+
+**CI fails if the generated types are stale**, so a backend field change
+cannot merge without the frontend seeing it. This is why no hand-maintained
+shared schema file exists.
+
+---
+
+## 10. Data migration
+
+localStorage → Postgres, a single hop.
+
+1. On first authenticated login post-deploy, detect legacy keys
+   (`my_farm_${userId}_{activities,activity_expenses,crops,saved_farms}`
+   plus the legacy pre-migration keys already handled by
+   `features/activity/migration.ts`).
+2. **Mint a UUIDv7 per record seeded from its real `createdAt`**, preserving
+   historical order, and build an **old-id → new-id remap first**.
+3. Rewrite every reference (`fieldId`, `cropId`, `activityId`,
+   `parentActivityId`) through the remap; **fail loudly** on any unresolved
+   reference rather than dropping it.
+4. Push through `/sync/push` in FK order — upsert semantics make a partial
+   run safely resumable.
+5. Gate on a completion flag, following the existing migration pattern.
+6. Weather is not migrated; it refetches.
+
+---
+
+## 11. CI/CD
+
+| Pipeline | Steps |
+|---|---|
+| Frontend | unchanged — lint → format:check → test → build → GitHub Pages |
+| Backend | ruff → mypy → pytest (Postgres service container) → build image → deploy to Render |
+| Migrations | Alembic runs **from CI against Neon before the new image goes live** |
+| Contract | regenerate TS types; fail if the working tree changes |
+
+Secrets: GitHub Actions holds the Neon URL, Firebase service account, R2 and
+OpenWeatherMap keys; Render holds them as runtime env vars. The existing
+`environment.prod.ts` stamping gains the API base URL. The API allowlists the
+GitHub Pages origin for CORS.
+
+---
+
+## 12. Delivery stages
+
+| Stage | Scope | Gate |
+|---|---|---|
+| **1 — Seam repair** | Per-entity CRUD on `IStorageService`; delete `getFarmers()`/`saveFarmers()`; still on localStorage | 29 specs green |
+| **2 — API skeleton** | FastAPI app; Neon + Render provisioned; `/health`; Firebase token dependency; base repository + RLS; CI | CORS + token rejection proven |
+| **3 — Domain endpoints** | Models, Alembic migrations, CRUD routers, reference data | **Cross-tenant test per endpoint** |
+| **4 — Client integration** | Generated types; `ApiStorageService`; online-only | End-to-end online |
+| **5 — Offline outbox** | IndexedDB outbox, sync worker, `/sync/*`, tombstones | Airplane-mode convergence |
+| **6 — Data migration** | localStorage → Postgres per §10, behind a flag | Fixture migrates intact |
+| **7 — Weather + attachments** | Server-cached weather endpoint (retires the client-side key); R2 uploads | Key absent from the bundle |
+
+Stage 1 is deliberately first and separate: refactoring the seam *while*
+introducing a network backend is how these migrations fail.
+
+---
+
+## 13. Risks
+
+| Risk | Mitigation |
+|---|---|
+| **Cross-tenant leak** — one missing `farmer_id` predicate | §5.2's three layers; the negative test is a merge requirement |
+| **Free-tier terms move** — verified Sept 2026 | Re-verify at Stage 2; only `DATABASE_URL` and the host change if a provider is swapped |
+| Neon idles to zero mid-request | Pooled endpoint, `pool_pre_ping`, outbox retries |
+| Render cold start degrades UX | Acceptable only because of the outbox (§3.3) |
+| 0.5 GB storage ceiling | Blobs in R2; weather is one shared cache; row-count alerting before the ceiling |
+| LWW loses a concurrent edit | Sound for single-device-per-record use; losers logged; totals recomputed, never synced |
+| Offline is the largest item and gets underestimated | It has its own stage (5), not a checkbox inside another |
+| Alembic autogenerate emits a destructive migration | Every migration hand-reviewed; CI runs it against a scratch database first |
+| Firebase Auth remains a dependency | Deliberate — the only piece giving working phone OTP; the token boundary is thin enough to replace later |
+
+---
+
+## 14. Verification
+
+- **Stage 1** — existing 29 Karma specs stay green through the interface change.
+- **Stage 2** — `/health` reachable from the GitHub Pages origin (proves
+  CORS); forged and expired tokens are rejected.
+- **Stage 3** — pytest against real Postgres; **every endpoint has a
+  cross-tenant test returning 404**; Alembic up/down runs clean.
+- **Stage 4** — type generation byte-identical in CI; app works end to end online.
+- **Stage 5** — airplane-mode test: create/edit/delete offline, reconnect,
+  confirm convergence; a replayed batch changes nothing.
+- **Stage 6** — migrate a seeded localStorage fixture; assert row counts, id
+  remapping, referential integrity.
+- **Stage 7** — grep the built bundle to confirm no OpenWeatherMap key.
+- Full gate: `ruff`, `mypy`, `pytest`, `npm run lint`, `format:check`,
+  `test`, `build`.
