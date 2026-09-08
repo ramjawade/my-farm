@@ -35,6 +35,15 @@ export class ApiStorageService extends IStorageService {
     this.token = token;
   }
 
+  /**
+   * Drop the current token. Must be called on logout and on session expiry:
+   * this service is a root singleton, so a token left behind here would be
+   * sent as the next farmer's credentials.
+   */
+  clearAuthToken(): void {
+    this.token = null;
+  }
+
   private getHeaders(): HttpHeaders {
     const headers: Record<string, string> = {};
     if (this.token) {
@@ -43,18 +52,53 @@ export class ApiStorageService extends IStorageService {
     return new HttpHeaders(headers);
   }
 
+  /**
+   * Read every page of a cursor-paginated list endpoint.
+   *
+   * The backend defaults to `limit=20` and returns the continuation token as
+   * `cursor` (the routers) or `next_cursor` (the `Page` schema) — accept
+   * either so this keeps working whichever key the backend settles on.
+   * Without this, every list silently stopped at the first 20 records.
+   */
+  private async fetchAllPages(path: string): Promise<any[]> {
+    const all: any[] = [];
+    let cursor: string | null = null;
+    let pages = 0;
+
+    do {
+      const url = cursor
+        ? `${path}${path.includes('?') ? '&' : '?'}cursor=${encodeURIComponent(cursor)}`
+        : path;
+
+      const response = await firstValueFrom(
+        this.http.get<{ items?: any[]; cursor?: string | null; next_cursor?: string | null }>(
+          url,
+          { headers: this.getHeaders() },
+        ),
+      );
+
+      all.push(...(response.items ?? []));
+
+      const next = response.next_cursor ?? response.cursor ?? null;
+      // Stop if the server repeats a cursor or never terminates, rather than
+      // looping forever against a misbehaving endpoint.
+      cursor = next && next !== cursor ? next : null;
+    } while (cursor && ++pages < ApiStorageService.MAX_PAGES);
+
+    return all;
+  }
+
+  /** Upper bound on pages walked per list call (20 records/page = 20k records). */
+  private static readonly MAX_PAGES = 1000;
+
   // ============================================================================
   // Activities & Expenses
   // ============================================================================
 
   async getActivities(userId: string): Promise<Activity[]> {
     try {
-      const response = await firstValueFrom(
-        this.http.get<{ items: any[] }>(`${this.baseUrl}/activities`, {
-          headers: this.getHeaders(),
-        }),
-      );
-      return response.items.map((item) => this.mapFromBackendActivity(item));
+      const items = await this.fetchAllPages(`${this.baseUrl}/activities`);
+      return items.map((item) => this.mapFromBackendActivity(item));
     } catch (error) {
       console.error('Failed to get activities:', error);
       return [];
@@ -113,17 +157,10 @@ export class ApiStorageService extends IStorageService {
       const allExpenses: ActivityExpense[] = [];
 
       for (const activity of activities) {
-        const response = await firstValueFrom(
-          this.http.get<{ items: any[] }>(
-            `${this.baseUrl}/activities/${activity.id}/expenses`,
-            {
-              headers: this.getHeaders(),
-            },
-          ),
+        const items = await this.fetchAllPages(
+          `${this.baseUrl}/activities/${activity.id}/expenses`,
         );
-        allExpenses.push(
-          ...response.items.map((item) => this.mapFromBackendExpense(item)),
-        );
+        allExpenses.push(...items.map((item) => this.mapFromBackendExpense(item)));
       }
 
       return allExpenses;
@@ -190,15 +227,10 @@ export class ApiStorageService extends IStorageService {
     activityId: string,
   ): Promise<ActivityExpense[]> {
     try {
-      const response = await firstValueFrom(
-        this.http.get<{ items: any[] }>(
-          `${this.baseUrl}/activities/${activityId}/expenses`,
-          {
-            headers: this.getHeaders(),
-          },
-        ),
+      const items = await this.fetchAllPages(
+        `${this.baseUrl}/activities/${activityId}/expenses`,
       );
-      return response.items.map((item) => this.mapFromBackendExpense(item));
+      return items.map((item) => this.mapFromBackendExpense(item));
     } catch (error) {
       console.error('Failed to sync expenses for activity:', error);
       return [];
@@ -211,12 +243,8 @@ export class ApiStorageService extends IStorageService {
 
   async getCrops(userId: string): Promise<CropEntity[]> {
     try {
-      const response = await firstValueFrom(
-        this.http.get<{ items: any[] }>(`${this.baseUrl}/crops`, {
-          headers: this.getHeaders(),
-        }),
-      );
-      return response.items.map((item) => this.mapFromBackendCrop(item));
+      const items = await this.fetchAllPages(`${this.baseUrl}/crops`);
+      return items.map((item) => this.mapFromBackendCrop(item));
     } catch (error) {
       console.error('Failed to get crops:', error);
       return [];
@@ -271,12 +299,8 @@ export class ApiStorageService extends IStorageService {
 
   async getFarms(userId: string): Promise<SavedFarm[]> {
     try {
-      const response = await firstValueFrom(
-        this.http.get<{ items: any[] }>(`${this.baseUrl}/lands`, {
-          headers: this.getHeaders(),
-        }),
-      );
-      return response.items.map((item) => this.mapFromBackendLand(item));
+      const items = await this.fetchAllPages(`${this.baseUrl}/lands`);
+      return items.map((item) => this.mapFromBackendLand(item));
     } catch (error) {
       console.error('Failed to get farms:', error);
       return [];

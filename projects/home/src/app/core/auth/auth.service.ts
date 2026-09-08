@@ -7,7 +7,14 @@ import { IStorageService } from '../storage/storage.interface';
 
 const ACTIVE_USER_ID_KEY = 'my_farm_active_user_id';
 const SESSION_EXPIRY_KEY = 'my_farm_session_expiry';
+const FIREBASE_TOKEN_KEY = 'my_farm_firebase_token';
 const SESSION_DURATION_MS = 24 * 60 * 60 * 1000;
+
+/** The subset of a storage implementation that carries an API credential. */
+interface TokenAwareStorage {
+  setAuthToken(token: string): void;
+  clearAuthToken(): void;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -54,29 +61,53 @@ export class AuthService {
     this.currentUserSignal.set(farmer);
     localStorage.setItem(SESSION_EXPIRY_KEY, String(Date.now() + SESSION_DURATION_MS));
 
-    // Stage 4: Inject Firebase token into API storage service
-    if (firebaseToken && this.isApiStorageService(this.storageService)) {
-      this.storageService.setAuthToken(firebaseToken);
-      localStorage.setItem('my_farm_firebase_token', firebaseToken);
+    // Stage 4: always rebind the API credential to *this* login. The storage
+    // service is a root singleton, so without the else-branch a tokenless
+    // login (PIN, demo) would keep the previous farmer's bearer token and
+    // read their data.
+    if (firebaseToken) {
+      this.setFirebaseToken(firebaseToken);
+    } else {
+      this.clearFirebaseToken();
     }
 
     this.workflowService.markPhaseComplete('registration');
   }
 
+  /** Store the Firebase token and hand it to the API storage service. */
+  private setFirebaseToken(token: string): void {
+    localStorage.setItem(FIREBASE_TOKEN_KEY, token);
+    this.tokenAwareStorage()?.setAuthToken(token);
+  }
+
   /**
-   * Restore Firebase token from session storage after app reload.
+   * Drop the Firebase token from both localStorage and the storage singleton.
+   * Called on logout, on session expiry, and on a failed session restore —
+   * anywhere the current identity stops being valid.
+   */
+  private clearFirebaseToken(): void {
+    localStorage.removeItem(FIREBASE_TOKEN_KEY);
+    this.tokenAwareStorage()?.clearAuthToken();
+  }
+
+  /**
+   * Restore Firebase token from storage after app reload.
    * Called during session initialization.
    */
   private restoreFirebaseToken(): void {
-    const token = localStorage.getItem('my_farm_firebase_token');
-    if (token && this.isApiStorageService(this.storageService)) {
-      this.storageService.setAuthToken(token);
+    const token = localStorage.getItem(FIREBASE_TOKEN_KEY);
+    if (token) {
+      this.tokenAwareStorage()?.setAuthToken(token);
     }
   }
 
-  /** Type guard to check if storage service is ApiStorageService with setAuthToken method */
-  private isApiStorageService(service: IStorageService): service is any {
-    return typeof (service as any).setAuthToken === 'function';
+  /** The storage service, narrowed to its token API when it has one. */
+  private tokenAwareStorage(): TokenAwareStorage | null {
+    const candidate = this.storageService as unknown as Partial<TokenAwareStorage>;
+    return typeof candidate.setAuthToken === 'function' &&
+      typeof candidate.clearAuthToken === 'function'
+      ? (candidate as TokenAwareStorage)
+      : null;
   }
 
   updateProfile(updates: Partial<FarmerRegistrationData>): void {
@@ -93,6 +124,7 @@ export class AuthService {
   logout(): void {
     this.currentUserSignal.set(null);
     localStorage.removeItem(SESSION_EXPIRY_KEY);
+    this.clearFirebaseToken();
     this.router.navigate(['/login']);
   }
 
@@ -106,6 +138,7 @@ export class AuthService {
       this.currentUserSignal.set(null);
       localStorage.removeItem(ACTIVE_USER_ID_KEY);
       localStorage.removeItem(SESSION_EXPIRY_KEY);
+      this.clearFirebaseToken();
       return false;
     }
     return true;
@@ -129,7 +162,7 @@ export class AuthService {
       if (activeId || expiry) {
         localStorage.removeItem(ACTIVE_USER_ID_KEY);
         localStorage.removeItem(SESSION_EXPIRY_KEY);
-        localStorage.removeItem('my_farm_firebase_token');
+        this.clearFirebaseToken();
       }
     } catch (e) {
       console.error('Failed to load auth session', e);
