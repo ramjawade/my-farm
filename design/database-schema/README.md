@@ -11,8 +11,8 @@ Published at: https://claude.ai/code/artifact/261b1e80-742d-4e4a-9bc3-90bcbe29da
 |---|---|---|
 | `Main.dc.html` | ER Diagram | The normalised (3NF) Postgres schema — tenant root, farmer-owned tables, reference lookups, shared weather cache, and the relationships between them |
 | `FieldReference.dc.html` | Field Reference | Every column with its Postgres type, nullability, and key role, plus the check-constraint value sets |
-| `Architecture.dc.html` | Architecture | Angular PWA → Firebase Auth + FastAPI on Render → Neon Postgres, with the free-tier ceilings annotated |
-| `AuthFlow.dc.html` | Flows | Phone OTP → ID token → `verify_id_token()` → just-in-time farmer provisioning, and where tenancy is enforced |
+| `Architecture.dc.html` | Architecture | Angular PWA → FastAPI on Render → Neon Postgres, with the free-tier ceilings annotated. *Auth leg is stale: it now shows Firebase; the flow is a backend PIN session JWT — regenerate when the canvas is next edited.* |
+| `AuthFlow.dc.html` | Flows | *Stale — depicts phone OTP → ID token. The current flow is `{phone, PIN}` → `POST /auth/session` → session JWT (online-only), with a Firebase-token fallback in the dependency. Regenerate when the canvas is next edited. See `BACKEND_PLAN.md` §5.1.* |
 | `MigrationFlow.dc.html` | Flows | The ongoing outbox sync loop (push/pull, tombstones). *The localStorage→Postgres migration branch it also depicts is obsolete — there is no migration step; regenerate this artboard's SVG when the canvas is next edited.* |
 
 `canvas.json` holds the artboard layout and page grouping.
