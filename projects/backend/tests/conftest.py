@@ -24,6 +24,8 @@ from sqlalchemy.ext.asyncio import (  # noqa: E402
 from myfarm_api.core.db import get_session_factory  # noqa: E402
 from myfarm_api.main import app  # noqa: E402
 
+TEST_PROJECT_ID = "myfarm-test"
+
 # The superuser connection test fixtures provision with (create/drop tables,
 # create the app role). Never used to prove RLS — see test_rls.py for why
 # that would be a false positive.
