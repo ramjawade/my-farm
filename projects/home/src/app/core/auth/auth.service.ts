@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { FarmerRegistrationService } from '../../features/farmer-registration/farmer-registration.service';
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
 import { WorkflowStateService } from '../workflow/workflow-state.service';
+import { IStorageService } from '../storage/storage.interface';
 
 const ACTIVE_USER_ID_KEY = 'my_farm_active_user_id';
 const SESSION_EXPIRY_KEY = 'my_farm_session_expiry';
@@ -15,6 +16,7 @@ export class AuthService {
   private readonly router = inject(Router);
   private readonly registrationService = inject(FarmerRegistrationService);
   private readonly workflowService = inject(WorkflowStateService);
+  private readonly storageService = inject(IStorageService);
 
   private readonly currentUserSignal = signal<FarmerRegistrationData | null>(null);
   readonly currentUser = this.currentUserSignal.asReadonly();
@@ -43,10 +45,38 @@ export class AuthService {
     return this.readyPromise;
   }
 
-  login(farmer: FarmerRegistrationData): void {
+  /**
+   * Log in a farmer and optionally set their Firebase ID token for API requests.
+   * @param farmer The farmer profile
+   * @param firebaseToken Optional Firebase ID token for authenticated API calls (Stage 4)
+   */
+  login(farmer: FarmerRegistrationData, firebaseToken?: string): void {
     this.currentUserSignal.set(farmer);
     localStorage.setItem(SESSION_EXPIRY_KEY, String(Date.now() + SESSION_DURATION_MS));
+
+    // Stage 4: Inject Firebase token into API storage service
+    if (firebaseToken && this.isApiStorageService(this.storageService)) {
+      this.storageService.setAuthToken(firebaseToken);
+      localStorage.setItem('my_farm_firebase_token', firebaseToken);
+    }
+
     this.workflowService.markPhaseComplete('registration');
+  }
+
+  /**
+   * Restore Firebase token from session storage after app reload.
+   * Called during session initialization.
+   */
+  private restoreFirebaseToken(): void {
+    const token = localStorage.getItem('my_farm_firebase_token');
+    if (token && this.isApiStorageService(this.storageService)) {
+      this.storageService.setAuthToken(token);
+    }
+  }
+
+  /** Type guard to check if storage service is ApiStorageService with setAuthToken method */
+  private isApiStorageService(service: IStorageService): service is any {
+    return typeof (service as any).setAuthToken === 'function';
   }
 
   updateProfile(updates: Partial<FarmerRegistrationData>): void {
@@ -90,6 +120,8 @@ export class AuthService {
         const found = await this.registrationService.findById(activeId);
         if (found) {
           this.currentUserSignal.set(found);
+          // Restore Firebase token for API requests (Stage 4)
+          this.restoreFirebaseToken();
           return;
         }
       }
@@ -97,6 +129,7 @@ export class AuthService {
       if (activeId || expiry) {
         localStorage.removeItem(ACTIVE_USER_ID_KEY);
         localStorage.removeItem(SESSION_EXPIRY_KEY);
+        localStorage.removeItem('my_farm_firebase_token');
       }
     } catch (e) {
       console.error('Failed to load auth session', e);
