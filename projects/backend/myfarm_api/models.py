@@ -23,6 +23,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from myfarm_api.core.db import Base
+from myfarm_api.core.ids import uuid7
 
 
 class Farmer(Base):
@@ -31,7 +32,7 @@ class Farmer(Base):
     __tablename__ = "farmer"
 
     id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=None
+        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
     )
     auth_uid: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)
     phone: Mapped[str | None] = mapped_column(String(20), unique=True, nullable=True)
@@ -69,7 +70,7 @@ class CropCatalog(Base):
     __tablename__ = "crop_catalog"
 
     id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=None
+        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
     )
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     common_names: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -88,7 +89,7 @@ class ExpenseCategory(Base):
     __tablename__ = "expense_category"
 
     id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=None
+        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
     )
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
 
@@ -103,7 +104,7 @@ class ActivityType(Base):
     __tablename__ = "activity_type"
 
     id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=None
+        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
     )
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
 
@@ -118,7 +119,7 @@ class Farm(Base):
     __tablename__ = "farm"
 
     id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=None
+        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
     )
     farmer_id: Mapped[UUID] = mapped_column(
         SQLUuid(as_uuid=True), ForeignKey("farmer.id"), nullable=False
@@ -183,7 +184,7 @@ class Land(Base):
     __tablename__ = "land"
 
     id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=None
+        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
     )
     farmer_id: Mapped[UUID] = mapped_column(
         SQLUuid(as_uuid=True), ForeignKey("farmer.id"), nullable=False
@@ -238,7 +239,7 @@ class Crop(Base):
     __tablename__ = "crop"
 
     id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=None
+        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
     )
     farmer_id: Mapped[UUID] = mapped_column(
         SQLUuid(as_uuid=True), ForeignKey("farmer.id"), nullable=False
@@ -280,7 +281,7 @@ class Activity(Base):
     __tablename__ = "activity"
 
     id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=None
+        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
     )
     farmer_id: Mapped[UUID] = mapped_column(
         SQLUuid(as_uuid=True), ForeignKey("farmer.id"), nullable=False
@@ -333,7 +334,7 @@ class ActivityExpense(Base):
     __tablename__ = "activity_expense"
 
     id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=None
+        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
     )
     activity_id: Mapped[UUID] = mapped_column(
         SQLUuid(as_uuid=True), ForeignKey("activity.id"), nullable=False
@@ -365,7 +366,7 @@ class ActivityAttachment(Base):
     __tablename__ = "activity_attachment"
 
     id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=None
+        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
     )
     activity_id: Mapped[UUID] = mapped_column(
         SQLUuid(as_uuid=True), ForeignKey("activity.id"), nullable=False
@@ -394,7 +395,7 @@ class WeatherCache(Base):
     )
 
     id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=None
+        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
     )
     grid_lat: Mapped[Decimal] = mapped_column(Numeric(9, 6), nullable=False)
     grid_lng: Mapped[Decimal] = mapped_column(Numeric(9, 6), nullable=False)

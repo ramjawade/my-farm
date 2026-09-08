@@ -9,10 +9,12 @@ from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_create_and_list_activities(client: AsyncClient) -> None:
+async def test_create_and_list_activities(
+    client: AsyncClient, reference_ids: dict[str, str]
+) -> None:
     """Create and list activities for one farmer."""
     uid = f"farmer_{uuid4()}"
-    activity_type_id = str(uuid4())
+    activity_type_id = reference_ids["activity_type_id"]
 
     with patch.object(
         firebase_auth,
@@ -50,11 +52,13 @@ async def test_create_and_list_activities(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_cross_tenant_cannot_access_other_activity(client: AsyncClient) -> None:
+async def test_cross_tenant_cannot_access_other_activity(
+    client: AsyncClient, reference_ids: dict[str, str]
+) -> None:
     """Farmer A cannot access Farmer B's activity."""
     uid_a = f"farmer_a_{uuid4()}"
     uid_b = f"farmer_b_{uuid4()}"
-    activity_type_id = str(uuid4())
+    activity_type_id = reference_ids["activity_type_id"]
 
     # Farmer A creates an activity
     with patch.object(
@@ -91,10 +95,12 @@ async def test_cross_tenant_cannot_access_other_activity(client: AsyncClient) ->
 
 
 @pytest.mark.asyncio
-async def test_update_and_delete_activity(client: AsyncClient) -> None:
+async def test_update_and_delete_activity(
+    client: AsyncClient, reference_ids: dict[str, str]
+) -> None:
     """Update and soft-delete an activity."""
     uid = f"farmer_{uuid4()}"
-    activity_type_id = str(uuid4())
+    activity_type_id = reference_ids["activity_type_id"]
 
     with patch.object(
         firebase_auth,
