@@ -1,5 +1,17 @@
 # Phase 5 Plan: Firebase Backend & Sync
 
+> **⚠️ Partially superseded — see [`BACKEND_PLAN.md`](./BACKEND_PLAN.md).**
+>
+> The **Firestore** decision in this document no longer holds: the backend is
+> now Python FastAPI over PostgreSQL. The **Firebase Auth** decision (phone
+> OTP) stands and is carried forward.
+>
+> Also stale: this document states that no `src/environments/` and no CI
+> secret injection exist. Both have since landed on `main`.
+>
+> Retained for the survey findings and the auth reasoning, which remain
+> accurate.
+
 ## Context
 
 ROADMAP.md is explicit about what "production-ready, usable app" actually

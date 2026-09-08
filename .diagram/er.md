@@ -1,5 +1,12 @@
 # Entity Relationship Diagram (ERD)
 
+> **⚠️ Superseded — see [`BACKEND_PLAN.md`](../BACKEND_PLAN.md) §6.**
+>
+> This early sketch is inaccurate in ways that matter: it models Land–Weather
+> as one-to-one (weather is keyed by location, not by land), omits the
+> forecast and alert breakdown, keeps farm attributes on the user, and
+> predates the normalised 3NF model. Kept for history only.
+
 This document defines the data models and relationships for the Farm Management Application.
 
 ## 1. ER Diagram (Mermaid)
