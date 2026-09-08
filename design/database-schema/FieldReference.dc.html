@@ -1,0 +1,243 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; font-family: 'IBM Plex Sans', system-ui, sans-serif; }
+  </style>
+</helmet>
+<div style="width:1800px;height:1220px;background:oklch(0.97 0.005 260);display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:20px">
+<svg viewBox="0 0 1760 1180" width="1760" height="1180" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadowR" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="#0f172a" flood-opacity="0.10" />
+    </filter>
+  </defs>
+  <style>
+    .title{font:700 27px 'IBM Plex Sans',sans-serif;fill:oklch(0.20 0.02 260)}
+    .subtitle{font:400 13.5px 'IBM Plex Sans',sans-serif;fill:oklch(0.52 0.02 260)}
+    .hdrtext{font:600 13px 'IBM Plex Sans',sans-serif;fill:#ffffff}
+    .fname{font:600 11.5px 'IBM Plex Mono',monospace;fill:oklch(0.24 0.02 260)}
+    .ftype{font:400 11.5px 'IBM Plex Mono',monospace;fill:oklch(0.52 0.02 260)}
+    .pk{font:700 9.5px 'IBM Plex Sans',sans-serif;fill:oklch(0.42 0.14 265)}
+    .fk{font:700 9.5px 'IBM Plex Sans',sans-serif;fill:oklch(0.50 0.14 55)}
+    .note{font:400 11.5px 'IBM Plex Sans',sans-serif;fill:oklch(0.42 0.02 260)}
+    .noteTitle{font:700 12.5px 'IBM Plex Sans',sans-serif;fill:oklch(0.20 0.02 260)}
+    .enum{font:400 11px 'IBM Plex Sans',sans-serif;fill:oklch(0.42 0.02 260)}
+    .enumk{font:600 11px 'IBM Plex Mono',monospace;fill:oklch(0.42 0.14 265)}
+    .box{fill:oklch(1 0 0);stroke:oklch(0.88 0.01 260);stroke-width:1}
+  </style>
+
+  <text x="880" y="34" class="title" text-anchor="middle">MyFarm — Column Reference</text>
+  <text x="880" y="56" class="subtitle" text-anchor="middle">PostgreSQL types · SQLAlchemy models are the source of truth, Alembic generates the migrations</text>
+  <text x="880" y="80" class="subtitle" text-anchor="middle" font-size="12" fill="oklch(0.58 0.02 260)">Reference tables green · farmer-owned blue · shared cache amber</text>
+
+  <!-- ================= COLUMN 1 ================= -->
+
+  <!-- common columns -->
+  <rect x="40" y="110" width="520" height="104" rx="8" fill="oklch(0.96 0.02 265)" stroke="oklch(0.78 0.06 265)" stroke-width="1" />
+  <text x="60" y="136" class="noteTitle">On every farmer-owned table</text>
+  <text x="60" y="158" class="fname">created_at</text><text x="200" y="158" class="ftype">timestamptz not null</text>
+  <text x="60" y="177" class="fname">updated_at</text><text x="200" y="177" class="ftype">timestamptz not null</text><text x="370" y="177" class="note" font-size="10.5">delta-pull watermark</text>
+  <text x="60" y="196" class="fname">deleted_at</text><text x="200" y="196" class="ftype">timestamptz null</text><text x="370" y="196" class="note" font-size="10.5">soft-delete tombstone</text>
+
+  <!-- farmer -->
+  <g filter="url(#shadowR)"><rect x="40" y="234" width="520" height="216" rx="8" class="box" /></g>
+  <path d="M40,242 a8,8 0 0 1 8,-8 h504 a8,8 0 0 1 8,8 v18 h-520 z" fill="oklch(0.20 0.02 260)" />
+  <rect x="40" y="254" width="520" height="10" fill="oklch(0.20 0.02 260)" />
+  <text x="58" y="255" class="hdrtext">farmer</text>
+  <text x="544" y="255" class="hdrtext" text-anchor="end" font-size="10" opacity="0.75">tenant root</text>
+  <text x="58" y="284" class="pk">PK</text><text x="80" y="284" class="fname">id</text><text x="544" y="284" class="ftype" text-anchor="end">uuid</text>
+  <text x="58" y="303" class="fk">UQ</text><text x="80" y="303" class="fname">auth_uid</text><text x="544" y="303" class="ftype" text-anchor="end">varchar(128) not null</text>
+  <text x="58" y="322" class="fk">UQ</text><text x="80" y="322" class="fname">phone</text><text x="544" y="322" class="ftype" text-anchor="end">varchar(15) not null</text>
+  <text x="80" y="341" class="fname">full_name</text><text x="544" y="341" class="ftype" text-anchor="end">varchar not null</text>
+  <text x="80" y="360" class="fname">email</text><text x="544" y="360" class="ftype" text-anchor="end">varchar null</text>
+  <text x="80" y="379" class="fname">preferred_language</text><text x="544" y="379" class="ftype" text-anchor="end">varchar not null</text>
+  <text x="80" y="398" class="fname">user_role</text><text x="544" y="398" class="ftype" text-anchor="end">varchar not null</text>
+  <text x="80" y="417" class="fname">pin_hash</text><text x="544" y="417" class="ftype" text-anchor="end">char(64) null</text>
+  <text x="58" y="440" class="note" font-size="10.5">user_role stays free text — RBAC is out of v1. pin_hash is a device re-lock.</text>
+
+  <!-- farm -->
+  <g filter="url(#shadowR)"><rect x="40" y="470" width="520" height="330" rx="8" class="box" /></g>
+  <path d="M40,478 a8,8 0 0 1 8,-8 h504 a8,8 0 0 1 8,8 v18 h-520 z" fill="oklch(0.42 0.14 265)" />
+  <rect x="40" y="490" width="520" height="10" fill="oklch(0.42 0.14 265)" />
+  <text x="58" y="491" class="hdrtext">farm</text>
+  <text x="544" y="491" class="hdrtext" text-anchor="end" font-size="10" opacity="0.75">split out of farmer</text>
+  <text x="58" y="520" class="pk">PK</text><text x="80" y="520" class="fname">id</text><text x="544" y="520" class="ftype" text-anchor="end">uuid</text>
+  <text x="58" y="539" class="fk">FK</text><text x="80" y="539" class="fname">farmer_id</text><text x="544" y="539" class="ftype" text-anchor="end">uuid not null</text>
+  <text x="80" y="558" class="fname">name</text><text x="544" y="558" class="ftype" text-anchor="end">varchar not null</text>
+  <text x="80" y="577" class="fname">area</text><text x="544" y="577" class="ftype" text-anchor="end">numeric not null</text>
+  <text x="80" y="596" class="fname">area_unit</text><text x="544" y="596" class="ftype" text-anchor="end">check('acres','hectares')</text>
+  <text x="80" y="615" class="fname">water_source</text><text x="544" y="615" class="ftype" text-anchor="end">varchar</text>
+  <text x="80" y="634" class="fname">irrigation_type</text><text x="544" y="634" class="ftype" text-anchor="end">varchar</text>
+  <text x="80" y="653" class="fname">farming_method</text><text x="544" y="653" class="ftype" text-anchor="end">varchar</text>
+  <text x="80" y="672" class="fname">location_type</text><text x="544" y="672" class="ftype" text-anchor="end">check('map','manual','skipped')</text>
+  <text x="80" y="691" class="fname">state</text><text x="544" y="691" class="ftype" text-anchor="end">varchar null</text>
+  <text x="80" y="710" class="fname">district</text><text x="544" y="710" class="ftype" text-anchor="end">varchar null</text>
+  <text x="80" y="729" class="fname">village</text><text x="544" y="729" class="ftype" text-anchor="end">varchar null</text>
+  <text x="80" y="748" class="fname">pincode</text><text x="544" y="748" class="ftype" text-anchor="end">char(6) null</text>
+  <text x="80" y="767" class="fname">lat · lng</text><text x="544" y="767" class="ftype" text-anchor="end">numeric(9,6) null</text>
+  <text x="80" y="786" class="fname">setup_completed</text><text x="544" y="786" class="ftype" text-anchor="end">boolean</text>
+
+  <!-- farm_crop -->
+  <g filter="url(#shadowR)"><rect x="40" y="820" width="520" height="82" rx="8" class="box" /></g>
+  <path d="M40,828 a8,8 0 0 1 8,-8 h504 a8,8 0 0 1 8,8 v18 h-520 z" fill="oklch(0.42 0.14 265)" />
+  <rect x="40" y="840" width="520" height="10" fill="oklch(0.42 0.14 265)" />
+  <text x="58" y="841" class="hdrtext">farm_crop</text>
+  <text x="58" y="870" class="pk">PK</text><text x="78" y="870" class="fk">FK</text><text x="102" y="870" class="fname">farm_id</text><text x="544" y="870" class="ftype" text-anchor="end">uuid</text>
+  <text x="58" y="889" class="pk">PK</text><text x="78" y="889" class="fk">FK</text><text x="102" y="889" class="fname">crop_catalog_id</text><text x="544" y="889" class="ftype" text-anchor="end">uuid</text>
+
+  <!-- land_point -->
+  <g filter="url(#shadowR)"><rect x="40" y="922" width="520" height="120" rx="8" class="box" /></g>
+  <path d="M40,930 a8,8 0 0 1 8,-8 h504 a8,8 0 0 1 8,8 v18 h-520 z" fill="oklch(0.42 0.14 265)" />
+  <rect x="40" y="942" width="520" height="10" fill="oklch(0.42 0.14 265)" />
+  <text x="58" y="943" class="hdrtext">land_point</text>
+  <text x="544" y="943" class="hdrtext" text-anchor="end" font-size="10" opacity="0.75">polygon vertices</text>
+  <text x="58" y="972" class="pk">PK</text><text x="78" y="972" class="fk">FK</text><text x="102" y="972" class="fname">land_id</text><text x="544" y="972" class="ftype" text-anchor="end">uuid</text>
+  <text x="58" y="991" class="pk">PK</text><text x="82" y="991" class="fname">seq</text><text x="544" y="991" class="ftype" text-anchor="end">smallint</text>
+  <text x="82" y="1010" class="fname">lat</text><text x="544" y="1010" class="ftype" text-anchor="end">numeric(9,6) not null</text>
+  <text x="82" y="1029" class="fname">lng</text><text x="544" y="1029" class="ftype" text-anchor="end">numeric(9,6) not null</text>
+
+  <!-- ================= COLUMN 2 ================= -->
+
+  <!-- land -->
+  <g filter="url(#shadowR)"><rect x="620" y="110" width="520" height="200" rx="8" class="box" /></g>
+  <path d="M620,118 a8,8 0 0 1 8,-8 h504 a8,8 0 0 1 8,8 v18 h-520 z" fill="oklch(0.42 0.14 265)" />
+  <rect x="620" y="130" width="520" height="10" fill="oklch(0.42 0.14 265)" />
+  <text x="638" y="131" class="hdrtext">land</text>
+  <text x="638" y="160" class="pk">PK</text><text x="660" y="160" class="fname">id</text><text x="1124" y="160" class="ftype" text-anchor="end">uuid</text>
+  <text x="638" y="179" class="fk">FK</text><text x="660" y="179" class="fname">farmer_id</text><text x="1124" y="179" class="ftype" text-anchor="end">uuid not null</text>
+  <text x="638" y="198" class="fk">FK</text><text x="660" y="198" class="fname">farm_id</text><text x="1124" y="198" class="ftype" text-anchor="end">uuid not null</text>
+  <text x="660" y="217" class="fname">name</text><text x="1124" y="217" class="ftype" text-anchor="end">varchar not null</text>
+  <text x="660" y="236" class="fname">area_sq_m</text><text x="1124" y="236" class="ftype" text-anchor="end">numeric not null</text>
+  <text x="660" y="255" class="fname" fill="oklch(0.45 0.10 155)">area_hectares</text><text x="1124" y="255" class="ftype" text-anchor="end" fill="oklch(0.45 0.10 155)">numeric GENERATED STORED</text>
+  <text x="660" y="274" class="fname" fill="oklch(0.45 0.10 155)">area_acres</text><text x="1124" y="274" class="ftype" text-anchor="end" fill="oklch(0.45 0.10 155)">numeric GENERATED STORED</text>
+  <text x="660" y="293" class="fname">notes</text><text x="1124" y="293" class="ftype" text-anchor="end">text null</text>
+
+  <!-- crop -->
+  <g filter="url(#shadowR)"><rect x="620" y="330" width="520" height="272" rx="8" class="box" /></g>
+  <path d="M620,338 a8,8 0 0 1 8,-8 h504 a8,8 0 0 1 8,8 v18 h-520 z" fill="oklch(0.42 0.14 265)" />
+  <rect x="620" y="350" width="520" height="10" fill="oklch(0.42 0.14 265)" />
+  <text x="638" y="351" class="hdrtext">crop</text>
+  <text x="638" y="380" class="pk">PK</text><text x="660" y="380" class="fname">id</text><text x="1124" y="380" class="ftype" text-anchor="end">uuid</text>
+  <text x="638" y="399" class="fk">FK</text><text x="660" y="399" class="fname">farmer_id</text><text x="1124" y="399" class="ftype" text-anchor="end">uuid not null</text>
+  <text x="638" y="418" class="fk">FK</text><text x="660" y="418" class="fname">land_id</text><text x="1124" y="418" class="ftype" text-anchor="end">uuid not null</text>
+  <text x="638" y="437" class="fk">FK</text><text x="660" y="437" class="fname">crop_catalog_id</text><text x="1124" y="437" class="ftype" text-anchor="end">uuid not null</text>
+  <text x="660" y="456" class="fname">label</text><text x="1124" y="456" class="ftype" text-anchor="end">varchar null</text>
+  <text x="660" y="475" class="fname">area</text><text x="1124" y="475" class="ftype" text-anchor="end">numeric not null</text>
+  <text x="660" y="494" class="fname">area_unit</text><text x="1124" y="494" class="ftype" text-anchor="end">check('acres','hectares')</text>
+  <text x="660" y="513" class="fname">season</text><text x="1124" y="513" class="ftype" text-anchor="end">check(3) null</text>
+  <text x="660" y="532" class="fname">sowing_date</text><text x="1124" y="532" class="ftype" text-anchor="end">date null</text>
+  <text x="660" y="551" class="fname">current_stage</text><text x="1124" y="551" class="ftype" text-anchor="end">check(8) not null</text>
+  <text x="660" y="570" class="fname">status</text><text x="1124" y="570" class="ftype" text-anchor="end">check(3) not null</text>
+  <text x="660" y="589" class="fname">expected_harvest_date</text><text x="1124" y="589" class="ftype" text-anchor="end">date null</text>
+
+  <!-- activity -->
+  <g filter="url(#shadowR)"><rect x="620" y="622" width="520" height="272" rx="8" class="box" /></g>
+  <path d="M620,630 a8,8 0 0 1 8,-8 h504 a8,8 0 0 1 8,8 v18 h-520 z" fill="oklch(0.42 0.14 265)" />
+  <rect x="620" y="642" width="520" height="10" fill="oklch(0.42 0.14 265)" />
+  <text x="638" y="643" class="hdrtext">activity</text>
+  <text x="1124" y="643" class="hdrtext" text-anchor="end" font-size="10" opacity="0.75">highest write volume</text>
+  <text x="638" y="672" class="pk">PK</text><text x="660" y="672" class="fname">id</text><text x="1124" y="672" class="ftype" text-anchor="end">uuid</text>
+  <text x="638" y="691" class="fk">FK</text><text x="660" y="691" class="fname">farmer_id</text><text x="1124" y="691" class="ftype" text-anchor="end">uuid not null</text>
+  <text x="638" y="710" class="fk">FK</text><text x="660" y="710" class="fname">parent_activity_id</text><text x="1124" y="710" class="ftype" text-anchor="end">uuid null</text>
+  <text x="638" y="729" class="fk">FK</text><text x="660" y="729" class="fname">crop_id</text><text x="1124" y="729" class="ftype" text-anchor="end">uuid null</text>
+  <text x="638" y="748" class="fk">FK</text><text x="660" y="748" class="fname">land_id</text><text x="1124" y="748" class="ftype" text-anchor="end">uuid null</text>
+  <text x="638" y="767" class="fk">FK</text><text x="660" y="767" class="fname">activity_type_id</text><text x="1124" y="767" class="ftype" text-anchor="end">uuid not null</text>
+  <text x="660" y="786" class="fname">custom_activity_name</text><text x="1124" y="786" class="ftype" text-anchor="end">varchar null</text>
+  <text x="660" y="805" class="fname" fill="oklch(0.50 0.14 25)">date</text><text x="1124" y="805" class="ftype" text-anchor="end" fill="oklch(0.50 0.14 25)">timestamptz NULL</text>
+  <text x="660" y="824" class="fname">season</text><text x="1124" y="824" class="ftype" text-anchor="end">check(3) null</text>
+  <text x="660" y="843" class="fname">status</text><text x="1124" y="843" class="ftype" text-anchor="end">check(5) not null</text>
+  <text x="660" y="862" class="fname">notes</text><text x="1124" y="862" class="ftype" text-anchor="end">text null</text>
+  <text x="660" y="881" class="fname">metadata</text><text x="1124" y="881" class="ftype" text-anchor="end">jsonb not null default '{}'</text>
+
+  <!-- enums -->
+  <rect x="620" y="914" width="520" height="182" rx="8" fill="oklch(0.99 0.002 260)" stroke="oklch(0.85 0.01 260)" stroke-width="1" />
+  <text x="640" y="940" class="noteTitle">Check constraints — code-coupled state machines</text>
+  <text x="640" y="964" class="enumk">activity_type</text>
+  <text x="640" y="981" class="enum">Sowing · Irrigation · Fertilizer Application · Spray Application ·</text>
+  <text x="640" y="997" class="enum">Weeding · Field Inspection · Labour Activity · Harvest · Sale ·</text>
+  <text x="640" y="1013" class="enum">Weather Incident · Maintenance · Custom</text>
+  <text x="640" y="1035" class="enumk">activity_status</text><text x="760" y="1035" class="enum">Draft · Scheduled · In Progress · Completed · Cancelled</text>
+  <text x="640" y="1053" class="enumk">crop_stage</text><text x="740" y="1053" class="enum">Land Preparation · Sowing · Germination · Vegetative</text>
+  <text x="740" y="1069" class="enum">Growth · Flowering · Fruiting / Pod Formation · Maturity · Harvest</text>
+  <text x="640" y="1087" class="enumk">season</text><text x="710" y="1087" class="enum">Kharif · Rabi · Zaid</text>
+
+  <!-- ================= COLUMN 3 ================= -->
+
+  <!-- activity_expense -->
+  <g filter="url(#shadowR)"><rect x="1200" y="110" width="520" height="238" rx="8" class="box" /></g>
+  <path d="M1200,118 a8,8 0 0 1 8,-8 h504 a8,8 0 0 1 8,8 v18 h-520 z" fill="oklch(0.42 0.14 265)" />
+  <rect x="1200" y="130" width="520" height="10" fill="oklch(0.42 0.14 265)" />
+  <text x="1218" y="131" class="hdrtext">activity_expense</text>
+  <text x="1218" y="160" class="pk">PK</text><text x="1240" y="160" class="fname">id</text><text x="1704" y="160" class="ftype" text-anchor="end">uuid</text>
+  <text x="1218" y="179" class="fk">FK</text><text x="1240" y="179" class="fname">activity_id</text><text x="1704" y="179" class="ftype" text-anchor="end">uuid not null</text>
+  <text x="1218" y="198" class="fk">FK</text><text x="1240" y="198" class="fname">expense_category_id</text><text x="1704" y="198" class="ftype" text-anchor="end">uuid not null</text>
+  <text x="1240" y="217" class="fname">item_id</text><text x="1704" y="217" class="ftype" text-anchor="end">varchar null</text>
+  <text x="1240" y="236" class="fname">resource_id</text><text x="1704" y="236" class="ftype" text-anchor="end">varchar null</text>
+  <text x="1240" y="255" class="fname">quantity</text><text x="1704" y="255" class="ftype" text-anchor="end">numeric null</text>
+  <text x="1240" y="274" class="fname">unit</text><text x="1704" y="274" class="ftype" text-anchor="end">varchar null</text>
+  <text x="1240" y="293" class="fname">rate</text><text x="1704" y="293" class="ftype" text-anchor="end">numeric null</text>
+  <text x="1240" y="312" class="fname">amount</text><text x="1704" y="312" class="ftype" text-anchor="end">numeric(12,2) not null</text>
+  <text x="1240" y="331" class="fname">remarks</text><text x="1704" y="331" class="ftype" text-anchor="end">text null</text>
+
+  <!-- activity_attachment -->
+  <g filter="url(#shadowR)"><rect x="1200" y="368" width="520" height="158" rx="8" class="box" /></g>
+  <path d="M1200,376 a8,8 0 0 1 8,-8 h504 a8,8 0 0 1 8,8 v18 h-520 z" fill="oklch(0.42 0.14 265)" />
+  <rect x="1200" y="388" width="520" height="10" fill="oklch(0.42 0.14 265)" />
+  <text x="1218" y="389" class="hdrtext">activity_attachment</text>
+  <text x="1218" y="418" class="pk">PK</text><text x="1240" y="418" class="fname">id</text><text x="1704" y="418" class="ftype" text-anchor="end">uuid</text>
+  <text x="1218" y="437" class="fk">FK</text><text x="1240" y="437" class="fname">activity_id</text><text x="1704" y="437" class="ftype" text-anchor="end">uuid not null</text>
+  <text x="1240" y="456" class="fname">storage_key</text><text x="1704" y="456" class="ftype" text-anchor="end">varchar not null</text>
+  <text x="1240" y="475" class="fname">content_type</text><text x="1704" y="475" class="ftype" text-anchor="end">varchar</text>
+  <text x="1240" y="494" class="fname">size_bytes</text><text x="1704" y="494" class="ftype" text-anchor="end">integer</text>
+  <text x="1218" y="516" class="note" font-size="10.5">Blob lives in Cloudflare R2. Base64 in a row would consume the 0.5 GB ceiling.</text>
+
+  <!-- weather_cache -->
+  <g filter="url(#shadowR)"><rect x="1200" y="546" width="520" height="200" rx="8" class="box" /></g>
+  <path d="M1200,554 a8,8 0 0 1 8,-8 h504 a8,8 0 0 1 8,8 v18 h-520 z" fill="oklch(0.62 0.10 65)" />
+  <rect x="1200" y="566" width="520" height="10" fill="oklch(0.62 0.10 65)" />
+  <text x="1218" y="567" class="hdrtext">weather_cache</text>
+  <text x="1704" y="567" class="hdrtext" text-anchor="end" font-size="10" opacity="0.8">no tenant column</text>
+  <text x="1218" y="596" class="pk">PK</text><text x="1240" y="596" class="fname">id</text><text x="1704" y="596" class="ftype" text-anchor="end">uuid</text>
+  <text x="1218" y="615" class="fk">UQ</text><text x="1240" y="615" class="fname">grid_lat</text><text x="1704" y="615" class="ftype" text-anchor="end">numeric(6,2) not null</text>
+  <text x="1218" y="634" class="fk">UQ</text><text x="1240" y="634" class="fname">grid_lng</text><text x="1704" y="634" class="ftype" text-anchor="end">numeric(6,2) not null</text>
+  <text x="1240" y="653" class="fname">place_name</text><text x="1704" y="653" class="ftype" text-anchor="end">varchar null</text>
+  <text x="1240" y="672" class="fname">current</text><text x="1704" y="672" class="ftype" text-anchor="end">jsonb not null</text>
+  <text x="1240" y="691" class="fname">forecast</text><text x="1704" y="691" class="ftype" text-anchor="end">jsonb not null</text>
+  <text x="1240" y="710" class="fname">alerts</text><text x="1704" y="710" class="ftype" text-anchor="end">jsonb null</text>
+  <text x="1240" y="729" class="fname">fetched_at</text><text x="1704" y="729" class="ftype" text-anchor="end">timestamptz not null</text>
+
+  <!-- reference tables -->
+  <g filter="url(#shadowR)"><rect x="1200" y="766" width="520" height="158" rx="8" class="box" /></g>
+  <path d="M1200,774 a8,8 0 0 1 8,-8 h504 a8,8 0 0 1 8,8 v18 h-520 z" fill="oklch(0.52 0.12 155)" />
+  <rect x="1200" y="786" width="520" height="10" fill="oklch(0.52 0.12 155)" />
+  <text x="1218" y="787" class="hdrtext">crop_catalog · expense_category · activity_type</text>
+  <text x="1218" y="816" class="pk">PK</text><text x="1240" y="816" class="fname">id</text><text x="1704" y="816" class="ftype" text-anchor="end">uuid</text>
+  <text x="1218" y="835" class="fk">UQ</text><text x="1240" y="835" class="fname">code</text><text x="1704" y="835" class="ftype" text-anchor="end">varchar not null</text>
+  <text x="1240" y="854" class="fname">name</text><text x="1704" y="854" class="ftype" text-anchor="end">varchar not null</text>
+  <text x="1240" y="873" class="fname">is_custom</text><text x="1704" y="873" class="ftype" text-anchor="end">boolean · activity_type only</text>
+  <text x="1218" y="896" class="note" font-size="10.5">Seeded, globally readable, unscoped by tenant. These lookups replace the</text>
+  <text x="1218" y="912" class="note" font-size="10.5">repeated free text that primaryCrops[], cropType and category used to hold.</text>
+
+  <!-- dropped -->
+  <rect x="1200" y="944" width="520" height="152" rx="8" fill="oklch(0.96 0.03 25)" stroke="oklch(0.74 0.09 25)" stroke-width="1" />
+  <text x="1220" y="970" class="noteTitle">Dropped, and why</text>
+  <text x="1220" y="993" class="note"><tspan class="fname">land.geo_json</tspan> — redundant with land_point; regenerated on read</text>
+  <text x="1220" y="1012" class="note"><tspan class="fname">crop.upcoming_activity</tspan> — derived from the next scheduled activity</text>
+  <text x="1220" y="1031" class="note"><tspan class="fname">crop.name / crop_type</tspan> — replaced by crop_catalog_id + label</text>
+  <text x="1220" y="1050" class="note"><tspan class="fname">weather per farmer</tspan> — one shared cache by location grid instead</text>
+  <text x="1220" y="1076" class="note" font-size="10.5" fill="oklch(0.50 0.14 25)">App code reads the first two today — recomputation ships before removal.</text>
+
+  <text x="880" y="1150" class="note" text-anchor="middle" font-size="11" fill="oklch(0.58 0.02 260)">Every column traces to a real TypeScript model in projects/home/src/app — verified against source, not inferred from the diagram.</text>
+</svg>
+</div>
+</x-dc>
+</body>
+</html>

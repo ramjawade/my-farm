@@ -1,0 +1,71 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1720,
+      "h": 920,
+      "expand": "fit",
+      "page": "page-erd"
+    },
+    {
+      "file": "FieldReference.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1800,
+      "h": 1220,
+      "expand": "fit",
+      "page": "page-ref"
+    },
+    {
+      "file": "Architecture.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 800,
+      "expand": "fit",
+      "page": "page-arch"
+    },
+    {
+      "file": "AuthFlow.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 740,
+      "expand": "fit",
+      "page": "page-flows"
+    },
+    {
+      "file": "MigrationFlow.dc.html",
+      "x": 1480,
+      "y": 0,
+      "w": 1020,
+      "h": 800,
+      "expand": "fit",
+      "page": "page-flows"
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "page-erd"
+  },
+  "pages": [
+    {
+      "id": "page-erd",
+      "name": "ER Diagram"
+    },
+    {
+      "id": "page-ref",
+      "name": "Field Reference"
+    },
+    {
+      "id": "page-arch",
+      "name": "Architecture"
+    },
+    {
+      "id": "page-flows",
+      "name": "Flows"
+    }
+  ]
+}

@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; font-family: 'IBM Plex Sans', system-ui, sans-serif; }
+  </style>
+</helmet>
+<div style="width:1440px;height:740px;background:oklch(0.97 0.005 260);display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:20px">
+<svg viewBox="0 0 1400 700" width="1400" height="700" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="#0f172a" flood-opacity="0.10" />
+    </filter>
+    <marker id="arrowF" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="oklch(0.45 0.02 260)" />
+    </marker>
+  </defs>
+  <style>
+    .title{font:700 27px 'IBM Plex Sans',sans-serif;fill:oklch(0.20 0.02 260)}
+    .subtitle{font:400 13.5px 'IBM Plex Sans',sans-serif;fill:oklch(0.52 0.02 260)}
+    .hdrtext{font:600 13px 'IBM Plex Sans',sans-serif;fill:#ffffff}
+    .msg{font:400 11.5px 'IBM Plex Mono',monospace;fill:oklch(0.30 0.02 260)}
+    .step{font:700 11px 'IBM Plex Sans',sans-serif;fill:oklch(0.55 0.02 260)}
+    .note{font:400 11.5px 'IBM Plex Sans',sans-serif;fill:oklch(0.42 0.02 260)}
+    .noteTitle{font:700 12.5px 'IBM Plex Sans',sans-serif;fill:oklch(0.20 0.02 260)}
+    .fname{font:600 11px 'IBM Plex Mono',monospace;fill:oklch(0.28 0.02 260)}
+  </style>
+
+  <text x="700" y="34" class="title" text-anchor="middle">Authentication &amp; Tenancy</text>
+  <text x="700" y="56" class="subtitle" text-anchor="middle">Firebase Auth issues the identity · FastAPI verifies it and owns every row · the farmer id never comes from the client</text>
+
+  <!-- ===== LANES ===== -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="86" width="200" height="38" rx="8" fill="oklch(0.35 0.02 260)" />
+    <rect x="290" y="86" width="230" height="38" rx="8" fill="oklch(0.42 0.14 265)" />
+    <rect x="570" y="86" width="200" height="38" rx="8" fill="oklch(0.62 0.10 65)" />
+    <rect x="820" y="86" width="230" height="38" rx="8" fill="oklch(0.52 0.12 155)" />
+    <rect x="1100" y="86" width="230" height="38" rx="8" fill="oklch(0.42 0.14 265)" />
+  </g>
+  <text x="140" y="110" class="hdrtext" text-anchor="middle">Farmer</text>
+  <text x="405" y="110" class="hdrtext" text-anchor="middle">Angular PWA</text>
+  <text x="670" y="110" class="hdrtext" text-anchor="middle">Firebase Auth</text>
+  <text x="935" y="110" class="hdrtext" text-anchor="middle">FastAPI</text>
+  <text x="1215" y="110" class="hdrtext" text-anchor="middle">Neon Postgres</text>
+
+  <g stroke="oklch(0.82 0.01 260)" stroke-width="1.5" stroke-dasharray="4 5">
+    <line x1="140" y1="124" x2="140" y2="560" />
+    <line x1="405" y1="124" x2="405" y2="560" />
+    <line x1="670" y1="124" x2="670" y2="560" />
+    <line x1="935" y1="124" x2="935" y2="560" />
+    <line x1="1215" y1="124" x2="1215" y2="560" />
+  </g>
+
+  <!-- ===== MESSAGES ===== -->
+  <g stroke="oklch(0.45 0.02 260)" stroke-width="1.5" fill="none" marker-end="url(#arrowF)">
+    <line x1="140" y1="162" x2="405" y2="162" />
+    <line x1="405" y1="202" x2="670" y2="202" />
+    <line x1="670" y1="242" x2="140" y2="242" />
+    <line x1="140" y1="282" x2="405" y2="282" />
+    <line x1="405" y1="322" x2="670" y2="322" />
+    <line x1="670" y1="362" x2="405" y2="362" />
+    <line x1="405" y1="410" x2="935" y2="410" />
+    <line x1="935" y1="486" x2="1215" y2="486" />
+    <line x1="935" y1="546" x2="405" y2="546" />
+  </g>
+
+  <text x="152" y="156" class="step">1</text>
+  <text x="172" y="156" class="msg">enter phone number</text>
+  <text x="417" y="196" class="step">2</text>
+  <text x="437" y="196" class="msg">signInWithPhoneNumber()</text>
+  <text x="420" y="236" class="step">3</text>
+  <text x="440" y="236" class="msg">SMS one-time code</text>
+  <text x="152" y="276" class="step">4</text>
+  <text x="172" y="276" class="msg">enter OTP</text>
+  <text x="417" y="316" class="step">5</text>
+  <text x="437" y="316" class="msg">confirm(code)</text>
+  <text x="420" y="356" class="step">6</text>
+  <text x="440" y="356" class="msg">ID token (JWT), uid</text>
+  <text x="417" y="404" class="step">7</text>
+  <text x="437" y="404" class="msg">GET /api/v1/me — Authorization: Bearer &lt;ID token&gt;</text>
+  <text x="947" y="480" class="step">9</text>
+  <text x="967" y="480" class="msg">SELECT farmer WHERE auth_uid = :uid</text>
+  <text x="560" y="540" class="step">11</text>
+  <text x="582" y="540" class="msg">200 — CurrentFarmer { id: uuidv7 }</text>
+
+  <!-- self-call: verify -->
+  <path d="M935,430 h74 a8,8 0 0 1 8,8 v14 a8,8 0 0 1 -8,8 h-74" stroke="oklch(0.45 0.02 260)" stroke-width="1.5" fill="none" marker-end="url(#arrowF)" />
+  <text x="1030" y="442" class="step">8</text>
+  <text x="1030" y="458" class="msg" font-size="10.5">verify_id_token()</text>
+  <text x="1030" y="472" class="note" font-size="10">signature · expiry · audience</text>
+
+  <!-- conditional JIT insert -->
+  <rect x="950" y="500" width="380" height="34" rx="6" fill="oklch(0.96 0.03 155)" stroke="oklch(0.66 0.09 155)" stroke-width="1" stroke-dasharray="4 3" />
+  <text x="962" y="514" class="step">10</text>
+  <text x="984" y="514" class="msg" font-size="10.5">if no row: INSERT farmer (auth_uid, phone)</text>
+  <text x="984" y="528" class="note" font-size="10">just-in-time provisioning — no separate registration endpoint</text>
+
+  <!-- ===== NOTE PANELS ===== -->
+  <rect x="40" y="586" width="420" height="96" rx="10" fill="oklch(0.96 0.02 265)" stroke="oklch(0.78 0.06 265)" stroke-width="1" />
+  <text x="60" y="610" class="noteTitle">Returning to the app on the same device</text>
+  <text x="60" y="632" class="note">Firebase keeps the session; the local PIN becomes a device</text>
+  <text x="60" y="649" class="note">re-lock, checked offline against its stored hash. It is no</text>
+  <text x="60" y="666" class="note">longer the authentication mechanism.</text>
+
+  <rect x="484" y="586" width="440" height="96" rx="10" fill="oklch(0.96 0.03 25)" stroke="oklch(0.74 0.09 25)" stroke-width="1" />
+  <text x="504" y="610" class="noteTitle">No endpoint accepts a farmer id</text>
+  <text x="504" y="632" class="note">Tenancy comes from the token only. The repository takes</text>
+  <text x="504" y="649" class="note"><tspan class="fname">farmer_id</tspan> in its constructor and injects the predicate into</text>
+  <text x="504" y="666" class="note">every query; row-level security backs it at the database.</text>
+
+  <rect x="948" y="586" width="412" height="96" rx="10" fill="oklch(0.96 0.02 85)" stroke="oklch(0.78 0.06 85)" stroke-width="1" />
+  <text x="968" y="610" class="noteTitle">Cross-tenant test, per endpoint</text>
+  <text x="968" y="632" class="note">Farmer A requests farmer B's row and must get <tspan class="fname">404</tspan> —</text>
+  <text x="968" y="649" class="note">not <tspan class="fname">403</tspan>, which would confirm the row exists. This is a</text>
+  <text x="968" y="666" class="note">merge requirement, not a nice-to-have.</text>
+</svg>
+</div>
+</x-dc>
+</body>
+</html>

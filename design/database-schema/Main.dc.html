@@ -1,0 +1,311 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; font-family: 'IBM Plex Sans', system-ui, sans-serif; }
+    a { color: oklch(0.42 0.14 265); } a:hover { color: oklch(0.32 0.14 265); }
+  </style>
+</helmet>
+<div style="width:1720px;height:920px;background:oklch(0.97 0.005 260);display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:20px">
+<svg viewBox="0 0 1680 880" width="1680" height="880" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="#0f172a" flood-opacity="0.10" />
+    </filter>
+    <marker id="arrowE" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="oklch(0.55 0.02 260)" />
+    </marker>
+  </defs>
+  <style>
+    .title{font:700 27px 'IBM Plex Sans',sans-serif;fill:oklch(0.20 0.02 260)}
+    .subtitle{font:400 13.5px 'IBM Plex Sans',sans-serif;fill:oklch(0.52 0.02 260)}
+    .hdrtext{font:600 13px 'IBM Plex Sans',sans-serif;fill:#ffffff}
+    .fname{font:600 11.5px 'IBM Plex Mono',monospace;fill:oklch(0.24 0.02 260)}
+    .ftype{font:400 11.5px 'IBM Plex Mono',monospace;fill:oklch(0.52 0.02 260)}
+    .footer{font:italic 400 10.5px 'IBM Plex Sans',sans-serif;fill:oklch(0.58 0.02 260)}
+    .legendhdr{font:700 11px 'IBM Plex Sans',sans-serif;letter-spacing:.5px;fill:oklch(0.30 0.02 260)}
+    .legendtext{font:400 12px 'IBM Plex Sans',sans-serif;fill:oklch(0.40 0.02 260)}
+    .card{font:600 10.5px 'IBM Plex Sans',sans-serif;fill:oklch(0.50 0.02 260)}
+    .note{font:400 11.5px 'IBM Plex Sans',sans-serif;fill:oklch(0.42 0.02 260)}
+    .noteTitle{font:700 12.5px 'IBM Plex Sans',sans-serif;fill:oklch(0.20 0.02 260)}
+    .box{fill:oklch(1 0 0);stroke:oklch(0.88 0.01 260);stroke-width:1}
+    .pk{font:700 9.5px 'IBM Plex Sans',sans-serif;fill:oklch(0.42 0.14 265)}
+    .fk{font:700 9.5px 'IBM Plex Sans',sans-serif;fill:oklch(0.50 0.14 55)}
+  </style>
+
+  <text x="840" y="34" class="title" text-anchor="middle">MyFarm — Entity Relationship Diagram</text>
+  <text x="840" y="56" class="subtitle" text-anchor="middle">PostgreSQL · normalised to 3NF · UUIDv7 keys minted client-side · every farmer-owned table carries farmer_id</text>
+
+  <!-- ===== LEGEND ===== -->
+  <rect x="60" y="80" width="1560" height="62" rx="10" fill="oklch(1 0 0 / 0.55)" stroke="oklch(0.88 0.01 260)" stroke-dasharray="2 4" />
+  <rect x="78" y="98" width="26" height="12" rx="3" fill="oklch(0.20 0.02 260)" />
+  <text x="112" y="108" class="legendtext">tenant root</text>
+  <rect x="200" y="98" width="26" height="12" rx="3" fill="oklch(0.42 0.14 265)" />
+  <text x="234" y="108" class="legendtext">farmer-owned</text>
+  <rect x="340" y="98" width="26" height="12" rx="3" fill="oklch(0.52 0.12 155)" />
+  <text x="374" y="108" class="legendtext">reference (seeded, global)</text>
+  <rect x="546" y="98" width="26" height="12" rx="3" fill="oklch(0.62 0.10 65)" />
+  <text x="580" y="108" class="legendtext">shared cache (no tenant)</text>
+  <text x="760" y="108" class="pk" font-size="11">PK</text>
+  <text x="784" y="108" class="legendtext">primary key</text>
+  <text x="880" y="108" class="fk" font-size="11">FK</text>
+  <text x="904" y="108" class="legendtext">foreign key</text>
+  <text x="1000" y="108" class="legendtext">— all ids uuid (UUIDv7) · timestamps timestamptz</text>
+  <text x="78" y="130" class="legendtext" fill="oklch(0.50 0.02 260)">Every farmer-owned table also carries <tspan class="fname" fill="oklch(0.35 0.02 260)">created_at</tspan>, <tspan class="fname" fill="oklch(0.35 0.02 260)">updated_at</tspan> (delta-pull watermark) and <tspan class="fname" fill="oklch(0.35 0.02 260)">deleted_at</tspan> (soft-delete tombstone, so deletes reach a client that was offline).</text>
+
+  <!-- ============ FARMER (tenant root) ============ -->
+  <g filter="url(#shadow)">
+    <rect x="60" y="176" width="250" height="150" rx="8" class="box" />
+    <path d="M60,184 a8,8 0 0 1 8,-8 h234 a8,8 0 0 1 8,8 v18 h-250 z" fill="oklch(0.20 0.02 260)" />
+    <rect x="60" y="196" width="250" height="10" fill="oklch(0.20 0.02 260)" />
+  </g>
+  <text x="76" y="197" class="hdrtext">farmer</text>
+  <text x="294" y="197" class="hdrtext" text-anchor="end" font-size="10" opacity="0.75">tenant root</text>
+  <text x="76" y="226" class="pk">PK</text><text x="96" y="226" class="fname">id</text><text x="294" y="226" class="ftype" text-anchor="end">uuid</text>
+  <text x="76" y="244" class="fname" fill="oklch(0.50 0.14 55)">UQ</text><text x="102" y="244" class="fname">auth_uid</text><text x="294" y="244" class="ftype" text-anchor="end">varchar(128)</text>
+  <text x="76" y="262" class="fname" fill="oklch(0.50 0.14 55)">UQ</text><text x="102" y="262" class="fname">phone</text><text x="294" y="262" class="ftype" text-anchor="end">varchar(15)</text>
+  <text x="76" y="280" class="fname">full_name</text><text x="294" y="280" class="ftype" text-anchor="end">varchar</text>
+  <text x="76" y="298" class="fname">preferred_language</text><text x="294" y="298" class="ftype" text-anchor="end">varchar</text>
+  <text x="76" y="316" class="fname">user_role</text><text x="294" y="316" class="ftype" text-anchor="end">varchar</text>
+  <text x="60" y="342" class="footer">auth_uid holds the Firebase uid — id stays ours.</text>
+
+  <!-- ============ FARM ============ -->
+  <g filter="url(#shadow)">
+    <rect x="60" y="368" width="250" height="168" rx="8" class="box" />
+    <path d="M60,376 a8,8 0 0 1 8,-8 h234 a8,8 0 0 1 8,8 v18 h-250 z" fill="oklch(0.42 0.14 265)" />
+    <rect x="60" y="388" width="250" height="10" fill="oklch(0.42 0.14 265)" />
+  </g>
+  <text x="76" y="389" class="hdrtext">farm</text>
+  <text x="76" y="418" class="pk">PK</text><text x="96" y="418" class="fname">id</text><text x="294" y="418" class="ftype" text-anchor="end">uuid</text>
+  <text x="76" y="436" class="fk">FK</text><text x="96" y="436" class="fname">farmer_id</text><text x="294" y="436" class="ftype" text-anchor="end">uuid</text>
+  <text x="76" y="454" class="fname">name</text><text x="294" y="454" class="ftype" text-anchor="end">varchar</text>
+  <text x="76" y="472" class="fname">area · area_unit</text><text x="294" y="472" class="ftype" text-anchor="end">numeric</text>
+  <text x="76" y="490" class="fname">water_source</text><text x="294" y="490" class="ftype" text-anchor="end">varchar</text>
+  <text x="76" y="508" class="fname">state · district · village</text><text x="294" y="508" class="ftype" text-anchor="end">varchar</text>
+  <text x="76" y="526" class="fname">lat · lng</text><text x="294" y="526" class="ftype" text-anchor="end">numeric</text>
+  <text x="60" y="552" class="footer">Split out of farmer — farm attributes describe</text>
+  <text x="60" y="566" class="footer">a farm, not a person. Unblocks multi-farm.</text>
+
+  <!-- ============ FARM_CROP ============ -->
+  <g filter="url(#shadow)">
+    <rect x="60" y="592" width="250" height="76" rx="8" class="box" />
+    <path d="M60,600 a8,8 0 0 1 8,-8 h234 a8,8 0 0 1 8,8 v18 h-250 z" fill="oklch(0.42 0.14 265)" />
+    <rect x="60" y="612" width="250" height="10" fill="oklch(0.42 0.14 265)" />
+  </g>
+  <text x="76" y="613" class="hdrtext">farm_crop</text>
+  <text x="76" y="642" class="pk">PK</text><text x="96" y="642" class="fk">FK</text><text x="118" y="642" class="fname">farm_id</text><text x="294" y="642" class="ftype" text-anchor="end">uuid</text>
+  <text x="76" y="660" class="pk">PK</text><text x="96" y="660" class="fk">FK</text><text x="118" y="660" class="fname">crop_catalog_id</text><text x="294" y="660" class="ftype" text-anchor="end">uuid</text>
+
+  <!-- ============ LAND ============ -->
+  <g filter="url(#shadow)">
+    <rect x="360" y="176" width="250" height="150" rx="8" class="box" />
+    <path d="M360,184 a8,8 0 0 1 8,-8 h234 a8,8 0 0 1 8,8 v18 h-250 z" fill="oklch(0.42 0.14 265)" />
+    <rect x="360" y="196" width="250" height="10" fill="oklch(0.42 0.14 265)" />
+  </g>
+  <text x="376" y="197" class="hdrtext">land</text>
+  <text x="376" y="226" class="pk">PK</text><text x="396" y="226" class="fname">id</text><text x="594" y="226" class="ftype" text-anchor="end">uuid</text>
+  <text x="376" y="244" class="fk">FK</text><text x="396" y="244" class="fname">farmer_id · farm_id</text><text x="594" y="244" class="ftype" text-anchor="end">uuid</text>
+  <text x="376" y="262" class="fname">name</text><text x="594" y="262" class="ftype" text-anchor="end">varchar</text>
+  <text x="376" y="280" class="fname">area_sq_m</text><text x="594" y="280" class="ftype" text-anchor="end">numeric</text>
+  <text x="376" y="298" class="fname" fill="oklch(0.45 0.10 155)">area_hectares</text><text x="594" y="298" class="ftype" text-anchor="end" fill="oklch(0.45 0.10 155)">GENERATED</text>
+  <text x="376" y="316" class="fname" fill="oklch(0.45 0.10 155)">area_acres</text><text x="594" y="316" class="ftype" text-anchor="end" fill="oklch(0.45 0.10 155)">GENERATED</text>
+  <text x="360" y="342" class="footer">geo_json dropped — redundant with land_point.</text>
+
+  <!-- ============ LAND_POINT ============ -->
+  <g filter="url(#shadow)">
+    <rect x="360" y="368" width="250" height="94" rx="8" class="box" />
+    <path d="M360,376 a8,8 0 0 1 8,-8 h234 a8,8 0 0 1 8,8 v18 h-250 z" fill="oklch(0.42 0.14 265)" />
+    <rect x="360" y="388" width="250" height="10" fill="oklch(0.42 0.14 265)" />
+  </g>
+  <text x="376" y="389" class="hdrtext">land_point</text>
+  <text x="376" y="418" class="pk">PK</text><text x="396" y="418" class="fk">FK</text><text x="418" y="418" class="fname">land_id</text><text x="594" y="418" class="ftype" text-anchor="end">uuid</text>
+  <text x="376" y="436" class="pk">PK</text><text x="400" y="436" class="fname">seq</text><text x="594" y="436" class="ftype" text-anchor="end">smallint</text>
+  <text x="376" y="454" class="fname">lat · lng</text><text x="594" y="454" class="ftype" text-anchor="end">numeric(9,6)</text>
+
+  <!-- ============ CROP ============ -->
+  <g filter="url(#shadow)">
+    <rect x="360" y="504" width="250" height="182" rx="8" class="box" />
+    <path d="M360,512 a8,8 0 0 1 8,-8 h234 a8,8 0 0 1 8,8 v18 h-250 z" fill="oklch(0.42 0.14 265)" />
+    <rect x="360" y="524" width="250" height="10" fill="oklch(0.42 0.14 265)" />
+  </g>
+  <text x="376" y="525" class="hdrtext">crop</text>
+  <text x="376" y="554" class="pk">PK</text><text x="396" y="554" class="fname">id</text><text x="594" y="554" class="ftype" text-anchor="end">uuid</text>
+  <text x="376" y="572" class="fk">FK</text><text x="396" y="572" class="fname">farmer_id</text><text x="594" y="572" class="ftype" text-anchor="end">uuid</text>
+  <text x="376" y="590" class="fk">FK</text><text x="396" y="590" class="fname">land_id</text><text x="594" y="590" class="ftype" text-anchor="end">uuid</text>
+  <text x="376" y="608" class="fk">FK</text><text x="396" y="608" class="fname">crop_catalog_id</text><text x="594" y="608" class="ftype" text-anchor="end">uuid</text>
+  <text x="376" y="626" class="fname">label</text><text x="594" y="626" class="ftype" text-anchor="end">varchar null</text>
+  <text x="376" y="644" class="fname">current_stage</text><text x="594" y="644" class="ftype" text-anchor="end">check(8)</text>
+  <text x="376" y="662" class="fname">status</text><text x="594" y="662" class="ftype" text-anchor="end">check(3)</text>
+  <text x="376" y="680" class="fname">sowing_date</text><text x="594" y="680" class="ftype" text-anchor="end">date null</text>
+  <text x="360" y="706" class="footer">catalog = species; label = the farmer's own name.</text>
+  <text x="360" y="720" class="footer">upcoming_activity dropped — derived.</text>
+
+  <!-- ============ ACTIVITY ============ -->
+  <g filter="url(#shadow)">
+    <rect x="660" y="176" width="280" height="256" rx="8" class="box" />
+    <path d="M660,184 a8,8 0 0 1 8,-8 h264 a8,8 0 0 1 8,8 v18 h-280 z" fill="oklch(0.42 0.14 265)" />
+    <rect x="660" y="196" width="280" height="10" fill="oklch(0.42 0.14 265)" />
+  </g>
+  <text x="676" y="197" class="hdrtext">activity</text>
+  <text x="924" y="197" class="hdrtext" text-anchor="end" font-size="10" opacity="0.75">highest write volume</text>
+  <text x="676" y="226" class="pk">PK</text><text x="696" y="226" class="fname">id</text><text x="924" y="226" class="ftype" text-anchor="end">uuid</text>
+  <text x="676" y="244" class="fk">FK</text><text x="696" y="244" class="fname">farmer_id</text><text x="924" y="244" class="ftype" text-anchor="end">uuid</text>
+  <text x="676" y="262" class="fk">FK</text><text x="696" y="262" class="fname">parent_activity_id</text><text x="924" y="262" class="ftype" text-anchor="end">uuid null</text>
+  <text x="676" y="280" class="fk">FK</text><text x="696" y="280" class="fname">crop_id</text><text x="924" y="280" class="ftype" text-anchor="end">uuid null</text>
+  <text x="676" y="298" class="fk">FK</text><text x="696" y="298" class="fname">land_id</text><text x="924" y="298" class="ftype" text-anchor="end">uuid null</text>
+  <text x="676" y="316" class="fk">FK</text><text x="696" y="316" class="fname">activity_type_id</text><text x="924" y="316" class="ftype" text-anchor="end">uuid</text>
+  <text x="676" y="334" class="fname" fill="oklch(0.50 0.14 25)">date</text><text x="924" y="334" class="ftype" text-anchor="end" fill="oklch(0.50 0.14 25)">timestamptz NULL</text>
+  <text x="676" y="352" class="fname">season</text><text x="924" y="352" class="ftype" text-anchor="end">check(3) null</text>
+  <text x="676" y="370" class="fname">status</text><text x="924" y="370" class="ftype" text-anchor="end">check(5)</text>
+  <text x="676" y="388" class="fname">notes</text><text x="924" y="388" class="ftype" text-anchor="end">text null</text>
+  <text x="676" y="406" class="fname">metadata</text><text x="924" y="406" class="ftype" text-anchor="end">jsonb</text>
+  <text x="676" y="424" class="fname">custom_activity_name</text><text x="924" y="424" class="ftype" text-anchor="end">varchar null</text>
+  <text x="660" y="448" class="footer" fill="oklch(0.50 0.14 25)">date is NULLABLE — undefined means "not yet scheduled".</text>
+  <text x="660" y="462" class="footer">metadata stays jsonb by choice: 12 types, disjoint sparse fields.</text>
+
+  <!-- ============ ACTIVITY_EXPENSE ============ -->
+  <g filter="url(#shadow)">
+    <rect x="660" y="490" width="280" height="150" rx="8" class="box" />
+    <path d="M660,498 a8,8 0 0 1 8,-8 h264 a8,8 0 0 1 8,8 v18 h-280 z" fill="oklch(0.42 0.14 265)" />
+    <rect x="660" y="510" width="280" height="10" fill="oklch(0.42 0.14 265)" />
+  </g>
+  <text x="676" y="511" class="hdrtext">activity_expense</text>
+  <text x="676" y="540" class="pk">PK</text><text x="696" y="540" class="fname">id</text><text x="924" y="540" class="ftype" text-anchor="end">uuid</text>
+  <text x="676" y="558" class="fk">FK</text><text x="696" y="558" class="fname">activity_id</text><text x="924" y="558" class="ftype" text-anchor="end">uuid</text>
+  <text x="676" y="576" class="fk">FK</text><text x="696" y="576" class="fname">expense_category_id</text><text x="924" y="576" class="ftype" text-anchor="end">uuid</text>
+  <text x="676" y="594" class="fname">quantity · rate · unit</text><text x="924" y="594" class="ftype" text-anchor="end">numeric null</text>
+  <text x="676" y="612" class="fname">amount</text><text x="924" y="612" class="ftype" text-anchor="end">numeric(12,2)</text>
+  <text x="676" y="630" class="fname">remarks</text><text x="924" y="630" class="ftype" text-anchor="end">text null</text>
+  <text x="660" y="656" class="footer">amount is stored, not computed — the form allows an override.</text>
+
+  <!-- ============ ACTIVITY_ATTACHMENT ============ -->
+  <g filter="url(#shadow)">
+    <rect x="660" y="684" width="280" height="112" rx="8" class="box" />
+    <path d="M660,692 a8,8 0 0 1 8,-8 h264 a8,8 0 0 1 8,8 v18 h-280 z" fill="oklch(0.42 0.14 265)" />
+    <rect x="660" y="704" width="280" height="10" fill="oklch(0.42 0.14 265)" />
+  </g>
+  <text x="676" y="705" class="hdrtext">activity_attachment</text>
+  <text x="676" y="734" class="pk">PK</text><text x="696" y="734" class="fname">id</text><text x="924" y="734" class="ftype" text-anchor="end">uuid</text>
+  <text x="676" y="752" class="fk">FK</text><text x="696" y="752" class="fname">activity_id</text><text x="924" y="752" class="ftype" text-anchor="end">uuid</text>
+  <text x="676" y="770" class="fname">storage_key</text><text x="924" y="770" class="ftype" text-anchor="end">varchar</text>
+  <text x="676" y="788" class="fname">content_type · size_bytes</text><text x="924" y="788" class="ftype" text-anchor="end">varchar · int</text>
+  <text x="660" y="812" class="footer">Blob lives in Cloudflare R2 — never in Postgres (0.5 GB ceiling).</text>
+
+  <!-- ============ REFERENCE TABLES ============ -->
+  <g filter="url(#shadow)">
+    <rect x="990" y="176" width="250" height="94" rx="8" class="box" />
+    <path d="M990,184 a8,8 0 0 1 8,-8 h234 a8,8 0 0 1 8,8 v18 h-250 z" fill="oklch(0.52 0.12 155)" />
+    <rect x="990" y="196" width="250" height="10" fill="oklch(0.52 0.12 155)" />
+  </g>
+  <text x="1006" y="197" class="hdrtext">crop_catalog</text>
+  <text x="1006" y="226" class="pk">PK</text><text x="1026" y="226" class="fname">id</text><text x="1224" y="226" class="ftype" text-anchor="end">uuid</text>
+  <text x="1006" y="244" class="fname" fill="oklch(0.50 0.14 55)">UQ</text><text x="1032" y="244" class="fname">code</text><text x="1224" y="244" class="ftype" text-anchor="end">varchar</text>
+  <text x="1006" y="262" class="fname">name</text><text x="1224" y="262" class="ftype" text-anchor="end">varchar</text>
+
+  <g filter="url(#shadow)">
+    <rect x="990" y="300" width="250" height="94" rx="8" class="box" />
+    <path d="M990,308 a8,8 0 0 1 8,-8 h234 a8,8 0 0 1 8,8 v18 h-250 z" fill="oklch(0.52 0.12 155)" />
+    <rect x="990" y="320" width="250" height="10" fill="oklch(0.52 0.12 155)" />
+  </g>
+  <text x="1006" y="321" class="hdrtext">expense_category</text>
+  <text x="1006" y="350" class="pk">PK</text><text x="1026" y="350" class="fname">id</text><text x="1224" y="350" class="ftype" text-anchor="end">uuid</text>
+  <text x="1006" y="368" class="fname" fill="oklch(0.50 0.14 55)">UQ</text><text x="1032" y="368" class="fname">code</text><text x="1224" y="368" class="ftype" text-anchor="end">varchar</text>
+  <text x="1006" y="386" class="fname">name</text><text x="1224" y="386" class="ftype" text-anchor="end">varchar</text>
+
+  <g filter="url(#shadow)">
+    <rect x="990" y="424" width="250" height="112" rx="8" class="box" />
+    <path d="M990,432 a8,8 0 0 1 8,-8 h234 a8,8 0 0 1 8,8 v18 h-250 z" fill="oklch(0.52 0.12 155)" />
+    <rect x="990" y="444" width="250" height="10" fill="oklch(0.52 0.12 155)" />
+  </g>
+  <text x="1006" y="445" class="hdrtext">activity_type</text>
+  <text x="1006" y="474" class="pk">PK</text><text x="1026" y="474" class="fname">id</text><text x="1224" y="474" class="ftype" text-anchor="end">uuid</text>
+  <text x="1006" y="492" class="fname" fill="oklch(0.50 0.14 55)">UQ</text><text x="1032" y="492" class="fname">code</text><text x="1224" y="492" class="ftype" text-anchor="end">varchar</text>
+  <text x="1006" y="510" class="fname">name</text><text x="1224" y="510" class="ftype" text-anchor="end">varchar</text>
+  <text x="1006" y="528" class="fname">is_custom</text><text x="1224" y="528" class="ftype" text-anchor="end">boolean</text>
+  <text x="990" y="554" class="footer">Lookups replace repeated free text.</text>
+
+  <!-- ============ WEATHER_CACHE ============ -->
+  <g filter="url(#shadow)">
+    <rect x="990" y="592" width="250" height="150" rx="8" class="box" />
+    <path d="M990,600 a8,8 0 0 1 8,-8 h234 a8,8 0 0 1 8,8 v18 h-250 z" fill="oklch(0.62 0.10 65)" />
+    <rect x="990" y="612" width="250" height="10" fill="oklch(0.62 0.10 65)" />
+  </g>
+  <text x="1006" y="613" class="hdrtext">weather_cache</text>
+  <text x="1006" y="642" class="pk">PK</text><text x="1026" y="642" class="fname">id</text><text x="1224" y="642" class="ftype" text-anchor="end">uuid</text>
+  <text x="1006" y="660" class="fname" fill="oklch(0.50 0.14 55)">UQ</text><text x="1032" y="660" class="fname">grid_lat · grid_lng</text><text x="1224" y="660" class="ftype" text-anchor="end">numeric</text>
+  <text x="1006" y="678" class="fname">current</text><text x="1224" y="678" class="ftype" text-anchor="end">jsonb</text>
+  <text x="1006" y="696" class="fname">forecast · alerts</text><text x="1224" y="696" class="ftype" text-anchor="end">jsonb</text>
+  <text x="1006" y="714" class="fname">fetched_at</text><text x="1224" y="714" class="ftype" text-anchor="end">timestamptz</text>
+  <text x="1006" y="732" class="fname">place_name</text><text x="1224" y="732" class="ftype" text-anchor="end">varchar null</text>
+  <text x="990" y="758" class="footer">No farmer_id — neighbouring farmers</text>
+  <text x="990" y="772" class="footer">share one forecast. TTL 30 min.</text>
+
+  <!-- ============ RELATIONSHIP LINES ============ -->
+  <g stroke="oklch(0.55 0.02 260)" stroke-width="1.4" fill="none" marker-end="url(#arrowE)">
+    <path d="M310,250 L336,250 L336,240 L360,240" />
+    <path d="M185,326 L185,368" />
+    <path d="M185,536 L185,592" />
+    <path d="M485,326 L485,368" />
+    <path d="M485,462 L485,504" />
+    <path d="M610,570 L634,570 L634,300 L660,300" />
+    <path d="M800,432 L800,490" />
+    <path d="M800,640 L800,684" />
+  </g>
+  <g stroke="oklch(0.70 0.02 260)" stroke-width="1.2" fill="none" stroke-dasharray="4 3" marker-end="url(#arrowE)">
+    <path d="M990,220 L964,220 L964,606 L310,606 L310,634" />
+    <path d="M990,480 L960,480 L960,320 L940,320" />
+    <path d="M990,610 L954,610 L954,600 L610,600 L610,610" />
+  </g>
+
+  <text x="318" y="236" class="card">1—N</text>
+  <text x="192" y="352" class="card">1—N</text>
+  <text x="192" y="578" class="card">1—N</text>
+  <text x="492" y="352" class="card">1—N</text>
+  <text x="492" y="490" class="card">1—N</text>
+  <text x="640" y="288" class="card">1—N</text>
+  <text x="808" y="470" class="card">1—N</text>
+  <text x="808" y="670" class="card">1—N</text>
+
+  <!-- ============ NOTE PANEL ============ -->
+  <rect x="1290" y="176" width="330" height="222" rx="10" fill="oklch(0.96 0.02 265)" stroke="oklch(0.78 0.06 265)" stroke-width="1" />
+  <text x="1310" y="202" class="noteTitle">Why UUIDv7, not a sequence</text>
+  <text x="1310" y="226" class="note">Postgres sequences need the server. This app is</text>
+  <text x="1310" y="243" class="note">offline-first: a record created in a field with no</text>
+  <text x="1310" y="260" class="note">signal must have an identity immediately.</text>
+  <text x="1310" y="284" class="note">UUIDv7 is minted on the client and carries a</text>
+  <text x="1310" y="301" class="note">millisecond timestamp in its high bits, so inserts</text>
+  <text x="1310" y="318" class="note">stay sequential in the B-tree instead of scattering.</text>
+  <text x="1310" y="342" class="note">It also makes sync idempotent: the server upserts</text>
+  <text x="1310" y="359" class="note">by primary key, so a replayed push changes nothing.</text>
+  <text x="1310" y="383" class="note" fill="oklch(0.50 0.14 25)">Five incompatible id formats exist today — all are</text>
+  <text x="1310" y="400" class="note" fill="oklch(0.50 0.14 25)">remapped once during migration.</text>
+
+  <rect x="1290" y="424" width="330" height="182" rx="10" fill="oklch(0.96 0.03 25)" stroke="oklch(0.74 0.09 25)" stroke-width="1" />
+  <text x="1310" y="450" class="noteTitle">Tenancy is application code now</text>
+  <text x="1310" y="474" class="note">Firestore rules used to make cross-tenant reads</text>
+  <text x="1310" y="491" class="note">impossible at the database. That guarantee is gone.</text>
+  <text x="1310" y="515" class="note">One missing <tspan class="fname">WHERE farmer_id</tspan> is a leak, and it</text>
+  <text x="1310" y="532" class="note">passes every happy-path test. Three layers answer it:</text>
+  <text x="1310" y="556" class="note">1 · a repository that cannot be built unscoped</text>
+  <text x="1310" y="573" class="note">2 · Postgres row-level security</text>
+  <text x="1310" y="590" class="note">3 · a cross-tenant test per endpoint (404, not 403)</text>
+
+  <rect x="1290" y="632" width="330" height="110" rx="10" fill="oklch(0.96 0.02 155)" stroke="oklch(0.74 0.07 155)" stroke-width="1" />
+  <text x="1310" y="658" class="noteTitle">Excluded from v1</text>
+  <text x="1310" y="682" class="note"><tspan class="fname">role</tspan> · <tspan class="fname">farmer_role</tspan> · <tspan class="fname">module</tspan> · <tspan class="fname">role_module</tspan></text>
+  <text x="1310" y="706" class="note">user_role is free text nothing reads. Unused</text>
+  <text x="1310" y="723" class="note">permission tables add schema without behaviour.</text>
+
+  <text x="840" y="856" class="footer" text-anchor="middle">SQLAlchemy models are the source of truth · Alembic generates the migrations · client types generate from the OpenAPI schema</text>
+</svg>
+</div>
+</x-dc>
+</body>
+</html>
