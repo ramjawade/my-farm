@@ -121,6 +121,21 @@ Koyeb cannot run in Asia on the free plan, which is disqualifying for an
 India-facing app. Render and Neon both in Singapore keeps API↔DB latency
 inside one region.
 
+**Provisioned as a native Python service, not the Dockerfile.** Render's
+service-creation API has no Docker/container-registry path — only
+buildpack-style runtimes with an explicit build and start command. The live
+service (`myfarm-api`, `srv-dafrtrn40ujc73cmjpog`) runs
+`pip install ./projects/backend` and
+`uvicorn myfarm_api.main:app --host 0.0.0.0 --port $PORT` directly, no image
+involved. `projects/backend/Dockerfile` still exists and CI still builds it
+(§11), but only as a build-correctness check — it is not what ships. This is
+a real gap from the original plan, not a rounding error: if the two build
+paths ever drift (a dependency that needs an OS package the buildpack lacks,
+say), CI passing proves nothing about what Render is actually running.
+Closing it means either finding Render's non-API path to a Docker deploy, or
+retiring the Dockerfile and its CI job in favour of the buildpack build
+CI already exercises through `pip install -e ".[dev]"`.
+
 ### 3.3 Why a one-minute cold start is acceptable
 
 For a synchronous app it would not be. **The offline outbox makes it
@@ -420,8 +435,9 @@ localStorage → Postgres, a single hop.
 | Pipeline | Steps |
 |---|---|
 | Frontend | unchanged — lint → format:check → test → build → GitHub Pages |
-| Backend | ruff → mypy → pytest (Postgres service container) → build image → deploy to Render |
-| Migrations | Alembic runs **from CI against Neon before the new image goes live** |
+| Backend | ruff → mypy → pytest (Postgres service container) → build Docker image (verification only, §3.2 — not what Render deploys) |
+| Deploy | **Render auto-deploys on every push to `main`** (`autoDeploy: yes`, `commit` trigger), independent of the GitHub Actions result above — a red CI run does not currently block a Render deploy |
+| Migrations | Alembic runs **from CI against Neon before the new deploy goes live** |
 | Contract | regenerate TS types; fail if the working tree changes |
 
 Secrets: GitHub Actions holds the Neon URL, Firebase service account, R2 and
@@ -453,9 +469,10 @@ introducing a network backend is how these migrations fail.
 | Risk | Mitigation |
 |---|---|
 | **Cross-tenant leak** — one missing `farmer_id` predicate | §5.2 — RLS doesn't cover this on Neon; the repository plus the per-endpoint negative test are what's actually load-bearing |
-| **Free-tier terms move** — verified Sept 2026 | Neon project provisioned; re-verify Render at Stage 2 completion — only `DATABASE_URL` and the host change if a provider is swapped |
+| **Free-tier terms move** — verified Sept 2026 | Neon and Render projects both provisioned; only `DATABASE_URL` and the host change if a provider is swapped |
 | Neon idles to zero mid-request | Pooled endpoint, `pool_pre_ping`, outbox retries |
 | Render cold start degrades UX | Acceptable only because of the outbox (§3.3) |
+| CI failing doesn't block a Render deploy | `autoDeploy` fires on every push to `main` regardless of the Actions result (§11); nothing currently stops a broken merge from going live — worth a deploy hook gate if this becomes a real incident risk |
 | 0.5 GB storage ceiling | Blobs in R2; weather is one shared cache; row-count alerting before the ceiling |
 | LWW loses a concurrent edit | Sound for single-device-per-record use; losers logged; totals recomputed, never synced |
 | Offline is the largest item and gets underestimated | It has its own stage (5), not a checkbox inside another |
