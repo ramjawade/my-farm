@@ -74,9 +74,12 @@ export class AuthService {
     }
   }
 
-  /** Type guard to check if storage service is ApiStorageService with setAuthToken method */
-  private isApiStorageService(service: IStorageService): service is any {
-    return typeof (service as any).setAuthToken === 'function';
+  /** Type guard to check if storage service has a setAuthToken method (ApiStorageService,
+   * or anything else layered on top of it, e.g. the offline outbox). */
+  private isApiStorageService(
+    service: IStorageService,
+  ): service is IStorageService & { setAuthToken(token: string): void } {
+    return typeof (service as { setAuthToken?: unknown }).setAuthToken === 'function';
   }
 
   updateProfile(updates: Partial<FarmerRegistrationData>): void {

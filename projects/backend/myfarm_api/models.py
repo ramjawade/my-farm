@@ -23,6 +23,32 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from myfarm_api.core.db import Base
+from myfarm_api.core.ids import uuid7
+
+
+class TenantScopedBase(Base):
+    """Abstract base for farmer-owned tables.
+
+    Declares the columns `TenantScopedCRUD` (repositories/crud.py) relies
+    on — `id`, `farmer_id`, `updated_at`, `deleted_at` — as a real mapped
+    class so its generic bound gets concrete column types instead of
+    `Base`'s empty attribute set.
+    """
+
+    __abstract__ = True
+
+    id: Mapped[UUID] = mapped_column(
+        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
+    )
+    farmer_id: Mapped[UUID] = mapped_column(
+        SQLUuid(as_uuid=True), ForeignKey("farmer.id"), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
 
 class Farmer(Base):
@@ -31,7 +57,7 @@ class Farmer(Base):
     __tablename__ = "farmer"
 
     id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=None
+        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
     )
     auth_uid: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)
     phone: Mapped[str | None] = mapped_column(String(20), unique=True, nullable=True)
@@ -69,7 +95,7 @@ class CropCatalog(Base):
     __tablename__ = "crop_catalog"
 
     id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=None
+        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
     )
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     common_names: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -88,7 +114,7 @@ class ExpenseCategory(Base):
     __tablename__ = "expense_category"
 
     id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=None
+        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
     )
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
 
@@ -103,7 +129,7 @@ class ActivityType(Base):
     __tablename__ = "activity_type"
 
     id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=None
+        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
     )
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
 
@@ -112,17 +138,11 @@ class ActivityType(Base):
     )
 
 
-class Farm(Base):
+class Farm(TenantScopedBase):
     """A farm belonging to a farmer."""
 
     __tablename__ = "farm"
 
-    id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=None
-    )
-    farmer_id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), ForeignKey("farmer.id"), nullable=False
-    )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     area: Mapped[Decimal | None] = mapped_column(Numeric(10, 2), nullable=True)
     area_unit: Mapped[str] = mapped_column(String(50), default="sq_m")
@@ -139,12 +159,6 @@ class Farm(Base):
     setup_completed: Mapped[bool] = mapped_column(default=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
-    )
-    deleted_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
     )
 
     lands: Mapped[list["Land"]] = relationship(
@@ -177,17 +191,11 @@ class FarmCrop(Base):
     )
 
 
-class Land(Base):
+class Land(TenantScopedBase):
     """A plot of land belonging to a farmer."""
 
     __tablename__ = "land"
 
-    id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=None
-    )
-    farmer_id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), ForeignKey("farmer.id"), nullable=False
-    )
     farm_id: Mapped[UUID] = mapped_column(
         SQLUuid(as_uuid=True), ForeignKey("farm.id"), nullable=False
     )
@@ -196,12 +204,6 @@ class Land(Base):
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
-    )
-    deleted_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
     )
 
     points: Mapped[list["LandPoint"]] = relationship(
@@ -232,17 +234,11 @@ class LandPoint(Base):
     lng: Mapped[Decimal] = mapped_column(Numeric(9, 6), nullable=False)
 
 
-class Crop(Base):
+class Crop(TenantScopedBase):
     """A crop planted on a specific land plot."""
 
     __tablename__ = "crop"
 
-    id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=None
-    )
-    farmer_id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), ForeignKey("farmer.id"), nullable=False
-    )
     land_id: Mapped[UUID] = mapped_column(
         SQLUuid(as_uuid=True), ForeignKey("land.id"), nullable=False
     )
@@ -262,29 +258,17 @@ class Crop(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
-    )
-    deleted_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
 
     activities: Mapped[list["Activity"]] = relationship(
         "Activity", foreign_keys="Activity.crop_id", cascade="all, delete-orphan"
     )
 
 
-class Activity(Base):
+class Activity(TenantScopedBase):
     """A farm activity (irrigation, spraying, harvesting, etc.)."""
 
     __tablename__ = "activity"
 
-    id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=None
-    )
-    farmer_id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), ForeignKey("farmer.id"), nullable=False
-    )
     parent_activity_id: Mapped[UUID | None] = mapped_column(
         SQLUuid(as_uuid=True), ForeignKey("activity.id"), nullable=True
     )
@@ -308,12 +292,6 @@ class Activity(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
-    )
-    deleted_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
 
     expenses: Mapped[list["ActivityExpense"]] = relationship(
         "ActivityExpense",
@@ -333,7 +311,7 @@ class ActivityExpense(Base):
     __tablename__ = "activity_expense"
 
     id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=None
+        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
     )
     activity_id: Mapped[UUID] = mapped_column(
         SQLUuid(as_uuid=True), ForeignKey("activity.id"), nullable=False
@@ -365,7 +343,7 @@ class ActivityAttachment(Base):
     __tablename__ = "activity_attachment"
 
     id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=None
+        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
     )
     activity_id: Mapped[UUID] = mapped_column(
         SQLUuid(as_uuid=True), ForeignKey("activity.id"), nullable=False
@@ -394,7 +372,7 @@ class WeatherCache(Base):
     )
 
     id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=None
+        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
     )
     grid_lat: Mapped[Decimal] = mapped_column(Numeric(9, 6), nullable=False)
     grid_lng: Mapped[Decimal] = mapped_column(Numeric(9, 6), nullable=False)
