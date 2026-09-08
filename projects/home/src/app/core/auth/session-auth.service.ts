@@ -3,27 +3,21 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
-
-interface BackendFarmer {
-  id: string;
-  full_name: string | null;
-  phone: string | null;
-  email: string | null;
-  preferred_language: string;
-  user_role: string;
-  created_at: string;
-}
-
-interface SessionResponse {
-  token: string;
-  farmer: BackendFarmer;
-}
+import {
+  FarmerResponse,
+  PhoneLookupResponse,
+  RegisterRequest as RegisterBody,
+  SessionRequest,
+  SessionResponse,
+} from '../api/contracts';
 
 export interface SessionResult {
   token: string;
   farmer: FarmerRegistrationData;
 }
 
+/** App-facing input to `register()` (camelCase); mapped to the wire
+ * `RegisterBody` from the API contracts before the request goes out. */
 export interface RegisterRequest {
   phone: string;
   fullName: string;
@@ -31,7 +25,7 @@ export interface RegisterRequest {
   preferredLanguage?: string;
 }
 
-function mapFarmer(f: BackendFarmer): FarmerRegistrationData {
+function mapFarmer(f: FarmerResponse): FarmerRegistrationData {
   return {
     id: f.id,
     fullName: f.full_name ?? '',
@@ -74,7 +68,7 @@ export class SessionAuthService {
   async phoneExists(phone: string): Promise<boolean | null> {
     try {
       const resp = await firstValueFrom(
-        this.http.get<{ exists: boolean }>(`${this.baseUrl}/auth/lookup`, {
+        this.http.get<PhoneLookupResponse>(`${this.baseUrl}/auth/lookup`, {
           params: { phone },
         }),
       );
@@ -90,8 +84,9 @@ export class SessionAuthService {
    */
   async createSession(phone: string, pin: string): Promise<SessionResult | null> {
     try {
+      const body: SessionRequest = { phone, pin };
       const resp = await firstValueFrom(
-        this.http.post<SessionResponse>(`${this.baseUrl}/auth/session`, { phone, pin }),
+        this.http.post<SessionResponse>(`${this.baseUrl}/auth/session`, body),
       );
       return { token: resp.token, farmer: mapFarmer(resp.farmer) };
     } catch (err) {
@@ -108,13 +103,14 @@ export class SessionAuthService {
    */
   async register(req: RegisterRequest): Promise<SessionResult | 'phone-taken'> {
     try {
+      const body: RegisterBody = {
+        phone: req.phone,
+        full_name: req.fullName,
+        pin: req.pin,
+        preferred_language: req.preferredLanguage ?? 'en',
+      };
       const resp = await firstValueFrom(
-        this.http.post<SessionResponse>(`${this.baseUrl}/auth/register`, {
-          phone: req.phone,
-          full_name: req.fullName,
-          pin: req.pin,
-          preferred_language: req.preferredLanguage ?? 'en',
-        }),
+        this.http.post<SessionResponse>(`${this.baseUrl}/auth/register`, body),
       );
       return { token: resp.token, farmer: mapFarmer(resp.farmer) };
     } catch (err) {

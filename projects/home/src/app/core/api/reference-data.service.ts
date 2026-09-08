@@ -2,17 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
-
-interface ReferenceItem {
-  id: string;
-  name: string;
-}
-
-interface ReferencePage {
-  items: ReferenceItem[];
-  cursor: string | null;
-  has_more: boolean;
-}
+import { ReferenceItem, ReferencePage } from './contracts';
 
 /**
  * Translates between the backend's reference-table ids and the frontend's

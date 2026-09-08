@@ -12,16 +12,7 @@ import { BackupFile } from '../storage/backup.models';
 import { ApiStorageService } from '../api/api-storage.service';
 import { OutboxDbService } from './outbox-db.service';
 import { CacheRecord, OutboxEntityType, OutboxOperation, OutboxRecord } from './outbox.models';
-
-interface SyncPushResultItem {
-  entity_type: OutboxEntityType;
-  id: string;
-  operation: OutboxOperation;
-  status: 'ok' | 'error';
-  entity?: Record<string, unknown>;
-  error_code?: string;
-  message?: string;
-}
+import { SyncPushResponse, SyncPushResultItem } from '../api/contracts';
 
 interface WithId {
   id: string;
@@ -443,10 +434,10 @@ export class OutboxStorageService extends IStorageService {
         payload: r.payload,
       }));
 
-      let response: { results: SyncPushResultItem[] };
+      let response: SyncPushResponse;
       try {
         response = await firstValueFrom(
-          this.http.post<{ results: SyncPushResultItem[] }>(
+          this.http.post<SyncPushResponse>(
             `${this.baseUrl}/sync/push`,
             { operations },
             { headers: this.getHeaders() },

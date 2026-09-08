@@ -10,8 +10,7 @@
     "lint": "eslint \"projects/**/*.ts\"",
     "format:check": "prettier --check \"projects/**/*.{ts,html,scss}\"",
     "format:fix": "prettier --write \"projects/**/*.{ts,html,scss}\"",
-    "build:prod": "ng build shared && ng build home --configuration production --base-href /my-farm/",
-    "generate:types": "openapi-typescript http://localhost:8000/openapi.json -o projects/home/src/app/core/api/generated-types.ts"
+    "build:prod": "ng build shared && ng build home --configuration production --base-href /my-farm/"
   },
   "prettier": {
     "printWidth": 100,
@@ -63,7 +62,6 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "ng-packagr": "^20.3.0",
-    "openapi-typescript": "^7.3.0",
     "prettier": "^3.9.6",
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.69.0"
