@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { IStorageService } from '../storage/storage.interface';
 import { Activity, ActivityExpense } from '../../features/activity/activity.models';
 import {
@@ -54,7 +55,7 @@ function timestampToDateString(value: number | undefined): string | undefined {
  */
 @Injectable({ providedIn: 'root' })
 export class ApiStorageService extends IStorageService {
-  private baseUrl = '/api/v1';
+  private baseUrl = environment.apiBaseUrl;
   private token: string | null = null;
   private defaultFarmIdPromise: Promise<string> | null = null;
 

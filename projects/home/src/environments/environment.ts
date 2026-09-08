@@ -7,4 +7,5 @@ export const environment = {
   appVersion: '0.1.0',
   buildStamp: 'dev',
   openWeatherApiKey: '',
+  apiBaseUrl: '/api/v1',
 };
