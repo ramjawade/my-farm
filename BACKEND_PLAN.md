@@ -236,16 +236,29 @@ Firestore rules made cross-tenant access impossible **at the database**.
 That guarantee is gone. A single missing `WHERE farmer_id = :id` is a
 cross-farmer data leak, and it passes every happy-path test.
 
-Three layers, all required:
+Three layers were designed in; only two hold on Neon as deployed:
 
 1. **A base repository that cannot be constructed unscoped.** It takes
    `farmer_id` and injects the predicate into every query. Routers never
    write raw filters.
-2. **Postgres Row-Level Security** — a session variable set per request and
-   a policy on every farmer-owned table.
+2. ~~Postgres Row-Level Security~~ — **does not apply on Neon.** Confirmed
+   against the provisioned project (`round-cake-95874663`): every role Neon
+   lets you create for a direct connection is a member of `neon_superuser`
+   and carries `BYPASSRLS`, and neither is revocable (`ALTER ROLE ...
+   NOBYPASSRLS` and `REVOKE neon_superuser FROM ...` both fail with
+   "permission denied," even from a `CREATEROLE` role). A `BYPASSRLS` role
+   skips RLS unconditionally, `FORCE ROW LEVEL SECURITY` included. This is a
+   platform property of connecting directly, not a misconfiguration —
+   Neon's own hosted Data API gets non-bypassing roles for its own use, but
+   nothing exposed to a directly-connecting service does. `set_rls_farmer()`
+   and `tests/test_rls.py` stay in the codebase (correct against
+   self-hosted Postgres, and worth having if the database ever moves), but
+   carry no weight in production today.
 3. **A cross-tenant test per endpoint** — farmer A requests farmer B's row
-   and must receive **404**, not 403 (403 confirms the row exists). A merge
-   requirement, not a nice-to-have.
+   and must receive **404**, not 403 (403 confirms the row exists). Was
+   already a merge requirement; with layer 2 gone, it's the only thing
+   standing between a repository bug and a real leak, and Stage 3 should
+   treat it accordingly.
 
 No endpoint accepts a farmer id in its path or body. Tenancy comes from the
 token, only.
@@ -439,8 +452,8 @@ introducing a network backend is how these migrations fail.
 
 | Risk | Mitigation |
 |---|---|
-| **Cross-tenant leak** — one missing `farmer_id` predicate | §5.2's three layers; the negative test is a merge requirement |
-| **Free-tier terms move** — verified Sept 2026 | Re-verify at Stage 2; only `DATABASE_URL` and the host change if a provider is swapped |
+| **Cross-tenant leak** — one missing `farmer_id` predicate | §5.2 — RLS doesn't cover this on Neon; the repository plus the per-endpoint negative test are what's actually load-bearing |
+| **Free-tier terms move** — verified Sept 2026 | Neon project provisioned; re-verify Render at Stage 2 completion — only `DATABASE_URL` and the host change if a provider is swapped |
 | Neon idles to zero mid-request | Pooled endpoint, `pool_pre_ping`, outbox retries |
 | Render cold start degrades UX | Acceptable only because of the outbox (§3.3) |
 | 0.5 GB storage ceiling | Blobs in R2; weather is one shared cache; row-count alerting before the ceiling |
