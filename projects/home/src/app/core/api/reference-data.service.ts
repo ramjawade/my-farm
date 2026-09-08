@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 interface ReferenceItem {
   id: string;
@@ -44,7 +45,7 @@ interface CachedReferenceData {
 
 @Injectable({ providedIn: 'root' })
 export class ReferenceDataService {
-  private readonly baseUrl = '/api/v1/reference';
+  private readonly baseUrl = `${environment.apiBaseUrl}/reference`;
   private token: string | null = null;
 
   private cropsByName = new Map<string, string>();

@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { IStorageService } from '../storage/storage.interface';
 import { Activity, ActivityExpense } from '../../features/activity/activity.models';
 import { CropEntity } from '../../features/crop-timeline/crop-timeline.models';
@@ -60,7 +61,7 @@ export class OutboxStorageService extends IStorageService {
   private readonly db = inject(OutboxDbService);
   private readonly http = inject(HttpClient);
 
-  private readonly baseUrl = '/api/v1';
+  private readonly baseUrl = environment.apiBaseUrl;
   private token: string | null = null;
 
   /** Farmer ids currently mid-drain, so a timer tick and an `online` event
