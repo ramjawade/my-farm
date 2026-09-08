@@ -4,6 +4,9 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { WeatherService } from './weather.service';
 import { AuthService } from '../auth/auth.service';
 import { WeatherCacheService } from './weather-cache.service';
+import { IStorageService } from '../storage/storage.interface';
+import { LocalStorageService } from '../storage/local-storage.service';
+import { API_CONFIG } from '../config/api.config';
 import {
   WeatherLocation,
   OpenWeatherResponse,
@@ -53,6 +56,10 @@ describe('WeatherService', () => {
   };
 
   beforeEach(() => {
+    // The test environment has no OpenWeather key, so the service would skip
+    // the live-API path and return mock data. Stub a key so live-path tests run.
+    spyOnProperty(API_CONFIG.openWeatherMap, 'apiKey', 'get').and.returnValue('test-api-key');
+
     const authServiceSpy = jasmine.createSpyObj('AuthService', ['currentUser']);
     authServiceSpy.currentUser.and.returnValue(null);
 
@@ -63,6 +70,7 @@ describe('WeatherService', () => {
         WeatherService,
         WeatherCacheService,
         { provide: AuthService, useValue: authServiceSpy },
+        { provide: IStorageService, useClass: LocalStorageService },
       ],
     });
 
