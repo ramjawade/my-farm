@@ -10,64 +10,53 @@ from myfarm_api.models import ActivityType, CropCatalog, ExpenseCategory
 
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
 
+# These three lists are load-bearing, not illustrative: the frontend maps a
+# fixed free-text enum to one of these rows by exact name match (see
+# ReferenceDataService) because Activity.type / CropEntity.cropType /
+# ActivityExpense.category are plain string unions on the client, not FK
+# ids. Every value below must match its frontend source verbatim —
+# crop-timeline.component.ts's `cropNameOptions`, activity.constants.ts's
+# `ACTIVITY_TYPE_LABELS` keys, and its `EXPENSE_CATEGORIES` — or that
+# activity/crop/expense fails to sync with "unknown crop/activity
+# type/expense category".
 SEED_CROPS = [
-    "Rice",
+    "Soybeans",
     "Wheat",
+    "Rice",
     "Corn",
-    "Sugarcane",
     "Cotton",
-    "Potato",
-    "Onion",
-    "Tomato",
-    "Groundnut",
-    "Soybean",
-    "Maize",
-    "Barley",
-    "Sorghum",
-    "Pearl Millet",
+    "Sugarcane",
     "Mustard",
-    "Linseed",
-    "Sesame",
-    "Sunflower",
-    "Safflower",
-    "Chickpea",
-    "Lentil",
-    "Green Gram",
-    "Black Gram",
-    "Pea",
-    "Bean",
+    "Vegetables",
+    "Fruits",
 ]
 
 SEED_EXPENSE_CATEGORIES = [
+    "Machine Rent",
+    "Labour",
     "Seeds",
-    "Fertilizers",
-    "Pesticides",
-    "Labor",
+    "Fertilizer",
+    "Pesticide",
+    "Transport",
     "Fuel",
+    "Equipment",
     "Water",
-    "Equipment Rent",
-    "Transportation",
-    "Storage",
-    "Insurance",
-    "Land Lease",
+    "Other",
 ]
 
 SEED_ACTIVITY_TYPES = [
     "Sowing",
     "Irrigation",
-    "Weeding",
-    "Pesticide Application",
     "Fertilizer Application",
-    "Pruning",
-    "Harvesting",
-    "Threshing",
-    "Drying",
-    "Stacking",
-    "Land Preparation",
-    "Mulching",
-    "Transplanting",
-    "De-flowering",
-    "Manual Spraying",
+    "Spray Application",
+    "Weeding",
+    "Field Inspection",
+    "Labour Activity",
+    "Harvest",
+    "Sale",
+    "Weather Incident",
+    "Maintenance",
+    "Custom",
 ]
 
 

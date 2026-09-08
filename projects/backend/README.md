@@ -108,6 +108,55 @@ attempts. All support cursor pagination over (updated_at DESC, id DESC).
 - **Test coverage:** Each endpoint has 3+ cross-tenant tests (create/list, isolation,
   update/delete) — 30+ test cases across all entities.
 
+## What exists after Stage 4 (client integration) and Stage 5 (offline sync)
+
+**Client integration (Stage 4):** `ApiStorageService`
+(`projects/home/src/app/core/api/`) implements the Angular app's
+`IStorageService` against these endpoints. Three deliberate gaps, each
+documented at its mapper in that file:
+
+- A land's drawn polygon (`SavedFarm.points`/`.geoJson`) has no backend
+  column — Stage 3 never added `land_point` endpoints, only the model.
+  Only `area` round-trips (as `area_sq_m`).
+- `Activity.attachments` (base64 photos) aren't sent — Stage 7's R2 upload
+  job.
+- `Activity.type` / `CropEntity.cropType` / `ActivityExpense.category` are
+  free-text unions on the client but FK ids on the backend;
+  `ReferenceDataService` resolves between the two by exact name match, so
+  `admin.py`'s `SEED_*` lists must stay byte-identical to the frontend's
+  `ACTIVITY_TYPE_LABELS` keys, `EXPENSE_CATEGORIES`, and
+  `crop-timeline.component.ts`'s `cropNameOptions`.
+
+Also: `Land.farm_id` is required, but the Angular app has no concept of
+the top-level `Farm` — `ApiStorageService.getOrCreateDefaultFarmId()`
+provisions one default Farm per farmer automatically (name "My Farm").
+
+**Offline sync (Stage 5):**
+
+- `POST /api/v1/sync/push` — a batch of client-id-keyed create/update/
+  delete operations across `farms`/`lands`/`crops`/`activities`, upserted
+  by the client-minted UUID so a retried batch is a no-op. Per-item
+  results: one bad item (validation error, cross-tenant id conflict)
+  never fails the rest of the batch.
+- `GET /api/v1/sync/pull?since=&cursor=&limit=` — delta since a
+  watermark, tombstones included, cursor-paginated per entity type within
+  a frozen `server_time` window so a write landing mid-drain can't shift
+  rows under an in-progress pull.
+- `OutboxStorageService` (`projects/home/src/app/core/outbox/`) wraps
+  `ApiStorageService` with an IndexedDB-backed outbox + cache: writes to
+  activities/crops/lands are always local-first (optimistic, queued,
+  drained on the browser's `online` event and a 30s timer), matching
+  BACKEND_PLAN.md §8.1. Reads try the network first and fall back to the
+  cache when offline. `activity_expense`/`activity_attachment` stay on
+  their existing online-only nested endpoints — they carry no `farmer_id`
+  of their own (tenancy flows through `activity_id`), so `/sync/*` doesn't
+  cover them yet.
+- Gate (BACKEND_PLAN.md §14): `tests/test_endpoints_sync.py` proves the
+  same push batch replayed twice converges to identical state, per-item
+  errors don't fail a batch, cross-tenant id collisions are rejected, and
+  pull surfaces tombstones. `outbox-storage.service.spec.ts` proves the
+  same convergence property at the client's outbox layer.
+
 ## Neon: provisioned
 
 Project `my-farm` (id `round-cake-95874663`) exists in **Singapore**
