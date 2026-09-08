@@ -34,6 +34,7 @@ class ActivityUpdate(BaseModel):
     activity_type_id: UUID | None = None
     crop_id: UUID | None = None
     land_id: UUID | None = None
+    parent_activity_id: UUID | None = None
     custom_activity_name: str | None = None
     date: str | None = None
     season: str | None = None

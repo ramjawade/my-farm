@@ -1,5 +1,7 @@
 """GET-only endpoints for reference data."""
 
+from typing import Any
+
 from fastapi import APIRouter, Query
 from sqlalchemy import select
 
@@ -18,7 +20,7 @@ router = APIRouter(prefix="/api/v1/reference", tags=["reference"])
 async def list_crop_catalog(
     cursor: str | None = Query(None),
     limit: int = Query(50, ge=1, le=200),
-) -> dict:
+) -> dict[str, Any]:
     """List available crops from the catalog, cursor-paginated."""
     session_factory = get_session_factory()
     async with session_factory() as session:
@@ -54,7 +56,7 @@ async def list_crop_catalog(
 async def list_expense_categories(
     cursor: str | None = Query(None),
     limit: int = Query(50, ge=1, le=200),
-) -> dict:
+) -> dict[str, Any]:
     """List available expense categories, cursor-paginated."""
     session_factory = get_session_factory()
     async with session_factory() as session:
@@ -90,7 +92,7 @@ async def list_expense_categories(
 async def list_activity_types(
     cursor: str | None = Query(None),
     limit: int = Query(50, ge=1, le=200),
-) -> dict:
+) -> dict[str, Any]:
     """List available activity types, cursor-paginated."""
     session_factory = get_session_factory()
     async with session_factory() as session:

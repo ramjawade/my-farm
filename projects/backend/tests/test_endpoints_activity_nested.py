@@ -9,11 +9,13 @@ from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_create_and_list_activity_expenses(client: AsyncClient) -> None:
+async def test_create_and_list_activity_expenses(
+    client: AsyncClient, reference_ids: dict[str, str]
+) -> None:
     """Create and list expenses for an activity."""
     uid = f"farmer_{uuid4()}"
-    activity_type_id = str(uuid4())
-    expense_category_id = str(uuid4())
+    activity_type_id = reference_ids["activity_type_id"]
+    expense_category_id = reference_ids["expense_category_id"]
 
     with patch.object(
         firebase_auth,
@@ -62,13 +64,13 @@ async def test_create_and_list_activity_expenses(client: AsyncClient) -> None:
 
 @pytest.mark.asyncio
 async def test_cross_tenant_cannot_access_other_activity_expense(
-    client: AsyncClient,
+    client: AsyncClient, reference_ids: dict[str, str]
 ) -> None:
     """Farmer A cannot access Farmer B's activity expense."""
     uid_a = f"farmer_a_{uuid4()}"
     uid_b = f"farmer_b_{uuid4()}"
-    activity_type_id = str(uuid4())
-    expense_category_id = str(uuid4())
+    activity_type_id = reference_ids["activity_type_id"]
+    expense_category_id = reference_ids["expense_category_id"]
 
     # Farmer A creates an activity and expense
     with patch.object(
@@ -111,10 +113,12 @@ async def test_cross_tenant_cannot_access_other_activity_expense(
 
 
 @pytest.mark.asyncio
-async def test_create_and_list_activity_attachments(client: AsyncClient) -> None:
+async def test_create_and_list_activity_attachments(
+    client: AsyncClient, reference_ids: dict[str, str]
+) -> None:
     """Create and list attachments for an activity."""
     uid = f"farmer_{uuid4()}"
-    activity_type_id = str(uuid4())
+    activity_type_id = reference_ids["activity_type_id"]
 
     with patch.object(
         firebase_auth,
@@ -161,12 +165,12 @@ async def test_create_and_list_activity_attachments(client: AsyncClient) -> None
 
 @pytest.mark.asyncio
 async def test_cross_tenant_cannot_access_other_activity_attachment(
-    client: AsyncClient,
+    client: AsyncClient, reference_ids: dict[str, str]
 ) -> None:
     """Farmer A cannot access Farmer B's activity attachment."""
     uid_a = f"farmer_a_{uuid4()}"
     uid_b = f"farmer_b_{uuid4()}"
-    activity_type_id = str(uuid4())
+    activity_type_id = reference_ids["activity_type_id"]
 
     # Farmer A creates an activity and attachment
     with patch.object(

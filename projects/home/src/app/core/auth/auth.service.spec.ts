@@ -17,12 +17,8 @@ import { LocalStorageService } from '../storage/local-storage.service';
 class TokenAwareLocalStorageService extends LocalStorageService {
   authToken: string | null = null;
 
-  setAuthToken(token: string): void {
+  setAuthToken(token: string | null): void {
     this.authToken = token;
-  }
-
-  clearAuthToken(): void {
-    this.authToken = null;
   }
 }
 

@@ -29,38 +29,42 @@ describe('ApiStorageService', () => {
     httpMock.verify();
   });
 
+  // `getFarms` (lands) is the one list endpoint whose mapper does no
+  // reference-data lookups, so it exercises pagination and the auth header
+  // without also having to stub crop/activity/expense-category resolution.
+
   describe('auth token', () => {
-    it('should omit the Authorization header when no token is set', async () => {
-      const promise = service.getCrops('u1');
+    it('should omit the Authorization header when no token is set', () => {
+      const promise = service.getFarms('u1');
 
-      const req = httpMock.expectOne('/api/v1/crops');
+      const req = httpMock.expectOne((r) => r.url === '/api/v1/lands');
       expect(req.request.headers.has('Authorization')).toBeFalse();
-      req.flush({ items: [], cursor: null });
+      req.flush({ items: [], cursor: null, has_more: false });
 
-      await promise;
+      return promise;
     });
 
-    it('should send the bearer token once set', async () => {
+    it('should send the bearer token once set', () => {
       service.setAuthToken('token-a');
-      const promise = service.getCrops('u1');
+      const promise = service.getFarms('u1');
 
-      const req = httpMock.expectOne('/api/v1/crops');
+      const req = httpMock.expectOne((r) => r.url === '/api/v1/lands');
       expect(req.request.headers.get('Authorization')).toBe('Bearer token-a');
-      req.flush({ items: [], cursor: null });
+      req.flush({ items: [], cursor: null, has_more: false });
 
-      await promise;
+      return promise;
     });
 
-    it('should stop sending the token after clearAuthToken', async () => {
+    it('should stop sending the token once set back to null', () => {
       service.setAuthToken('token-a');
-      service.clearAuthToken();
-      const promise = service.getCrops('u1');
+      service.setAuthToken(null);
+      const promise = service.getFarms('u1');
 
-      const req = httpMock.expectOne('/api/v1/crops');
+      const req = httpMock.expectOne((r) => r.url === '/api/v1/lands');
       expect(req.request.headers.has('Authorization')).toBeFalse();
-      req.flush({ items: [], cursor: null });
+      req.flush({ items: [], cursor: null, has_more: false });
 
-      await promise;
+      return promise;
     });
   });
 
@@ -68,63 +72,43 @@ describe('ApiStorageService', () => {
     it('should follow the cursor across pages and return every record', async () => {
       const promise = service.getFarms('u1');
 
-      const first = httpMock.expectOne('/api/v1/lands');
+      const first = httpMock.expectOne((r) => r.url === '/api/v1/lands' && !r.params.has('cursor'));
+      expect(first.request.params.get('limit')).toBe('100');
       first.flush({
-        items: [{ id: 'l1', name: 'Plot 1' }],
+        items: [{ id: 'l1', name: 'Plot 1', created_at: '2024-01-01T00:00:00Z' }],
         cursor: 'c1',
+        has_more: true,
       });
       await flushPromises();
 
-      const second = httpMock.expectOne('/api/v1/lands?cursor=c1');
-      second.flush({
-        items: [{ id: 'l2', name: 'Plot 2' }],
+      const second = httpMock.match(
+        (r) => r.url === '/api/v1/lands' && r.params.get('cursor') === 'c1',
+      );
+      expect(second.length).toBe(1);
+      second[0].flush({
+        items: [{ id: 'l2', name: 'Plot 2', created_at: '2024-01-02T00:00:00Z' }],
         cursor: null,
+        has_more: false,
       });
 
       const farms = await promise;
       expect(farms.map((f) => f.id)).toEqual(['l1', 'l2']);
     });
 
-    it('should accept next_cursor as well as cursor', async () => {
-      const promise = service.getActivities('u1');
+    it('should stop once has_more is false even if a cursor value is present', async () => {
+      const promise = service.getFarms('u1');
 
-      const first = httpMock.expectOne('/api/v1/activities');
-      first.flush({ items: [{ id: 'a1' }], next_cursor: 'c1' });
-      await flushPromises();
+      const req = httpMock.expectOne((r) => r.url === '/api/v1/lands');
+      req.flush({
+        items: [{ id: 'l1', name: 'Plot 1', created_at: '2024-01-01T00:00:00Z' }],
+        // A server that (incorrectly) echoes a cursor after the last page
+        // must not cause another request — has_more is the source of truth.
+        cursor: 'stale',
+        has_more: false,
+      });
 
-      const second = httpMock.expectOne('/api/v1/activities?cursor=c1');
-      second.flush({ items: [{ id: 'a2' }], next_cursor: null });
-
-      const activities = await promise;
-      expect(activities.map((a) => a.id)).toEqual(['a1', 'a2']);
-    });
-
-    it('should stop when the server repeats a cursor', async () => {
-      const promise = service.getCrops('u1');
-
-      const first = httpMock.expectOne('/api/v1/crops');
-      first.flush({ items: [{ id: 'c1' }], cursor: 'same' });
-      await flushPromises();
-
-      const second = httpMock.expectOne('/api/v1/crops?cursor=same');
-      second.flush({ items: [{ id: 'c2' }], cursor: 'same' });
-
-      const crops = await promise;
-      expect(crops.map((c) => c.id)).toEqual(['c1', 'c2']);
-    });
-
-    it('should url-encode the cursor', async () => {
-      const promise = service.getCrops('u1');
-
-      const first = httpMock.expectOne('/api/v1/crops');
-      first.flush({ items: [], cursor: 'a b&c' });
-      await flushPromises();
-
-      const second = httpMock.expectOne((r) => r.url === '/api/v1/crops');
-      expect(second.request.params.get('cursor')).toBe('a b&c');
-      second.flush({ items: [], cursor: null });
-
-      await promise;
+      const farms = await promise;
+      expect(farms.map((f) => f.id)).toEqual(['l1']);
     });
   });
 });

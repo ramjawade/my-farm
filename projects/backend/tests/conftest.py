@@ -11,6 +11,7 @@ os.environ.setdefault("FIREBASE_PROJECT_ID", "myfarm-test")
 os.environ.setdefault("CORS_ORIGINS", "https://ramjawade.github.io")
 
 from collections.abc import AsyncIterator  # noqa: E402
+from uuid import uuid4  # noqa: E402
 
 import pytest_asyncio  # noqa: E402
 from httpx import ASGITransport, AsyncClient  # noqa: E402
@@ -23,6 +24,7 @@ from sqlalchemy.ext.asyncio import (  # noqa: E402
 
 from myfarm_api.core.db import get_session_factory  # noqa: E402
 from myfarm_api.main import app  # noqa: E402
+from myfarm_api.models import ActivityType, CropCatalog, ExpenseCategory  # noqa: E402
 
 TEST_PROJECT_ID = "myfarm-test"
 
@@ -79,3 +81,27 @@ async def client() -> AsyncIterator[AsyncClient]:
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://testserver") as ac:
         yield ac
+
+
+@pytest_asyncio.fixture
+async def reference_ids() -> dict[str, str]:
+    """Real reference-table rows for tests that create crops/activities/expenses.
+
+    Those tables carry real foreign keys to crop_catalog/activity_type/
+    expense_category, so a random uuid4() for those ids 404s at the database
+    with a ForeignKeyViolationError. Each row gets a unique name per call so
+    parallel tests never collide on the UNIQUE(name) constraint.
+    """
+    session_factory = get_session_factory()
+    async with session_factory() as session:
+        suffix = uuid4()
+        crop = CropCatalog(name=f"TestCrop-{suffix}")
+        expense = ExpenseCategory(name=f"TestExpense-{suffix}")
+        activity_type = ActivityType(name=f"TestActivityType-{suffix}")
+        session.add_all([crop, expense, activity_type])
+        await session.commit()
+        return {
+            "crop_catalog_id": str(crop.id),
+            "expense_category_id": str(expense.id),
+            "activity_type_id": str(activity_type.id),
+        }

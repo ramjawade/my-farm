@@ -9,7 +9,7 @@ from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_create_and_list_crops(client: AsyncClient) -> None:
+async def test_create_and_list_crops(client: AsyncClient, reference_ids: dict[str, str]) -> None:
     """Create and list crops for one farmer."""
     uid = f"farmer_{uuid4()}"
 
@@ -33,8 +33,7 @@ async def test_create_and_list_crops(client: AsyncClient) -> None:
         )
         land_id = land_resp.json()["id"]
 
-        # Use a fixed crop_catalog_id (would normally be seeded)
-        crop_catalog_id = str(uuid4())
+        crop_catalog_id = reference_ids["crop_catalog_id"]
 
         # Create two crops
         crop1 = await client.post(
@@ -69,11 +68,13 @@ async def test_create_and_list_crops(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_cross_tenant_cannot_access_other_crop(client: AsyncClient) -> None:
+async def test_cross_tenant_cannot_access_other_crop(
+    client: AsyncClient, reference_ids: dict[str, str]
+) -> None:
     """Farmer A cannot access Farmer B's crop."""
     uid_a = f"farmer_a_{uuid4()}"
     uid_b = f"farmer_b_{uuid4()}"
-    crop_catalog_id = str(uuid4())
+    crop_catalog_id = reference_ids["crop_catalog_id"]
 
     # Farmer A creates a farm, land, and crop
     with patch.object(
@@ -124,10 +125,10 @@ async def test_cross_tenant_cannot_access_other_crop(client: AsyncClient) -> Non
 
 
 @pytest.mark.asyncio
-async def test_update_and_delete_crop(client: AsyncClient) -> None:
+async def test_update_and_delete_crop(client: AsyncClient, reference_ids: dict[str, str]) -> None:
     """Update and soft-delete a crop."""
     uid = f"farmer_{uuid4()}"
-    crop_catalog_id = str(uuid4())
+    crop_catalog_id = reference_ids["crop_catalog_id"]
 
     with patch.object(
         firebase_auth,
