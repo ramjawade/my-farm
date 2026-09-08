@@ -44,7 +44,7 @@ To keep token/API cost down while developing on this repo:
 ## Interaction & Styling Rules
 
 - **Don't drive the Browser pane unless asked.** After a code change, run a build to catch compile errors, but don't click through / navigate / screenshot the live app to visually verify unless the user explicitly requests it (e.g. "check in browser"). The user prefers to verify UI changes themselves.
-- **Prefer Bootstrap CSS over custom CSS.** This app uses Bootstrap utility classes (`d-flex`, `btn`, `badge`, `gap-2`, etc. — see `projects/home/src/styles/bootstrap-config`). When styling:
+- **Prefer Bootstrap CSS over custom CSS.** This app uses Bootstrap utility classes (`d-flex`, `btn`, `badge`, `gap-2`, etc. — see `projects/home/src/styles/_bootstrap-config.scss`). When styling:
   1. Use existing Bootstrap utility classes first.
   2. If Bootstrap doesn't cover it, extend/compose Bootstrap utilities (combine classes, or add a small modifier class layered on top).
   3. Only write custom CSS/SCSS as a last resort, when there's no reasonable Bootstrap path (e.g. bespoke icon-button sizing, Leaflet control styling).
@@ -57,11 +57,11 @@ To keep token/API cost down while developing on this repo:
 - Phase branches: `claude/phase-<number>-<description>` (e.g., `claude/phase-2-persistence-layer`)
 
 ### Branch Lifecycle
-0. **Plan**: Create PHASE_N_PLAN.md document, commit & push as first commit
+0. **Plan**: Capture the plan in the PR description (and update ROADMAP.md / BACKEND_PLAN.md if scope changes) — no separate plan file
 1. **Create**: Branch from latest `main` 
 2. **Work**: Complete, testable feature only
 3. **Verify**: 
-   - ✅ Plan document committed
+   - ✅ Plan captured in PR description
    - ✅ `npm run build` passes
    - ✅ `npm run lint` passes
    - ✅ Unit tests ready
@@ -75,7 +75,7 @@ To keep token/API cost down while developing on this repo:
 ## Rules & Guidelines
 
 ### ✅ DO
-- **Commit phase plans** (PHASE_N_PLAN.md) as first commit on feature branch
+- **Capture the plan** in the PR description; update ROADMAP.md / BACKEND_PLAN.md when scope changes
 - Create **focused, testable features** only per branch
 - Complete features before merging (no half-finished work)
 - Run full test suite before pushing
@@ -120,7 +120,7 @@ For each feature branch:
 ## Workflow Example
 
 ```bash
-# 1. Start new feature
+# 1. Start new feature with PR-description plan
 git fetch origin main
 git checkout -b claude/feature-activity-export
 
@@ -132,7 +132,7 @@ git commit -m "Add activity export to CSV functionality"
 npm run lint  # ✓
 npm run build # ✓
 
-# 4. Push and create PR
+# 4. Push and create PR with plan in description
 git push -u origin claude/feature-activity-export
 
 # 5. (After review & merge)

@@ -10,19 +10,20 @@ This script walks through the key features of the My Farm agricultural managemen
 ## 1. Onboarding & Authentication (2 min)
 
 ### Initial State
-- App shows login page if not authenticated
-- Demo data mode available for quick testing
+- App shows login screen if not authenticated
+- Demo-data mode available for quick testing
 
 ### Steps
-1. **Create Account** (or use existing demo account)
-   - Click "Register as Farmer" or "Sign Up"
-   - Enter farm name: *"Green Valley Farm"*
-   - Email: *"farmer@example.com"*
-   - Password: *"demo123"*
-   - Click "Register"
+1. **First run — set a PIN**
+   - Enter a 4-digit PIN
+   - Confirm it
+   - Continue to the app
 
-2. **View Onboarding Checklist**
-   - Post-signup, user sees onboarding checklist
+2. **Returning — unlock with PIN**
+   - Enter the PIN to unlock
+
+3. **View Onboarding Checklist**
+   - After unlock, user sees the onboarding checklist
    - Status shows: Set Location, Add Land, Create Crop, Log Activity, View Reports
    - Uncompleted items have yellow warning badges
 
@@ -318,7 +319,7 @@ This script walks through the key features of the My Farm agricultural managemen
 ## Common Demo Flows
 
 ### Quick Start (5 min)
-1. Login/Register
+1. Set PIN / unlock
 2. Draw a land field
 3. Create a crop
 4. Log an activity (Sowing)

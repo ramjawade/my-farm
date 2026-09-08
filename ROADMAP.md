@@ -22,7 +22,7 @@ Installable as a PWA. A Python/FastAPI backend now sits behind it.
 ```
 Angular 20 PWA (GitHub Pages, static)
    │
-   ├── Firebase Auth ──────────▶ phone OTP → ID token   [identity only]
+   ├── Firebase Auth ──────────▶ phone OTP → ID token   [registration & PIN recovery; local PIN gates day-to-day — Stage 8]
    │
    │   Authorization: Bearer <Firebase ID token>
    ▼
@@ -53,7 +53,7 @@ changes). Visual counterpart: the
 - `IStorageService` is the single persistence boundary — activities,
   expenses, crops, lands, farmer profiles, weather, backup/restore. No
   feature talks to `localStorage` directly any more.
-- PIN-based auth (`AuthService`, `authGuard`) gates every route.
+- PIN-based auth (`AuthService`, `authGuard`) gates every route. Firebase phone OTP for registration and PIN recovery is Backend Stage 8 — not yet wired; the client is PIN-only today.
 - Live weather (OpenWeatherMap), 30-min cache, 4-tier fallback
   (API → cache → mock → error), farming advisories, severe-weather alerts.
   Key is currently a CI-injected, origin-restricted client key (see
@@ -95,6 +95,7 @@ git log for `claude/mvp1-*` branches)
   server-side (shared cache keyed by location grid, not per farmer); wire
   Cloudflare R2 for activity photo attachments (currently disabled in the
   UI — see `BACKEND_PLAN.md` §7 for the R2 decision).
+- **Backend Stage 8 — Client auth.** Add Firebase phone OTP at registration and for PIN recovery; keep the local PIN for day-to-day unlock. The client is PIN-only today; the API's token verification (Stage 2) has no client counterpart yet. Plan: BACKEND_PLAN.md §5.1, §12.
 - **E2E smoke test.** Add the Playwright golden-path spec against mobile +
   desktop viewports, gated in CI on PRs (the one MVP1 item that didn't land).
 - **Known gaps carried forward from `BACKEND_PLAN.md` §13**, worth closing
