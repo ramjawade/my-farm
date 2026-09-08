@@ -25,11 +25,10 @@ document is left open.
 | 7 | [API design](#7-api-design) |
 | 8 | [Offline sync](#8-offline-sync) |
 | 9 | [Type generation](#9-type-generation) |
-| 10 | [Data migration](#10-data-migration) |
-| 11 | [CI/CD](#11-cicd) |
-| 12 | [Delivery stages](#12-delivery-stages) |
-| 13 | [Risks](#13-risks) |
-| 14 | [Verification](#14-verification) |
+| 10 | [CI/CD](#10-cicd) |
+| 11 | [Delivery stages](#11-delivery-stages) |
+| 12 | [Risks](#12-risks) |
+| 13 | [Verification](#13-verification) |
 
 ---
 
@@ -76,15 +75,15 @@ Browser — Angular 20 PWA (GitHub Pages, static)
    ▼
 FastAPI  (Render · Singapore)
    │   verify_id_token() · Pydantic validation · tenant scoping · business rules
-   ├──────────────▶ Cloudflare R2          [attachment blobs] [Stage 7]
-   ├──────────────▶ OpenWeatherMap         [server holds the API key] [Stage 7]
+   ├──────────────▶ Cloudflare R2          [attachment blobs] [Stage 6]
+   ├──────────────▶ OpenWeatherMap         [server holds the API key] [Stage 6]
    ▼
 SQLAlchemy 2.0 async + asyncpg
    ▼
 Neon Postgres (Singapore · pooled)
 ```
 
-This is the target architecture; §12 tracks what is built (Stages 1–5 done). Cloudflare R2 and the server-side OpenWeatherMap key are Stage 7.
+This is the target architecture; §11 tracks what is built (Stages 1–5 done). Cloudflare R2 and the server-side OpenWeatherMap key are Stage 6.
 
 Client writes never block on the network: they commit to an **IndexedDB
 outbox** and drain in the background (§8).
@@ -131,7 +130,7 @@ service (`myfarm-api`, `srv-dafrtrn40ujc73cmjpog`) runs
 `pip install ./projects/backend` and
 `uvicorn myfarm_api.main:app --host 0.0.0.0 --port $PORT` directly, no image
 involved. `projects/backend/Dockerfile` still exists and CI still builds it
-(§11), but only as a build-correctness check — it is not what ships. This is
+(§10), but only as a build-correctness check — it is not what ships. This is
 a real gap from the original plan, not a rounding error: if the two build
 paths ever drift (a dependency that needs an OS package the buildpack lacks,
 say), CI passing proves nothing about what Render is actually running.
@@ -412,27 +411,7 @@ shared schema file exists.
 
 ---
 
-## 10. Data migration
-
-localStorage → Postgres, a single hop.
-
-1. On first authenticated login post-deploy, detect legacy keys
-   (`my_farm_${userId}_{activities,activity_expenses,crops,saved_farms}`
-   plus the legacy pre-migration keys already handled by
-   `features/activity/migration.ts`).
-2. **Mint a UUIDv7 per record seeded from its real `createdAt`**, preserving
-   historical order, and build an **old-id → new-id remap first**.
-3. Rewrite every reference (`fieldId`, `cropId`, `activityId`,
-   `parentActivityId`) through the remap; **fail loudly** on any unresolved
-   reference rather than dropping it.
-4. Push through `/sync/push` in FK order — upsert semantics make a partial
-   run safely resumable.
-5. Gate on a completion flag, following the existing migration pattern.
-6. Weather is not migrated; it refetches.
-
----
-
-## 11. CI/CD
+## 10. CI/CD
 
 | Pipeline | Steps |
 |---|---|
@@ -449,7 +428,7 @@ GitHub Pages origin for CORS.
 
 ---
 
-## 12. Delivery stages
+## 11. Delivery stages
 
 | Stage | Scope | Gate |
 |---|---|---|
@@ -458,16 +437,15 @@ GitHub Pages origin for CORS.
 | **3 — Domain endpoints** | Models, Alembic migrations, CRUD routers, reference data | **Cross-tenant test per endpoint** |
 | **4 — Client integration** | Generated types; `ApiStorageService`; online-only | End-to-end online |
 | **5 — Offline outbox** | IndexedDB outbox, sync worker, `/sync/*`, tombstones | Airplane-mode convergence |
-| **6 — Data migration** | localStorage → Postgres per §10, behind a flag | Fixture migrates intact |
-| **7 — Weather + attachments** | Server-cached weather endpoint (retires the client-side key); R2 uploads | Key absent from the bundle |
-| **8 — Client auth: OTP registration + PIN recovery** | Add Firebase phone OTP at registration and for PIN recovery; keep the local PIN for day-to-day unlock; retire the standalone PIN-only identity | Registration issues a persisted Firebase session; API rejects a tokenless request; PIN unlock still works offline |
+| **6 — Weather + attachments** | Server-cached weather endpoint (retires the client-side key); R2 uploads | Key absent from the bundle |
+| **7 — Client auth: OTP registration + PIN recovery** | Add Firebase phone OTP at registration and for PIN recovery; keep the local PIN for day-to-day unlock; retire the standalone PIN-only identity | Registration issues a persisted Firebase session; API rejects a tokenless request; PIN unlock still works offline |
 
 Stage 1 is deliberately first and separate: refactoring the seam *while*
 introducing a network backend is how these migrations fail.
 
 ---
 
-## 13. Risks
+## 12. Risks
 
 | Risk | Mitigation |
 |---|---|
@@ -475,7 +453,7 @@ introducing a network backend is how these migrations fail.
 | **Free-tier terms move** — verified Sept 2026 | Neon and Render projects both provisioned; only `DATABASE_URL` and the host change if a provider is swapped |
 | Neon idles to zero mid-request | Pooled endpoint, `pool_pre_ping`, outbox retries |
 | Render cold start degrades UX | Acceptable only because of the outbox (§3.3) |
-| CI failing doesn't block a Render deploy | `autoDeploy` fires on every push to `main` regardless of the Actions result (§11); nothing currently stops a broken merge from going live — worth a deploy hook gate if this becomes a real incident risk |
+| CI failing doesn't block a Render deploy | `autoDeploy` fires on every push to `main` regardless of the Actions result (§10); nothing currently stops a broken merge from going live — worth a deploy hook gate if this becomes a real incident risk |
 | 0.5 GB storage ceiling | Blobs in R2; weather is one shared cache; row-count alerting before the ceiling |
 | LWW loses a concurrent edit | Sound for single-device-per-record use; losers logged; totals recomputed, never synced |
 | Offline is the largest item and gets underestimated | It has its own stage (5), not a checkbox inside another |
@@ -484,7 +462,7 @@ introducing a network backend is how these migrations fail.
 
 ---
 
-## 14. Verification
+## 13. Verification
 
 - **Stage 1** — the existing frontend Karma suite (35 specs at time of writing) stays green through the interface change.
 - **Stage 2** — `/health` reachable from the GitHub Pages origin (proves
@@ -494,9 +472,7 @@ introducing a network backend is how these migrations fail.
 - **Stage 4** — type generation byte-identical in CI; app works end to end online.
 - **Stage 5** — airplane-mode test: create/edit/delete offline, reconnect,
   confirm convergence; a replayed batch changes nothing.
-- **Stage 6** — migrate a seeded localStorage fixture; assert row counts, id
-  remapping, referential integrity.
-- **Stage 7** — grep the built bundle to confirm no OpenWeatherMap key.
-- **Stage 8** — OTP at registration and PIN-recovery flow gates behind feature flag; PIN unlock still works; old PIN-only flows deprecated.
+- **Stage 6** — grep the built bundle to confirm no OpenWeatherMap key.
+- **Stage 7** — OTP at registration and PIN recovery; PIN unlock still works; old PIN-only flows deprecated.
 - Full gate: `ruff`, `mypy`, `pytest`, `npm run lint`, `format:check`,
   `test`, `build`.
