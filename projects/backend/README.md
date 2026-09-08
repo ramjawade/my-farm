@@ -64,23 +64,40 @@ endpoint) are load-bearing here; Stage 3 should treat endpoint tests as
 non-negotiable, not a nice-to-have, because they're what's actually
 standing in for layer 2 on this platform.
 
-### Render (API host) — still needs your action
+### Render: provisioned
 
-Provisioning a Render service needs an account and connecting this GitHub
-repository — I have no credentials for that and can't do it on your behalf.
+Web service `myfarm-api` (id `srv-dafrtrn40ujc73cmjpog`) is live at
+<https://myfarm-api.onrender.com>, **Singapore** region, free instance,
+auto-deploying from `main` on every push. Verified via Render's own build
+and runtime logs (`Build successful`, `Application startup complete`,
+`Your service is live`) — the sandbox this was provisioned from can reach
+Render's management API but not `*.onrender.com` itself, so the running
+`/health` endpoint hasn't been hit directly from here; hit it yourself to
+confirm:
 
-1. Create an account at render.com, connect this GitHub repository, and
-   create a **Web Service** rooted at `projects/backend/` using the
-   `Dockerfile` in this directory, in the **Singapore** region, on the free
-   instance type.
-2. Set these environment variables on the service:
-   - `DATABASE_URL` — the corrected Neon connection string above.
-   - `FIREBASE_PROJECT_ID` — the Firebase project id (BACKEND_PLAN.md §5.1
-     — this is a public identifier, not a secret; it's what `verify_id_token`
-     checks the token's audience against).
-   - `CORS_ORIGINS` — the GitHub Pages origin, e.g.
-     `https://ramjawade.github.io`.
-3. Render's health check path should be `/health`.
+```bash
+curl https://myfarm-api.onrender.com/health
+```
+
+Environment variables set on the service: `DATABASE_URL` (the corrected
+Neon connection string above), `CORS_ORIGINS=https://ramjawade.github.io`,
+and `FIREBASE_PROJECT_ID=""` — empty because no Firebase project exists yet
+(see below). Every real token will be rejected until that's set to a real
+project id.
+
+Two gaps, both real, neither closed yet:
+
+- **No health check path.** Render's service-creation API has no parameter
+  for it. Set it to `/health` yourself: dashboard → myfarm-api → Settings →
+  Health Check Path.
+- **Not actually running the `Dockerfile`.** Render's API only supports
+  buildpack-style deploys (an explicit build/start command), not
+  Docker/registry deploys, so the live service runs
+  `pip install ./projects/backend` +
+  `uvicorn myfarm_api.main:app --host 0.0.0.0 --port $PORT` directly — no
+  image. `Dockerfile` and its CI build job (`.github/workflows/backend.yml`)
+  are therefore build-correctness checks only, not a preview of what ships.
+  See BACKEND_PLAN.md §3.2 for the tradeoff this leaves open.
 
 ### Firebase Auth — still needs your action
 
