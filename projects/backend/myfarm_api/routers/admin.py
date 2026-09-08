@@ -1,9 +1,10 @@
 """Admin endpoints for database seeding and maintenance."""
 
+from typing import Any
 from uuid import uuid4
 
 from fastapi import APIRouter
-from sqlalchemy import select
+from sqlalchemy import Select, select
 
 from myfarm_api.core.db import get_session_factory
 from myfarm_api.models import ActivityType, CropCatalog, ExpenseCategory
@@ -61,7 +62,7 @@ SEED_ACTIVITY_TYPES = [
 
 
 @router.post("/seed-reference-data")
-async def seed_reference_data() -> dict:
+async def seed_reference_data() -> dict[str, Any]:
     """Seed reference tables with initial data.
 
     Idempotent: skips records that already exist (by name).
@@ -72,7 +73,7 @@ async def seed_reference_data() -> dict:
         # Seed crops
         crops_created = 0
         for crop_name in SEED_CROPS:
-            stmt = select(CropCatalog).where(CropCatalog.name == crop_name)
+            stmt: Select[Any] = select(CropCatalog).where(CropCatalog.name == crop_name)
             result = await session.execute(stmt)
             if not result.scalar_one_or_none():
                 crop = CropCatalog(id=uuid4(), name=crop_name)

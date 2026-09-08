@@ -23,6 +23,7 @@ from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, ValidationError
 
 from myfarm_api.core.security import FirebaseIdentity, get_firebase_identity
+from myfarm_api.models import Farmer
 from myfarm_api.repositories.crud import TenantScopedCRUD, UpsertConflict
 from myfarm_api.repositories.entities import (
     activity_repo,
@@ -50,7 +51,7 @@ EPOCH = datetime(1970, 1, 1, tzinfo=UTC)
 
 async def get_current_farmer(
     identity: FirebaseIdentity = Depends(get_firebase_identity),
-):
+) -> Farmer:
     """Get the current farmer, provisioning if needed."""
     return await FarmerRepository.get_or_create(identity.uid)
 
@@ -129,7 +130,7 @@ async def _apply_push_item(farmer_id: UUID, item: SyncPushItem) -> SyncPushResul
 @router.post("/push", response_model=SyncPushResponse)
 async def push(
     data: SyncPushRequest,
-    current_farmer=Depends(get_current_farmer),
+    current_farmer: Farmer = Depends(get_current_farmer),
 ) -> SyncPushResponse:
     """Drain a batch of outbox mutations. Per-item results: one bad item
     (a stale FK, a conflicting id) never fails the rest of the batch, and
@@ -141,7 +142,7 @@ async def push(
 
 @router.get("/pull", response_model=SyncPullResponse)
 async def pull(
-    current_farmer=Depends(get_current_farmer),
+    current_farmer: Farmer = Depends(get_current_farmer),
     since: datetime | None = Query(None),
     cursor: str | None = Query(None),
     limit: int = Query(200, ge=1, le=500),

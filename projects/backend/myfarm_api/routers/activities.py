@@ -1,6 +1,7 @@
 """CRUD endpoints for activities — farmer-owned entities."""
 
 from datetime import UTC, datetime
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -8,7 +9,7 @@ from sqlalchemy import and_, select
 
 from myfarm_api.core.db import get_session_factory
 from myfarm_api.core.security import FirebaseIdentity, get_firebase_identity
-from myfarm_api.models import Activity, ActivityAttachment, ActivityExpense
+from myfarm_api.models import Activity, ActivityAttachment, ActivityExpense, Farmer
 from myfarm_api.repositories.entities import activity_repo
 from myfarm_api.repositories.farmer import FarmerRepository
 from myfarm_api.schemas.activity import ActivityCreate, ActivityRead, ActivityUpdate
@@ -27,12 +28,12 @@ router = APIRouter(prefix="/api/v1/activities", tags=["activities"])
 
 async def get_current_farmer(
     identity: FirebaseIdentity = Depends(get_firebase_identity),
-):
+) -> Farmer:
     """Get the current farmer, provisioning if needed."""
     return await FarmerRepository.get_or_create(identity.uid)
 
 
-async def _get_owned_activity(current_farmer, activity_id: UUID) -> Activity:
+async def _get_owned_activity(current_farmer: Farmer, activity_id: UUID) -> Activity:
     """Verify the activity exists and belongs to this farmer, or 404.
 
     Nested resources (expenses, attachments) have no `farmer_id` of their
@@ -46,10 +47,10 @@ async def _get_owned_activity(current_farmer, activity_id: UUID) -> Activity:
 
 @router.get("", response_model=dict)
 async def list_activities(
-    current_farmer=Depends(get_current_farmer),
+    current_farmer: Farmer = Depends(get_current_farmer),
     cursor: str | None = Query(None),
     limit: int = Query(20, ge=1, le=100),
-) -> dict:
+) -> dict[str, Any]:
     """List activities for the current farmer, cursor-paginated."""
     page = await activity_repo.list(current_farmer.id, cursor=cursor, limit=limit)
     return {
@@ -62,7 +63,7 @@ async def list_activities(
 @router.get("/{activity_id}", response_model=ActivityRead)
 async def get_activity(
     activity_id: UUID,
-    current_farmer=Depends(get_current_farmer),
+    current_farmer: Farmer = Depends(get_current_farmer),
 ) -> ActivityRead:
     """Get a single activity by ID."""
     activity = await activity_repo.get(current_farmer.id, activity_id)
@@ -74,7 +75,7 @@ async def get_activity(
 @router.post("", response_model=ActivityRead, status_code=201)
 async def create_activity(
     data: ActivityCreate,
-    current_farmer=Depends(get_current_farmer),
+    current_farmer: Farmer = Depends(get_current_farmer),
 ) -> ActivityRead:
     """Create a new activity."""
     activity = Activity(**data.model_dump())
@@ -86,7 +87,7 @@ async def create_activity(
 async def update_activity(
     activity_id: UUID,
     data: ActivityUpdate,
-    current_farmer=Depends(get_current_farmer),
+    current_farmer: Farmer = Depends(get_current_farmer),
 ) -> ActivityRead:
     """Update an activity."""
     activity = await activity_repo.update(
@@ -100,7 +101,7 @@ async def update_activity(
 @router.delete("/{activity_id}", status_code=204)
 async def delete_activity(
     activity_id: UUID,
-    current_farmer=Depends(get_current_farmer),
+    current_farmer: Farmer = Depends(get_current_farmer),
 ) -> None:
     """Soft-delete an activity."""
     deleted = await activity_repo.soft_delete(current_farmer.id, activity_id)
@@ -119,10 +120,10 @@ async def delete_activity(
 @router.get("/{activity_id}/expenses", response_model=dict)
 async def list_activity_expenses(
     activity_id: UUID,
-    current_farmer=Depends(get_current_farmer),
+    current_farmer: Farmer = Depends(get_current_farmer),
     cursor: str | None = Query(None),
     limit: int = Query(20, ge=1, le=100),
-) -> dict:
+) -> dict[str, Any]:
     """List expenses for a specific activity, cursor-paginated."""
     await _get_owned_activity(current_farmer, activity_id)
 
@@ -167,7 +168,7 @@ async def list_activity_expenses(
 async def create_activity_expense(
     activity_id: UUID,
     data: ActivityExpenseCreate,
-    current_farmer=Depends(get_current_farmer),
+    current_farmer: Farmer = Depends(get_current_farmer),
 ) -> ActivityExpenseRead:
     """Create a new expense for an activity."""
     await _get_owned_activity(current_farmer, activity_id)
@@ -189,7 +190,7 @@ async def update_activity_expense(
     activity_id: UUID,
     expense_id: UUID,
     data: ActivityExpenseUpdate,
-    current_farmer=Depends(get_current_farmer),
+    current_farmer: Farmer = Depends(get_current_farmer),
 ) -> ActivityExpenseRead:
     """Update an expense for an activity."""
     await _get_owned_activity(current_farmer, activity_id)
@@ -220,7 +221,7 @@ async def update_activity_expense(
 async def delete_activity_expense(
     activity_id: UUID,
     expense_id: UUID,
-    current_farmer=Depends(get_current_farmer),
+    current_farmer: Farmer = Depends(get_current_farmer),
 ) -> None:
     """Soft-delete an expense for an activity."""
     await _get_owned_activity(current_farmer, activity_id)
@@ -249,10 +250,10 @@ async def delete_activity_expense(
 @router.get("/{activity_id}/attachments", response_model=dict)
 async def list_activity_attachments(
     activity_id: UUID,
-    current_farmer=Depends(get_current_farmer),
+    current_farmer: Farmer = Depends(get_current_farmer),
     cursor: str | None = Query(None),
     limit: int = Query(20, ge=1, le=100),
-) -> dict:
+) -> dict[str, Any]:
     """List attachments for a specific activity, cursor-paginated."""
     await _get_owned_activity(current_farmer, activity_id)
 
@@ -299,7 +300,7 @@ async def list_activity_attachments(
 async def create_activity_attachment(
     activity_id: UUID,
     data: ActivityAttachmentCreate,
-    current_farmer=Depends(get_current_farmer),
+    current_farmer: Farmer = Depends(get_current_farmer),
 ) -> ActivityAttachmentRead:
     """Create a new attachment for an activity."""
     await _get_owned_activity(current_farmer, activity_id)
@@ -317,7 +318,7 @@ async def create_activity_attachment(
 async def delete_activity_attachment(
     activity_id: UUID,
     attachment_id: UUID,
-    current_farmer=Depends(get_current_farmer),
+    current_farmer: Farmer = Depends(get_current_farmer),
 ) -> None:
     """Soft-delete an attachment for an activity."""
     await _get_owned_activity(current_farmer, activity_id)

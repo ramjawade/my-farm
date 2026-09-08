@@ -8,7 +8,7 @@ from uuid import UUID
 from sqlalchemy import and_, select
 
 from myfarm_api.core.db import get_session_factory
-from myfarm_api.models import Base
+from myfarm_api.models import TenantScopedBase
 
 
 class UpsertConflict(Exception):
@@ -32,7 +32,7 @@ class CursorPage[T]:
         self.has_more = has_more
 
 
-class TenantScopedCRUD[T: Base]:
+class TenantScopedCRUD[T: TenantScopedBase]:
     """Generic CRUD for farmer-owned entities with cursor pagination over (updated_at, id)."""
 
     def __init__(self, model: type[T]) -> None:
