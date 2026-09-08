@@ -1,0 +1,43 @@
+"""Pydantic schemas for land endpoints."""
+
+from datetime import datetime
+from decimal import Decimal
+from uuid import UUID
+
+from pydantic import BaseModel, Field
+
+
+class LandBase(BaseModel):
+    """Shared land fields."""
+
+    name: str = Field(..., max_length=255)
+    farm_id: UUID
+    area_sq_m: Decimal | None = None
+    notes: str | None = None
+
+
+class LandCreate(LandBase):
+    """Create a land."""
+
+    pass
+
+
+class LandUpdate(BaseModel):
+    """Update land fields."""
+
+    name: str | None = None
+    area_sq_m: Decimal | None = None
+    notes: str | None = None
+
+
+class LandRead(LandBase):
+    """Read a land record."""
+
+    id: UUID
+    farmer_id: UUID
+    created_at: datetime
+    updated_at: datetime
+    deleted_at: datetime | None = None
+
+    class Config:
+        from_attributes = True
