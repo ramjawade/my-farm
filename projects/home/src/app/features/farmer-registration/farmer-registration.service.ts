@@ -11,8 +11,14 @@ function normalizePhone(phone: string): string {
 /**
  * Farmer accounts are looked up, never listed: there is no in-memory roster
  * here, and nothing in this service can dump every registered farmer.
- * `AuthService` resolves the signed-in user by id; `LoginComponent` resolves
- * a phone number to an account through `findByPhone`.
+ * `AuthService` resolves the signed-in user by id.
+ *
+ * On the API storage path most of this is thin: sign-in and backend
+ * account creation run through `SessionAuthService` (online-only, issue
+ * #50), and `upsertFarmer` just caches the farmer the backend returned so
+ * `findById` works after a reload. `LocalStorageService` (the demo user)
+ * still uses the full CRUD here, and the standalone `/register` wizard
+ * still calls `registerFarmer` directly — see issue #50's follow-up.
  */
 @Injectable({
   providedIn: 'root',
@@ -21,11 +27,10 @@ export class FarmerRegistrationService {
   private readonly storage = inject(IStorageService);
 
   /**
-   * Local-only account creation. The backend registration path (issue #45)
-   * lives in `SessionAuthService.register` — it has to, because the backend
-   * hands back a session JWT that `AuthService` needs. `LoginComponent`
-   * calls this only as the offline fallback, and `upsertFarmer` caches the
-   * backend-created farmer so `findById` works after a reload.
+   * Create a farmer record through the storage layer. On the API path this
+   * is only reached by the standalone `/register` wizard
+   * (`FarmerRegistrationComponent`); the login screen creates backend
+   * accounts via `SessionAuthService.register`.
    */
   registerFarmer(data: Omit<FarmerRegistrationData, 'id' | 'createdAt'>): FarmerRegistrationData {
     const newFarmer: FarmerRegistrationData = {
