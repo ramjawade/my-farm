@@ -47,7 +47,7 @@ document is left open.
 | Offline | **IndexedDB outbox** + delta pull; last-write-wins |
 | Attachments | **Cloudflare R2** (10 GB free, zero egress) |
 | Weather cache | **Server-side, shared by location grid** — not per farmer |
-| Repository | **Monorepo** — `backend/` beside the Angular workspace |
+| Repository | **Monorepo** — `projects/backend/`, beside the Angular projects |
 | RBAC (`role`/`module`) | **Excluded from v1** |
 
 ### Previously-open items, now settled
@@ -163,39 +163,53 @@ use more, and `pool_pre_ping` absorbs connections dropped while the database
 was scaled to zero.
 
 ```
-backend/                       Python project root — its own venv, deps, tooling
-  pyproject.toml               dependencies · ruff · mypy config
-  Dockerfile
-  alembic.ini
-  alembic/versions/            migration history (tooling, not library code)
-  myfarm_api/                  the importable package
-    main.py                    app, CORS, lifespan
-    core/        config.py · security.py (Firebase) · db.py (engine/session)
-    models/                    SQLAlchemy — schema source of truth
-    schemas/                   Pydantic request/response
-    repositories/base.py       tenant scoping enforced here (§5.2)
-    routers/     farmers · farms · lands · crops · activities · expenses · weather · sync
-    services/                  business rules, derived fields
-  tests/
-projects/home/                 existing Angular workspace (Angular CLI owns projects/)
+projects/
+  home/                        existing Angular app
+  shared/                      existing Angular library
+  backend/                     Python project root — own venv, deps, tooling
+    pyproject.toml             dependencies · ruff · mypy config
+    Dockerfile
+    alembic.ini
+    alembic/versions/          migration history (tooling, not library code)
+    myfarm_api/                the importable package
+      main.py                  app, CORS, lifespan
+      core/      config.py · security.py (Firebase) · db.py (engine/session)
+      models/                  SQLAlchemy — schema source of truth
+      schemas/                 Pydantic request/response
+      repositories/base.py     tenant scoping enforced here (§5.2)
+      routers/   farmers · farms · lands · crops · activities · expenses · weather · sync
+      services/                business rules, derived fields
+    tests/
 ```
 
-Three naming choices worth stating, since they are easy to get wrong later:
+Every deliverable sits under `projects/`, one directory per project —
+`home` and `shared` are the Angular pair, `backend` is the service.
 
-- **`backend/`, not `api/`** — the directory holds the data layer, migrations,
-  business services and tests, not only HTTP routes, and it pairs obviously
-  with the Angular frontend. It also leaves room for a second deployable (a
-  scheduled weather refresher, say) without the name reading wrongly.
-- **Not under `projects/`** — Angular CLI owns that directory via
-  `angular.json`, and the `lint` and `format:check` scripts glob
-  `projects/**`. A Python tree there would muddy a workspace the JS tooling
-  assumes is entirely its own.
+**This is safe, with one guard.** `angular.json` lists its projects
+explicitly (`home`, `shared`) and does no directory discovery, so the CLI
+ignores `projects/backend/` entirely; `ng build` and `ng test` never look at
+it. The `lint` script globs `projects/**/*.ts`, which no `.py` file matches.
+
+The one real collision is **`format:check`**, which globs
+`projects/**/*.{ts,html,scss}` — any `.html` that ever lands in the backend
+(a Jinja template, a coverage report) would be pulled into Prettier's check
+and fail CI. There is no `.prettierignore` today, so **Stage 2 adds one**
+covering `projects/backend/`. Narrowing the two globs to
+`projects/{home,shared}/**` works equally well; the ignore file is less
+likely to be forgotten when a third Angular project appears.
+
+Two naming choices worth stating, since they are easy to get wrong later:
+
+- **`backend/`, not `api/`** — the directory holds the data layer,
+  migrations, business services and tests, not only HTTP routes. It also
+  leaves room for a second deployable (a scheduled weather refresher, say)
+  without the name reading wrongly.
 - **`myfarm_api/`, not `app/`** — imports read `from myfarm_api.models import
   Farmer`, which is self-describing in tracebacks and test output. `app` is
   the FastAPI tutorial default and says nothing about whose app it is.
 
-Keeping `pyproject.toml` inside `backend/` rather than at the repo root
-matters too: the root already carries `package.json`, `tsconfig.json` and
+`pyproject.toml` stays inside `projects/backend/` rather than at the repo
+root: the root already carries `package.json`, `tsconfig.json` and
 `eslint.config.js` for the JS side, and the two toolchains should not have to
 share a directory.
 
@@ -409,7 +423,7 @@ GitHub Pages origin for CORS.
 | Stage | Scope | Gate |
 |---|---|---|
 | **1 — Seam repair** | Per-entity CRUD on `IStorageService`; delete `getFarmers()`/`saveFarmers()`; still on localStorage | 29 specs green |
-| **2 — API skeleton** | FastAPI app; Neon + Render provisioned; `/health`; Firebase token dependency; base repository + RLS; CI | CORS + token rejection proven |
+| **2 — API skeleton** | FastAPI app under `projects/backend/`; `.prettierignore` guard (§4.1); Neon + Render provisioned; `/health`; Firebase token dependency; base repository + RLS; CI | CORS + token rejection proven; `format:check` still passes |
 | **3 — Domain endpoints** | Models, Alembic migrations, CRUD routers, reference data | **Cross-tenant test per endpoint** |
 | **4 — Client integration** | Generated types; `ApiStorageService`; online-only | End-to-end online |
 | **5 — Offline outbox** | IndexedDB outbox, sync worker, `/sync/*`, tombstones | Airplane-mode convergence |
