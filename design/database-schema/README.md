@@ -13,7 +13,7 @@ Published at: https://claude.ai/code/artifact/261b1e80-742d-4e4a-9bc3-90bcbe29da
 | `FieldReference.dc.html` | Field Reference | Every column with its Postgres type, nullability, and key role, plus the check-constraint value sets |
 | `Architecture.dc.html` | Architecture | Angular PWA → Firebase Auth + FastAPI on Render → Neon Postgres, with the free-tier ceilings annotated |
 | `AuthFlow.dc.html` | Flows | Phone OTP → ID token → `verify_id_token()` → just-in-time farmer provisioning, and where tenancy is enforced |
-| `MigrationFlow.dc.html` | Flows | The one-time localStorage → Postgres migration with the UUIDv7 remap, and the ongoing outbox sync loop |
+| `MigrationFlow.dc.html` | Flows | The ongoing outbox sync loop (push/pull, tombstones). *The localStorage→Postgres migration branch it also depicts is obsolete — there is no migration step; regenerate this artboard's SVG when the canvas is next edited.* |
 
 `canvas.json` holds the artboard layout and page grouping.
 

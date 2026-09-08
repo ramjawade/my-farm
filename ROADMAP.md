@@ -22,13 +22,13 @@ Installable as a PWA. A Python/FastAPI backend now sits behind it.
 ```
 Angular 20 PWA (GitHub Pages, static)
    │
-   ├── Firebase Auth ──────────▶ phone OTP → ID token   [registration & PIN recovery; local PIN gates day-to-day — Stage 8]
+   ├── Firebase Auth ──────────▶ phone OTP → ID token   [registration & PIN recovery; local PIN gates day-to-day — Stage 7]
    │
    │   Authorization: Bearer <Firebase ID token>
    ▼
 FastAPI  (Render · Singapore)
    │   verify_id_token() · Pydantic validation · tenant-scoped repository
-   ├──────────────▶ OpenWeatherMap   [server holds the key — Stage 7, not yet wired]
+   ├──────────────▶ OpenWeatherMap   [server holds the key — Stage 6, not yet wired]
    ▼
 SQLAlchemy 2.0 async + asyncpg
    ▼
@@ -53,11 +53,11 @@ changes). Visual counterpart: the
 - `IStorageService` is the single persistence boundary — activities,
   expenses, crops, lands, farmer profiles, weather, backup/restore. No
   feature talks to `localStorage` directly any more.
-- PIN-based auth (`AuthService`, `authGuard`) gates every route. Firebase phone OTP for registration and PIN recovery is Backend Stage 8 — not yet wired; the client is PIN-only today.
+- PIN-based auth (`AuthService`, `authGuard`) gates every route. Firebase phone OTP for registration and PIN recovery is Backend Stage 7 — not yet wired; the client is PIN-only today.
 - Live weather (OpenWeatherMap), 30-min cache, 4-tier fallback
   (API → cache → mock → error), farming advisories, severe-weather alerts.
   Key is currently a CI-injected, origin-restricted client key (see
-  `WEATHER_API_SETUP.md`) — moving it fully server-side is Backend Stage 7.
+  `WEATHER_API_SETUP.md`) — moving it fully server-side is Backend Stage 6.
 
 **MVP1 — client-presentable prototype** (full findings/decisions history:
 git log for `claude/mvp1-*` branches)
@@ -74,7 +74,7 @@ git log for `claude/mvp1-*` branches)
   exercised by hand, per `DEMO_SCRIPT.md`.
 
 **Backend — Stages 1–5 of 7** (canonical plan and stage gates:
-`BACKEND_PLAN.md` §12)
+`BACKEND_PLAN.md` §11)
 - Stage 1 — Storage seam repaired to per-entity CRUD ahead of the network swap.
 - Stage 2 — FastAPI skeleton on Render; Firebase token verification; Neon
   provisioned; tenant-scoped base repository.
@@ -88,14 +88,11 @@ git log for `claude/mvp1-*` branches)
 
 ## 4. Remaining work
 
-- **Backend Stage 6 — Data migration.** One-time localStorage → Postgres
-  migration on first authenticated login (UUIDv7 remap, FK-order push,
-  fail-loud on an unresolved reference). Plan: `BACKEND_PLAN.md` §10.
-- **Backend Stage 7 — Weather + attachments.** Move the OpenWeatherMap key
+- **Backend Stage 6 — Weather + attachments.** Move the OpenWeatherMap key
   server-side (shared cache keyed by location grid, not per farmer); wire
   Cloudflare R2 for activity photo attachments (currently disabled in the
   UI — see `BACKEND_PLAN.md` §7 for the R2 decision).
-- **Backend Stage 8 — Client auth.** Add Firebase phone OTP at registration and for PIN recovery; keep the local PIN for day-to-day unlock. The client is PIN-only today; the API's token verification (Stage 2) has no client counterpart yet. Plan: BACKEND_PLAN.md §5.1, §12.
+- **Backend Stage 7 — Client auth.** Add Firebase phone OTP at registration and for PIN recovery; keep the local PIN for day-to-day unlock. The client is PIN-only today; the API's token verification (Stage 2) has no client counterpart yet. Plan: BACKEND_PLAN.md §5.1, §11.
 - **E2E smoke test.** Add the Playwright golden-path spec against mobile +
   desktop viewports, gated in CI on PRs (the one MVP1 item that didn't land).
 - **Known gaps carried forward from `BACKEND_PLAN.md` §13**, worth closing

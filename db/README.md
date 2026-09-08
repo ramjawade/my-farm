@@ -36,9 +36,10 @@ later" plan, including a Firestore collection layout, security rules,
 composite indexes, and a localStorage → Firestore migration map. That
 direction was superseded when [`BACKEND_PLAN.md`](../BACKEND_PLAN.md) settled
 on FastAPI + Postgres for all application data, with Firebase Auth kept for
-identity only. Those files have been removed as dead documentation; the real
-localStorage → Postgres migration is documented in
-[`../BACKEND_PLAN.md`](../BACKEND_PLAN.md) §10.
+identity only. Those files have been removed as dead documentation. There is
+no automated data-migration step — the app launches greenfield; the existing
+JSON backup/restore feature is the manual path for anyone carrying prototype
+data forward.
 
 ## RBAC
 
