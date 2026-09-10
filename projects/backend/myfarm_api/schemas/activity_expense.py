@@ -32,6 +32,7 @@ class ActivityExpenseCreate(BaseModel):
     rate: Decimal | None = None
     amount: Decimal | None = None
     remarks: str | None = None
+    id: UUID | None = None
 
 
 class ActivityExpenseUpdate(BaseModel):

@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from myfarm_api.core.security import FirebaseIdentity, get_firebase_identity
 from myfarm_api.models import Farmer, Land, LandPoint
+from myfarm_api.repositories.crud import ConflictError
 from myfarm_api.repositories.entities import land_repo
 from myfarm_api.repositories.farmer import FarmerRepository
 from myfarm_api.schemas.land import LandCreate, LandRead, LandUpdate
@@ -52,7 +53,10 @@ async def create_land(
     """Create a new land."""
     payload = data.model_dump(exclude={"points"})
     land = Land(**payload)
-    land = await land_repo.create(current_farmer.id, land)
+    try:
+        land = await land_repo.create(current_farmer.id, land)
+    except ConflictError:
+        raise HTTPException(status_code=409, detail="Land with this ID already exists")
 
     # Add points if provided
     if data.points:

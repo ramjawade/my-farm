@@ -25,7 +25,7 @@ class CropBase(BaseModel):
 class CropCreate(CropBase):
     """Create a crop."""
 
-    pass
+    id: UUID | None = None
 
 
 class CropUpdate(BaseModel):
