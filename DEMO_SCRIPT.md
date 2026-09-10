@@ -11,7 +11,6 @@ This script walks through the key features of the My Farm agricultural managemen
 
 ### Initial State
 - App shows login screen if not authenticated
-- Demo-data mode available for quick testing
 
 ### Steps
 1. **First run — set a PIN**
@@ -104,9 +103,8 @@ This script walks through the key features of the My Farm agricultural managemen
    - Contextual farming advice based on weather
 
 ### Data Sources
-- **Live** (green badge) — Real OpenWeatherMap API (if configured)
+- **Live** (green badge) — Real OpenWeatherMap API (server-cached)
 - **Cached** (orange badge) — Previously fetched data (network fallback)
-- **Demo** (gray badge) — Mock data (no API key configured)
 
 ---
 
@@ -259,17 +257,6 @@ This script walks through the key features of the My Farm agricultural managemen
 
 3. **Settings Options**
    - Primary crops (multi-select)
-   - Backup/Restore farm data
-   - Clear demo data option
-
-### Backup & Restore
-1. Click **"Backup Farm Data"** → JSON file downloads
-   - Contains all crops, lands, activities, expenses
-   - Named with timestamp
-
-2. Click **"Restore from Backup"** → file picker
-   - Select previously downloaded backup JSON
-   - Restore data to current account
 
 ---
 

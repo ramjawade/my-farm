@@ -35,11 +35,10 @@ SQLAlchemy 2.0 async + asyncpg
 Neon Postgres (Singapore · pooled)
 ```
 
-Client writes commit to an IndexedDB **outbox** first and drain to the API
-in the background — the UI never blocks on the network. Full architecture,
-every table, every decision and its reasoning: **[`BACKEND_PLAN.md`](./BACKEND_PLAN.md)**
-(canonical, kept current — update it, not this section, when the backend
-changes). Visual counterpart: the
+Client writes are **online-only** — each mutation is a single API call. Full
+architecture, every table, every decision and its reasoning:
+**[`BACKEND_PLAN.md`](./BACKEND_PLAN.md)** (canonical, kept current — update
+it, not this section, when the backend changes). Visual counterpart: the
 [MyFarm Data Architecture canvas](https://claude.ai/code/artifact/261b1e80-742d-4e4a-9bc3-90bcbe29da40)
 (source in `design/database-schema/`).
 
@@ -76,7 +75,7 @@ git log for `claude/mvp1-*` branches)
   the original plan was never added — the golden path is currently only
   exercised by hand, per `DEMO_SCRIPT.md`.
 
-**Backend — Stages 1–5 of 7** (canonical plan and stage gates:
+**Backend — Stages 1–6 of 7** (canonical plan and stage gates:
 `BACKEND_PLAN.md` §11)
 - Stage 1 — Storage seam repaired to per-entity CRUD ahead of the network swap.
 - Stage 2 — FastAPI skeleton on Render; Firebase token verification; Neon
@@ -86,27 +85,26 @@ git log for `claude/mvp1-*` branches)
   a cross-tenant 404 test on every endpoint.
 - Stage 4 — Generated TS types from the OpenAPI contract; `ApiStorageService`
   wired in behind `IStorageService`; online-only at this point.
-- Stage 5 — Offline outbox: IndexedDB outbox + sync worker,
-  `/api/v1/sync/push` + `/api/v1/sync/pull`, tombstoned deletes.
+- Stage 5 — Descoped. Online-only architecture is shipping.
+- Stage 6 — Unpaginated lists (all rows per call), land polygon persistence,
+  server-cached weather, R2 attachments.
 
 ## 4. Remaining work
 
-- **Backend Stage 6 — Weather + attachments.** Move the OpenWeatherMap key
-  server-side (shared cache keyed by location grid, not per farmer); wire
-  Cloudflare R2 for activity photo attachments (currently disabled in the
-  UI — see `BACKEND_PLAN.md` §7 for the R2 decision).
 - **Backend Stage 7 — Firebase phone OTP (deferred).** Add an OTP
   phone-verify step *before* `/api/v1/auth/session` issues the JWT. The
   token, the API contract and every downstream flow stay unchanged. Plan:
   BACKEND_PLAN.md §5.1.
+- **Offline support (future).** If needed, IndexedDB outbox + sync worker for
+  disconnected operation — descoped from the current online-only release.
+- **Pagination (future).** Cursor-based pagination for large datasets —
+  descoped from the current unpaginated release. To be re-added when needed.
 - **E2E smoke test.** Add the Playwright golden-path spec against mobile +
   desktop viewports, gated in CI on PRs (the one MVP1 item that didn't land).
 - **Known gaps carried forward from `BACKEND_PLAN.md` §13**, worth closing
   before they bite:
   - Render runs a native buildpack build, not the `Dockerfile` CI verifies —
     the two can drift silently (§3.2).
-  - Render's `autoDeploy` fires on every push to `main` regardless of the
-    GitHub Actions result — a red CI run does not currently block a deploy.
   - Postgres RLS does not apply on Neon's hosted roles (confirmed, not a
     misconfiguration); tenant isolation is enforced by the base repository
     and the per-endpoint cross-tenant test only — treat any new endpoint's
