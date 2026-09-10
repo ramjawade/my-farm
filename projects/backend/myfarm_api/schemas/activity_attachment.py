@@ -33,3 +33,18 @@ class ActivityAttachmentRead(ActivityAttachmentBase):
 
     class Config:
         from_attributes = True
+
+
+class ActivityAttachmentUploadRequest(BaseModel):
+    """Request a presigned upload URL for an attachment."""
+
+    filename: str
+    content_type: str = "application/octet-stream"
+
+
+class ActivityAttachmentUploadResponse(BaseModel):
+    """Response with presigned upload URL."""
+
+    upload_url: str
+    storage_key: str
+    expires_in: int
