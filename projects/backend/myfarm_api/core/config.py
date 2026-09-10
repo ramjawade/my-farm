@@ -38,9 +38,21 @@ class Settings(BaseSettings):
     # localhost during development.
     cors_origins: str = "http://localhost:4200"
 
+    # Cloudflare R2 configuration for activity attachments (Phase 6).
+    # Zero-egress object storage: https://developers.cloudflare.com/r2/
+    r2_account_id: str = ""
+    r2_access_key_id: str = ""
+    r2_secret_access_key: str = ""
+    r2_bucket_name: str = "myfarm-attachments"
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
+    @property
+    def r2_configured(self) -> bool:
+        """Check if R2 is properly configured."""
+        return bool(self.r2_account_id and self.r2_access_key_id and self.r2_secret_access_key)
 
 
 @lru_cache

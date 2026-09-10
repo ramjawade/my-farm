@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import and_, select
 
 from myfarm_api.core.db import get_session_factory
+from myfarm_api.core.r2 import get_r2_service
 from myfarm_api.core.security import FirebaseIdentity, get_firebase_identity
 from myfarm_api.models import Activity, ActivityAttachment, ActivityExpense, Farmer
 from myfarm_api.repositories.entities import activity_repo
@@ -16,6 +17,8 @@ from myfarm_api.schemas.activity import ActivityCreate, ActivityRead, ActivityUp
 from myfarm_api.schemas.activity_attachment import (
     ActivityAttachmentCreate,
     ActivityAttachmentRead,
+    ActivityAttachmentUploadRequest,
+    ActivityAttachmentUploadResponse,
 )
 from myfarm_api.schemas.activity_expense import (
     ActivityExpenseCreate,
@@ -315,6 +318,33 @@ async def list_activity_attachments(
 
 
 @router.post(
+    "/{activity_id}/attachments/upload", response_model=ActivityAttachmentUploadResponse
+)
+async def get_attachment_upload_url(
+    activity_id: UUID,
+    request: ActivityAttachmentUploadRequest,
+    current_farmer: Farmer = Depends(get_current_farmer),
+) -> ActivityAttachmentUploadResponse:
+    """Get a presigned URL for uploading an attachment to R2.
+
+    The client uploads the file directly to the URL, then calls POST /{activity_id}/attachments
+    with the storage_key and file metadata.
+    """
+    await _get_owned_activity(current_farmer, activity_id)
+
+    try:
+        r2_service = get_r2_service()
+        response = r2_service.generate_upload_url(
+            activity_id, request.filename, request.content_type
+        )
+        return ActivityAttachmentUploadResponse(**response)
+    except ValueError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate upload URL: {str(e)}")
+
+
+@router.post(
     "/{activity_id}/attachments", response_model=ActivityAttachmentRead, status_code=201
 )
 async def create_activity_attachment(
@@ -340,7 +370,10 @@ async def delete_activity_attachment(
     attachment_id: UUID,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> None:
-    """Soft-delete an attachment for an activity."""
+    """Soft-delete an attachment for an activity.
+
+    Also deletes the file from R2 storage if configured.
+    """
     await _get_owned_activity(current_farmer, activity_id)
 
     session_factory = get_session_factory()
@@ -356,6 +389,13 @@ async def delete_activity_attachment(
         attachment = result.scalar_one_or_none()
         if not attachment:
             raise HTTPException(status_code=404, detail="Attachment not found")
+
+        # Try to delete from R2
+        try:
+            r2_service = get_r2_service()
+            r2_service.delete_file(attachment.storage_key)
+        except Exception as e:
+            print(f"Warning: Failed to delete attachment from R2: {e}")
 
         attachment.deleted_at = datetime.now(UTC)
         await session.commit()
