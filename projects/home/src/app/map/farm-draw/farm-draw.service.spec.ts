@@ -3,7 +3,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { FarmDrawService } from './farm-draw.service';
 import { LatLngPoint, SavedFarm } from '../models/map.models';
 import { IStorageService } from '../../core/storage/storage.interface';
-import { LocalStorageService } from '../../core/storage/local-storage.service';
+import { InMemoryStorageService } from '../../testing/in-memory-storage.service';
 
 describe('FarmDrawService', () => {
   let service: FarmDrawService;
@@ -21,7 +21,7 @@ describe('FarmDrawService', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: IStorageService, useClass: LocalStorageService },
+        { provide: IStorageService, useClass: InMemoryStorageService },
         FarmDrawService,
         provideZonelessChangeDetection(),
       ],

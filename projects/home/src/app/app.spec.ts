@@ -3,14 +3,14 @@ import { provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { App } from './app';
 import { IStorageService } from './core/storage/storage.interface';
-import { LocalStorageService } from './core/storage/local-storage.service';
+import { InMemoryStorageService } from './testing/in-memory-storage.service';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
       providers: [
-        { provide: IStorageService, useClass: LocalStorageService },
+        { provide: IStorageService, useClass: InMemoryStorageService },
         provideZonelessChangeDetection(),
         provideRouter([]),
       ],

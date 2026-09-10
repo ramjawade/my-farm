@@ -1,7 +1,11 @@
-"""Generic CRUD repository for tenant-scoped entities with cursor pagination."""
+"""Generic CRUD repository for tenant-scoped, farmer-owned entities.
 
-from collections.abc import Sequence
-from datetime import UTC, datetime
+Lists are unpaginated — one call returns every non-deleted row for the
+farmer (#61). Cursor pagination is tracked for a later reintroduction in
+#62; the previous implementation is in git history.
+"""
+
+from datetime import datetime
 from typing import Any
 from uuid import UUID
 
@@ -11,82 +15,26 @@ from myfarm_api.core.db import get_session_factory
 from myfarm_api.models import TenantScopedBase
 
 
-class CursorPage[T]:
-    """Cursor-paginated result set."""
-
-    def __init__(
-        self, items: list[T], next_cursor: str | None = None, has_more: bool = False
-    ) -> None:
-        self.items = items
-        self.next_cursor = next_cursor
-        self.has_more = has_more
-
-
 class TenantScopedCRUD[T: TenantScopedBase]:
-    """Generic CRUD for farmer-owned entities with cursor pagination over (updated_at, id)."""
+    """Generic CRUD for farmer-owned entities, scoped to one `farmer_id`."""
 
     def __init__(self, model: type[T]) -> None:
         self.model = model
 
-    async def list(
-        self,
-        farmer_id: UUID,
-        cursor: str | None = None,
-        limit: int = 20,
-    ) -> CursorPage[T]:
-        """List farmer's records, cursor-paginated over (updated_at, id).
-
-        Cursor format: "<updated_at_iso>:<id>"
-        """
+    async def list_all(self, farmer_id: UUID) -> list[T]:
+        """Every non-deleted record for this farmer, newest first."""
         session_factory = get_session_factory()
         async with session_factory() as session:
-            stmt = select(self.model).where(
-                and_(
-                    self.model.farmer_id == farmer_id,
-                    self.model.deleted_at.is_(None),
-                )
-            )
-
-            if cursor:
-                updated_at_str, id_str = cursor.rsplit(":", 1)
-                cursor_updated_at = datetime.fromisoformat(updated_at_str)
-                cursor_id = UUID(id_str)
-                stmt = stmt.where(
-                    (self.model.updated_at < cursor_updated_at)
-                    | (
-                        (self.model.updated_at == cursor_updated_at)
-                        & (self.model.id < cursor_id)
+            stmt = (
+                select(self.model)
+                .where(
+                    and_(
+                        self.model.farmer_id == farmer_id,
+                        self.model.deleted_at.is_(None),
                     )
                 )
-
-            stmt = stmt.order_by(
-                self.model.updated_at.desc(), self.model.id.desc()
-            ).limit(limit + 1)
-
-            result = await session.execute(stmt)
-            rows: Sequence[T] = result.scalars().all()
-
-            has_more = len(rows) > limit
-            if has_more:
-                rows = rows[:limit]
-
-            next_cursor = None
-            if rows and has_more:
-                last = rows[-1]
-                next_cursor = f"{last.updated_at.isoformat()}:{last.id}"
-
-            return CursorPage(list(rows), next_cursor, has_more)
-
-    async def list_all(self, farmer_id: UUID) -> list[T]:
-        """List all non-deleted records for this farmer (no pagination)."""
-        session_factory = get_session_factory()
-        async with session_factory() as session:
-            stmt = select(self.model).where(
-                and_(
-                    self.model.farmer_id == farmer_id,
-                    self.model.deleted_at.is_(None),
-                )
-            ).order_by(self.model.updated_at.desc(), self.model.id.desc())
+                .order_by(self.model.updated_at.desc(), self.model.id.desc())
+            )
 
             result = await session.execute(stmt)
             return list(result.scalars().all())

@@ -7,7 +7,7 @@ import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
 import { Activity, ActivityExpense } from '../../activity/activity.models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { IStorageService } from '../../../core/storage/storage.interface';
-import { LocalStorageService } from '../../../core/storage/local-storage.service';
+import { InMemoryStorageService } from '../../../testing/in-memory-storage.service';
 import { flushPromises } from '../../../testing/flush-promises';
 
 describe('ActivitiesSummaryComponent', () => {
@@ -35,10 +35,6 @@ describe('ActivitiesSummaryComponent', () => {
   ];
 
   beforeEach(async () => {
-    localStorage.clear();
-    localStorage.setItem('my_farm_f-test_activities', JSON.stringify(mockActivities));
-    localStorage.setItem('my_farm_f-test_activity_expenses', JSON.stringify(mockExpenses));
-
     await TestBed.configureTestingModule({
       imports: [ActivitiesSummaryComponent],
       providers: [
@@ -46,15 +42,19 @@ describe('ActivitiesSummaryComponent', () => {
         provideRouter([]),
         CropTimelineService,
         AuthService,
-        { provide: IStorageService, useClass: LocalStorageService },
+        { provide: IStorageService, useClass: InMemoryStorageService },
       ],
     }).compileComponents();
+
+    const storage = TestBed.inject(IStorageService) as InMemoryStorageService;
+    storage.activities = [...mockActivities];
+    storage.expenses = [...mockExpenses];
 
     fixture = TestBed.createComponent(ActivitiesSummaryComponent);
     component = fixture.componentInstance;
     componentRef = fixture.componentRef;
 
-    // Login mock user
+    // Login mock user — triggers the services to load from storage
     const authSvc = TestBed.inject(AuthService);
     authSvc.login({ id: 'f-test' } as any);
     TestBed.flushEffects();

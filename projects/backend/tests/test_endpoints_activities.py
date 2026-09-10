@@ -48,7 +48,6 @@ async def test_create_and_list_activities(
         assert list_resp.status_code == 200
         list_data = list_resp.json()
         assert len(list_data["items"]) == 2
-        assert list_data["has_more"] is False
 
 
 @pytest.mark.asyncio

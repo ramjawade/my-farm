@@ -71,7 +71,6 @@ export class ActivityService {
     }
   }
 
-
   addActivity(data: Omit<Activity, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): Activity {
     const now = Date.now();
     const activity: Activity = {

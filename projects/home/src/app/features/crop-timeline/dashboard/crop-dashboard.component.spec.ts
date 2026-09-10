@@ -4,7 +4,7 @@ import { CropDashboardComponent } from './crop-dashboard.component';
 import { CropTimelineService } from '../crop-timeline.service';
 import { CropEntity } from '../crop-timeline.models';
 import { IStorageService } from '../../../core/storage/storage.interface';
-import { LocalStorageService } from '../../../core/storage/local-storage.service';
+import { InMemoryStorageService } from '../../../testing/in-memory-storage.service';
 
 describe('CropDashboardComponent', () => {
   let component: CropDashboardComponent;
@@ -25,15 +25,12 @@ describe('CropDashboardComponent', () => {
   ];
 
   beforeEach(async () => {
-    localStorage.removeItem('my_farm_crops');
-    localStorage.removeItem('my_farm_crop_activities');
-
     await TestBed.configureTestingModule({
       imports: [CropDashboardComponent],
       providers: [
         provideZonelessChangeDetection(),
         CropTimelineService,
-        { provide: IStorageService, useClass: LocalStorageService },
+        { provide: IStorageService, useClass: InMemoryStorageService },
       ],
     }).compileComponents();
 

@@ -6,15 +6,15 @@ import { AuthService } from './auth.service';
 import { FarmerRegistrationService } from '../../features/farmer-registration/farmer-registration.service';
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
 import { IStorageService } from '../storage/storage.interface';
-import { LocalStorageService } from '../storage/local-storage.service';
+import { InMemoryStorageService } from '../../testing/in-memory-storage.service';
 
 /**
  * A storage implementation that carries an API credential, like
- * `ApiStorageService` does. `LocalStorageService` has no token API, so the
- * token paths are invisible to it.
+ * `ApiStorageService` does. The plain in-memory double has no token API,
+ * so the token paths would be invisible to it.
  */
 @Injectable()
-class TokenAwareLocalStorageService extends LocalStorageService {
+class TokenAwareStorageService extends InMemoryStorageService {
   authToken: string | null = null;
 
   setAuthToken(token: string | null): void {
@@ -48,7 +48,7 @@ describe('AuthService', () => {
     localStorage.clear();
     TestBed.configureTestingModule({
       providers: [
-        { provide: IStorageService, useClass: LocalStorageService },
+        { provide: IStorageService, useClass: InMemoryStorageService },
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideRouter([]),
@@ -109,7 +109,7 @@ describe('AuthService', () => {
  */
 describe('AuthService — API token lifecycle', () => {
   let service: AuthService;
-  let storage: TokenAwareLocalStorageService;
+  let storage: TokenAwareStorageService;
 
   const otherFarmer: FarmerRegistrationData = { ...mockFarmer, id: 'f-test-2' };
 
@@ -118,7 +118,7 @@ describe('AuthService — API token lifecycle', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
-        { provide: IStorageService, useClass: TokenAwareLocalStorageService },
+        { provide: IStorageService, useClass: TokenAwareStorageService },
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideRouter([]),
@@ -127,7 +127,7 @@ describe('AuthService — API token lifecycle', () => {
       ],
     });
     service = TestBed.inject(AuthService);
-    storage = TestBed.inject(IStorageService) as TokenAwareLocalStorageService;
+    storage = TestBed.inject(IStorageService) as TokenAwareStorageService;
   });
 
   afterEach(() => {

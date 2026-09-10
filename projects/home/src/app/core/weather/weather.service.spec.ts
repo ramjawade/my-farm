@@ -5,7 +5,7 @@ import { WeatherService } from './weather.service';
 import { AuthService } from '../auth/auth.service';
 import { WeatherCacheService } from './weather-cache.service';
 import { IStorageService } from '../storage/storage.interface';
-import { LocalStorageService } from '../storage/local-storage.service';
+import { InMemoryStorageService } from '../../testing/in-memory-storage.service';
 import { API_CONFIG } from '../config/api.config';
 import {
   WeatherLocation,
@@ -70,7 +70,7 @@ describe('WeatherService', () => {
         WeatherService,
         WeatherCacheService,
         { provide: AuthService, useValue: authServiceSpy },
-        { provide: IStorageService, useClass: LocalStorageService },
+        { provide: IStorageService, useClass: InMemoryStorageService },
       ],
     });
 
