@@ -213,7 +213,7 @@ export class ApiStorageService extends IStorageService {
   }
 
   // ============================================================================
-  // Expenses (nested under an activity — no /sync/* coverage yet, online only)
+  // Expenses (nested under an activity)
   // ============================================================================
 
   async getExpenses(userId: string): Promise<ActivityExpense[]> {

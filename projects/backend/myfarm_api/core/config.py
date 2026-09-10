@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     Nothing here is a secret by itself — it's just where the process finds
     its secrets (a DB URL, a service-account path). Actual values come from
     GitHub Actions secrets in CI and Render's env vars in production; see
-    ``BACKEND_PLAN.md`` §11.
+    ``BACKEND_PLAN.md`` §9.
     """
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")

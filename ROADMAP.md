@@ -47,11 +47,11 @@ it, not this section, when the backend changes). Visual counterpart: the
 **Frontend foundation**
 - One unified `Activity` + `ActivityExpense` model (typed `ActivityType`,
   `ActivityStatus`, `metadata`) — the old duplicate `ActivityEntity` is gone
-  from the crop-timeline models (a reference survives only in
-  `features/activity/migration.ts`, for migrating old localStorage data).
+  from the crop-timeline models.
 - `IStorageService` is the single persistence boundary — activities,
-  expenses, crops, lands, farmer profiles, weather, backup/restore. No
-  feature talks to `localStorage` directly any more.
+  expenses, crops, lands, farmer profiles, weather — implemented by
+  `ApiStorageService` against the backend. No feature talks to
+  `localStorage`; only `AuthService` keeps the session keys there.
 - PIN auth (`AuthService`, `authGuard`) gates every route. Sign-in is a
   single online `POST /api/v1/auth/session` that returns a session JWT
   (`SessionAuthService`); there is no offline sign-in. Firebase phone OTP is
@@ -63,8 +63,8 @@ it, not this section, when the backend changes). Visual counterpart: the
 
 **MVP1 — client-presentable prototype** (full findings/decisions history:
 git log for `claude/mvp1-*` branches)
-- Demo dataset + reset (`DemoDataService`), onboarding checklist with empty
-  states, JSON backup/restore.
+- Onboarding checklist with empty states. (The demo dataset and JSON
+  backup/restore that shipped with MVP1 were removed in #61.)
 - Toast notifications, confirm-on-delete everywhere, wildcard route +
   `NotFoundComponent`, sidebar IA, real dashboard KPIs (fabricated marketing
   numbers removed).
@@ -75,8 +75,8 @@ git log for `claude/mvp1-*` branches)
   the original plan was never added — the golden path is currently only
   exercised by hand, per `DEMO_SCRIPT.md`.
 
-**Backend — Stages 1–6 of 7** (canonical plan and stage gates:
-`BACKEND_PLAN.md` §11)
+**Backend — Stages 1–5 of 7** (canonical plan and stage gates:
+`BACKEND_PLAN.md` §10)
 - Stage 1 — Storage seam repaired to per-entity CRUD ahead of the network swap.
 - Stage 2 — FastAPI skeleton on Render; Firebase token verification; Neon
   provisioned; tenant-scoped base repository.
@@ -85,23 +85,28 @@ git log for `claude/mvp1-*` branches)
   a cross-tenant 404 test on every endpoint.
 - Stage 4 — Generated TS types from the OpenAPI contract; `ApiStorageService`
   wired in behind `IStorageService`; online-only at this point.
-- Stage 5 — Descoped. Online-only architecture is shipping.
-- Stage 6 — Unpaginated lists (all rows per call), land polygon persistence,
-  server-cached weather, R2 attachments.
+- Stage 5 — Online-only data layer (#61): unpaginated lists, `GET /expenses`,
+  land polygons stored on the backend, one API call per change, no browser
+  data storage and no polling.
 
 ## 4. Remaining work
 
+- **Client-supplied ids on create (bug, left over from #63).** Create
+  endpoints drop the id the client sends, and the client keeps its own, so
+  records created in the current session don't match the database until a
+  reload. Details: `BACKEND_PLAN.md` §6.1.
+- **Backend Stage 6 — Weather + attachments (#42).** Move the OpenWeatherMap
+  key server-side (shared cache keyed by location grid, not per farmer); wire
+  Cloudflare R2 for activity photo attachments (currently disabled in the UI).
 - **Backend Stage 7 — Firebase phone OTP (deferred).** Add an OTP
   phone-verify step *before* `/api/v1/auth/session` issues the JWT. The
   token, the API contract and every downstream flow stay unchanged. Plan:
   BACKEND_PLAN.md §5.1.
-- **Offline support (future).** If needed, IndexedDB outbox + sync worker for
-  disconnected operation — descoped from the current online-only release.
-- **Pagination (future).** Cursor-based pagination for large datasets —
-  descoped from the current unpaginated release. To be re-added when needed.
+- **Pagination (#62, not scheduled).** Lists return every row today; add
+  cursor pagination once a farmer's lists grow to a few hundred rows.
 - **E2E smoke test.** Add the Playwright golden-path spec against mobile +
   desktop viewports, gated in CI on PRs (the one MVP1 item that didn't land).
-- **Known gaps carried forward from `BACKEND_PLAN.md` §13**, worth closing
+- **Known gaps carried forward from `BACKEND_PLAN.md` §11**, worth closing
   before they bite:
   - Render runs a native buildpack build, not the `Dockerfile` CI verifies —
     the two can drift silently (§3.2).
