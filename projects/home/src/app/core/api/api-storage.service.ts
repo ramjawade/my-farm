@@ -14,12 +14,11 @@ import { SavedFarm, FarmAreaResult } from '../../map/models/map.models';
 import { WeatherData } from '../weather/weather.models';
 import { BackupFile } from '../storage/backup.models';
 import { ReferenceDataService } from './reference-data.service';
-import { CursorPage, FarmerResponse, FarmerUpdateRequest } from './contracts';
+import { FarmerResponse, FarmerUpdateRequest } from './contracts';
 
 const SQ_M_PER_HECTARE = 10_000;
 const SQ_M_PER_ACRE = 4_046.8564224;
 const EMPTY_AREA: FarmAreaResult = { squareMeters: 0, hectares: 0, acres: 0 };
-const DEFAULT_FARM_ID_KEY = 'my_farm_default_farm_id';
 
 function dateStringToTimestamp(value: string | null | undefined): number | undefined {
   if (!value) return undefined;
@@ -35,24 +34,20 @@ function timestampToDateString(value: number | undefined): string | undefined {
 /**
  * Remote API implementation of IStorageService.
  * Calls the MyFarm backend endpoints via Firebase-authenticated HTTP requests.
+ * Online-only — no offline outbox.
  *
  * Every method transforms between the Angular model (SavedFarm, Activity,
  * CropEntity, ActivityExpense) and the backend schema (Land, Activity,
  * Crop, ActivityExpense) — see the mappers below. Three deliberate gaps,
  * all documented at their mapper:
- *  - `SavedFarm.points` / `.geoJson` (the drawn polygon) have no backend
- *    column yet — Stage 3 never added `land_point` endpoints. The outbox
- *    layer (OutboxStorageService) covers this by merging in a local cache;
- *    this class alone only round-trips `area`.
+ *  - `SavedFarm.points` / `.geoJson` (the drawn polygon) are now persisted
+ *    to the backend on update.
  *  - `Activity.attachments` (base64 photos) aren't sent — that's Stage 7's
  *    R2 upload job.
  *  - `Activity.type` / `CropEntity.cropType` / `ActivityExpense.category`
  *    are free-text unions on the client but FK ids on the backend;
  *    ReferenceDataService resolves between the two by exact name match
  *    against the seeded reference tables.
- *
- * Stage 5 adds the offline outbox (OutboxStorageService, which wraps this
- * class) — this class itself stays online-only, matching Stage 4.
  */
 @Injectable({ providedIn: 'root' })
 export class ApiStorageService extends IStorageService {
@@ -86,41 +81,20 @@ export class ApiStorageService extends IStorageService {
     return new HttpHeaders(headers);
   }
 
-  /**
-   * Read every page of a cursor-paginated list endpoint (same `cursor` /
-   * `has_more` envelope as `ReferenceDataService.fetchAll`). The backend
-   * defaults to `limit=20`, so without this every list silently stopped at
-   * the first 20 records.
-   */
-  private async fetchAllPages<T>(url: string): Promise<T[]> {
-    const items: T[] = [];
-    let cursor: string | null = null;
-    do {
-      const params: Record<string, string> = { limit: '100' };
-      if (cursor) params['cursor'] = cursor;
-      const resp = await firstValueFrom(
-        this.http.get<CursorPage<T>>(url, {
-          headers: this.getHeaders(),
-          params,
-        }),
-      );
-      items.push(...resp.items);
-      cursor = resp.has_more ? resp.cursor : null;
-    } while (cursor);
-    return items;
+  private async fetchList<T>(url: string): Promise<T[]> {
+    const resp = await firstValueFrom(
+      this.http.get<{ items: T[] }>(url, {
+        headers: this.getHeaders(),
+      }),
+    );
+    return resp.items;
   }
 
   /**
    * `Land.farm_id` is required, but `SavedFarm` (a plot) has no concept of
    * the top-level `Farm` the backend also tracks — the app has never had a
    * multi-farm model. Get-or-create a single default Farm per farmer,
-   * cached for the lifetime of this service (and in localStorage, so the
-   * offline outbox can build a land payload without a network round trip
-   * once a farm has been resolved at least once).
-   *
-   * Public: the offline outbox needs it to build a land create/update
-   * payload before enqueueing, without going through this class's own
-   * (always-online) saveFarm/updateFarm.
+   * cached in memory for the lifetime of this service.
    */
   async getOrCreateDefaultFarmId(): Promise<string> {
     if (!this.defaultFarmIdPromise) {
@@ -130,35 +104,22 @@ export class ApiStorageService extends IStorageService {
   }
 
   private async resolveDefaultFarmId(): Promise<string> {
-    const cached = localStorage.getItem(DEFAULT_FARM_ID_KEY);
-    try {
-      const list = await firstValueFrom(
-        this.http.get<{ items: { id: string }[] }>(`${this.baseUrl}/farms`, {
-          headers: this.getHeaders(),
-        }),
-      );
-      const id =
-        list.items.length > 0
-          ? list.items[0].id
-          : (
-              await firstValueFrom(
-                this.http.post<{ id: string }>(
-                  `${this.baseUrl}/farms`,
-                  { name: 'My Farm' },
-                  { headers: this.getHeaders() },
-                ),
-              )
-            ).id;
-      localStorage.setItem(DEFAULT_FARM_ID_KEY, id);
-      return id;
-    } catch (error) {
-      if (cached) {
-        // Offline and we've resolved a farm before — reuse it rather than
-        // blocking every offline land creation on connectivity.
-        return cached;
-      }
-      throw error;
+    const list = await firstValueFrom(
+      this.http.get<{ items: { id: string }[] }>(`${this.baseUrl}/farms`, {
+        headers: this.getHeaders(),
+      }),
+    );
+    if (list.items.length > 0) {
+      return list.items[0].id;
     }
+    const response = await firstValueFrom(
+      this.http.post<{ id: string }>(
+        `${this.baseUrl}/farms`,
+        { name: 'My Farm' },
+        { headers: this.getHeaders() },
+      ),
+    );
+    return response.id;
   }
 
   // ============================================================================
@@ -167,7 +128,7 @@ export class ApiStorageService extends IStorageService {
 
   async getActivities(userId: string): Promise<Activity[]> {
     try {
-      const items = await this.fetchAllPages<unknown>(`${this.baseUrl}/activities`);
+      const items = await this.fetchList<unknown>(`${this.baseUrl}/activities`);
       return await Promise.all(items.map((item) => this.mapFromBackendActivity(item)));
     } catch (error) {
       console.error('Failed to get activities:', error);
@@ -227,7 +188,7 @@ export class ApiStorageService extends IStorageService {
 
   async syncExpensesForActivity(userId: string, activityId: string): Promise<ActivityExpense[]> {
     try {
-      const items = await this.fetchAllPages<unknown>(
+      const items = await this.fetchList<unknown>(
         `${this.baseUrl}/activities/${activityId}/expenses`,
       );
       return await Promise.all(items.map((item) => this.mapFromBackendExpense(item)));
@@ -243,17 +204,8 @@ export class ApiStorageService extends IStorageService {
 
   async getExpenses(userId: string): Promise<ActivityExpense[]> {
     try {
-      const activities = await this.getActivities(userId);
-      const allExpenses: ActivityExpense[] = [];
-      for (const activity of activities) {
-        const items = await this.fetchAllPages<unknown>(
-          `${this.baseUrl}/activities/${activity.id}/expenses`,
-        );
-        allExpenses.push(
-          ...(await Promise.all(items.map((item) => this.mapFromBackendExpense(item)))),
-        );
-      }
-      return allExpenses;
+      const items = await this.fetchList<unknown>(`${this.baseUrl}/expenses`);
+      return await Promise.all(items.map((item) => this.mapFromBackendExpense(item)));
     } catch (error) {
       console.error('Failed to get expenses:', error);
       return [];
@@ -317,24 +269,14 @@ export class ApiStorageService extends IStorageService {
     }
   }
 
-  /** The nested expense endpoints are keyed by activity_id, but
-   * `IStorageService.deleteExpense`/`updateExpense` are only given the
-   * expense's own id — scan activities' expense lists to find the owner. */
   private async findExpenseActivityId(expenseId: string): Promise<string | null> {
-    const activities = await this.getActivities('');
-    for (const activity of activities) {
-      try {
-        const items = await this.fetchAllPages<{ id: string }>(
-          `${this.baseUrl}/activities/${activity.id}/expenses`,
-        );
-        if (items.some((item) => item.id === expenseId)) {
-          return activity.id;
-        }
-      } catch {
-        // keep scanning the remaining activities
-      }
+    try {
+      const expenses = await this.getExpenses('');
+      const expense = expenses.find((e) => e.id === expenseId);
+      return expense?.activityId ?? null;
+    } catch {
+      return null;
     }
-    return null;
   }
 
   // ============================================================================
@@ -343,7 +285,7 @@ export class ApiStorageService extends IStorageService {
 
   async getCrops(userId: string): Promise<CropEntity[]> {
     try {
-      const items = await this.fetchAllPages<unknown>(`${this.baseUrl}/crops`);
+      const items = await this.fetchList<unknown>(`${this.baseUrl}/crops`);
       return await Promise.all(items.map((item) => this.mapFromBackendCrop(item)));
     } catch (error) {
       console.error('Failed to get crops:', error);
@@ -393,7 +335,7 @@ export class ApiStorageService extends IStorageService {
 
   async getFarms(userId: string): Promise<SavedFarm[]> {
     try {
-      const items = await this.fetchAllPages<unknown>(`${this.baseUrl}/lands`);
+      const items = await this.fetchList<unknown>(`${this.baseUrl}/lands`);
       return items.map((item) => this.mapFromBackendLand(item));
     } catch (error) {
       console.error('Failed to get farms:', error);

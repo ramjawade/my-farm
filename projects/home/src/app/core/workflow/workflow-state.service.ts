@@ -10,19 +10,7 @@ interface WorkflowState {
 
 @Injectable({ providedIn: 'root' })
 export class WorkflowStateService {
-  private readonly getState = (): WorkflowState => {
-    const stored = localStorage.getItem('mf-workflow-state');
-    if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch {
-        return this.getInitialState();
-      }
-    }
-    return this.getInitialState();
-  };
-
-  private readonly stateSignal = signal<WorkflowState>(this.getState());
+  private readonly stateSignal = signal<WorkflowState>(this.getInitialState());
 
   readonly completedPhases = computed(() => this.stateSignal().completedPhases);
   readonly currentPhase = computed(() => this.stateSignal().currentPhase);
@@ -62,23 +50,18 @@ export class WorkflowStateService {
   }
 
   markPhaseComplete(phase: WorkflowPhase): void {
-    this.stateSignal.update((state) => {
-      const updated = {
-        ...state,
-        completedPhases: Array.from(new Set([...state.completedPhases, phase])),
-        isFirstTime: false,
-      };
-      localStorage.setItem('mf-workflow-state', JSON.stringify(updated));
-      return updated;
-    });
+    this.stateSignal.update((state) => ({
+      ...state,
+      completedPhases: Array.from(new Set([...state.completedPhases, phase])),
+      isFirstTime: false,
+    }));
   }
 
   updateCurrentPhase(phase: WorkflowPhase): void {
-    this.stateSignal.update((state) => {
-      const updated = { ...state, currentPhase: phase };
-      localStorage.setItem('mf-workflow-state', JSON.stringify(updated));
-      return updated;
-    });
+    this.stateSignal.update((state) => ({
+      ...state,
+      currentPhase: phase,
+    }));
   }
 
   isPhaseComplete(phase: WorkflowPhase): boolean {
@@ -86,14 +69,10 @@ export class WorkflowStateService {
   }
 
   resetWorkflow(): void {
-    const initial = this.getInitialState();
-    this.stateSignal.set(initial);
-    localStorage.removeItem('mf-workflow-state');
+    this.stateSignal.set(this.getInitialState());
   }
 
   resetForNewUser(): void {
-    const initial = this.getInitialState();
-    this.stateSignal.set(initial);
-    localStorage.setItem('mf-workflow-state', JSON.stringify(initial));
+    this.stateSignal.set(this.getInitialState());
   }
 }

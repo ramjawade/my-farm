@@ -21,4 +21,3 @@ export * from './activity.contract';
 export * from './expense.contract';
 export * from './attachment.contract';
 export * from './reference.contract';
-export * from './sync.contract';
