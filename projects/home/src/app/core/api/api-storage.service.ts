@@ -12,7 +12,6 @@ import {
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
 import { SavedFarm, FarmAreaResult } from '../../map/models/map.models';
 import { WeatherData } from '../weather/weather.models';
-import { BackupFile } from '../storage/backup.models';
 import { ReferenceDataService } from './reference-data.service';
 import { FarmerResponse, FarmerUpdateRequest } from './contracts';
 
@@ -479,27 +478,6 @@ export class ApiStorageService extends IStorageService {
 
   async saveWeatherSnapshot(userId: string, snapshot: WeatherData): Promise<WeatherData> {
     return snapshot;
-  }
-
-  // ============================================================================
-  // Whole-account operations
-  //
-  // Backup / restore / bulk-delete are LocalStorage / demo-account features
-  // only — the Profile "Data & Backup" card is hidden when the API storage
-  // path is active (issue #50). Server-side account export/import is MVP 2.
-  // These stay hard failures so a stray call is loud, not silently wrong.
-  // ============================================================================
-
-  async exportUserData(userId: string): Promise<BackupFile> {
-    throw new Error('Account backup is not available on the API storage path (MVP 2)');
-  }
-
-  async importUserData(userId: string, backup: BackupFile): Promise<void> {
-    throw new Error('Account restore is not available on the API storage path (MVP 2)');
-  }
-
-  async clearUserData(userId: string): Promise<void> {
-    throw new Error('Bulk data deletion is not available on the API storage path');
   }
 
   // ============================================================================
