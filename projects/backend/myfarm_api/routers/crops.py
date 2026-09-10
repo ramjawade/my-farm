@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from myfarm_api.core.security import FirebaseIdentity, get_firebase_identity
 from myfarm_api.models import Crop, Farmer
+from myfarm_api.repositories.crud import ConflictError
 from myfarm_api.repositories.entities import crop_repo
 from myfarm_api.repositories.farmer import FarmerRepository
 from myfarm_api.schemas.crop import CropCreate, CropRead, CropUpdate
@@ -51,7 +52,10 @@ async def create_crop(
 ) -> CropRead:
     """Create a new crop."""
     crop = Crop(**data.model_dump())
-    crop = await crop_repo.create(current_farmer.id, crop)
+    try:
+        crop = await crop_repo.create(current_farmer.id, crop)
+    except ConflictError:
+        raise HTTPException(status_code=409, detail="Crop with this ID already exists")
     return CropRead.model_validate(crop)
 
 

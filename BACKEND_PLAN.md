@@ -42,7 +42,7 @@ document is left open.
 | Authorization | Base-repository tenant scoping + per-endpoint cross-tenant 404 test (Postgres RLS designed in but **inert on Neon** — §5.2) |
 | ORM / migrations | **SQLAlchemy 2.0 async + asyncpg**, **Alembic** |
 | Schema source of truth | **SQLAlchemy models** → Alembic for the DB; the client hand-maintains its own API contract types (§8) |
-| Identifiers | **UUIDv7** server default, native `uuid` columns; create endpoints are to accept a client-supplied id — not built yet (§6.1) |
+| Identifiers | **UUIDv7** server default, native `uuid` columns; create endpoints accept client-supplied ids (§6.1) |
 | Attachments | **Cloudflare R2** (10 GB free, zero egress) |
 | Weather cache | **Server-side, shared by location grid** — not per farmer |
 | Repository | **Monorepo** — `projects/backend/`, beside the Angular projects |
@@ -428,7 +428,7 @@ base URL. The API allowlists the GitHub Pages origin for CORS.
 | **2 — API skeleton** | FastAPI app under `projects/backend/`; `.prettierignore` guard (§4.1); Neon + Render provisioned; `/health`; Firebase token dependency; base repository (RLS designed in, inert on Neon — §5.2); CI | CORS + token rejection proven; `format:check` still passes |
 | **3 — Domain endpoints** | Models, Alembic migrations, CRUD routers, reference data | **Cross-tenant test per endpoint** |
 | **4 — Client integration** | Frontend-owned API contract types (§8); `ApiStorageService`; **backend-issued PIN session JWT, online-only** (§5.1); `PATCH /me` | End-to-end online; wrong PIN → 401, unknown phone → 404; a tokenless request is rejected |
-| **5 — Online-only data layer** (#61) | Unpaginated lists; `GET /expenses`; land polygons via `land_point`; client-supplied ids on create (still open, #76); one API call per client mutation, FIFO-serialized; no browser data storage and no polling | A reload makes ~9 requests and none while idle; `localStorage` holds only the session keys |
+| **5 — Online-only data layer** (#61) | Unpaginated lists; `GET /expenses`; land polygons via `land_point`; client-supplied ids on create (#76); one API call per client mutation, FIFO-serialized; no browser data storage and no polling | A reload makes ~9 requests and none while idle; `localStorage` holds only the session keys |
 | **6 — Weather + attachments** | Server-cached weather endpoint (retires the client-side key); R2 uploads | Key absent from the bundle |
 | **7 — Firebase phone OTP (deferred)** | Add an OTP phone-verify step *before* `/auth/session` issues the JWT; nothing downstream changes | OTP gates registration; the same JWT and API contract are unchanged |
 

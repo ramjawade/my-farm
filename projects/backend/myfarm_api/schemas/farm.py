@@ -28,7 +28,7 @@ class FarmBase(BaseModel):
 class FarmCreate(FarmBase):
     """Create a farm."""
 
-    pass
+    id: UUID | None = None
 
 
 class FarmUpdate(BaseModel):

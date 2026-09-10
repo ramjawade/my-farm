@@ -91,10 +91,6 @@ git log for `claude/mvp1-*` branches)
 
 ## 4. Remaining work
 
-- **Client-supplied ids on create (#76, bug left over from #63).** Create
-  endpoints drop the id the client sends, and the client keeps its own, so
-  records created in the current session don't match the database until a
-  reload. Details: `BACKEND_PLAN.md` §6.1.
 - **Backend Stage 6 — Weather + attachments (#42).** Move the OpenWeatherMap
   key server-side (shared cache keyed by location grid, not per farmer); wire
   Cloudflare R2 for activity photo attachments (currently disabled in the UI).
