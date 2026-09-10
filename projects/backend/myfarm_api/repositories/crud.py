@@ -10,9 +10,15 @@ from typing import Any
 from uuid import UUID
 
 from sqlalchemy import and_, select
+from sqlalchemy.exc import IntegrityError
 
 from myfarm_api.core.db import get_session_factory
 from myfarm_api.models import TenantScopedBase
+
+
+class ConflictError(Exception):
+    """Raised when a create operation violates a unique constraint."""
+    pass
 
 
 class TenantScopedCRUD[T: TenantScopedBase]:
@@ -54,12 +60,16 @@ class TenantScopedCRUD[T: TenantScopedBase]:
             return result.scalar_one_or_none()
 
     async def create(self, farmer_id: UUID, obj: T) -> T:
-        """Create a new record for this farmer."""
+        """Create a new record for this farmer. Raises ConflictError if the id already exists."""
         obj.farmer_id = farmer_id
         session_factory = get_session_factory()
         async with session_factory() as session:
             session.add(obj)
-            await session.commit()
+            try:
+                await session.commit()
+            except IntegrityError as e:
+                await session.rollback()
+                raise ConflictError(f"Record with id {obj.id} already exists") from e
             await session.refresh(obj)
             return obj
 

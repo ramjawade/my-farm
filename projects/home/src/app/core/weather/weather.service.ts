@@ -11,7 +11,7 @@ import {
   OpenWeatherResponse,
   OpenWeatherForecastResponse,
 } from './weather.models';
-import { API_CONFIG } from '../config/api.config';
+import { environment } from '../../../environments/environment';
 import { FarmDrawService } from '../../map/farm-draw/farm-draw.service';
 
 type DataSource = 'live' | 'cache' | 'demo';
@@ -97,32 +97,26 @@ export class WeatherService extends IWeatherService {
         }
       }
 
-      // Attempt to fetch from live API
-      if (API_CONFIG.openWeatherMap.apiKey && API_CONFIG.openWeatherMap.apiKey !== 'demo-key') {
-        try {
-          const [current, forecast] = await Promise.all([
-            this.fetchCurrentWeather(location),
-            this.fetchForecast(location),
-          ]);
+      // Fetch from backend endpoint (server-side caching and API key handling)
+      try {
+        const response = await this.fetchFromBackend(location);
+        const weatherData: WeatherData = {
+          location,
+          current: response.current,
+          forecast: response.forecast,
+          alerts: response.alerts || [],
+          lastRefreshed: Date.now(),
+          isStale: false,
+        };
 
-          const weatherData: WeatherData = {
-            location,
-            current,
-            forecast,
-            alerts: await this.fetchAlerts(location).catch(() => []),
-            lastRefreshed: Date.now(),
-            isStale: false,
-          };
+        this.cacheService.set(location, weatherData);
+        this.sourceSignal.set('live');
+        this.weatherDataSignal.set(weatherData);
+        this.loadingSignal.set(false);
 
-          this.cacheService.set(location, weatherData);
-          this.sourceSignal.set('live');
-          this.weatherDataSignal.set(weatherData);
-          this.loadingSignal.set(false);
-
-          return weatherData;
-        } catch (error) {
-          // Fall through to cache/demo
-        }
+        return weatherData;
+      } catch (error) {
+        // Fall through to cache/demo
       }
 
       // Fallback to cache or demo
@@ -136,18 +130,18 @@ export class WeatherService extends IWeatherService {
 
   override async refreshCurrentWeather(location: WeatherLocation): Promise<CurrentWeather> {
     try {
-      const current = await this.fetchCurrentWeather(location);
+      const response = await this.fetchFromBackend(location);
       const cached = this.cacheService.get(location);
 
       if (cached) {
-        cached.current = current;
+        cached.current = response.current;
         cached.lastRefreshed = Date.now();
         cached.isStale = false;
         this.cacheService.set(location, cached);
         this.weatherDataSignal.set(cached);
       }
 
-      return current;
+      return response.current;
     } catch (error) {
       console.error('Failed to refresh current weather:', error);
       throw error;
@@ -156,7 +150,8 @@ export class WeatherService extends IWeatherService {
 
   override async getWeatherAlerts(location: WeatherLocation): Promise<WeatherAlert[]> {
     try {
-      return await this.fetchAlerts(location);
+      const response = await this.fetchFromBackend(location);
+      return response.alerts || [];
     } catch (error) {
       console.error('Failed to fetch weather alerts:', error);
       return [];
@@ -173,115 +168,7 @@ export class WeatherService extends IWeatherService {
     return this.weatherDataSignal();
   }
 
-  private async fetchCurrentWeather(location: WeatherLocation): Promise<CurrentWeather> {
-    const params = {
-      lat: String(location.lat),
-      lon: String(location.lng),
-      appid: API_CONFIG.openWeatherMap.apiKey,
-      units: 'metric',
-    };
-
-    const response = await this.http
-      .get<OpenWeatherResponse>(`${API_CONFIG.openWeatherMap.baseUrl}/weather`, { params })
-      .toPromise();
-
-    if (!response) throw new Error('Empty response from weather API');
-
-    return {
-      temp: Math.round(response.main.temp),
-      feelsLike: Math.round(response.main.feels_like),
-      condition: response.weather[0]?.main || 'Unknown',
-      conditionCode: response.weather[0]?.icon || 'unknown',
-      humidity: response.main.humidity,
-      windSpeed: Math.round(response.wind.speed * 3.6),
-      windDirection: response.wind.deg,
-      rainProbability: 0,
-      rainfall: response.rain?.['1h'],
-      pressure: response.main.pressure,
-      uvIndex: response.uvi,
-      visibility: response.main.visibility,
-      fetchedAt: Date.now(),
-    };
-  }
-
-  private async fetchForecast(
-    location: WeatherLocation,
-  ): Promise<{ days: any[]; fetchedAt: number }> {
-    const params = {
-      lat: String(location.lat),
-      lon: String(location.lng),
-      appid: API_CONFIG.openWeatherMap.apiKey,
-      units: 'metric',
-      cnt: '40',
-    };
-
-    const response = await this.http
-      .get<OpenWeatherForecastResponse>(`${API_CONFIG.openWeatherMap.baseUrl}/forecast`, { params })
-      .toPromise();
-
-    if (!response?.list) throw new Error('Empty forecast response');
-
-    const dayGroups = new Map<string, any[]>();
-    response.list.forEach((item) => {
-      const date = new Date(item.dt * 1000);
-      const dateKey = date.toISOString().split('T')[0];
-      if (!dayGroups.has(dateKey)) dayGroups.set(dateKey, []);
-      dayGroups.get(dateKey)?.push(item);
-    });
-
-    const days = Array.from(dayGroups.entries())
-      .slice(0, 5)
-      .map(([dateStr, items]) => {
-        const date = new Date(dateStr);
-        const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
-        const temps = items.map((i) => i.main.temp);
-        const popValues = items.map((i) => i.pop || 0);
-
-        return {
-          date: date.getTime(),
-          dayName,
-          dateLabel: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          tempMax: Math.round(Math.max(...temps)),
-          tempMin: Math.round(Math.min(...temps)),
-          condition: items[0]?.weather[0]?.main || 'Unknown',
-          conditionCode: items[0]?.weather[0]?.icon || 'unknown',
-          rainProbability: Math.round(
-            (popValues.reduce((a, b) => a + b, 0) / popValues.length) * 100,
-          ),
-          rainfall: items.reduce((sum, i) => sum + (i.rain?.['3h'] || 0), 0),
-          uvIndex: undefined,
-        };
-      });
-
-    return { days, fetchedAt: Date.now() };
-  }
-
-  private async fetchAlerts(location: WeatherLocation): Promise<WeatherAlert[]> {
-    try {
-      const params = {
-        lat: String(location.lat),
-        lon: String(location.lng),
-        appid: API_CONFIG.openWeatherMap.apiKey,
-      };
-
-      const response = await this.http
-        .get<{ alerts: any[] }>(`${API_CONFIG.openWeatherMap.baseUrl}/weather/alerts`, { params })
-        .toPromise();
-
-      return (response?.alerts || []).map((alert) => ({
-        type: 'other' as const,
-        severity: alert.severity || 'medium',
-        title: alert.event || 'Weather Alert',
-        description: alert.description || '',
-        effectiveAt: alert.start * 1000,
-        expiresAt: alert.end * 1000,
-      }));
-    } catch {
-      return [];
-    }
-  }
-
-  private handleError(error: any, location: WeatherLocation): WeatherData {
+private handleError(error: any, location: WeatherLocation): WeatherData {
     console.error('Weather API error:', error);
 
     // Tier 2: Fallback to cached data
@@ -298,6 +185,73 @@ export class WeatherService extends IWeatherService {
     this.sourceSignal.set('demo');
     this.errorSignal.set('Unable to fetch weather data');
     return this.getMockWeatherData(location);
+  }
+
+  private async fetchFromBackend(location: WeatherLocation): Promise<{
+    current: CurrentWeather;
+    forecast: { days: any[]; fetchedAt: number };
+    alerts: WeatherAlert[];
+  }> {
+    const baseUrl = environment.apiBaseUrl;
+    const response = await this.http
+      .get<{
+        data: OpenWeatherResponse;
+        source: string;
+      }>(`${baseUrl}/weather`, {
+        params: {
+          lat: String(location.lat),
+          lng: String(location.lng),
+        },
+      })
+      .toPromise();
+
+    if (!response?.data) throw new Error('Empty response from backend weather API');
+
+    const weatherData = response.data;
+    const current: CurrentWeather = {
+      temp: Math.round(weatherData.main.temp),
+      feelsLike: Math.round(weatherData.main.feels_like),
+      condition: weatherData.weather[0]?.main || 'Unknown',
+      conditionCode: weatherData.weather[0]?.icon || 'unknown',
+      humidity: weatherData.main.humidity,
+      windSpeed: Math.round(weatherData.wind.speed * 3.6),
+      windDirection: weatherData.wind.deg,
+      rainProbability: 0,
+      rainfall: weatherData.rain?.['1h'],
+      pressure: weatherData.main.pressure,
+      uvIndex: weatherData.uvi,
+      visibility: (weatherData as any).visibility,
+      fetchedAt: Date.now(),
+    };
+
+    // For now, return a simple forecast based on current data
+    // TODO: Add forecast endpoint to backend
+    const forecast = {
+      days: [
+        {
+          date: Date.now(),
+          dayName: new Date(Date.now()).toLocaleDateString('en-US', { weekday: 'short' }),
+          dateLabel: new Date(Date.now()).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+          }),
+          tempMax: current.temp,
+          tempMin: current.temp - 3,
+          condition: current.condition,
+          conditionCode: current.conditionCode,
+          rainProbability: current.rainProbability,
+          rainfall: current.rainfall || 0,
+          uvIndex: current.uvIndex,
+        },
+      ],
+      fetchedAt: Date.now(),
+    };
+
+    return {
+      current,
+      forecast,
+      alerts: [],
+    };
   }
 
   private getMockWeatherData(location: WeatherLocation): WeatherData {

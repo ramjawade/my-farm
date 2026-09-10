@@ -506,6 +506,7 @@ export class ApiStorageService extends IStorageService {
 
   async mapToBackendActivity(activity: Partial<Activity>): Promise<Record<string, unknown>> {
     return {
+      id: activity.id,
       activity_type_id:
         activity.type !== undefined
           ? await this.referenceData.activityTypeIdForName(activity.type)
@@ -543,6 +544,7 @@ export class ApiStorageService extends IStorageService {
 
   async mapToBackendExpense(expense: Partial<ActivityExpense>): Promise<Record<string, unknown>> {
     return {
+      id: expense.id,
       expense_category_id:
         expense.category !== undefined
           ? await this.referenceData.expenseCategoryIdForName(expense.category)
@@ -579,6 +581,7 @@ export class ApiStorageService extends IStorageService {
 
   async mapToBackendCrop(crop: Partial<CropEntity>): Promise<Record<string, unknown>> {
     return {
+      id: crop.id,
       land_id: crop.fieldId,
       crop_catalog_id:
         crop.cropType !== undefined
@@ -618,6 +621,7 @@ export class ApiStorageService extends IStorageService {
 
   mapToBackendLand(farm: Partial<SavedFarm>, farmId?: string): Record<string, unknown> {
     return {
+      id: farm.id,
       name: farm.name,
       farm_id: farmId,
       area_sq_m: farm.area?.squareMeters,

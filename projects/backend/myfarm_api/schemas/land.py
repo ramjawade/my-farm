@@ -27,7 +27,7 @@ class LandBase(BaseModel):
 class LandCreate(LandBase):
     """Create a land."""
 
-    pass
+    id: UUID | None = None
 
 
 class LandUpdate(BaseModel):

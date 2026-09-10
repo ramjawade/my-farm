@@ -66,14 +66,11 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Stamp build metadata and secrets into the production environment
-        env:
-          OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+      - name: Stamp build metadata into the production environment
         run: |
           STAMP="$(date -u +%Y%m%d).${GITHUB_SHA::7}"
           API_BASE_URL="${{ vars.API_BASE_URL || 'https://myfarm-api.onrender.com/api/v1' }}"
           sed -i "s|__BUILD_STAMP__|${STAMP}|" projects/home/src/environments/environment.prod.ts
-          sed -i "s|__OPENWEATHER_API_KEY__|${OPENWEATHER_API_KEY}|" projects/home/src/environments/environment.prod.ts
           sed -i "s|__API_BASE_URL__|${API_BASE_URL}|" projects/home/src/environments/environment.prod.ts
 
       - name: Build production

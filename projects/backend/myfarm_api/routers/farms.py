@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from myfarm_api.core.security import FirebaseIdentity, get_firebase_identity
 from myfarm_api.models import Farm, Farmer
+from myfarm_api.repositories.crud import ConflictError
 from myfarm_api.repositories.entities import farm_repo
 from myfarm_api.repositories.farmer import FarmerRepository
 from myfarm_api.schemas.farm import FarmCreate, FarmRead, FarmUpdate
@@ -51,7 +52,10 @@ async def create_farm(
 ) -> FarmRead:
     """Create a new farm."""
     farm = Farm(**data.model_dump())
-    farm = await farm_repo.create(current_farmer.id, farm)
+    try:
+        farm = await farm_repo.create(current_farmer.id, farm)
+    except ConflictError:
+        raise HTTPException(status_code=409, detail="Farm with this ID already exists")
     return FarmRead.model_validate(farm)
 
 
