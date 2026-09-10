@@ -8,13 +8,15 @@ COPY pyproject.toml ./
 RUN pip install --no-cache-dir .
 
 COPY myfarm_api ./myfarm_api
-# alembic.ini and alembic/ land in Stage 3 with the first domain model —
-# nothing to migrate yet.
+COPY alembic.ini ./
+COPY migrations ./migrations
 
 # Render sets $PORT; default it for local `docker run`.
 ENV PORT=8000
 EXPOSE 8000
 
-# Single worker: the free-tier instance this targets (BACKEND_PLAN.md §3.2)
-# has 0.1 CPU — more workers would just contend for it, not add throughput.
-CMD ["sh", "-c", "uvicorn myfarm_api.main:app --host 0.0.0.0 --port ${PORT}"]
+# Render runs a native Python buildpack, not this image (BACKEND_PLAN.md
+# §3.2) — but keep the two in step: `alembic upgrade head` before uvicorn,
+# same as the buildpack start command. `upgrade head` is a fast no-op once
+# the schema is current.
+CMD ["sh", "-c", "alembic upgrade head && uvicorn myfarm_api.main:app --host 0.0.0.0 --port ${PORT}"]

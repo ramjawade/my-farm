@@ -130,13 +130,12 @@ service (`myfarm-api`, `srv-dafrtrn40ujc73cmjpog`) runs
 `pip install ./projects/backend` and
 `uvicorn myfarm_api.main:app --host 0.0.0.0 --port $PORT` directly, no image
 involved. `projects/backend/Dockerfile` still exists and CI still builds it
-(§10), but only as a build-correctness check — it is not what ships. This is
-a real gap from the original plan, not a rounding error: if the two build
-paths ever drift (a dependency that needs an OS package the buildpack lacks,
-say), CI passing proves nothing about what Render is actually running.
-Closing it means either finding Render's non-API path to a Docker deploy, or
-retiring the Dockerfile and its CI job in favour of the buildpack build
-CI already exercises through `pip install -e ".[dev]"`.
+(§10) as a parity check. The two are deliberately kept in step — both do
+`pip install .` then `alembic upgrade head && uvicorn …` — and `render.yaml`
+pins the buildpack side. The residual risk is an OS-package dependency the
+buildpack lacks but the slim image has; the CI build would still pass. If
+that ever bites, the fix is Render's non-API Docker path or retiring the
+Dockerfile in favour of the buildpack build CI already exercises.
 
 ### 3.3 Why a one-minute cold start is acceptable
 
@@ -440,9 +439,9 @@ trade for keeping the frontend build fully decoupled from the backend.
 | Pipeline | Steps |
 |---|---|
 | Frontend | unchanged — lint → format:check → test → build → GitHub Pages |
-| Backend | ruff → mypy → pytest (Postgres service container) → build Docker image (verification only, §3.2 — not what Render deploys) |
-| Deploy | **Render auto-deploys on every push to `main`** (`autoDeploy: yes`, `commit` trigger), independent of the GitHub Actions result above — a red CI run does not currently block a Render deploy |
-| Migrations | Alembic runs **from CI against Neon before the new deploy goes live** |
+| Backend | ruff → mypy → pytest (Postgres service container) → build Docker image (parity check, §3.2) → **deploy** |
+| Deploy | **CI-gated** (issue #41): Render `autoDeploy` is **off**; the backend workflow POSTs `RENDER_DEPLOY_HOOK_URL` only after the checks pass on a push to `main`. Service config pinned in `render.yaml`. |
+| Migrations | `alembic upgrade head` runs as part of the service start command (free plan has no pre-deploy hook); idempotent, a no-op once current |
 | Contract | frontend-owned API types are hand-maintained (§9) — no generation step |
 
 Secrets: GitHub Actions and Render both hold the Neon URL,
@@ -477,7 +476,7 @@ introducing a network backend is how these migrations fail.
 | **Free-tier terms move** — verified Sept 2026 | Neon and Render projects both provisioned; only `DATABASE_URL` and the host change if a provider is swapped |
 | Neon idles to zero mid-request | Pooled endpoint, `pool_pre_ping`, outbox retries |
 | Render cold start degrades UX | Acceptable only because of the outbox (§3.3) |
-| CI failing doesn't block a Render deploy | `autoDeploy` fires on every push to `main` regardless of the Actions result (§10); nothing currently stops a broken merge from going live — worth a deploy hook gate if this becomes a real incident risk |
+| CI failing ships to production | Closed (issue #41): `autoDeploy` is off; the deploy hook fires only after ruff + mypy + pytest pass on `main` |
 | 0.5 GB storage ceiling | Blobs in R2; weather is one shared cache; row-count alerting before the ceiling |
 | LWW loses a concurrent edit | Sound for single-device-per-record use; losers logged; totals recomputed, never synced |
 | Offline is the largest item and gets underestimated | It has its own stage (5), not a checkbox inside another |

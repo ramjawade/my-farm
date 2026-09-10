@@ -2,31 +2,22 @@ import { Component, inject, signal, computed, ChangeDetectionStrategy } from '@a
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/auth/auth.service';
 import { ProfileEditDialogComponent } from './components/profile-edit-dialog.component';
-import { ConfirmDialogComponent, ToastService } from 'shared';
-import { DemoDataService } from '../../core/demo/demo-data.service';
-import { isBackupFile } from '../../core/storage/backup.models';
+import { ToastService } from 'shared';
 
 @Component({
   standalone: true,
   selector: 'app-profile',
-  imports: [CommonModule, ProfileEditDialogComponent, ConfirmDialogComponent],
+  imports: [CommonModule, ProfileEditDialogComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileComponent {
   private readonly authService = inject(AuthService);
-  private readonly demoData = inject(DemoDataService);
   private readonly toast = inject(ToastService);
 
   // Read-only state
   readonly currentUser = this.authService.currentUser;
-
-  // Data & backup (settings card)
-  readonly isDemoUser = this.demoData.isDemoUser;
-  readonly dataMessage = signal<{ kind: 'success' | 'danger'; text: string } | null>(null);
-  readonly dataBusy = signal(false);
-  readonly showResetConfirm = signal(false);
 
   // Modal dialog trigger states
   readonly activeSection = signal<'account' | 'agronomic' | 'land' | 'operations'>('account');
@@ -100,54 +91,4 @@ export class ProfileComponent {
     }
   }
 
-  // --- Data & backup ---
-  async exportBackup(): Promise<void> {
-    const backup = await this.demoData.exportBackup();
-    if (!backup) return;
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const stamp = new Date().toISOString().slice(0, 10);
-    a.href = url;
-    a.download = `my-farm-backup-${stamp}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    this.dataMessage.set({ kind: 'success', text: 'Backup downloaded.' });
-    this.toast.success('Backup downloaded.');
-  }
-
-  async onRestoreFileSelected(event: Event): Promise<void> {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    input.value = '';
-    if (!file) return;
-    this.dataBusy.set(true);
-    try {
-      const parsed: unknown = JSON.parse(await file.text());
-      if (!isBackupFile(parsed)) {
-        this.dataMessage.set({ kind: 'danger', text: 'That file is not a MyFarm backup.' });
-        return;
-      }
-      await this.demoData.restoreBackup(parsed);
-      this.dataMessage.set({
-        kind: 'success',
-        text: `Restored ${parsed.crops.length} crops, ${parsed.farms.length} lands and ${parsed.activities.length} activities.`,
-      });
-    } catch {
-      this.dataMessage.set({ kind: 'danger', text: 'Could not read that backup file.' });
-    } finally {
-      this.dataBusy.set(false);
-    }
-  }
-
-  async confirmResetDemo(): Promise<void> {
-    this.dataBusy.set(true);
-    try {
-      await this.demoData.resetDemoData();
-      this.dataMessage.set({ kind: 'success', text: 'Demo farm reset to its starting state.' });
-      this.toast.success('Demo farm reset.');
-    } finally {
-      this.dataBusy.set(false);
-    }
-  }
 }

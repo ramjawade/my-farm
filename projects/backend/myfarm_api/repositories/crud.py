@@ -87,6 +87,20 @@ class TenantScopedCRUD[T: TenantScopedBase]:
 
             return CursorPage(list(rows), next_cursor, has_more)
 
+    async def list_all(self, farmer_id: UUID) -> list[T]:
+        """List all non-deleted records for this farmer (no pagination)."""
+        session_factory = get_session_factory()
+        async with session_factory() as session:
+            stmt = select(self.model).where(
+                and_(
+                    self.model.farmer_id == farmer_id,
+                    self.model.deleted_at.is_(None),
+                )
+            ).order_by(self.model.updated_at.desc(), self.model.id.desc())
+
+            result = await session.execute(stmt)
+            return list(result.scalars().all())
+
     async def get(self, farmer_id: UUID, id: UUID) -> T | None:
         """Get a single record, verifying farmer_id ownership."""
         session_factory = get_session_factory()

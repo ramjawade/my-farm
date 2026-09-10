@@ -3,7 +3,7 @@
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 
 from myfarm_api.core.security import FirebaseIdentity, get_firebase_identity
 from myfarm_api.models import Farm, Farmer
@@ -24,15 +24,11 @@ async def get_current_farmer(
 @router.get("", response_model=dict)
 async def list_farms(
     current_farmer: Farmer = Depends(get_current_farmer),
-    cursor: str | None = Query(None),
-    limit: int = Query(20, ge=1, le=100),
 ) -> dict[str, Any]:
-    """List farms for the current farmer, cursor-paginated."""
-    page = await farm_repo.list(current_farmer.id, cursor=cursor, limit=limit)
+    """List all farms for the current farmer."""
+    farms = await farm_repo.list_all(current_farmer.id)
     return {
-        "items": [FarmRead.model_validate(f) for f in page.items],
-        "cursor": page.next_cursor,
-        "has_more": page.has_more,
+        "items": [FarmRead.model_validate(f) for f in farms],
     }
 
 

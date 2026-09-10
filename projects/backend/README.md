@@ -200,37 +200,31 @@ standing in for layer 2 on this platform.
 ### Render: provisioned
 
 Web service `myfarm-api` (id `srv-dafrtrn40ujc73cmjpog`) is live at
-<https://myfarm-api.onrender.com>, **Singapore** region, free instance,
-auto-deploying from `main` on every push. Verified via Render's own build
-and runtime logs (`Build successful`, `Application startup complete`,
-`Your service is live`) — the sandbox this was provisioned from can reach
-Render's management API but not `*.onrender.com` itself, so the running
-`/health` endpoint hasn't been hit directly from here; hit it yourself to
-confirm:
+<https://myfarm-api.onrender.com>, **Singapore** region, free instance.
+Configuration is pinned in [`../../render.yaml`](../../render.yaml):
+`rootDir: projects/backend`, `buildCommand: pip install .`,
+`startCommand: alembic upgrade head && uvicorn myfarm_api.main:app …`,
+`healthCheckPath: /health`.
 
 ```bash
 curl https://myfarm-api.onrender.com/health
 ```
 
-Environment variables set on the service: `DATABASE_URL` (the corrected
-Neon connection string above), `CORS_ORIGINS=https://ramjawade.github.io`,
-and `FIREBASE_PROJECT_ID=""` — empty because no Firebase project exists yet
-(see below). Every real token will be rejected until that's set to a real
-project id.
+**Deploys are CI-gated (issue #41).** `autoDeploy` is **off**;
+`.github/workflows/backend.yml` POSTs `RENDER_DEPLOY_HOOK_URL` after ruff +
+mypy + pytest pass on a push to `main`. Migrations run in the start command,
+so a deploy brings the Neon schema to head automatically.
 
-Two gaps, both real, neither closed yet:
+Environment variables on the service: `DATABASE_URL` (Neon pooled,
+`postgresql+asyncpg://…`), `SESSION_JWT_SECRET` (HS256 signing key),
+`CORS_ORIGINS=https://ramjawade.github.io`, and `FIREBASE_PROJECT_ID` —
+`""` is fine; the PIN session-JWT path doesn't use Firebase. Firebase is
+only the fallback token verifier for a future OTP step (`BACKEND_PLAN.md`
+§5.1).
 
-- **No health check path.** Render's service-creation API has no parameter
-  for it. Set it to `/health` yourself: dashboard → myfarm-api → Settings →
-  Health Check Path.
-- **Not actually running the `Dockerfile`.** Render's API only supports
-  buildpack-style deploys (an explicit build/start command), not
-  Docker/registry deploys, so the live service runs
-  `pip install ./projects/backend` +
-  `uvicorn myfarm_api.main:app --host 0.0.0.0 --port $PORT` directly — no
-  image. `Dockerfile` and its CI build job (`.github/workflows/backend.yml`)
-  are therefore build-correctness checks only, not a preview of what ships.
-  See BACKEND_PLAN.md §3.2 for the tradeoff this leaves open.
+**Your action:** create the deploy hook (dashboard → myfarm-api → Settings →
+Deploy Hook) and add its URL as the `RENDER_DEPLOY_HOOK_URL` GitHub Actions
+secret. Until then the deploy step logs a warning and skips.
 
 ### Firebase Auth — still needs your action
 

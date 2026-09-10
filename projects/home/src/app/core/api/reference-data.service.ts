@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ReferenceItem, ReferencePage } from './contracts';
+import { ReferenceItem } from './contracts';
 
 /**
  * Translates between the backend's reference-table ids and the frontend's
@@ -16,22 +16,7 @@ import { ReferenceItem, ReferencePage } from './contracts';
  * with names that must match those frontend enums exactly (see
  * admin.py's SEED_* lists). This is the one place that resolves between
  * the two, name<->id.
- *
- * The offline outbox (OutboxStorageService) needs to resolve these ids
- * while genuinely offline — an activity logged in the field can't wait for
- * a network round trip just to know its own id — so a successful load is
- * also persisted to localStorage and used as a fallback when the network
- * fetch fails. Reference data changes rarely enough (it's an admin-seeded,
- * effectively-static lookup table) that a stale cache is a reasonable
- * trade against blocking every offline write on connectivity.
  */
-const LOCAL_CACHE_KEY = 'my_farm_reference_data_cache';
-
-interface CachedReferenceData {
-  crops: ReferenceItem[];
-  expenses: ReferenceItem[];
-  activityTypes: ReferenceItem[];
-}
 
 @Injectable({ providedIn: 'root' })
 export class ReferenceDataService {
@@ -87,19 +72,12 @@ export class ReferenceDataService {
   }
 
   private async loadAll(): Promise<void> {
-    try {
-      const [crops, expenses, activityTypes] = await Promise.all([
-        this.fetchAll(`${this.baseUrl}/crops`),
-        this.fetchAll(`${this.baseUrl}/expense-categories`),
-        this.fetchAll(`${this.baseUrl}/activity-types`),
-      ]);
-      this.applyMaps(crops, expenses, activityTypes);
-      this.saveLocalCache({ crops, expenses, activityTypes });
-    } catch (error) {
-      if (!this.loadFromLocalCache()) {
-        throw error;
-      }
-    }
+    const [crops, expenses, activityTypes] = await Promise.all([
+      this.fetchAll(`${this.baseUrl}/crops`),
+      this.fetchAll(`${this.baseUrl}/expense-categories`),
+      this.fetchAll(`${this.baseUrl}/activity-types`),
+    ]);
+    this.applyMaps(crops, expenses, activityTypes);
   }
 
   private applyMaps(
@@ -121,40 +99,11 @@ export class ReferenceDataService {
     }
   }
 
-  private saveLocalCache(data: CachedReferenceData): void {
-    try {
-      localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(data));
-    } catch {
-      // Storage full or unavailable — the in-memory maps are already
-      // populated for this session, so this is a soft failure.
-    }
-  }
-
-  private loadFromLocalCache(): boolean {
-    try {
-      const raw = localStorage.getItem(LOCAL_CACHE_KEY);
-      if (!raw) return false;
-      const cached = JSON.parse(raw) as CachedReferenceData;
-      this.applyMaps(cached.crops, cached.expenses, cached.activityTypes);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
   private async fetchAll(url: string): Promise<ReferenceItem[]> {
-    const items: ReferenceItem[] = [];
-    let cursor: string | null = null;
-    do {
-      const params: Record<string, string> = { limit: '200' };
-      if (cursor) params['cursor'] = cursor;
-      const resp = await firstValueFrom(
-        this.http.get<ReferencePage>(url, { headers: this.getHeaders(), params }),
-      );
-      items.push(...resp.items);
-      cursor = resp.has_more ? resp.cursor : null;
-    } while (cursor);
-    return items;
+    const resp = await firstValueFrom(
+      this.http.get<{ items: ReferenceItem[] }>(url, { headers: this.getHeaders() }),
+    );
+    return resp.items;
   }
 
   async cropCatalogIdForName(name: string): Promise<string> {

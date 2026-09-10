@@ -56,9 +56,4 @@ export abstract class IStorageService {
   // --- Weather ---
   abstract getWeatherHistory(userId: string): Promise<WeatherData[]>;
   abstract saveWeatherSnapshot(userId: string, snapshot: WeatherData): Promise<WeatherData>;
-
-  // --- Whole-account operations (backup / restore / reset) ---
-  abstract exportUserData(userId: string): Promise<BackupFile>;
-  abstract importUserData(userId: string, backup: BackupFile): Promise<void>;
-  abstract clearUserData(userId: string): Promise<void>;
 }
