@@ -9,8 +9,7 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { IStorageService } from './core/storage/storage.interface';
-import { LocalStorageService } from './core/storage/local-storage.service';
-import { OutboxStorageService } from './core/outbox/outbox-storage.service';
+import { ApiStorageService } from './core/api/api-storage.service';
 import { IWeatherService } from './core/weather/weather.interface';
 import { WeatherService } from './core/weather/weather.service';
 import { provideServiceWorker } from '@angular/service-worker';
@@ -21,9 +20,7 @@ export const appConfig: ApplicationConfig = {
     provideZonelessChangeDetection(),
     provideHttpClient(),
     provideRouter(routes),
-    // Switch between local and API storage:
-    // { provide: IStorageService, useClass: LocalStorageService },  // Offline (no backend)
-    { provide: IStorageService, useClass: OutboxStorageService }, // Stage 5: online + offline outbox
+    { provide: IStorageService, useClass: ApiStorageService }, // Online-only
     { provide: IWeatherService, useClass: WeatherService },
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),

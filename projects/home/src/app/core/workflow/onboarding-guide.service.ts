@@ -7,22 +7,7 @@ interface PromptState {
 
 @Injectable({ providedIn: 'root' })
 export class OnboardingGuideService {
-  private readonly getPromptState = (): PromptState => {
-    const stored = localStorage.getItem('mf-prompt-state');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        return {
-          dismissedPhases: new Set(parsed.dismissedPhases || []),
-        };
-      } catch {
-        return { dismissedPhases: new Set() };
-      }
-    }
-    return { dismissedPhases: new Set() };
-  };
-
-  private readonly promptState = signal<PromptState>(this.getPromptState());
+  private readonly promptState = signal<PromptState>({ dismissedPhases: new Set() });
 
   readonly dismissedPhases = computed(() => this.promptState().dismissedPhases);
 
@@ -31,21 +16,13 @@ export class OnboardingGuideService {
   }
 
   dismissPrompt(phase: WorkflowPhase): void {
-    this.promptState.update((state) => {
-      const updated = {
-        ...state,
-        dismissedPhases: new Set([...state.dismissedPhases, phase]),
-      };
-      localStorage.setItem(
-        'mf-prompt-state',
-        JSON.stringify({ dismissedPhases: Array.from(updated.dismissedPhases) }),
-      );
-      return updated;
-    });
+    this.promptState.update((state) => ({
+      ...state,
+      dismissedPhases: new Set([...state.dismissedPhases, phase]),
+    }));
   }
 
   resetPrompts(): void {
     this.promptState.set({ dismissedPhases: new Set() });
-    localStorage.removeItem('mf-prompt-state');
   }
 }
