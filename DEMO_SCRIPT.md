@@ -103,8 +103,9 @@ This script walks through the key features of the My Farm agricultural managemen
    - Contextual farming advice based on weather
 
 ### Data Sources
-- **Live** (green badge) — Real OpenWeatherMap API (server-cached)
+- **Live** (green badge) — Real OpenWeatherMap API (if configured)
 - **Cached** (orange badge) — Previously fetched data (network fallback)
+- **Demo** (gray badge) — Sample weather data (no API key configured)
 
 ---
 
@@ -266,12 +267,6 @@ This script walks through the key features of the My Farm agricultural managemen
 - Footer displays app version (e.g., "0.1.0")
 - Build stamp shows deployment date/commit
 
-### Demo Data Reset
-1. Go to **Profile → Settings**
-2. Click **"Clear Demo Data"** button
-3. Confirms action → All demo data deleted
-4. App resets to fresh state
-
 ---
 
 ## 9. Progressive Profiling (During Usage)
@@ -316,7 +311,6 @@ This script walks through the key features of the My Farm agricultural managemen
 1. Follow entire script above
 2. Emphasize weather location resolution
 3. Show report generation from multiple crops
-4. Demonstrate backup/restore capability
 
 ### Cost Tracking Focus (10 min)
 1. Create crop
@@ -349,12 +343,11 @@ This script walks through the key features of the My Farm agricultural managemen
 - **Real-time Weather** — API-driven local forecasts
 - **Cost Tracking** — Never lose track of expenses
 - **Map-Based Lands** — Know exactly which crops are where
-- **Offline-Ready** — PWA works without network
 
 ### Technical Highlights
 - **Modern Angular** — Standalone components, signals, latest framework features
 - **Responsive Design** — Works on phone, tablet, desktop
-- **Progressive Web App** — Installable as app, works offline
+- **Progressive Web App** — Installable as an app
 - **Smart Caching** — Weather data cached, minimal API calls
 
 ---
@@ -362,7 +355,7 @@ This script walks through the key features of the My Farm agricultural managemen
 ## Demo Tips
 
 ✅ **Do:**
-- Start fresh (use demo reset if needed)
+- Start with a fresh test account
 - Take your time explaining each section
 - Click through multiple crops/activities
 - Show mobile view on phone if possible

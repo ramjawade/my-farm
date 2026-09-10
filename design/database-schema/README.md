@@ -13,8 +13,6 @@ Published at: https://claude.ai/code/artifact/261b1e80-742d-4e4a-9bc3-90bcbe29da
 | `FieldReference.dc.html` | Field Reference | Every column with its Postgres type, nullability, and key role, plus the check-constraint value sets |
 | `Architecture.dc.html` | Architecture | Angular PWA → FastAPI on Render → Neon Postgres, with the free-tier ceilings annotated. *Auth leg is stale: it now shows Firebase; the flow is a backend PIN session JWT — regenerate when the canvas is next edited.* |
 | `AuthFlow.dc.html` | Flows | *Stale — depicts phone OTP → ID token. The current flow is `{phone, PIN}` → `POST /auth/session` → session JWT (online-only), with a Firebase-token fallback in the dependency. Regenerate when the canvas is next edited. See `BACKEND_PLAN.md` §5.1.* |
-| `MigrationFlow.dc.html` | Flows | *Stale — depicted the outbox sync loop (push/pull, tombstones). The app is now online-only; regenerate or retire this artboard.* |
-
 `canvas.json` holds the artboard layout and page grouping.
 
 ## Keeping it in step

@@ -78,7 +78,7 @@ attempts. List endpoints return all rows for the farmer in a single call.
 ### Reference data endpoints (unauthenticated, shared across farmers)
 
 **Crops catalog:**
-- `GET /api/v1/reference/crops` — list crop species (name-based cursor pagination)
+- `GET /api/v1/reference/crops` — list crop species
 
 **Expense categories:**
 - `GET /api/v1/reference/expense-categories` — list expense types
@@ -106,18 +106,18 @@ attempts. List endpoints return all rows for the farmer in a single call.
 - **Test coverage:** Each endpoint has 3+ cross-tenant tests (create/list, isolation,
   update/delete) — 30+ test cases across all entities.
 
-## What exists after Stage 4 (client integration)
+## What exists after Stages 4–5 (client integration, online-only data layer)
 
-**Client integration (Stage 4):** `ApiStorageService`
+`ApiStorageService`
 (`projects/home/src/app/core/api/`) implements the Angular app's
 `IStorageService` against these endpoints. Key design decisions:
 
 - **Online-only:** Each mutation is a single API call with no local
   queueing. Writes serialize via a FIFO queue to prevent foreign-key races
   (e.g., a crop POST must complete before activity POSTs reference it).
-- **Client-minted UUIDs:** Create operations include a client-generated
-  UUIDv7, enabling optimistic UI — a write shows up locally with the same id
-  the server assigns.
+- **Ids:** the server mints UUIDv7 ids. The client also mints its own with
+  `crypto.randomUUID()`, but the Create schemas have no `id` field, so the
+  server drops it — accepting it is still open (#76).
 - **Land polygons:** `POST /api/v1/lands` and `PATCH /api/v1/lands/{id}`
   accept `points: [{lat, lng}, ...]` and persist to the `land_point` table;
   `GET /api/v1/lands` returns them back.
@@ -131,9 +131,6 @@ attempts. List endpoints return all rows for the farmer in a single call.
 Also: `Land.farm_id` is required, but the Angular app has no concept of
 the top-level `Farm` — `ApiStorageService.getOrCreateDefaultFarmId()`
 provisions one default Farm per farmer automatically (name "My Farm").
-
-**Stage 5 (offline sync) — descoped.** The app is online-only. Offline
-support is deferred to a future release if needed.
 
 ## Neon: provisioned
 

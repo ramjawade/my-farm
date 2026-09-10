@@ -23,12 +23,11 @@ document is left open.
 | 5 | [Authentication and tenancy](#5-authentication-and-tenancy) |
 | 6 | [Data model](#6-data-model) |
 | 7 | [API design](#7-api-design) |
-| 8 | [Offline sync](#8-offline-sync) |
-| 9 | [Type generation](#9-type-generation) |
-| 10 | [CI/CD](#10-cicd) |
-| 11 | [Delivery stages](#11-delivery-stages) |
-| 12 | [Risks](#12-risks) |
-| 13 | [Verification](#13-verification) |
+| 8 | [Frontend API contract types](#8-frontend-api-contract-types) |
+| 9 | [CI/CD](#9-cicd) |
+| 10 | [Delivery stages](#10-delivery-stages) |
+| 11 | [Risks](#11-risks) |
+| 12 | [Verification](#12-verification) |
 
 ---
 
@@ -42,8 +41,8 @@ document is left open.
 | Authentication | **Backend-issued PIN session JWT** (HS256, ~24h), online-only; the auth dependency also accepts a Firebase ID token so phone OTP can be layered on later (§5.1) |
 | Authorization | Base-repository tenant scoping + per-endpoint cross-tenant 404 test (Postgres RLS designed in but **inert on Neon** — §5.2) |
 | ORM / migrations | **SQLAlchemy 2.0 async + asyncpg**, **Alembic** |
-| Schema source of truth | **SQLAlchemy models** → Alembic for the DB; the client hand-maintains its own API contract types (§9) |
-| Identifiers | **UUIDv7**, client-minted for optimistic UI, native `uuid` columns |
+| Schema source of truth | **SQLAlchemy models** → Alembic for the DB; the client hand-maintains its own API contract types (§8) |
+| Identifiers | **UUIDv7** server default, native `uuid` columns; create endpoints are to accept a client-supplied id — not built yet (§6.1) |
 | Attachments | **Cloudflare R2** (10 GB free, zero egress) |
 | Weather cache | **Server-side, shared by location grid** — not per farmer |
 | Repository | **Monorepo** — `projects/backend/`, beside the Angular projects |
@@ -82,10 +81,12 @@ SQLAlchemy 2.0 async + asyncpg
 Neon Postgres (Singapore · pooled)
 ```
 
-This is the target architecture; §11 tracks what is built (Stages 1–6 done). Cloudflare R2 and the server-side OpenWeatherMap key are Stage 6.
+This is the target architecture; §10 tracks what is built (Stages 1–5 done). Cloudflare R2 and the server-side OpenWeatherMap key are Stage 6, not started.
 
-Client writes are **online-only**: each mutation is a single API call with
-write serialization (FIFO queue) to prevent foreign-key races.
+The client is **online-only**. Every mutation is one API call, serialized
+through a FIFO queue in `ApiStorageService` so a crop's POST lands before its
+activities' POSTs. The browser stores only the session keys; every load reads
+from the API.
 
 ---
 
@@ -129,7 +130,7 @@ service (`myfarm-api`, `srv-dafrtrn40ujc73cmjpog`) runs
 `pip install ./projects/backend` and
 `uvicorn myfarm_api.main:app --host 0.0.0.0 --port $PORT` directly, no image
 involved. `projects/backend/Dockerfile` still exists and CI still builds it
-(§10) as a parity check. The two are deliberately kept in step — both do
+(§9) as a parity check. The two are deliberately kept in step — both do
 `pip install .` then `alembic upgrade head && uvicorn …` — and `render.yaml`
 pins the buildpack side. The residual risk is an OS-package dependency the
 buildpack lacks but the slim image has; the CI build would still pass. If
@@ -195,7 +196,7 @@ projects/
       models.py                SQLAlchemy — schema source of truth
       schemas/                 Pydantic request/response
       repositories/base.py     tenant scoping enforced here (§5.2)
-      routers/   farmers · farms · lands · crops · activities · expenses · weather · sync
+      routers/   farmers · farms · lands · crops · activities · expenses · weather
       services/                business rules, derived fields
     tests/
 ```
@@ -250,8 +251,8 @@ share a directory.
    reconciled later (phone uniqueness and the JWT are server-only, and
    there's no OTP to prove ownership on merge), so a network failure asks
    the user to retry and creates nothing locally. Once signed in, the JWT
-   sits in `localStorage` (~24h) and the app is offline-capable for *data*
-   via the outbox.
+   sits in `localStorage` (~24h). It and two small session keys are the only
+   things the app keeps in the browser; all farm data is read from the API.
 3. **Every API request** — carries `Authorization: Bearer <session JWT>`.
 4. The FastAPI dependency decodes and validates the JWT (`sub`, `exp`,
    `iss`) — or, if the token isn't ours, falls back to
@@ -338,17 +339,22 @@ Every farmer-owned table also carries `created_at`, `updated_at`, and
 | **Weather is one shared cache, not per farmer** | Neighbouring farmers share a forecast. Keyed by rounded lat/lng, TTL 30 min, no tenant column, no per-farmer rows |
 
 `activity.date` is **nullable** — `Activity.date` is `date?: number`,
-"undefined = not yet scheduled". Ids are **UUIDv7** in native `uuid`
+"undefined = not yet scheduled". Ids default to **UUIDv7** in native `uuid`
 columns; `farmer.id` is UUIDv7 with `auth_uid` holding either a `pin:<uuid7>`
 identifier (PIN accounts) or a Firebase uid.
-UUIDv7 is load-bearing here because **the client mints ids for optimistic UI** — a write shows up locally immediately with the same id the server will assign.
+Create endpoints are to accept a **client-supplied `id`**. The client mints
+one with `crypto.randomUUID()` (v4), so a new record has its final id the
+moment it appears in the UI and nothing is re-keyed after the save.
+**Not built yet (#76):** the Create schemas have no `id` field, so the server
+drops the client's id and mints its own, and the client never adopts the
+server's.
 
-### 6.3 Columns required by sync
+### 6.3 Audit columns
 
 | Column | Purpose |
 |---|---|
-| `updated_at timestamptz NOT NULL` | Delta-pull watermark and last-write-wins comparison |
-| `deleted_at timestamptz NULL` | **Soft delete.** A hard delete is invisible to a client that was offline when it happened, so deletes must propagate as tombstones |
+| `updated_at timestamptz NOT NULL` | Last-modified time; list ordering, and the cursor key if pagination returns (#62) |
+| `deleted_at timestamptz NULL` | **Soft delete.** Lists exclude these rows; a deleted row keeps its history and its foreign keys intact |
 
 ---
 
@@ -375,19 +381,7 @@ GET    /api/v1/reference/{crops|expense-categories|activity-types}
 
 ---
 
-## 8. Offline sync
-
-**Descoped.** The app is **online-only**. Each write is a single API call, and
-all data is fetched fresh from the server on load. The write queue in
-`ApiStorageService` serializes mutations (FIFO) to prevent foreign-key races
-when a crop POST must complete before activity POSTs.
-
-Client-minted UUIDs (UUIDv7) enable optimistic UI: a write completes locally
-and is sent as-is to the server, with the id present from creation.
-
----
-
-## 9. Frontend API contract types
+## 8. Frontend API contract types
 
 FastAPI still publishes OpenAPI from the Pydantic schemas, but the frontend
 does **not** consume it. `projects/home/src/app/core/api/contracts/` holds
@@ -409,7 +403,7 @@ trade for keeping the frontend build fully decoupled from the backend.
 
 ---
 
-## 10. CI/CD
+## 9. CI/CD
 
 | Pipeline | Steps |
 |---|---|
@@ -417,7 +411,7 @@ trade for keeping the frontend build fully decoupled from the backend.
 | Backend | ruff → mypy → pytest (Postgres service container) → build Docker image (parity check, §3.2) → **deploy** |
 | Deploy | **CI-gated** (issue #41): Render `autoDeploy` is **off**; the backend workflow POSTs `RENDER_DEPLOY_HOOK_URL` only after the checks pass on a push to `main`. Service config pinned in `render.yaml`. |
 | Migrations | `alembic upgrade head` runs as part of the service start command (free plan has no pre-deploy hook); idempotent, a no-op once current |
-| Contract | frontend-owned API types are hand-maintained (§9) — no generation step |
+| Contract | frontend-owned API types are hand-maintained (§8) — no generation step |
 
 Secrets: GitHub Actions and Render both hold the Neon URL,
 `SESSION_JWT_SECRET`, the Firebase project id, and the R2 / OpenWeatherMap
@@ -426,16 +420,16 @@ base URL. The API allowlists the GitHub Pages origin for CORS.
 
 ---
 
-## 11. Delivery stages
+## 10. Delivery stages
 
 | Stage | Scope | Gate |
 |---|---|---|
 | **1 — Seam repair** | Per-entity CRUD on `IStorageService`; delete `getFarmers()`/`saveFarmers()`; still on localStorage | frontend Karma suite green (35 specs at time of writing) |
 | **2 — API skeleton** | FastAPI app under `projects/backend/`; `.prettierignore` guard (§4.1); Neon + Render provisioned; `/health`; Firebase token dependency; base repository (RLS designed in, inert on Neon — §5.2); CI | CORS + token rejection proven; `format:check` still passes |
 | **3 — Domain endpoints** | Models, Alembic migrations, CRUD routers, reference data | **Cross-tenant test per endpoint** |
-| **4 — Client integration** | Frontend-owned API contract types (§9); `ApiStorageService`; **backend-issued PIN session JWT, online-only** (§5.1); `PATCH /me` | End-to-end online; wrong PIN → 401, unknown phone → 404; a tokenless request is rejected |
-| **5 — Offline outbox (descoped)** | — | Online-only architecture is shipping. Offline sync deferred. |
-| **6 — Weather + attachments (done)** | Server-cached weather endpoint (retires the client-side key); R2 uploads; unpaginated lists; land polygons | Key absent from the bundle; all endpoints return full result sets |
+| **4 — Client integration** | Frontend-owned API contract types (§8); `ApiStorageService`; **backend-issued PIN session JWT, online-only** (§5.1); `PATCH /me` | End-to-end online; wrong PIN → 401, unknown phone → 404; a tokenless request is rejected |
+| **5 — Online-only data layer** (#61) | Unpaginated lists; `GET /expenses`; land polygons via `land_point`; client-supplied ids on create (still open, #76); one API call per client mutation, FIFO-serialized; no browser data storage and no polling | A reload makes ~9 requests and none while idle; `localStorage` holds only the session keys |
+| **6 — Weather + attachments** | Server-cached weather endpoint (retires the client-side key); R2 uploads | Key absent from the bundle |
 | **7 — Firebase phone OTP (deferred)** | Add an OTP phone-verify step *before* `/auth/session` issues the JWT; nothing downstream changes | OTP gates registration; the same JWT and API contract are unchanged |
 
 Stage 1 is deliberately first and separate: refactoring the seam *while*
@@ -443,14 +437,14 @@ introducing a network backend is how these migrations fail.
 
 ---
 
-## 12. Risks
+## 11. Risks
 
 | Risk | Mitigation |
 |---|---|
 | **Cross-tenant leak** — one missing `farmer_id` predicate | §5.2 — RLS doesn't cover this on Neon; the repository plus the per-endpoint negative test are what's actually load-bearing |
 | **Free-tier terms move** — verified Sept 2026 | Neon and Render projects both provisioned; only `DATABASE_URL` and the host change if a provider is swapped |
 | Neon idles to zero mid-request | Pooled endpoint, `pool_pre_ping`, connection timeout handling |
-| Render cold start degrades UX | Acceptable for a seasonal app with offline currently descoped (§3.3); if availability becomes critical, move to paid tier |
+| Render cold start degrades UX | Accepted for a seasonal, low-traffic app (§3.3); move the API to a paid instance if it becomes a real complaint |
 | CI failing ships to production | Closed (issue #41): `autoDeploy` is off; the deploy hook fires only after ruff + mypy + pytest pass on `main` |
 | 0.5 GB storage ceiling | Blobs in R2; weather is one shared cache; row-count alerting before the ceiling |
 | Alembic autogenerate emits a destructive migration | Every migration hand-reviewed; CI runs it against a scratch database first |
@@ -458,7 +452,7 @@ introducing a network backend is how these migrations fail.
 
 ---
 
-## 13. Verification
+## 12. Verification
 
 - **Stage 1** — the existing frontend Karma suite (35 specs at time of writing) stays green through the interface change.
 - **Stage 2** — `/health` reachable from the GitHub Pages origin (proves
@@ -466,8 +460,10 @@ introducing a network backend is how these migrations fail.
 - **Stage 3** — pytest against real Postgres; **every endpoint has a
   cross-tenant test returning 404**; Alembic up/down runs clean.
 - **Stage 4** — sign in with phone + PIN against the live API, get a JWT, `GET /api/v1/me` returns the farmer; wrong PIN → 401, unknown phone → 404; app works end to end online.
-- **Stage 5** — descoped; offline support deferred.
-- **Stage 6** — grep the built bundle to confirm no OpenWeatherMap key; all list endpoints return full result sets in a single call (no pagination); land polygons round-trip correctly.
+- **Stage 5** — a reload makes ~9 requests and none while idle; editing an
+  activity sends one PATCH; a drawn land polygon survives a reload;
+  `localStorage` holds only the session keys.
+- **Stage 6** — grep the built bundle to confirm no OpenWeatherMap key.
 - **Stage 7 (deferred)** — an OTP phone-verify step runs before `/auth/session` issues the JWT; the token, the API contract, and every downstream flow are unchanged.
 - Full gate: `ruff`, `mypy`, `pytest`, `npm run lint`, `format:check`,
   `test`, `build`.

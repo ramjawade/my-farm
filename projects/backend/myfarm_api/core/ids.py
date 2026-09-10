@@ -1,9 +1,9 @@
 """UUIDv7 generation.
 
 Python 3.12 (this project's target — pyproject.toml) has no `uuid.uuid7()`;
-that lands in 3.14. UUIDv7 is load-bearing here (BACKEND_PLAN.md §6.1): the
-client mints ids offline, so every id needs to sort roughly by creation time
-without a round trip to the server.
+that lands in 3.14. UUIDv7 is the server-side default id (BACKEND_PLAN.md
+§6.1): it sorts roughly by creation time, which keeps primary-key inserts
+index-friendly.
 """
 
 import os

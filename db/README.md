@@ -29,7 +29,7 @@ On the backend side the SQLAlchemy models are the single source: they are
 edited directly, Alembic generates the migration, and the Postgres DDL and
 the OpenAPI document follow from that one place. The frontend keeps its own
 hand-written view of the API (see [`../BACKEND_PLAN.md`](../BACKEND_PLAN.md)
-§9) rather than importing generated types, so the two builds stay
+§8) rather than importing generated types, so the two builds stay
 decoupled.
 
 ## History
@@ -40,9 +40,7 @@ composite indexes, and a localStorage → Firestore migration map. That
 direction was superseded when [`BACKEND_PLAN.md`](../BACKEND_PLAN.md) settled
 on FastAPI + Postgres for all application data, with Firebase Auth kept for
 identity only. Those files have been removed as dead documentation. There is
-no automated data-migration step — the app launches greenfield; the existing
-JSON backup/restore feature is the manual path for anyone carrying prototype
-data forward.
+no data-migration step — the app launches greenfield.
 
 ## RBAC
 

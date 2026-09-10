@@ -35,15 +35,6 @@
       "h": 740,
       "expand": "fit",
       "page": "page-flows"
-    },
-    {
-      "file": "MigrationFlow.dc.html",
-      "x": 1480,
-      "y": 0,
-      "w": 1020,
-      "h": 800,
-      "expand": "fit",
-      "page": "page-flows"
     }
   ],
   "launch": {

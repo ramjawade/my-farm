@@ -62,8 +62,7 @@ export class AuthService {
 
     // Always rebind the API credential to *this* login. The storage service
     // is a root singleton, so without the else-branch a tokenless login
-    // (demo, or an offline PIN login) would keep the previous farmer's
-    // bearer token and read their data.
+    // would keep the previous farmer's bearer token and read their data.
     if (sessionToken) {
       localStorage.setItem(SESSION_TOKEN_KEY, sessionToken);
     } else {
@@ -101,8 +100,7 @@ export class AuthService {
     }
   }
 
-  /** Type guard to check if storage service has a setAuthToken method (ApiStorageService,
-   * or anything else layered on top of it, e.g. the offline outbox). */
+  /** Type guard to check if storage service has a setAuthToken method (ApiStorageService). */
   private isApiStorageService(
     service: IStorageService,
   ): service is IStorageService & { setAuthToken(token: string | null): void } {
