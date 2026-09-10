@@ -10,6 +10,7 @@ from sqlalchemy import and_, select
 from myfarm_api.core.db import get_session_factory
 from myfarm_api.core.security import FirebaseIdentity, get_firebase_identity
 from myfarm_api.models import Activity, ActivityAttachment, ActivityExpense, Farmer
+from myfarm_api.repositories.crud import ConflictError
 from myfarm_api.repositories.entities import activity_repo
 from myfarm_api.repositories.farmer import FarmerRepository
 from myfarm_api.schemas.activity import ActivityCreate, ActivityRead, ActivityUpdate
@@ -99,7 +100,10 @@ async def create_activity(
 ) -> ActivityRead:
     """Create a new activity."""
     activity = Activity(**data.model_dump())
-    activity = await activity_repo.create(current_farmer.id, activity)
+    try:
+        activity = await activity_repo.create(current_farmer.id, activity)
+    except ConflictError:
+        raise HTTPException(status_code=409, detail="Activity with this ID already exists")
     return ActivityRead.model_validate(activity)
 
 
@@ -193,11 +197,18 @@ async def create_activity_expense(
     """Create a new expense for an activity."""
     await _get_owned_activity(current_farmer, activity_id)
 
-    expense = ActivityExpense(activity_id=activity_id, **data.model_dump())
+    payload = data.model_dump()
+    expense = ActivityExpense(activity_id=activity_id, **payload)
     session_factory = get_session_factory()
     async with session_factory() as session:
         session.add(expense)
-        await session.commit()
+        try:
+            await session.commit()
+        except Exception as e:
+            await session.rollback()
+            if "duplicate key" in str(e).lower() or "integrity" in str(e).lower():
+                raise HTTPException(status_code=409, detail="Expense with this ID already exists")
+            raise
         await session.refresh(expense)
     return ActivityExpenseRead.model_validate(expense)
 

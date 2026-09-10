@@ -25,7 +25,7 @@ class ActivityBase(BaseModel):
 class ActivityCreate(ActivityBase):
     """Create an activity."""
 
-    pass
+    id: UUID | None = None
 
 
 class ActivityUpdate(BaseModel):
