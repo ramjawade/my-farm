@@ -17,7 +17,6 @@ from myfarm_api.routers import (
     lands,
     me,
     reference,
-    sync,
 )
 from myfarm_api.schemas.common import ProblemDetail
 
@@ -63,7 +62,6 @@ def create_app() -> FastAPI:
     app.include_router(lands.router)
     app.include_router(crops.router)
     app.include_router(activities.router)
-    app.include_router(sync.router)
 
     return app
 
