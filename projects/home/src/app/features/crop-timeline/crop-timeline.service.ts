@@ -121,7 +121,7 @@ export class CropTimelineService {
       ...cropData,
       season:
         cropData.season ?? (cropData.sowingDate ? seasonForDate(cropData.sowingDate) : undefined),
-      id: 'c-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36),
+      id: crypto.randomUUID(),
     };
 
     this.generation++;
@@ -413,23 +413,30 @@ export class CropTimelineService {
   private persistNewCrop(crop: CropEntity): void {
     const user = this.authService.currentUser();
     if (user) {
-      this.storage.saveCrop(user.id, crop).catch((e) => console.error('Failed to save crop', e));
+      this.storage.saveCrop(user.id, crop).catch((e) => {
+        console.error('Failed to save crop', e);
+        this.reload();
+      });
     }
   }
 
   private persistCropUpdate(id: string, updates: Partial<CropEntity>): void {
     const user = this.authService.currentUser();
     if (user) {
-      this.storage
-        .updateCrop(user.id, id, updates)
-        .catch((e) => console.error('Failed to update crop', e));
+      this.storage.updateCrop(user.id, id, updates).catch((e) => {
+        console.error('Failed to update crop', e);
+        this.reload();
+      });
     }
   }
 
   private persistCropDelete(id: string): void {
     const user = this.authService.currentUser();
     if (user) {
-      this.storage.deleteCrop(user.id, id).catch((e) => console.error('Failed to delete crop', e));
+      this.storage.deleteCrop(user.id, id).catch((e) => {
+        console.error('Failed to delete crop', e);
+        this.reload();
+      });
     }
   }
 }
