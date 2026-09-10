@@ -345,8 +345,9 @@ identifier (PIN accounts) or a Firebase uid.
 Create endpoints are to accept a **client-supplied `id`**. The client mints
 one with `crypto.randomUUID()` (v4), so a new record has its final id the
 moment it appears in the UI and nothing is re-keyed after the save.
-**Not built yet:** the Create schemas have no `id` field, so the server drops
-the client's id and mints its own, and the client never adopts the server's.
+**Not built yet (#76):** the Create schemas have no `id` field, so the server
+drops the client's id and mints its own, and the client never adopts the
+server's.
 
 ### 6.3 Audit columns
 
@@ -427,7 +428,7 @@ base URL. The API allowlists the GitHub Pages origin for CORS.
 | **2 — API skeleton** | FastAPI app under `projects/backend/`; `.prettierignore` guard (§4.1); Neon + Render provisioned; `/health`; Firebase token dependency; base repository (RLS designed in, inert on Neon — §5.2); CI | CORS + token rejection proven; `format:check` still passes |
 | **3 — Domain endpoints** | Models, Alembic migrations, CRUD routers, reference data | **Cross-tenant test per endpoint** |
 | **4 — Client integration** | Frontend-owned API contract types (§8); `ApiStorageService`; **backend-issued PIN session JWT, online-only** (§5.1); `PATCH /me` | End-to-end online; wrong PIN → 401, unknown phone → 404; a tokenless request is rejected |
-| **5 — Online-only data layer** (#61) | Unpaginated lists; `GET /expenses`; land polygons via `land_point`; client-supplied ids on create (still open, §6.1); one API call per client mutation, FIFO-serialized; no browser data storage and no polling | A reload makes ~9 requests and none while idle; `localStorage` holds only the session keys |
+| **5 — Online-only data layer** (#61) | Unpaginated lists; `GET /expenses`; land polygons via `land_point`; client-supplied ids on create (still open, #76); one API call per client mutation, FIFO-serialized; no browser data storage and no polling | A reload makes ~9 requests and none while idle; `localStorage` holds only the session keys |
 | **6 — Weather + attachments** | Server-cached weather endpoint (retires the client-side key); R2 uploads | Key absent from the bundle |
 | **7 — Firebase phone OTP (deferred)** | Add an OTP phone-verify step *before* `/auth/session` issues the JWT; nothing downstream changes | OTP gates registration; the same JWT and API contract are unchanged |
 

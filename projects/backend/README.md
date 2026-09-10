@@ -117,7 +117,7 @@ attempts. List endpoints return all rows for the farmer in a single call.
   (e.g., a crop POST must complete before activity POSTs reference it).
 - **Ids:** the server mints UUIDv7 ids. The client also mints its own with
   `crypto.randomUUID()`, but the Create schemas have no `id` field, so the
-  server drops it — accepting it is still open (`BACKEND_PLAN.md` §6.1).
+  server drops it — accepting it is still open (#76).
 - **Land polygons:** `POST /api/v1/lands` and `PATCH /api/v1/lands/{id}`
   accept `points: [{lat, lng}, ...]` and persist to the `land_point` table;
   `GET /api/v1/lands` returns them back.

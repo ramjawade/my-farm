@@ -91,7 +91,7 @@ git log for `claude/mvp1-*` branches)
 
 ## 4. Remaining work
 
-- **Client-supplied ids on create (bug, left over from #63).** Create
+- **Client-supplied ids on create (#76, bug left over from #63).** Create
   endpoints drop the id the client sends, and the client keeps its own, so
   records created in the current session don't match the database until a
   reload. Details: `BACKEND_PLAN.md` §6.1.
