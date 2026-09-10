@@ -211,7 +211,11 @@ class Land(TenantScopedBase):
     )
 
     points: Mapped[list["LandPoint"]] = relationship(
-        "LandPoint", foreign_keys="LandPoint.land_id", cascade="all, delete-orphan"
+        "LandPoint",
+        foreign_keys="LandPoint.land_id",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+        order_by="LandPoint.seq.asc()",
     )
     crops: Mapped[list["Crop"]] = relationship(
         "Crop", foreign_keys="Crop.land_id", cascade="all, delete-orphan"

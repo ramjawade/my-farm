@@ -7,6 +7,13 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 
+class LandPoint(BaseModel):
+    """A GPS coordinate polygon vertex."""
+
+    lat: Decimal
+    lng: Decimal
+
+
 class LandBase(BaseModel):
     """Shared land fields."""
 
@@ -14,6 +21,7 @@ class LandBase(BaseModel):
     farm_id: UUID
     area_sq_m: Decimal | None = None
     notes: str | None = None
+    points: list[LandPoint] | None = None
 
 
 class LandCreate(LandBase):
@@ -28,6 +36,7 @@ class LandUpdate(BaseModel):
     name: str | None = None
     area_sq_m: Decimal | None = None
     notes: str | None = None
+    points: list[LandPoint] | None = None
 
 
 class LandRead(LandBase):

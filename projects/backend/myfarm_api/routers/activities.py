@@ -48,15 +48,35 @@ async def _get_owned_activity(current_farmer: Farmer, activity_id: UUID) -> Acti
 @router.get("", response_model=dict)
 async def list_activities(
     current_farmer: Farmer = Depends(get_current_farmer),
-    cursor: str | None = Query(None),
-    limit: int = Query(20, ge=1, le=100),
 ) -> dict[str, Any]:
-    """List activities for the current farmer, cursor-paginated."""
-    page = await activity_repo.list(current_farmer.id, cursor=cursor, limit=limit)
+    """List all activities for the current farmer."""
+    activities = await activity_repo.list_all(current_farmer.id)
     return {
-        "items": [ActivityRead.model_validate(a) for a in page.items],
-        "cursor": page.next_cursor,
-        "has_more": page.has_more,
+        "items": [ActivityRead.model_validate(a) for a in activities],
+    }
+
+
+@router.get("/expenses", response_model=dict)
+async def list_all_expenses(
+    current_farmer: Farmer = Depends(get_current_farmer),
+) -> dict[str, Any]:
+    """List all expenses for the current farmer (joined through activities)."""
+    session_factory = get_session_factory()
+    async with session_factory() as session:
+        stmt = (
+            select(ActivityExpense)
+            .join(Activity)
+            .where(
+                and_(
+                    Activity.farmer_id == current_farmer.id,
+                    Activity.deleted_at.is_(None),
+                )
+            )
+        )
+        result = await session.execute(stmt)
+        expenses = result.scalars().all()
+    return {
+        "items": [ActivityExpenseRead.model_validate(e) for e in expenses],
     }
 
 
