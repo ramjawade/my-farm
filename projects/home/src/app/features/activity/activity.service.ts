@@ -71,58 +71,25 @@ export class ActivityService {
     }
   }
 
-  // Serialize persistActivities/persistExpenses calls so a diff always reads
-  // storage after every earlier call's writes have landed, not a stale snapshot.
-  private activitiesPersistQueue: Promise<void> = Promise.resolve();
-  private expensesPersistQueue: Promise<void> = Promise.resolve();
-
-  private persistActivities(): void {
-    const userId = this.getCurrentUserId();
-    const activities = this.activitiesSignal();
-    this.activitiesPersistQueue = this.activitiesPersistQueue.then(async () => {
-      const stored = await this.storage.getActivities(userId);
-      // Replace all stored activities with current signal state
-      const toDelete = stored.filter((s) => !activities.find((a) => a.id === s.id));
-      const toAdd = activities.filter((a) => !stored.find((s) => s.id === a.id));
-      const toUpdate = activities.filter((a) => stored.find((s) => s.id === a.id));
-
-      await Promise.all([
-        ...toDelete.map((a) => this.storage.deleteActivity(userId, a.id)),
-        ...toAdd.map((a) => this.storage.saveActivity(userId, a)),
-        ...toUpdate.map((a) => this.storage.updateActivity(userId, a.id, a)),
-      ]);
-    });
-  }
-
-  private persistExpenses(): void {
-    const userId = this.getCurrentUserId();
-    const expenses = this.expensesSignal();
-    this.expensesPersistQueue = this.expensesPersistQueue.then(async () => {
-      const stored = await this.storage.getExpenses(userId);
-      const toDelete = stored.filter((s) => !expenses.find((e) => e.id === s.id));
-      const toAdd = expenses.filter((e) => !stored.find((s) => s.id === e.id));
-      const toUpdate = expenses.filter((e) => stored.find((s) => s.id === e.id));
-
-      await Promise.all([
-        ...toDelete.map((e) => this.storage.deleteExpense(userId, e.id)),
-        ...toAdd.map((e) => this.storage.saveExpense(userId, e)),
-        ...toUpdate.map((e) => this.storage.updateExpense(userId, e.id, e)),
-      ]);
-    });
-  }
 
   addActivity(data: Omit<Activity, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): Activity {
     const now = Date.now();
     const activity: Activity = {
       ...data,
-      id: data.id || `activity_${now}_${Math.random().toString(36).substr(2, 9)}`,
+      id: data.id || crypto.randomUUID(),
       createdAt: now,
       updatedAt: now,
     };
 
     this.mutationGeneration++;
     this.activitiesSignal.update((acts) => [...acts, activity]);
-    this.persistActivities();
+
+    const userId = this.getCurrentUserId();
+    this.storage.saveActivity(userId, activity).catch((err) => {
+      console.error('Failed to save activity:', err);
+      this.reload();
+    });
+
     return activity;
   }
 
@@ -131,15 +98,33 @@ export class ActivityService {
     this.activitiesSignal.update((acts) =>
       acts.map((act) => (act.id === id ? { ...act, ...updates, updatedAt: Date.now() } : act)),
     );
-    this.persistActivities();
+
+    const userId = this.getCurrentUserId();
+    this.storage.updateActivity(userId, id, updates).catch((err) => {
+      console.error('Failed to update activity:', err);
+      this.reload();
+    });
   }
 
   deleteActivity(id: string): void {
+    const userId = this.getCurrentUserId();
+    const expensesForActivity = this.expensesSignal().filter((e) => e.activityId === id);
+
     this.mutationGeneration++;
     this.activitiesSignal.update((acts) => acts.filter((act) => act.id !== id));
     this.expensesSignal.update((exps) => exps.filter((exp) => exp.activityId !== id));
-    this.persistActivities();
-    this.persistExpenses();
+
+    this.storage.deleteActivity(userId, id).catch((err) => {
+      console.error('Failed to delete activity:', err);
+      this.reload();
+    });
+
+    for (const expense of expensesForActivity) {
+      this.storage.deleteExpense(userId, expense.id).catch((err) => {
+        console.error('Failed to delete expense:', err);
+        this.reload();
+      });
+    }
   }
 
   /** Remove every activity (and its expenses) linked to a crop. */
@@ -150,11 +135,18 @@ export class ActivityService {
         .map((a) => a.id),
     );
     if (ids.size === 0) return;
+
+    const userId = this.getCurrentUserId();
     this.mutationGeneration++;
     this.activitiesSignal.update((acts) => acts.filter((a) => !ids.has(a.id)));
     this.expensesSignal.update((exps) => exps.filter((e) => !ids.has(e.activityId)));
-    this.persistActivities();
-    this.persistExpenses();
+
+    for (const id of ids) {
+      this.storage.deleteActivity(userId, id).catch((err) => {
+        console.error('Failed to delete activity:', err);
+        this.reload();
+      });
+    }
   }
 
   getActivityById(id: string): Activity | undefined {
@@ -176,13 +168,19 @@ export class ActivityService {
   addExpense(data: Omit<ActivityExpense, 'id' | 'createdAt'>): ActivityExpense {
     const expense: ActivityExpense = {
       ...data,
-      id: `expense_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: crypto.randomUUID(),
       createdAt: Date.now(),
     };
 
     this.mutationGeneration++;
     this.expensesSignal.update((exps) => [...exps, expense]);
-    this.persistExpenses();
+
+    const userId = this.getCurrentUserId();
+    this.storage.saveExpense(userId, expense).catch((err) => {
+      console.error('Failed to save expense:', err);
+      this.reload();
+    });
+
     return expense;
   }
 
@@ -191,13 +189,23 @@ export class ActivityService {
     this.expensesSignal.update((exps) =>
       exps.map((exp) => (exp.id === id ? { ...exp, ...updates } : exp)),
     );
-    this.persistExpenses();
+
+    const userId = this.getCurrentUserId();
+    this.storage.updateExpense(userId, id, updates).catch((err) => {
+      console.error('Failed to update expense:', err);
+      this.reload();
+    });
   }
 
   deleteExpense(id: string): void {
     this.mutationGeneration++;
     this.expensesSignal.update((exps) => exps.filter((exp) => exp.id !== id));
-    this.persistExpenses();
+
+    const userId = this.getCurrentUserId();
+    this.storage.deleteExpense(userId, id).catch((err) => {
+      console.error('Failed to delete expense:', err);
+      this.reload();
+    });
   }
 
   getExpensesForActivity(activityId: string): ActivityExpense[] {

@@ -54,12 +54,21 @@ export class ApiStorageService extends IStorageService {
   private baseUrl = environment.apiBaseUrl;
   private token: string | null = null;
   private defaultFarmIdPromise: Promise<string> | null = null;
+  private writeQueue: Promise<any> = Promise.resolve();
 
   constructor(
     private http: HttpClient,
     private referenceData: ReferenceDataService,
   ) {
     super();
+  }
+
+  private enqueueWrite<T>(fn: () => Promise<T>): Promise<T> {
+    const promise = this.writeQueue.then(() => fn());
+    this.writeQueue = promise.catch(() => {
+      // Continue the queue even if this write fails
+    });
+    return promise;
   }
 
   /**
@@ -137,43 +146,49 @@ export class ApiStorageService extends IStorageService {
   }
 
   async saveActivity(userId: string, activity: Activity): Promise<Activity> {
-    const payload = await this.mapToBackendActivity(activity);
-    try {
-      const response = await firstValueFrom(
-        this.http.post<unknown>(`${this.baseUrl}/activities`, payload, {
-          headers: this.getHeaders(),
-        }),
-      );
-      return await this.mapFromBackendActivity(response);
-    } catch (error) {
-      console.error('Failed to save activity:', error);
-      throw error;
-    }
+    return this.enqueueWrite(async () => {
+      const payload = await this.mapToBackendActivity(activity);
+      try {
+        const response = await firstValueFrom(
+          this.http.post<unknown>(`${this.baseUrl}/activities`, payload, {
+            headers: this.getHeaders(),
+          }),
+        );
+        return await this.mapFromBackendActivity(response);
+      } catch (error) {
+        console.error('Failed to save activity:', error);
+        throw error;
+      }
+    });
   }
 
   async updateActivity(userId: string, id: string, updates: Partial<Activity>): Promise<void> {
-    const payload = await this.mapToBackendActivity(updates);
-    try {
-      await firstValueFrom(
-        this.http.patch(`${this.baseUrl}/activities/${id}`, payload, {
-          headers: this.getHeaders(),
-        }),
-      );
-    } catch (error) {
-      console.error('Failed to update activity:', error);
-      throw error;
-    }
+    return this.enqueueWrite(async () => {
+      const payload = await this.mapToBackendActivity(updates);
+      try {
+        await firstValueFrom(
+          this.http.patch(`${this.baseUrl}/activities/${id}`, payload, {
+            headers: this.getHeaders(),
+          }),
+        );
+      } catch (error) {
+        console.error('Failed to update activity:', error);
+        throw error;
+      }
+    });
   }
 
   async deleteActivity(userId: string, id: string): Promise<void> {
-    try {
-      await firstValueFrom(
-        this.http.delete(`${this.baseUrl}/activities/${id}`, { headers: this.getHeaders() }),
-      );
-    } catch (error) {
-      console.error('Failed to delete activity:', error);
-      throw error;
-    }
+    return this.enqueueWrite(async () => {
+      try {
+        await firstValueFrom(
+          this.http.delete(`${this.baseUrl}/activities/${id}`, { headers: this.getHeaders() }),
+        );
+      } catch (error) {
+        console.error('Failed to delete activity:', error);
+        throw error;
+      }
+    });
   }
 
   async syncActivitiesForField(userId: string, fieldId: string): Promise<Activity[]> {
@@ -213,20 +228,22 @@ export class ApiStorageService extends IStorageService {
   }
 
   async saveExpense(userId: string, expense: ActivityExpense): Promise<ActivityExpense> {
-    const payload = await this.mapToBackendExpense(expense);
-    try {
-      const response = await firstValueFrom(
-        this.http.post<unknown>(
-          `${this.baseUrl}/activities/${expense.activityId}/expenses`,
-          payload,
-          { headers: this.getHeaders() },
-        ),
-      );
-      return await this.mapFromBackendExpense(response);
-    } catch (error) {
-      console.error('Failed to save expense:', error);
-      throw error;
-    }
+    return this.enqueueWrite(async () => {
+      const payload = await this.mapToBackendExpense(expense);
+      try {
+        const response = await firstValueFrom(
+          this.http.post<unknown>(
+            `${this.baseUrl}/activities/${expense.activityId}/expenses`,
+            payload,
+            { headers: this.getHeaders() },
+          ),
+        );
+        return await this.mapFromBackendExpense(response);
+      } catch (error) {
+        console.error('Failed to save expense:', error);
+        throw error;
+      }
+    });
   }
 
   async updateExpense(
@@ -234,39 +251,43 @@ export class ApiStorageService extends IStorageService {
     id: string,
     updates: Partial<ActivityExpense>,
   ): Promise<void> {
-    const activityId = updates.activityId ?? (await this.findExpenseActivityId(id));
-    if (!activityId) {
-      throw new Error(`updateExpense: could not resolve the owning activity for expense ${id}`);
-    }
-    const payload = await this.mapToBackendExpense(updates);
-    try {
-      await firstValueFrom(
-        this.http.patch(`${this.baseUrl}/activities/${activityId}/expenses/${id}`, payload, {
-          headers: this.getHeaders(),
-        }),
-      );
-    } catch (error) {
-      console.error('Failed to update expense:', error);
-      throw error;
-    }
+    return this.enqueueWrite(async () => {
+      const activityId = updates.activityId ?? (await this.findExpenseActivityId(id));
+      if (!activityId) {
+        throw new Error(`updateExpense: could not resolve the owning activity for expense ${id}`);
+      }
+      const payload = await this.mapToBackendExpense(updates);
+      try {
+        await firstValueFrom(
+          this.http.patch(`${this.baseUrl}/activities/${activityId}/expenses/${id}`, payload, {
+            headers: this.getHeaders(),
+          }),
+        );
+      } catch (error) {
+        console.error('Failed to update expense:', error);
+        throw error;
+      }
+    });
   }
 
   async deleteExpense(userId: string, id: string): Promise<void> {
-    const activityId = await this.findExpenseActivityId(id);
-    if (!activityId) {
-      console.warn(`deleteExpense: could not find the activity owning expense ${id}`);
-      return;
-    }
-    try {
-      await firstValueFrom(
-        this.http.delete(`${this.baseUrl}/activities/${activityId}/expenses/${id}`, {
-          headers: this.getHeaders(),
-        }),
-      );
-    } catch (error) {
-      console.error('Failed to delete expense:', error);
-      throw error;
-    }
+    return this.enqueueWrite(async () => {
+      const activityId = await this.findExpenseActivityId(id);
+      if (!activityId) {
+        console.warn(`deleteExpense: could not find the activity owning expense ${id}`);
+        return;
+      }
+      try {
+        await firstValueFrom(
+          this.http.delete(`${this.baseUrl}/activities/${activityId}/expenses/${id}`, {
+            headers: this.getHeaders(),
+          }),
+        );
+      } catch (error) {
+        console.error('Failed to delete expense:', error);
+        throw error;
+      }
+    });
   }
 
   private async findExpenseActivityId(expenseId: string): Promise<string | null> {
@@ -294,39 +315,45 @@ export class ApiStorageService extends IStorageService {
   }
 
   async saveCrop(userId: string, crop: CropEntity): Promise<CropEntity> {
-    const payload = await this.mapToBackendCrop(crop);
-    try {
-      const response = await firstValueFrom(
-        this.http.post<unknown>(`${this.baseUrl}/crops`, payload, { headers: this.getHeaders() }),
-      );
-      return await this.mapFromBackendCrop(response);
-    } catch (error) {
-      console.error('Failed to save crop:', error);
-      throw error;
-    }
+    return this.enqueueWrite(async () => {
+      const payload = await this.mapToBackendCrop(crop);
+      try {
+        const response = await firstValueFrom(
+          this.http.post<unknown>(`${this.baseUrl}/crops`, payload, { headers: this.getHeaders() }),
+        );
+        return await this.mapFromBackendCrop(response);
+      } catch (error) {
+        console.error('Failed to save crop:', error);
+        throw error;
+      }
+    });
   }
 
   async updateCrop(userId: string, id: string, updates: Partial<CropEntity>): Promise<void> {
-    const payload = await this.mapToBackendCrop(updates);
-    try {
-      await firstValueFrom(
-        this.http.patch(`${this.baseUrl}/crops/${id}`, payload, { headers: this.getHeaders() }),
-      );
-    } catch (error) {
-      console.error('Failed to update crop:', error);
-      throw error;
-    }
+    return this.enqueueWrite(async () => {
+      const payload = await this.mapToBackendCrop(updates);
+      try {
+        await firstValueFrom(
+          this.http.patch(`${this.baseUrl}/crops/${id}`, payload, { headers: this.getHeaders() }),
+        );
+      } catch (error) {
+        console.error('Failed to update crop:', error);
+        throw error;
+      }
+    });
   }
 
   async deleteCrop(userId: string, id: string): Promise<void> {
-    try {
-      await firstValueFrom(
-        this.http.delete(`${this.baseUrl}/crops/${id}`, { headers: this.getHeaders() }),
-      );
-    } catch (error) {
-      console.error('Failed to delete crop:', error);
-      throw error;
-    }
+    return this.enqueueWrite(async () => {
+      try {
+        await firstValueFrom(
+          this.http.delete(`${this.baseUrl}/crops/${id}`, { headers: this.getHeaders() }),
+        );
+      } catch (error) {
+        console.error('Failed to delete crop:', error);
+        throw error;
+      }
+    });
   }
 
   // ============================================================================
@@ -344,43 +371,47 @@ export class ApiStorageService extends IStorageService {
   }
 
   async saveFarm(userId: string, farm: SavedFarm): Promise<SavedFarm> {
-    const farmId = await this.getOrCreateDefaultFarmId();
-    const payload = this.mapToBackendLand(farm, farmId);
-    try {
-      const response = await firstValueFrom(
-        this.http.post<unknown>(`${this.baseUrl}/lands`, payload, { headers: this.getHeaders() }),
-      );
-      const mapped = this.mapFromBackendLand(response);
-      // The backend has nowhere to store the polygon yet (see class doc) —
-      // keep what the caller just drew instead of dropping it.
-      return { ...mapped, points: farm.points, geoJson: farm.geoJson };
-    } catch (error) {
-      console.error('Failed to save farm:', error);
-      throw error;
-    }
+    return this.enqueueWrite(async () => {
+      const farmId = await this.getOrCreateDefaultFarmId();
+      const payload = this.mapToBackendLand(farm, farmId);
+      try {
+        const response = await firstValueFrom(
+          this.http.post<unknown>(`${this.baseUrl}/lands`, payload, { headers: this.getHeaders() }),
+        );
+        const mapped = this.mapFromBackendLand(response);
+        return { ...mapped, points: farm.points, geoJson: farm.geoJson };
+      } catch (error) {
+        console.error('Failed to save farm:', error);
+        throw error;
+      }
+    });
   }
 
   async updateFarm(userId: string, id: string, updates: Partial<SavedFarm>): Promise<void> {
-    const payload = this.mapToBackendLand(updates);
-    try {
-      await firstValueFrom(
-        this.http.patch(`${this.baseUrl}/lands/${id}`, payload, { headers: this.getHeaders() }),
-      );
-    } catch (error) {
-      console.error('Failed to update farm:', error);
-      throw error;
-    }
+    return this.enqueueWrite(async () => {
+      const payload = this.mapToBackendLand(updates);
+      try {
+        await firstValueFrom(
+          this.http.patch(`${this.baseUrl}/lands/${id}`, payload, { headers: this.getHeaders() }),
+        );
+      } catch (error) {
+        console.error('Failed to update farm:', error);
+        throw error;
+      }
+    });
   }
 
   async deleteFarm(userId: string, id: string): Promise<void> {
-    try {
-      await firstValueFrom(
-        this.http.delete(`${this.baseUrl}/lands/${id}`, { headers: this.getHeaders() }),
-      );
-    } catch (error) {
-      console.error('Failed to delete farm:', error);
-      throw error;
-    }
+    return this.enqueueWrite(async () => {
+      try {
+        await firstValueFrom(
+          this.http.delete(`${this.baseUrl}/lands/${id}`, { headers: this.getHeaders() }),
+        );
+      } catch (error) {
+        console.error('Failed to delete farm:', error);
+        throw error;
+      }
+    });
   }
 
   // ============================================================================
@@ -415,25 +446,24 @@ export class ApiStorageService extends IStorageService {
   }
 
   async saveFarmer(farmer: FarmerRegistrationData): Promise<FarmerRegistrationData> {
-    // Only the columns the backend Farmer row actually has (PATCH /me,
-    // issue #50). Farm-setup fields live on the Farm entity, not here.
-    const body: FarmerUpdateRequest = {
-      full_name: farmer.fullName || null,
-      email: farmer.email ?? null,
-      preferred_language: farmer.preferredLanguage || null,
-    };
-    try {
-      const response = await firstValueFrom(
-        this.http.patch<FarmerResponse>(`${this.baseUrl}/me`, body, {
-          headers: this.getHeaders(),
-        }),
-      );
-      return this.mapFromBackendFarmer(response);
-    } catch (error) {
-      console.error('Failed to save farmer profile:', error);
-      // Don't lose the caller's optimistic copy on a transient failure.
-      return farmer;
-    }
+    return this.enqueueWrite(async () => {
+      const body: FarmerUpdateRequest = {
+        full_name: farmer.fullName || null,
+        email: farmer.email ?? null,
+        preferred_language: farmer.preferredLanguage || null,
+      };
+      try {
+        const response = await firstValueFrom(
+          this.http.patch<FarmerResponse>(`${this.baseUrl}/me`, body, {
+            headers: this.getHeaders(),
+          }),
+        );
+        return this.mapFromBackendFarmer(response);
+      } catch (error) {
+        console.error('Failed to save farmer profile:', error);
+        return farmer;
+      }
+    });
   }
 
   // ============================================================================
