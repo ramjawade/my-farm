@@ -30,34 +30,35 @@ a `farmer` table to build them against.
 
 All farmer-owned endpoints require Firebase token verification and use JIT farmer
 provisioning (`/api/v1/me`). All return 404 (never 403) for cross-tenant access
-attempts. All support cursor pagination over (updated_at DESC, id DESC).
+attempts. List endpoints return all rows for the farmer in a single call.
 
 **Farmer profile:**
 - `GET /api/v1/me` — get or provision current farmer (JIT)
 
 **Farms (top-level entity):**
-- `GET /api/v1/farms` — list farms (cursor-paginated)
+- `GET /api/v1/farms` — list all farms for current farmer
 - `GET /api/v1/farms/{farm_id}` — get single farm
 - `POST /api/v1/farms` — create farm
 - `PATCH /api/v1/farms/{farm_id}` — update farm
 - `DELETE /api/v1/farms/{farm_id}` — soft-delete farm
 
 **Lands (plots within a farm):**
-- `GET /api/v1/lands` — list lands (cursor-paginated)
+- `GET /api/v1/lands` — list all lands for current farmer
 - `GET /api/v1/lands/{land_id}` — get single land
 - `POST /api/v1/lands` — create land
 - `PATCH /api/v1/lands/{land_id}` — update land
 - `DELETE /api/v1/lands/{land_id}` — soft-delete land
 
 **Crops (plantings on a land):**
-- `GET /api/v1/crops` — list crops (cursor-paginated)
+- `GET /api/v1/crops` — list all crops for current farmer
 - `GET /api/v1/crops/{crop_id}` — get single crop
 - `POST /api/v1/crops` — create crop
 - `PATCH /api/v1/crops/{crop_id}` — update crop
 - `DELETE /api/v1/crops/{crop_id}` — soft-delete crop
 
 **Activities (farm operations):**
-- `GET /api/v1/activities` — list activities (cursor-paginated)
+- `GET /api/v1/activities` — list all activities for current farmer
+- `GET /api/v1/expenses` — list all expenses for current farmer
 - `GET /api/v1/activities/{activity_id}` — get single activity
 - `POST /api/v1/activities` — create activity
 - `PATCH /api/v1/activities/{activity_id}` — update activity
@@ -97,29 +98,29 @@ attempts. All support cursor pagination over (updated_at DESC, id DESC).
   2. Postgres RLS (unavailable on Neon, see limitation below)
   3. Cross-tenant tests verify every endpoint (load-bearing on Neon)
 
-- **Pagination:** Cursor-based over (updated_at DESC, id DESC) tuple for efficient
-  backwards traversal without OFFSET. Cursor format: `<ISO_8601_timestamp>:<UUID>`
-
 - **Soft-delete:** All farmer-owned entities exclude `deleted_at IS NOT NULL` rows.
-  Hard deletes never used (required for offline sync per `BACKEND_PLAN.md` §6.3).
+  Hard deletes never used.
 
 - **Error responses:** RFC 9457 `application/problem+json` format with HTTP status code.
 
 - **Test coverage:** Each endpoint has 3+ cross-tenant tests (create/list, isolation,
   update/delete) — 30+ test cases across all entities.
 
-## What exists after Stage 4 (client integration) and Stage 5 (offline sync)
+## What exists after Stage 4 (client integration)
 
 **Client integration (Stage 4):** `ApiStorageService`
 (`projects/home/src/app/core/api/`) implements the Angular app's
-`IStorageService` against these endpoints. Three deliberate gaps, each
-documented at its mapper in that file:
+`IStorageService` against these endpoints. Key design decisions:
 
-- A land's drawn polygon (`SavedFarm.points`/`.geoJson`) has no backend
-  column — Stage 3 never added `land_point` endpoints, only the model.
-  Only `area` round-trips (as `area_sq_m`).
-- `Activity.attachments` (base64 photos) aren't sent — Stage 7's R2 upload
-  job.
+- **Online-only:** Each mutation is a single API call with no local
+  queueing. Writes serialize via a FIFO queue to prevent foreign-key races
+  (e.g., a crop POST must complete before activity POSTs reference it).
+- **Client-minted UUIDs:** Create operations include a client-generated
+  UUIDv7, enabling optimistic UI — a write shows up locally with the same id
+  the server assigns.
+- **Land polygons:** `POST /api/v1/lands` and `PATCH /api/v1/lands/{id}`
+  accept `points: [{lat, lng}, ...]` and persist to the `land_point` table;
+  `GET /api/v1/lands` returns them back.
 - `Activity.type` / `CropEntity.cropType` / `ActivityExpense.category` are
   free-text unions on the client but FK ids on the backend;
   `ReferenceDataService` resolves between the two by exact name match, so
@@ -131,31 +132,8 @@ Also: `Land.farm_id` is required, but the Angular app has no concept of
 the top-level `Farm` — `ApiStorageService.getOrCreateDefaultFarmId()`
 provisions one default Farm per farmer automatically (name "My Farm").
 
-**Offline sync (Stage 5):**
-
-- `POST /api/v1/sync/push` — a batch of client-id-keyed create/update/
-  delete operations across `farms`/`lands`/`crops`/`activities`, upserted
-  by the client-minted UUID so a retried batch is a no-op. Per-item
-  results: one bad item (validation error, cross-tenant id conflict)
-  never fails the rest of the batch.
-- `GET /api/v1/sync/pull?since=&cursor=&limit=` — delta since a
-  watermark, tombstones included, cursor-paginated per entity type within
-  a frozen `server_time` window so a write landing mid-drain can't shift
-  rows under an in-progress pull.
-- `OutboxStorageService` (`projects/home/src/app/core/outbox/`) wraps
-  `ApiStorageService` with an IndexedDB-backed outbox + cache: writes to
-  activities/crops/lands are always local-first (optimistic, queued,
-  drained on the browser's `online` event and a 30s timer), matching
-  BACKEND_PLAN.md §8.1. Reads try the network first and fall back to the
-  cache when offline. `activity_expense`/`activity_attachment` stay on
-  their existing online-only nested endpoints — they carry no `farmer_id`
-  of their own (tenancy flows through `activity_id`), so `/sync/*` doesn't
-  cover them yet.
-- Gate (BACKEND_PLAN.md §14): `tests/test_endpoints_sync.py` proves the
-  same push batch replayed twice converges to identical state, per-item
-  errors don't fail a batch, cross-tenant id collisions are rejected, and
-  pull surfaces tombstones. `outbox-storage.service.spec.ts` proves the
-  same convergence property at the client's outbox layer.
+**Stage 5 (offline sync) — descoped.** The app is online-only. Offline
+support is deferred to a future release if needed.
 
 ## Neon: provisioned
 

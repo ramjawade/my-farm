@@ -1,6 +1,6 @@
 # MyFarm Backend Plan
 
-**FastAPI · PostgreSQL (Neon) · backend-issued PIN session JWT · offline-first client**
+**FastAPI · PostgreSQL (Neon) · backend-issued PIN session JWT · online-only client**
 
 The single canonical backend plan. Every decision here is settled — where a
 choice existed, it has been made and the reasoning recorded. Nothing in this
@@ -43,8 +43,7 @@ document is left open.
 | Authorization | Base-repository tenant scoping + per-endpoint cross-tenant 404 test (Postgres RLS designed in but **inert on Neon** — §5.2) |
 | ORM / migrations | **SQLAlchemy 2.0 async + asyncpg**, **Alembic** |
 | Schema source of truth | **SQLAlchemy models** → Alembic for the DB; the client hand-maintains its own API contract types (§9) |
-| Identifiers | **UUIDv7**, client-generated, native `uuid` columns |
-| Offline | **IndexedDB outbox** + delta pull; last-write-wins |
+| Identifiers | **UUIDv7**, client-minted for optimistic UI, native `uuid` columns |
 | Attachments | **Cloudflare R2** (10 GB free, zero egress) |
 | Weather cache | **Server-side, shared by location grid** — not per farmer |
 | Repository | **Monorepo** — `projects/backend/`, beside the Angular projects |
@@ -83,10 +82,10 @@ SQLAlchemy 2.0 async + asyncpg
 Neon Postgres (Singapore · pooled)
 ```
 
-This is the target architecture; §11 tracks what is built (Stages 1–5 done). Cloudflare R2 and the server-side OpenWeatherMap key are Stage 6.
+This is the target architecture; §11 tracks what is built (Stages 1–6 done). Cloudflare R2 and the server-side OpenWeatherMap key are Stage 6.
 
-Client writes never block on the network: they commit to an **IndexedDB
-outbox** and drain in the background (§8).
+Client writes are **online-only**: each mutation is a single API call with
+write serialization (FIFO queue) to prevent foreign-key races.
 
 ---
 
@@ -139,13 +138,16 @@ Dockerfile in favour of the buildpack build CI already exercises.
 
 ### 3.3 Why a one-minute cold start is acceptable
 
-For a synchronous app it would not be. **The offline outbox makes it
-invisible** — a write completes locally and the sync worker retries through
-the wake-up. Reads render from the local cache first and reconcile when the
-delta pull lands.
+The app is **online-only**, so cold starts are now user-visible. Acceptable
+because (1) typical sessions are short bursts on a mobile device where one
+load is not a dealbreaker; (2) seasonal workload with quiet periods between
+harvest and sowing means cold starts don't happen on every use; (3) Neon's
+scale-to-zero saves cost far more than paying for a warm instance costs; (4)
+this is the cheapest path to get a working backend and infrastructure in
+production.
 
-This is the load-bearing reason the architecture fits free infrastructure.
-If offline were ever descoped, the API host becomes a paid-tier decision.
+If higher availability becomes critical, the API host moves to a paid tier
+(Render's paid plans, or Fly.io with a reserved instance).
 
 ### 3.4 Ceilings and responses
 
@@ -339,7 +341,7 @@ Every farmer-owned table also carries `created_at`, `updated_at`, and
 "undefined = not yet scheduled". Ids are **UUIDv7** in native `uuid`
 columns; `farmer.id` is UUIDv7 with `auth_uid` holding either a `pin:<uuid7>`
 identifier (PIN accounts) or a Firebase uid.
-UUIDv7 is load-bearing here because **the client mints ids offline**.
+UUIDv7 is load-bearing here because **the client mints ids for optimistic UI** — a write shows up locally immediately with the same id the server will assign.
 
 ### 6.3 Columns required by sync
 
@@ -352,63 +354,36 @@ UUIDv7 is load-bearing here because **the client mints ids offline**.
 
 ## 7. API design
 
-`/api/v1/...` — REST, resource-per-entity, cursor-paginated.
+`/api/v1/...` — REST, resource-per-entity, unpaginated (all rows per call).
 
 ```
 GET    /api/v1/me                              current farmer (JIT-provisioned)
 CRUD   /api/v1/farms | lands | crops | activities
+GET    /api/v1/expenses                        all expenses for the farmer
 CRUD   /api/v1/activities/{id}/expenses | attachments
 GET    /api/v1/weather?lat=&lng=               server-cached, key never shipped
 GET    /api/v1/reference/{crops|expense-categories|activity-types}
-POST   /api/v1/sync/push                       outbox batch
-GET    /api/v1/sync/pull?since=<ts>            delta
 ```
 
 - **Per-entity CRUD only.** No endpoint can express a whole-collection
-  replace, because that shape causes lost updates between devices.
-- **Pagination** `?cursor=&limit=` over `(updated_at, id)` — never `OFFSET`.
+  replace.
+- **Unpaginated.** Each list endpoint returns all rows for the farmer in a single call: `GET /api/v1/farms` returns `{ "items": [...] }`.
 - **Errors** RFC 9457 `application/problem+json` — one shape for the client.
 - **Attachments** upload via a short-lived R2 presigned URL; the API records
   only `storage_key`.
+- **Land polygons** stored as `points: [{lat, lng}, ...]` on `LandCreate`/`LandUpdate`/`LandRead`; persisted to the `land_point` table.
 
 ---
 
 ## 8. Offline sync
 
-### 8.1 Client
+**Descoped.** The app is **online-only**. Each write is a single API call, and
+all data is fetched fresh from the server on load. The write queue in
+`ApiStorageService` serializes mutations (FIFO) to prevent foreign-key races
+when a crop POST must complete before activity POSTs.
 
-Behind the existing service worker:
-
-- **IndexedDB stores** — `outbox` (pending mutations) and `cache`
-  (last-known server state).
-- Feature services write locally and enqueue; the UI reads local state and
-  never waits on the network.
-- A sync worker drains the outbox on reconnect with exponential backoff,
-  then runs a delta pull.
-- **`ApiStorageService`** implements the existing `IStorageService`, so
-  components and feature services are untouched.
-
-**Prerequisite (Stage 1):** `IStorageService`'s bulk-replace methods
-(`saveCrops`, `saveFarms`, `saveWeatherHistory`) become per-entity CRUD, and
-`getFarmers()` / `saveFarmers()` are **deleted** — they read the global
-farmer registry, which no authenticated API may expose. Identity is resolved
-only through the token: `/api/v1/auth/session` and `/api/v1/me`.
-
-### 8.2 Protocol
-
-**Push** — a batch of mutations, each carrying its client-generated UUIDv7.
-The server **upserts by primary key**, so a retried batch is a no-op;
-idempotency falls out of client-side ids for free. Per-item results, so one
-bad item cannot fail the batch.
-
-**Pull** — `GET /sync/pull?since=<updated_at>` returns rows changed since
-the watermark, tombstones included, ordered by `updated_at` with a cursor.
-
-**Conflicts** — last-write-wins on `updated_at`, with the **server as clock
-authority** (field device clocks are unreliable). Losing versions are
-logged. LWW is sound here because one farmer edits one record from one
-device in practice. Expense totals are **derived and recomputed, never
-synced**, so they cannot conflict.
+Client-minted UUIDs (UUIDv7) enable optimistic UI: a write completes locally
+and is sent as-is to the server, with the id present from creation.
 
 ---
 
@@ -459,8 +434,8 @@ base URL. The API allowlists the GitHub Pages origin for CORS.
 | **2 — API skeleton** | FastAPI app under `projects/backend/`; `.prettierignore` guard (§4.1); Neon + Render provisioned; `/health`; Firebase token dependency; base repository (RLS designed in, inert on Neon — §5.2); CI | CORS + token rejection proven; `format:check` still passes |
 | **3 — Domain endpoints** | Models, Alembic migrations, CRUD routers, reference data | **Cross-tenant test per endpoint** |
 | **4 — Client integration** | Frontend-owned API contract types (§9); `ApiStorageService`; **backend-issued PIN session JWT, online-only** (§5.1); `PATCH /me` | End-to-end online; wrong PIN → 401, unknown phone → 404; a tokenless request is rejected |
-| **5 — Offline outbox** | IndexedDB outbox, sync worker, `/sync/*`, tombstones | Airplane-mode convergence |
-| **6 — Weather + attachments** | Server-cached weather endpoint (retires the client-side key); R2 uploads | Key absent from the bundle |
+| **5 — Offline outbox (descoped)** | — | Online-only architecture is shipping. Offline sync deferred. |
+| **6 — Weather + attachments (done)** | Server-cached weather endpoint (retires the client-side key); R2 uploads; unpaginated lists; land polygons | Key absent from the bundle; all endpoints return full result sets |
 | **7 — Firebase phone OTP (deferred)** | Add an OTP phone-verify step *before* `/auth/session` issues the JWT; nothing downstream changes | OTP gates registration; the same JWT and API contract are unchanged |
 
 Stage 1 is deliberately first and separate: refactoring the seam *while*
@@ -474,12 +449,10 @@ introducing a network backend is how these migrations fail.
 |---|---|
 | **Cross-tenant leak** — one missing `farmer_id` predicate | §5.2 — RLS doesn't cover this on Neon; the repository plus the per-endpoint negative test are what's actually load-bearing |
 | **Free-tier terms move** — verified Sept 2026 | Neon and Render projects both provisioned; only `DATABASE_URL` and the host change if a provider is swapped |
-| Neon idles to zero mid-request | Pooled endpoint, `pool_pre_ping`, outbox retries |
-| Render cold start degrades UX | Acceptable only because of the outbox (§3.3) |
+| Neon idles to zero mid-request | Pooled endpoint, `pool_pre_ping`, connection timeout handling |
+| Render cold start degrades UX | Acceptable for a seasonal app with offline currently descoped (§3.3); if availability becomes critical, move to paid tier |
 | CI failing ships to production | Closed (issue #41): `autoDeploy` is off; the deploy hook fires only after ruff + mypy + pytest pass on `main` |
 | 0.5 GB storage ceiling | Blobs in R2; weather is one shared cache; row-count alerting before the ceiling |
-| LWW loses a concurrent edit | Sound for single-device-per-record use; losers logged; totals recomputed, never synced |
-| Offline is the largest item and gets underestimated | It has its own stage (5), not a checkbox inside another |
 | Alembic autogenerate emits a destructive migration | Every migration hand-reviewed; CI runs it against a scratch database first |
 | Session JWT signing key (`SESSION_JWT_SECRET`) leaks | Short TTL (~24h); rotating the secret invalidates every live session; the PIN hash (PBKDF2-SHA256) is never exposed. Firebase remains wired as an alternative verifier if the HS256 scheme needs replacing. |
 
@@ -493,9 +466,8 @@ introducing a network backend is how these migrations fail.
 - **Stage 3** — pytest against real Postgres; **every endpoint has a
   cross-tenant test returning 404**; Alembic up/down runs clean.
 - **Stage 4** — sign in with phone + PIN against the live API, get a JWT, `GET /api/v1/me` returns the farmer; wrong PIN → 401, unknown phone → 404; app works end to end online.
-- **Stage 5** — airplane-mode test: create/edit/delete offline, reconnect,
-  confirm convergence; a replayed batch changes nothing.
-- **Stage 6** — grep the built bundle to confirm no OpenWeatherMap key.
+- **Stage 5** — descoped; offline support deferred.
+- **Stage 6** — grep the built bundle to confirm no OpenWeatherMap key; all list endpoints return full result sets in a single call (no pagination); land polygons round-trip correctly.
 - **Stage 7 (deferred)** — an OTP phone-verify step runs before `/auth/session` issues the JWT; the token, the API contract, and every downstream flow are unchanged.
 - Full gate: `ruff`, `mypy`, `pytest`, `npm run lint`, `format:check`,
   `test`, `build`.
