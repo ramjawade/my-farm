@@ -302,6 +302,7 @@ Brief summary of what this PR does.
 - Reuse context already in the conversation
 - Keep commit messages and PR descriptions concise
 - Reference Issue/PR numbers in commits
+- **Check for existing code before writing new code:** Explore the codebase for similar functionality that can be optimized or reused. Only write new code if there's no relation to existing patterns or utilities. Ask "Can this be done with existing code?" before implementing.
 
 ### ❌ DON'T
 - Don't write plans locally — they go in Issues
