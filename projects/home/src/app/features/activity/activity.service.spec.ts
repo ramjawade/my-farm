@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivityService } from './activity.service';
 import { Activity } from './activity.models';
 import { IStorageService } from '../../core/storage/storage.interface';
-import { LocalStorageService } from '../../core/storage/local-storage.service';
+import { InMemoryStorageService } from '../../testing/in-memory-storage.service';
 import { flushPromises } from '../../testing/flush-promises';
 
 describe('ActivityService', () => {
@@ -13,7 +13,7 @@ describe('ActivityService', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        { provide: IStorageService, useClass: LocalStorageService },
+        { provide: IStorageService, useClass: InMemoryStorageService },
       ],
     });
     localStorage.clear();
@@ -42,7 +42,8 @@ describe('ActivityService', () => {
       expect(service.activities().length).toBe(1);
     });
 
-    it('should persist to localStorage', async () => {
+    it('should persist a new activity through the storage service', async () => {
+      const storage = TestBed.inject(IStorageService) as InMemoryStorageService;
       service.addActivity({
         date: Date.now(),
         type: 'Irrigation',
@@ -50,8 +51,7 @@ describe('ActivityService', () => {
       });
       await flushPromises();
 
-      const stored = JSON.parse(localStorage.getItem('my_farm_anonymous_activities') || '[]');
-      expect(stored.length).toBe(1);
+      expect(storage.activities.length).toBe(1);
     });
   });
 

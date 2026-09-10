@@ -5,7 +5,7 @@ import { FarmDrawService } from '../../farm-draw/farm-draw.service';
 import { FarmAreaResult, SavedFarm } from '../../models/map.models';
 import { signal } from '@angular/core';
 import { IStorageService } from '../../../core/storage/storage.interface';
-import { LocalStorageService } from '../../../core/storage/local-storage.service';
+import { InMemoryStorageService } from '../../../testing/in-memory-storage.service';
 
 describe('SavedFarmsComponent', () => {
   let mockFarmDraw: jasmine.SpyObj<FarmDrawService>;
@@ -36,7 +36,7 @@ describe('SavedFarmsComponent', () => {
       providers: [
         provideZonelessChangeDetection(),
         { provide: FarmDrawService, useValue: mockFarmDraw },
-        { provide: IStorageService, useClass: LocalStorageService },
+        { provide: IStorageService, useClass: InMemoryStorageService },
       ],
     }).compileComponents();
   });

@@ -13,7 +13,6 @@ async def test_list_crop_catalog_no_auth_required(client: AsyncClient) -> None:
     data = resp.json()
     assert "items" in data
     assert isinstance(data["items"], list)
-    assert "has_more" in data
 
 
 @pytest.mark.asyncio
@@ -24,7 +23,6 @@ async def test_list_expense_categories_no_auth_required(client: AsyncClient) -> 
     data = resp.json()
     assert "items" in data
     assert isinstance(data["items"], list)
-    assert "has_more" in data
 
 
 @pytest.mark.asyncio
@@ -35,34 +33,16 @@ async def test_list_activity_types_no_auth_required(client: AsyncClient) -> None
     data = resp.json()
     assert "items" in data
     assert isinstance(data["items"], list)
-    assert "has_more" in data
 
 
 @pytest.mark.asyncio
-async def test_crop_catalog_pagination(client: AsyncClient) -> None:
-    """Crop catalog supports cursor pagination."""
-    resp = await client.get("/api/v1/reference/crops?limit=10")
-    assert resp.status_code == 200
-    data = resp.json()
-    assert "cursor" in data
-    assert "has_more" in data
-
-
-@pytest.mark.asyncio
-async def test_expense_categories_pagination(client: AsyncClient) -> None:
-    """Expense categories support cursor pagination."""
-    resp = await client.get("/api/v1/reference/expense-categories?limit=10")
-    assert resp.status_code == 200
-    data = resp.json()
-    assert "cursor" in data
-    assert "has_more" in data
-
-
-@pytest.mark.asyncio
-async def test_activity_types_pagination(client: AsyncClient) -> None:
-    """Activity types support cursor pagination."""
-    resp = await client.get("/api/v1/reference/activity-types?limit=10")
-    assert resp.status_code == 200
-    data = resp.json()
-    assert "cursor" in data
-    assert "has_more" in data
+async def test_reference_lists_are_unpaginated(client: AsyncClient) -> None:
+    """Reference lists return the whole table in one call — no cursor (#61)."""
+    for path in (
+        "/api/v1/reference/crops",
+        "/api/v1/reference/expense-categories",
+        "/api/v1/reference/activity-types",
+    ):
+        resp = await client.get(path)
+        assert resp.status_code == 200
+        assert set(resp.json().keys()) == {"items"}

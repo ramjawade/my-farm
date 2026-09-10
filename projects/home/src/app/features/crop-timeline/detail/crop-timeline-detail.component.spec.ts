@@ -8,7 +8,7 @@ import { CropTimelineService } from '../crop-timeline.service';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { IStorageService } from '../../../core/storage/storage.interface';
-import { LocalStorageService } from '../../../core/storage/local-storage.service';
+import { InMemoryStorageService } from '../../../testing/in-memory-storage.service';
 import { of } from 'rxjs';
 
 describe('CropTimelineDetailComponent', () => {
@@ -50,7 +50,7 @@ describe('CropTimelineDetailComponent', () => {
         CropTimelineService,
         FarmDrawService,
         AuthService,
-        { provide: IStorageService, useClass: LocalStorageService },
+        { provide: IStorageService, useClass: InMemoryStorageService },
       ],
     }).compileComponents();
 

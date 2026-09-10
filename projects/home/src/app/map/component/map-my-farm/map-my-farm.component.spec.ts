@@ -5,7 +5,7 @@ import { FarmDrawService } from '../../farm-draw/farm-draw.service';
 import { FarmAreaResult } from '../../models/map.models';
 import { signal } from '@angular/core';
 import { IStorageService } from '../../../core/storage/storage.interface';
-import { LocalStorageService } from '../../../core/storage/local-storage.service';
+import { InMemoryStorageService } from '../../../testing/in-memory-storage.service';
 
 describe('MapMyFarmComponent', () => {
   let mockFarmDraw: jasmine.SpyObj<FarmDrawService>;
@@ -28,7 +28,7 @@ describe('MapMyFarmComponent', () => {
     await TestBed.configureTestingModule({
       imports: [MapMyFarmComponent],
       providers: [
-        { provide: IStorageService, useClass: LocalStorageService },
+        { provide: IStorageService, useClass: InMemoryStorageService },
         provideZonelessChangeDetection(),
         { provide: FarmDrawService, useValue: mockFarmDraw },
       ],

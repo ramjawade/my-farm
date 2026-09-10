@@ -11,14 +11,14 @@ function cleanupLegacyStorage(): void {
   }
 
   // Remove legacy localStorage keys (keep only session keys)
-  const sessionKeys = [
-    'my_farm_session_token',
-    'my_farm_active_user_id',
-    'my_farm_session_expiry',
-  ];
+  const sessionKeys = ['my_farm_session_token', 'my_farm_active_user_id', 'my_farm_session_expiry'];
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
-    if (key && !sessionKeys.includes(key) && (key.startsWith('my_farm_') || key.startsWith('mf-'))) {
+    if (
+      key &&
+      !sessionKeys.includes(key) &&
+      (key.startsWith('my_farm_') || key.startsWith('mf-'))
+    ) {
       localStorage.removeItem(key);
       i--; // Adjust index since we just removed an item
     }

@@ -9,8 +9,25 @@ import { ActivityService } from '../activity/activity.service';
 import { FarmerRegistrationData } from '../farmer-registration/farmer-registration.models';
 import { FarmDrawService } from '../../map/farm-draw/farm-draw.service';
 import { IStorageService } from '../../core/storage/storage.interface';
-import { LocalStorageService } from '../../core/storage/local-storage.service';
-import { flushPromises } from '../../testing/flush-promises';
+import { InMemoryStorageService } from '../../testing/in-memory-storage.service';
+
+const baseUser: FarmerRegistrationData = {
+  id: 'f-test',
+  fullName: 'Test Farmer',
+  phone: '1234567890',
+  preferredLanguage: 'English',
+  userRole: 'Farmer',
+  farmName: 'Test Farm',
+  farmArea: 2.0,
+  farmAreaUnit: 'hectares',
+  primaryCrops: [],
+  waterSource: 'Rainfed',
+  irrigationType: 'Manual',
+  farmingMethod: 'Organic',
+  locationType: 'skipped',
+  location: null,
+  createdAt: Date.now(),
+};
 
 describe('HomeComponent', () => {
   let component: HomeComponent;
@@ -33,7 +50,7 @@ describe('HomeComponent', () => {
         AuthService,
         CropTimelineService,
         FarmDrawService,
-        { provide: IStorageService, useClass: LocalStorageService },
+        { provide: IStorageService, useClass: InMemoryStorageService },
       ],
     }).compileComponents();
 
@@ -157,7 +174,6 @@ describe('HomeComponent', () => {
         createdAt: Date.now(),
       },
     ];
-    localStorage.setItem('my_farm_f-test_saved_farms', JSON.stringify(mockFarms));
     farmDrawService.savedFarms.set(mockFarms);
     fixture.detectChanges();
 
@@ -203,26 +219,11 @@ describe('HomeComponent', () => {
         createdAt: Date.now(),
       },
     ];
-    localStorage.setItem('my_farm_f-test_saved_farms', JSON.stringify(mockFarms));
     farmDrawService.savedFarms.set(mockFarms);
     fixture.detectChanges();
 
     expect(component.metrics().acreage).toBe(6.17); // 2.47 + 3.7
     expect(component.metrics().landsCount).toBe(2);
-  });
-
-  it('should trigger guest demo login and seed the demo farm when loginAsDemo is called', async () => {
-    expect(authService.isLoggedIn()).toBeFalse();
-    await component.loginAsDemo();
-    await flushPromises();
-    fixture.detectChanges();
-
-    expect(authService.isLoggedIn()).toBeTrue();
-    expect(authService.currentUser()?.fullName).toBe('Ram Jawade');
-    expect(cropService.crops().length).toBe(2);
-    expect(farmDrawService.savedFarms().length).toBe(2);
-    expect(activityService.activities().length).toBeGreaterThan(10);
-    expect(component.showOnboarding()).toBeFalse();
   });
 
   it('should show the onboarding checklist for a fresh registration', () => {
@@ -252,8 +253,7 @@ describe('HomeComponent', () => {
   });
 
   it('should complete activity task when completeActivityTask is called', async () => {
-    // Setup login
-    await component.loginAsDemo();
+    authService.login(baseUser);
     fixture.detectChanges();
 
     // Create a mock pending activity

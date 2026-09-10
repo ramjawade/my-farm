@@ -4,7 +4,7 @@ import { ReportService } from './report.service';
 import { ActivityService } from '../activity/activity.service';
 import { CropTimelineService } from '../crop-timeline/crop-timeline.service';
 import { IStorageService } from '../../core/storage/storage.interface';
-import { LocalStorageService } from '../../core/storage/local-storage.service';
+import { InMemoryStorageService } from '../../testing/in-memory-storage.service';
 
 describe('ReportService', () => {
   let service: ReportService;
@@ -16,7 +16,7 @@ describe('ReportService', () => {
         ReportService,
         ActivityService,
         CropTimelineService,
-        { provide: IStorageService, useClass: LocalStorageService },
+        { provide: IStorageService, useClass: InMemoryStorageService },
       ],
     });
 
