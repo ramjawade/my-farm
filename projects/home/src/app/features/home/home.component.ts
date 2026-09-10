@@ -9,7 +9,6 @@ import { FarmDrawService } from '../../map/farm-draw/farm-draw.service';
 import { Activity } from '../activity/activity.models';
 
 import { ProfileEditDialogComponent } from '../profile/components/profile-edit-dialog.component';
-import { DemoDataService } from '../../core/demo/demo-data.service';
 import { ToastService } from 'shared';
 import {
   OnboardingChecklistComponent,
@@ -38,7 +37,6 @@ export class HomeComponent {
   private readonly activityService = inject(ActivityService);
   private readonly farmDrawService = inject(FarmDrawService);
   private readonly router = inject(Router);
-  private readonly demoData = inject(DemoDataService);
   private readonly toast = inject(ToastService);
 
   // Authentication State
@@ -281,11 +279,6 @@ export class HomeComponent {
       return aStr === todayStr && a.status !== 'Completed';
     });
   });
-
-  // Guest demo: one coherent seeded farm, owned by DemoDataService
-  loginAsDemo(): Promise<void> {
-    return this.demoData.enterDemo();
-  }
 
   // Quick Action: Complete an activity task from the list
   completeActivityTask(id: string): void {
