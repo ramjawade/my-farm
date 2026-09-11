@@ -12,6 +12,7 @@ import { IStorageService } from './core/storage/storage.interface';
 import { ApiStorageService } from './core/api/api-storage.service';
 import { IWeatherService } from './core/weather/weather.interface';
 import { WeatherService } from './core/weather/weather.service';
+import { provideEnvironmentInitializer } from './core/services/environment.initializer';
 import { provideServiceWorker } from '@angular/service-worker';
 
 export const appConfig: ApplicationConfig = {
@@ -20,6 +21,7 @@ export const appConfig: ApplicationConfig = {
     provideZonelessChangeDetection(),
     provideHttpClient(),
     provideRouter(routes),
+    provideEnvironmentInitializer(),
     { provide: IStorageService, useClass: ApiStorageService }, // Online-only
     { provide: IWeatherService, useClass: WeatherService },
     provideServiceWorker('ngsw-worker.js', {

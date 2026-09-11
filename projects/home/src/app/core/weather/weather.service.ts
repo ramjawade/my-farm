@@ -11,7 +11,7 @@ import {
   OpenWeatherResponse,
   OpenWeatherForecastResponse,
 } from './weather.models';
-import { environment } from '../../../environments/environment';
+import { EnvironmentService } from '../services/environment.service';
 import { FarmDrawService } from '../../map/farm-draw/farm-draw.service';
 
 type DataSource = 'live' | 'cache' | 'demo';
@@ -22,6 +22,7 @@ export class WeatherService extends IWeatherService {
   private readonly authService = inject(AuthService);
   private readonly cacheService = inject(WeatherCacheService);
   private readonly farmDraw = inject(FarmDrawService);
+  private readonly envService = inject(EnvironmentService);
 
   private readonly weatherDataSignal = signal<WeatherData | null>(null);
   readonly weatherData = computed(() => this.weatherDataSignal());
@@ -192,7 +193,7 @@ private handleError(error: any, location: WeatherLocation): WeatherData {
     forecast: { days: any[]; fetchedAt: number };
     alerts: WeatherAlert[];
   }> {
-    const baseUrl = environment.apiBaseUrl;
+    const baseUrl = this.envService.getApiUrl();
     const response = await this.http
       .get<{
         data: OpenWeatherResponse;

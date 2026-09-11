@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { EnvironmentService } from '../services/environment.service';
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
 import {
   FarmerResponse,
@@ -75,7 +75,8 @@ function mapFarmer(f: FarmerResponse): FarmerRegistrationData {
 @Injectable({ providedIn: 'root' })
 export class SessionAuthService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = environment.apiBaseUrl;
+  private readonly envService = inject(EnvironmentService);
+  private readonly baseUrl = this.envService.getApiUrl();
 
   /** Exchange phone + PIN for a session. The backend's status code maps
    * straight to the outcome — `404 -> no-account`, `401 -> wrong-pin` — so

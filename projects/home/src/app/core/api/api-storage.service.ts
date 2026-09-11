@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { EnvironmentService } from '../services/environment.service';
 import { IStorageService } from '../storage/storage.interface';
 import { Activity, ActivityExpense } from '../../features/activity/activity.models';
 import {
@@ -50,7 +50,7 @@ function timestampToDateString(value: number | undefined): string | undefined {
  */
 @Injectable({ providedIn: 'root' })
 export class ApiStorageService extends IStorageService {
-  private baseUrl = environment.apiBaseUrl;
+  private baseUrl: string;
   private token: string | null = null;
   private defaultFarmIdPromise: Promise<string> | null = null;
   private writeQueue: Promise<any> = Promise.resolve();
@@ -58,8 +58,10 @@ export class ApiStorageService extends IStorageService {
   constructor(
     private http: HttpClient,
     private referenceData: ReferenceDataService,
+    private envService: EnvironmentService,
   ) {
     super();
+    this.baseUrl = this.envService.getApiUrl();
   }
 
   private enqueueWrite<T>(fn: () => Promise<T>): Promise<T> {
