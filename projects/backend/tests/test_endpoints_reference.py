@@ -42,6 +42,9 @@ async def test_post_crops_creates_new_crop(client: AsyncClient) -> None:
 async def test_post_crops_case_insensitive_duplicate(client: AsyncClient) -> None:
     """POST /crops with case-insensitive duplicate returns existing crop."""
     uid = f"farmer_{uuid4()}"
+    # Unique per run so this doesn't collide with crop names other tests in
+    # this file create against the same real test database.
+    crop_name = f"okra-{uuid4()}"
     with patch.object(
         firebase_auth,
         "verify_id_token",
@@ -51,7 +54,7 @@ async def test_post_crops_case_insensitive_duplicate(client: AsyncClient) -> Non
         resp1 = await client.post(
             "/api/v1/reference/crops",
             headers={"Authorization": "Bearer test"},
-            json={"name": "tomato"},
+            json={"name": crop_name},
         )
         assert resp1.status_code == 200
         id1 = resp1.json()["id"]
@@ -60,12 +63,12 @@ async def test_post_crops_case_insensitive_duplicate(client: AsyncClient) -> Non
         resp2 = await client.post(
             "/api/v1/reference/crops",
             headers={"Authorization": "Bearer test"},
-            json={"name": "TOMATO"},
+            json={"name": crop_name.upper()},
         )
         assert resp2.status_code == 200
         data2 = resp2.json()
         assert data2["id"] == id1
-        assert data2["name"] == "tomato"  # Returns original name
+        assert data2["name"] == crop_name  # Returns original name
 
 
 @pytest.mark.asyncio
