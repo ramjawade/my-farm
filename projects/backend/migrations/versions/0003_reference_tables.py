@@ -31,24 +31,63 @@ def upgrade() -> None:
 
     # Convert all FKs to bigint before converting PKs
     # Reference table FKs
-    op.alter_column("activity", "activity_type_id", existing_type=sa.UUID(), type_=sa.BigInteger())
-    op.alter_column("activity_expense", "expense_category_id", existing_type=sa.UUID(), type_=sa.BigInteger())
-    op.alter_column("crop", "crop_catalog_id", existing_type=sa.UUID(), type_=sa.BigInteger())
-    op.alter_column("farm_crop", "crop_catalog_id", existing_type=sa.UUID(), type_=sa.BigInteger())
+    op.alter_column(
+        "activity", "activity_type_id", existing_type=sa.UUID(),
+        type_=sa.BigInteger()
+    )
+    op.alter_column(
+        "activity_expense", "expense_category_id",
+        existing_type=sa.UUID(), type_=sa.BigInteger()
+    )
+    op.alter_column(
+        "crop", "crop_catalog_id", existing_type=sa.UUID(),
+        type_=sa.BigInteger()
+    )
+    op.alter_column(
+        "farm_crop", "crop_catalog_id", existing_type=sa.UUID(),
+        type_=sa.BigInteger()
+    )
 
     # Tenant-scoped FKs
-    op.alter_column("farm", "farmer_id", existing_type=sa.UUID(), type_=sa.BigInteger())
-    op.alter_column("land", "farmer_id", existing_type=sa.UUID(), type_=sa.BigInteger())
-    op.alter_column("land", "farm_id", existing_type=sa.UUID(), type_=sa.BigInteger())
-    op.alter_column("crop", "farmer_id", existing_type=sa.UUID(), type_=sa.BigInteger())
-    op.alter_column("crop", "land_id", existing_type=sa.UUID(), type_=sa.BigInteger())
-    op.alter_column("activity", "farmer_id", existing_type=sa.UUID(), type_=sa.BigInteger())
-    op.alter_column("activity", "crop_id", existing_type=sa.UUID(), type_=sa.BigInteger())
-    op.alter_column("activity", "land_id", existing_type=sa.UUID(), type_=sa.BigInteger())
-    op.alter_column("activity", "parent_activity_id", existing_type=sa.UUID(), type_=sa.BigInteger(), nullable=True)
-    op.alter_column("activity_expense", "activity_id", existing_type=sa.UUID(), type_=sa.BigInteger())
-    op.alter_column("activity_attachment", "activity_id", existing_type=sa.UUID(), type_=sa.BigInteger())
-    op.alter_column("land_point", "land_id", existing_type=sa.UUID(), type_=sa.BigInteger())
+    op.alter_column(
+        "farm", "farmer_id", existing_type=sa.UUID(), type_=sa.BigInteger()
+    )
+    op.alter_column(
+        "land", "farmer_id", existing_type=sa.UUID(), type_=sa.BigInteger()
+    )
+    op.alter_column(
+        "land", "farm_id", existing_type=sa.UUID(), type_=sa.BigInteger()
+    )
+    op.alter_column(
+        "crop", "farmer_id", existing_type=sa.UUID(), type_=sa.BigInteger()
+    )
+    op.alter_column(
+        "crop", "land_id", existing_type=sa.UUID(), type_=sa.BigInteger()
+    )
+    op.alter_column(
+        "activity", "farmer_id", existing_type=sa.UUID(), type_=sa.BigInteger()
+    )
+    op.alter_column(
+        "activity", "crop_id", existing_type=sa.UUID(), type_=sa.BigInteger()
+    )
+    op.alter_column(
+        "activity", "land_id", existing_type=sa.UUID(), type_=sa.BigInteger()
+    )
+    op.alter_column(
+        "activity", "parent_activity_id",
+        existing_type=sa.UUID(), type_=sa.BigInteger(), nullable=True
+    )
+    op.alter_column(
+        "activity_expense", "activity_id",
+        existing_type=sa.UUID(), type_=sa.BigInteger()
+    )
+    op.alter_column(
+        "activity_attachment", "activity_id",
+        existing_type=sa.UUID(), type_=sa.BigInteger()
+    )
+    op.alter_column(
+        "land_point", "land_id", existing_type=sa.UUID(), type_=sa.BigInteger()
+    )
 
     # Now convert all primary keys to bigint with sequences
     tables_with_sequences = [
@@ -71,7 +110,8 @@ def upgrade() -> None:
         default_sql = f"nextval('{seq_name}'::regclass)"
         op.add_column(
             table_name,
-            sa.Column("id", sa.BigInteger(), nullable=False, server_default=default_sql)
+            sa.Column("id", sa.BigInteger(), nullable=False,
+                      server_default=default_sql)
         )
         op.create_primary_key(f"{table_name}_pkey", table_name, ["id"])
 
@@ -79,9 +119,7 @@ def upgrade() -> None:
     op.create_table(
         "season",
         sa.Column(
-            "id",
-            sa.BigInteger(),
-            nullable=False,
+            "id", sa.BigInteger(), nullable=False,
             server_default="nextval('season_id_seq'::regclass)"
         ),
         sa.Column("name", sa.String(255), nullable=False),
@@ -92,9 +130,7 @@ def upgrade() -> None:
     op.create_table(
         "crop_stage",
         sa.Column(
-            "id",
-            sa.BigInteger(),
-            nullable=False,
+            "id", sa.BigInteger(), nullable=False,
             server_default="nextval('crop_stage_id_seq'::regclass)"
         ),
         sa.Column("name", sa.String(255), nullable=False),
@@ -120,14 +156,18 @@ def upgrade() -> None:
         "Weather Incident", "Maintenance", "Custom",
     ]
     for activity_type in activity_types:
-        op.execute(f"INSERT INTO activity_type (name) VALUES ('{activity_type}')")
+        op.execute(
+            f"INSERT INTO activity_type (name) VALUES ('{activity_type}')"
+        )
 
     expense_categories = [
         "Machine Rent", "Labour", "Seeds", "Fertilizer", "Pesticide",
         "Transport", "Fuel", "Equipment", "Water", "Other",
     ]
     for category in expense_categories:
-        op.execute(f"INSERT INTO expense_category (name) VALUES ('{category}')")
+        op.execute(
+            f"INSERT INTO expense_category (name) VALUES ('{category}')"
+        )
 
 
 def downgrade() -> None:

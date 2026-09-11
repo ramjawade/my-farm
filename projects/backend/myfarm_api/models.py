@@ -203,8 +203,8 @@ class Land(TenantScopedBase):
 
     __tablename__ = "land"
 
-    farm_id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), ForeignKey("farm.id"), nullable=False
+    farm_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("farm.id"), nullable=False
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     area_sq_m: Mapped[Decimal | None] = mapped_column(Numeric(12, 2), nullable=True)
