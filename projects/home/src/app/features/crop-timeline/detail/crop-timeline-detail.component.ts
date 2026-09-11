@@ -85,12 +85,12 @@ export class CropTimelineDetailComponent implements OnInit {
     this.router.navigate(['/crops']);
   }
 
-  onUpdateStageClicked(stageId: string): void {
+  onUpdateStageClicked(stage: CropStage): void {
     const c = this.crop();
     if (!c) return;
-    let mainAct = this.timelineService.findMainActivityForStage(c.id, stageId);
+    let mainAct = this.timelineService.findMainActivityForStage(c.id, stage);
     if (!mainAct) {
-      mainAct = this.timelineService.ensureScheduledActivityForStage(c.id, stageId);
+      mainAct = this.timelineService.ensureScheduledActivityForStage(c.id, stage);
     }
     this.parentActivityIdForModal.set(mainAct.id);
     this.editingActivityIdForModal.set(null);
@@ -145,7 +145,7 @@ export class CropTimelineDetailComponent implements OnInit {
     return days < 0 ? 0 : days;
   }
 
-  getStageIndex(stage: string): number {
+  getStageIndex(stage: CropStage): number {
     return this.stages.indexOf(stage);
   }
 }
