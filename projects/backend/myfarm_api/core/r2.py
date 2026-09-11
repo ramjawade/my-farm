@@ -2,7 +2,6 @@
 
 from datetime import datetime
 from typing import Any
-from uuid import UUID
 
 import boto3
 from botocore.config import Config
@@ -42,12 +41,12 @@ class R2Service:
         )
 
     def generate_upload_url(
-        self, activity_id: UUID, file_name: str, content_type: str = "application/octet-stream"
+        self, activity_id: int, file_name: str, content_type: str = "application/octet-stream"
     ) -> dict[str, Any]:
         """Generate a presigned URL for direct file upload to R2.
 
         Args:
-            activity_id: Activity UUID
+            activity_id: Activity ID
             file_name: Original file name (for storage key)
             content_type: MIME type
 

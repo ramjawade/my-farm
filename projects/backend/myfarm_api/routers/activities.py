@@ -2,7 +2,6 @@
 
 from datetime import UTC, datetime
 from typing import Any
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import and_, select
@@ -37,7 +36,7 @@ async def get_current_farmer(
     return await FarmerRepository.get_or_create(identity.uid)
 
 
-async def _get_owned_activity(current_farmer: Farmer, activity_id: UUID) -> Activity:
+async def _get_owned_activity(current_farmer: Farmer, activity_id: int) -> Activity:
     """Verify the activity exists and belongs to this farmer, or 404.
 
     Nested resources (expenses, attachments) have no `farmer_id` of their
@@ -86,7 +85,7 @@ async def list_all_expenses(
 
 @router.get("/{activity_id}", response_model=ActivityRead)
 async def get_activity(
-    activity_id: UUID,
+    activity_id: int,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> ActivityRead:
     """Get a single activity by ID."""
@@ -114,7 +113,7 @@ async def create_activity(
 
 @router.patch("/{activity_id}", response_model=ActivityRead)
 async def update_activity(
-    activity_id: UUID,
+    activity_id: int,
     data: ActivityUpdate,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> ActivityRead:
@@ -129,7 +128,7 @@ async def update_activity(
 
 @router.delete("/{activity_id}", status_code=204)
 async def delete_activity(
-    activity_id: UUID,
+    activity_id: int,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> None:
     """Soft-delete an activity."""
@@ -148,7 +147,7 @@ async def delete_activity(
 
 @router.get("/{activity_id}/expenses", response_model=dict)
 async def list_activity_expenses(
-    activity_id: UUID,
+    activity_id: int,
     current_farmer: Farmer = Depends(get_current_farmer),
     cursor: str | None = Query(None),
     limit: int = Query(20, ge=1, le=100),
@@ -167,7 +166,7 @@ async def list_activity_expenses(
         if cursor:
             updated_at_str, id_str = cursor.rsplit(":", 1)
             cursor_updated_at = datetime.fromisoformat(updated_at_str)
-            cursor_id = UUID(id_str)
+            cursor_id = int(id_str)
             stmt = stmt.where(
                 (ActivityExpense.updated_at < cursor_updated_at)
                 | (
@@ -195,7 +194,7 @@ async def list_activity_expenses(
 
 @router.post("/{activity_id}/expenses", response_model=ActivityExpenseRead, status_code=201)
 async def create_activity_expense(
-    activity_id: UUID,
+    activity_id: int,
     data: ActivityExpenseCreate,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> ActivityExpenseRead:
@@ -225,8 +224,8 @@ async def create_activity_expense(
     response_model=ActivityExpenseRead,
 )
 async def update_activity_expense(
-    activity_id: UUID,
-    expense_id: UUID,
+    activity_id: int,
+    expense_id: int,
     data: ActivityExpenseUpdate,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> ActivityExpenseRead:
@@ -257,8 +256,8 @@ async def update_activity_expense(
 
 @router.delete("/{activity_id}/expenses/{expense_id}", status_code=204)
 async def delete_activity_expense(
-    activity_id: UUID,
-    expense_id: UUID,
+    activity_id: int,
+    expense_id: int,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> None:
     """Soft-delete an expense for an activity."""
@@ -287,7 +286,7 @@ async def delete_activity_expense(
 
 @router.get("/{activity_id}/attachments", response_model=dict)
 async def list_activity_attachments(
-    activity_id: UUID,
+    activity_id: int,
     current_farmer: Farmer = Depends(get_current_farmer),
     cursor: str | None = Query(None),
     limit: int = Query(20, ge=1, le=100),
@@ -306,7 +305,7 @@ async def list_activity_attachments(
         if cursor:
             updated_at_str, id_str = cursor.rsplit(":", 1)
             cursor_updated_at = datetime.fromisoformat(updated_at_str)
-            cursor_id = UUID(id_str)
+            cursor_id = int(id_str)
             stmt = stmt.where(
                 (ActivityAttachment.updated_at < cursor_updated_at)
                 | (
@@ -336,7 +335,7 @@ async def list_activity_attachments(
     "/{activity_id}/attachments/upload", response_model=ActivityAttachmentUploadResponse
 )
 async def get_attachment_upload_url(
-    activity_id: UUID,
+    activity_id: int,
     request: ActivityAttachmentUploadRequest,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> ActivityAttachmentUploadResponse:
@@ -365,7 +364,7 @@ async def get_attachment_upload_url(
     "/{activity_id}/attachments", response_model=ActivityAttachmentRead, status_code=201
 )
 async def create_activity_attachment(
-    activity_id: UUID,
+    activity_id: int,
     data: ActivityAttachmentCreate,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> ActivityAttachmentRead:
@@ -383,8 +382,8 @@ async def create_activity_attachment(
 
 @router.delete("/{activity_id}/attachments/{attachment_id}", status_code=204)
 async def delete_activity_attachment(
-    activity_id: UUID,
-    attachment_id: UUID,
+    activity_id: int,
+    attachment_id: int,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> None:
     """Soft-delete an attachment for an activity.

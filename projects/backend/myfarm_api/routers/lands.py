@@ -1,7 +1,6 @@
 """CRUD endpoints for lands — farmer-owned entities."""
 
 from typing import Any
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -35,7 +34,7 @@ async def list_lands(
 
 @router.get("/{land_id}", response_model=LandRead)
 async def get_land(
-    land_id: UUID,
+    land_id: int,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> LandRead:
     """Get a single land by ID."""
@@ -78,7 +77,7 @@ async def create_land(
 
 @router.patch("/{land_id}", response_model=LandRead)
 async def update_land(
-    land_id: UUID,
+    land_id: int,
     data: LandUpdate,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> LandRead:
@@ -114,7 +113,7 @@ async def update_land(
 
 @router.delete("/{land_id}", status_code=204)
 async def delete_land(
-    land_id: UUID,
+    land_id: int,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> None:
     """Soft-delete a land."""

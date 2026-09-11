@@ -1,7 +1,6 @@
 """CRUD endpoints for crops — farmer-owned entities."""
 
 from typing import Any
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -35,7 +34,7 @@ async def list_crops(
 
 @router.get("/{crop_id}", response_model=CropRead)
 async def get_crop(
-    crop_id: UUID,
+    crop_id: int,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> CropRead:
     """Get a single crop by ID."""
@@ -61,7 +60,7 @@ async def create_crop(
 
 @router.patch("/{crop_id}", response_model=CropRead)
 async def update_crop(
-    crop_id: UUID,
+    crop_id: int,
     data: CropUpdate,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> CropRead:
@@ -76,7 +75,7 @@ async def update_crop(
 
 @router.delete("/{crop_id}", status_code=204)
 async def delete_crop(
-    crop_id: UUID,
+    crop_id: int,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> None:
     """Soft-delete a crop."""
