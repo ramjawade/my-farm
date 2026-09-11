@@ -18,6 +18,7 @@ import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
 import { SavedFarm } from '../../../map/models/map.models';
 import { AuthService } from '../../../core/auth/auth.service';
+import { WorkflowStateService } from '../../../core/workflow/workflow-state.service';
 import { ToastService } from 'shared';
 
 @Component({
@@ -36,6 +37,7 @@ export class CreateActivityComponent implements OnInit {
   private readonly cropService = inject(CropTimelineService);
   private readonly farmDrawService = inject(FarmDrawService);
   private readonly authService = inject(AuthService);
+  private readonly workflowService = inject(WorkflowStateService);
   private readonly toast = inject(ToastService);
 
   @Input() cropId?: string;
@@ -257,6 +259,12 @@ export class CreateActivityComponent implements OnInit {
       });
 
       this.toast.success(`${newAct.type === 'Custom' ? 'Activity' : newAct.type} logged.`);
+
+      // Mark activity phase complete on first activity created
+      const actCount = this.activityService.activities().filter((a) => a.status !== 'Draft').length;
+      if (actCount === 1) {
+        this.workflowService.markPhaseComplete('activity');
+      }
 
       if (!this.isModal) {
         this.router.navigate(['/activities', newAct.id]);
