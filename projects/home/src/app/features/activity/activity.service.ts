@@ -41,9 +41,16 @@ export class ActivityService {
 
   constructor() {
     // Reload whenever the signed-in user changes (login, logout, session restore).
+    // Skip entirely while logged out — an anonymous fetch just hits 401/404
+    // and floods the console on every boot.
     effect(() => {
-      this.auth.currentUser();
-      this.loadFromStorage();
+      const user = this.auth.currentUser();
+      if (user) {
+        this.loadFromStorage();
+      } else {
+        this.activitiesSignal.set([]);
+        this.expensesSignal.set([]);
+      }
     });
   }
 

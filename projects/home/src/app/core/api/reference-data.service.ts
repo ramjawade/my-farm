@@ -31,11 +31,24 @@ export class ReferenceDataService {
   private stagesByName = new Map<string, number>();
   private stagesById = new Map<number, string>();
 
-  private loadingPromise: Promise<void> | null = null;
+  // One cached promise per endpoint (not one for all five) so a single
+  // endpoint failing doesn't force every other — already-successful —
+  // endpoint to be re-fetched on the next lookup. Without this, a single
+  // persistently-404ing endpoint (e.g. one not yet deployed) turned every
+  // crop/expense/activity-type mapping call into a fresh 5-endpoint fetch.
+  private cropsPromise: Promise<ReferenceItem[]> | null = null;
+  private expensesPromise: Promise<ReferenceItem[]> | null = null;
+  private activityTypesPromise: Promise<ReferenceItem[]> | null = null;
+  private seasonsPromise: Promise<ReferenceItem[]> | null = null;
+  private stagesPromise: Promise<ReferenceItem[]> | null = null;
 
   /** Force a re-fetch on next lookup (e.g. after seeding reference data). */
   invalidate(): void {
-    this.loadingPromise = null;
+    this.cropsPromise = null;
+    this.expensesPromise = null;
+    this.activityTypesPromise = null;
+    this.seasonsPromise = null;
+    this.stagesPromise = null;
     this.cropsByName.clear();
     this.cropsById.clear();
     this.expensesByName.clear();
@@ -48,27 +61,34 @@ export class ReferenceDataService {
     this.stagesById.clear();
   }
 
-  private async ensureLoaded(): Promise<void> {
-    if (!this.loadingPromise) {
-      this.loadingPromise = this.loadAll();
+  /** Fetch (or reuse the in-flight/cached fetch of) one reference endpoint,
+   * clearing its own cache slot — and only its own — on failure so a
+   * retry doesn't refetch endpoints that already succeeded. */
+  private load(
+    slot:
+      | 'cropsPromise'
+      | 'expensesPromise'
+      | 'activityTypesPromise'
+      | 'seasonsPromise'
+      | 'stagesPromise',
+    path: string,
+  ): Promise<ReferenceItem[]> {
+    if (!this[slot]) {
+      this[slot] = this.fetchAll(path).catch((error) => {
+        this[slot] = null;
+        throw error;
+      });
     }
-    try {
-      await this.loadingPromise;
-    } catch (error) {
-      // Don't pin a rejected promise forever — a later call (once back
-      // online) should retry the fetch instead of replaying this failure.
-      this.loadingPromise = null;
-      throw error;
-    }
+    return this[slot]!;
   }
 
-  private async loadAll(): Promise<void> {
+  private async ensureLoaded(): Promise<void> {
     const [crops, expenses, activityTypes, seasons, stages] = await Promise.all([
-      this.fetchAll('/reference/crops'),
-      this.fetchAll('/reference/expense-categories'),
-      this.fetchAll('/reference/activity-types'),
-      this.fetchAll('/reference/seasons'),
-      this.fetchAll('/reference/crop-stages'),
+      this.load('cropsPromise', '/reference/crops'),
+      this.load('expensesPromise', '/reference/expense-categories'),
+      this.load('activityTypesPromise', '/reference/activity-types'),
+      this.load('seasonsPromise', '/reference/seasons'),
+      this.load('stagesPromise', '/reference/crop-stages'),
     ]);
     this.applyMaps(crops, expenses, activityTypes, seasons, stages);
   }
