@@ -2,7 +2,13 @@
 
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+
+class CropCatalogCreate(BaseModel):
+    """Create a new crop catalog entry."""
+
+    name: str = Field(..., min_length=1)
 
 
 class CropCatalogRead(BaseModel):

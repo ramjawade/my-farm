@@ -1,14 +1,17 @@
-"""GET-only endpoints for reference data."""
+"""Reference data endpoints: list and create catalog entries."""
 
 from typing import Any
+from uuid import uuid4
 
-from fastapi import APIRouter
-from sqlalchemy import select
+from fastapi import APIRouter, Depends
+from sqlalchemy import func, select
 
 from myfarm_api.core.db import get_session_factory
+from myfarm_api.core.security import FirebaseIdentity, get_firebase_identity
 from myfarm_api.models import ActivityType, CropCatalog, ExpenseCategory
 from myfarm_api.schemas.reference import (
     ActivityTypeRead,
+    CropCatalogCreate,
     CropCatalogRead,
     ExpenseCategoryRead,
 )
@@ -27,6 +30,30 @@ async def list_crop_catalog() -> dict[str, Any]:
         return {
             "items": [CropCatalogRead.model_validate(c) for c in crops],
         }
+
+
+@router.post("/crops", response_model=CropCatalogRead)
+async def create_or_get_crop(
+    payload: CropCatalogCreate,
+    identity: FirebaseIdentity = Depends(get_firebase_identity),
+) -> CropCatalog:
+    """Create a new crop or return the existing one (case-insensitive)."""
+    crop_name = payload.name.strip()
+
+    session_factory = get_session_factory()
+    async with session_factory() as session:
+        stmt = select(CropCatalog).where(func.lower(CropCatalog.name) == crop_name.lower())
+        result = await session.execute(stmt)
+        existing_crop = result.scalar_one_or_none()
+
+        if existing_crop:
+            return existing_crop
+
+        new_crop = CropCatalog(id=uuid4(), name=crop_name)
+        session.add(new_crop)
+        await session.commit()
+        await session.refresh(new_crop)
+        return new_crop
 
 
 @router.get("/expense-categories", response_model=dict)

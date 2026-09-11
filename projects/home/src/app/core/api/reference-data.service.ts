@@ -128,4 +128,18 @@ export class ReferenceDataService {
     await this.ensureLoaded();
     return this.activityTypesById.get(id) ?? id;
   }
+
+  async listCropNames(): Promise<string[]> {
+    await this.ensureLoaded();
+    return Array.from(this.cropsByName.keys()).sort();
+  }
+
+  async createCrop(name: string): Promise<string> {
+    const resp = await this.httpService.post<ReferenceItem>('/reference/crops', {
+      name,
+    });
+    this.cropsByName.set(resp.name, resp.id);
+    this.cropsById.set(resp.id, resp.name);
+    return resp.id;
+  }
 }
