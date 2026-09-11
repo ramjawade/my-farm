@@ -7,7 +7,6 @@ farmer (#61). Cursor pagination is tracked for a later reintroduction in
 
 from datetime import datetime
 from typing import Any
-from uuid import UUID
 
 from sqlalchemy import and_, select
 from sqlalchemy.exc import IntegrityError
@@ -27,7 +26,7 @@ class TenantScopedCRUD[T: TenantScopedBase]:
     def __init__(self, model: type[T]) -> None:
         self.model = model
 
-    async def list_all(self, farmer_id: UUID) -> list[T]:
+    async def list_all(self, farmer_id: int) -> list[T]:
         """Every non-deleted record for this farmer, newest first."""
         session_factory = get_session_factory()
         async with session_factory() as session:
@@ -45,7 +44,7 @@ class TenantScopedCRUD[T: TenantScopedBase]:
             result = await session.execute(stmt)
             return list(result.scalars().all())
 
-    async def get(self, farmer_id: UUID, id: UUID) -> T | None:
+    async def get(self, farmer_id: int, id: int) -> T | None:
         """Get a single record, verifying farmer_id ownership."""
         session_factory = get_session_factory()
         async with session_factory() as session:
@@ -59,7 +58,7 @@ class TenantScopedCRUD[T: TenantScopedBase]:
             result = await session.execute(stmt)
             return result.scalar_one_or_none()
 
-    async def create(self, farmer_id: UUID, obj: T) -> T:
+    async def create(self, farmer_id: int, obj: T) -> T:
         """Create a new record for this farmer. Raises ConflictError if the id already exists."""
         obj.farmer_id = farmer_id
         session_factory = get_session_factory()
@@ -73,7 +72,7 @@ class TenantScopedCRUD[T: TenantScopedBase]:
             await session.refresh(obj)
             return obj
 
-    async def update(self, farmer_id: UUID, id: UUID, updates: dict[str, Any]) -> T | None:
+    async def update(self, farmer_id: int, id: int, updates: dict[str, Any]) -> T | None:
         """Update a record, verifying farmer_id ownership."""
         session_factory = get_session_factory()
         async with session_factory() as session:
@@ -97,7 +96,7 @@ class TenantScopedCRUD[T: TenantScopedBase]:
             await session.refresh(obj)
             return obj
 
-    async def soft_delete(self, farmer_id: UUID, id: UUID) -> bool:
+    async def soft_delete(self, farmer_id: int, id: int) -> bool:
         """Soft-delete a record (idempotent)."""
         session_factory = get_session_factory()
         async with session_factory() as session:
