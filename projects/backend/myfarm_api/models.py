@@ -112,14 +112,30 @@ class CropCatalog(Base):
     )
 
 
+class Season(Base):
+    """Reference data: Indian cropping seasons."""
+
+    __tablename__ = "season"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+
+
+class CropStage(Base):
+    """Reference data: crop growth stages."""
+
+    __tablename__ = "crop_stage"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+
+
 class ExpenseCategory(Base):
     """Reference data: known expense types."""
 
     __tablename__ = "expense_category"
 
-    id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
 
     expenses: Mapped[list["ActivityExpense"]] = relationship(
@@ -132,9 +148,7 @@ class ActivityType(Base):
 
     __tablename__ = "activity_type"
 
-    id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
 
     activities: Mapped[list["Activity"]] = relationship(

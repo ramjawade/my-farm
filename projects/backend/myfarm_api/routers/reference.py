@@ -8,12 +8,14 @@ from sqlalchemy import func, select
 
 from myfarm_api.core.db import get_session_factory
 from myfarm_api.core.security import FirebaseIdentity, get_firebase_identity
-from myfarm_api.models import ActivityType, CropCatalog, ExpenseCategory
+from myfarm_api.models import ActivityType, CropCatalog, CropStage, ExpenseCategory, Season
 from myfarm_api.schemas.reference import (
     ActivityTypeRead,
     CropCatalogCreate,
     CropCatalogRead,
+    CropStageRead,
     ExpenseCategoryRead,
+    SeasonRead,
 )
 
 router = APIRouter(prefix="/api/v1/reference", tags=["reference"])
@@ -79,4 +81,30 @@ async def list_activity_types() -> dict[str, Any]:
         types = result.scalars().all()
         return {
             "items": [ActivityTypeRead.model_validate(a) for a in types],
+        }
+
+
+@router.get("/seasons", response_model=dict)
+async def list_seasons() -> dict[str, Any]:
+    """List all available seasons."""
+    session_factory = get_session_factory()
+    async with session_factory() as session:
+        stmt = select(Season).order_by(Season.name)
+        result = await session.execute(stmt)
+        seasons = result.scalars().all()
+        return {
+            "items": [SeasonRead.model_validate(s) for s in seasons],
+        }
+
+
+@router.get("/crop-stages", response_model=dict)
+async def list_crop_stages() -> dict[str, Any]:
+    """List all available crop stages."""
+    session_factory = get_session_factory()
+    async with session_factory() as session:
+        stmt = select(CropStage).order_by(CropStage.name)
+        result = await session.execute(stmt)
+        stages = result.scalars().all()
+        return {
+            "items": [CropStageRead.model_validate(c) for c in stages],
         }

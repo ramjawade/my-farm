@@ -25,7 +25,7 @@ class CropCatalogRead(BaseModel):
 class ExpenseCategoryRead(BaseModel):
     """Read an expense category record."""
 
-    id: UUID
+    id: int
     name: str
 
     class Config:
@@ -35,7 +35,27 @@ class ExpenseCategoryRead(BaseModel):
 class ActivityTypeRead(BaseModel):
     """Read an activity type record."""
 
-    id: UUID
+    id: int
+    name: str
+
+    class Config:
+        from_attributes = True
+
+
+class SeasonRead(BaseModel):
+    """Read a season record."""
+
+    id: int
+    name: str
+
+    class Config:
+        from_attributes = True
+
+
+class CropStageRead(BaseModel):
+    """Read a crop stage record."""
+
+    id: int
     name: str
 
     class Config:
