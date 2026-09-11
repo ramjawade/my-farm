@@ -78,7 +78,7 @@ describe('AddCropComponent', () => {
       jasmine.objectContaining({
         name: 'My Soy Crop',
         currentStage: 'Land Preparation',
-      })
+      }),
     );
   });
 });

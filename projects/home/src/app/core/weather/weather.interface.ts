@@ -1,5 +1,11 @@
 import { Signal } from '@angular/core';
-import { WeatherData, WeatherLocation, CurrentWeather, WeatherAlert, WeatherDataSource } from './weather.models';
+import {
+  WeatherData,
+  WeatherLocation,
+  CurrentWeather,
+  WeatherAlert,
+  WeatherDataSource,
+} from './weather.models';
 
 export abstract class IWeatherService {
   abstract readonly weatherData: Signal<WeatherData | null>;

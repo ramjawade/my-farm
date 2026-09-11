@@ -73,43 +73,42 @@ export class AddCropComponent implements OnInit {
     const areaCtrl = this.cropForm.get('area');
     const areaUnitCtrl = this.cropForm.get('areaUnit');
 
-    fieldIdCtrl?.valueChanges
-      .pipe(takeUntilDestroyed())
-      .subscribe((fieldId) => {
-        if (fieldId) {
-          const farm = this.savedFarms().find((f) => f.id === fieldId);
-          if (farm) {
-            const unit = areaUnitCtrl?.value as AreaUnit || 'hectares';
-            const areaValue = unit === 'acres' ? farm.area.acres : farm.area.hectares;
-            areaCtrl?.setValue(String(areaValue), { emitEvent: false });
-            this.areaIsAutoFilled.set(true);
-          }
+    fieldIdCtrl?.valueChanges.pipe(takeUntilDestroyed()).subscribe((fieldId) => {
+      if (fieldId) {
+        const farm = this.savedFarms().find((f) => f.id === fieldId);
+        if (farm) {
+          const unit = (areaUnitCtrl?.value as AreaUnit) || 'hectares';
+          const areaValue = unit === 'acres' ? farm.area.acres : farm.area.hectares;
+          areaCtrl?.setValue(String(areaValue), { emitEvent: false });
+          this.areaIsAutoFilled.set(true);
         }
-      });
+      }
+    });
 
-    areaUnitCtrl?.valueChanges
-      .pipe(takeUntilDestroyed())
-      .subscribe((newUnit) => {
-        const fieldId = fieldIdCtrl?.value;
-        const currentArea = areaCtrl?.value;
-        if (this.areaIsAutoFilled() && fieldId && currentArea) {
-          const farm = this.savedFarms().find((f) => f.id === fieldId);
-          if (farm) {
-            const areaValue = (newUnit as AreaUnit) === 'acres' ? farm.area.acres : farm.area.hectares;
-            areaCtrl?.setValue(String(areaValue), { emitEvent: false });
-          }
-        } else if (!this.areaIsAutoFilled() && currentArea) {
-          const oldUnit = newUnit === 'acres' ? 'hectares' : 'acres';
-          const converted = convertArea(Number(currentArea), oldUnit as AreaUnit, newUnit as AreaUnit);
-          areaCtrl?.setValue(String(converted), { emitEvent: false });
+    areaUnitCtrl?.valueChanges.pipe(takeUntilDestroyed()).subscribe((newUnit) => {
+      const fieldId = fieldIdCtrl?.value;
+      const currentArea = areaCtrl?.value;
+      if (this.areaIsAutoFilled() && fieldId && currentArea) {
+        const farm = this.savedFarms().find((f) => f.id === fieldId);
+        if (farm) {
+          const areaValue =
+            (newUnit as AreaUnit) === 'acres' ? farm.area.acres : farm.area.hectares;
+          areaCtrl?.setValue(String(areaValue), { emitEvent: false });
         }
-      });
+      } else if (!this.areaIsAutoFilled() && currentArea) {
+        const oldUnit = newUnit === 'acres' ? 'hectares' : 'acres';
+        const converted = convertArea(
+          Number(currentArea),
+          oldUnit as AreaUnit,
+          newUnit as AreaUnit,
+        );
+        areaCtrl?.setValue(String(converted), { emitEvent: false });
+      }
+    });
 
-    areaCtrl?.valueChanges
-      .pipe(takeUntilDestroyed())
-      .subscribe(() => {
-        this.areaIsAutoFilled.set(false);
-      });
+    areaCtrl?.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
+      this.areaIsAutoFilled.set(false);
+    });
   }
 
   async ngOnInit(): Promise<void> {

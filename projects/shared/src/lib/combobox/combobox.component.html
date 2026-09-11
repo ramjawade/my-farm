@@ -14,11 +14,7 @@
     placeholder="Select or type..."
   />
   @if (isOpen()) {
-    <div
-      id="combobox-listbox"
-      class="combobox-dropdown"
-      role="listbox"
-    >
+    <div id="combobox-listbox" class="combobox-dropdown" role="listbox">
       @for (item of visibleItems(); track item; let i = $index) {
         @if (item === '') {
           <button

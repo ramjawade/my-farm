@@ -100,9 +100,7 @@
           @if (idx < stages.length - 1) {
             <div
               class="step-line"
-              [class.completed]="
-                getStageIndex(crop()?.currentStage || 'Land Preparation') > idx
-              "
+              [class.completed]="getStageIndex(crop()?.currentStage || 'Land Preparation') > idx"
             ></div>
           }
         </div>

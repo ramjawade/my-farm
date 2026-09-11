@@ -455,9 +455,7 @@ export class CropTimelineService {
       );
 
       // Catch up to the latest completed stage, but never beyond it
-      if (
-        CROP_STAGES.indexOf(crop.currentStage) < CROP_STAGES.indexOf(latestCompletedStage)
-      ) {
+      if (CROP_STAGES.indexOf(crop.currentStage) < CROP_STAGES.indexOf(latestCompletedStage)) {
         return { ...crop, currentStage: latestCompletedStage };
       }
 

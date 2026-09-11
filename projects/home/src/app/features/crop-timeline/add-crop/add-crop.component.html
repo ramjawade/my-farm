@@ -65,7 +65,12 @@
               placeholder="e.g. 2.50"
               [class.is-invalid]="cropForm.get('area')?.touched && cropForm.get('area')?.invalid"
             />
-            <select id="areaUnit" class="form-select" formControlName="areaUnit" style="max-width: 120px">
+            <select
+              id="areaUnit"
+              class="form-select"
+              formControlName="areaUnit"
+              style="max-width: 120px"
+            >
               <option value="hectares">Hectares (ha)</option>
               <option value="acres">Acres (ac)</option>
             </select>
@@ -81,7 +86,11 @@
         </div>
 
         <div class="col-12 mt-4 pt-3 border-top text-end">
-          <button type="submit" class="btn btn-success px-4" [disabled]="cropForm.invalid || creatingName()">
+          <button
+            type="submit"
+            class="btn btn-success px-4"
+            [disabled]="cropForm.invalid || creatingName()"
+          >
             <i class="bi bi-check-lg me-1"></i>Create Profile
           </button>
         </div>
