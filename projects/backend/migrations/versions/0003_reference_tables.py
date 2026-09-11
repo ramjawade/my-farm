@@ -68,16 +68,22 @@ def upgrade() -> None:
     for table_name, seq_name in tables_with_sequences:
         op.drop_constraint(f"{table_name}_pkey", table_name, type_="primary")
         op.drop_column(table_name, "id")
+        default_sql = f"nextval('{seq_name}'::regclass)"
         op.add_column(
             table_name,
-            sa.Column("id", sa.BigInteger(), nullable=False, server_default=f"nextval('{seq_name}'::regclass)")
+            sa.Column("id", sa.BigInteger(), nullable=False, server_default=default_sql)
         )
         op.create_primary_key(f"{table_name}_pkey", table_name, ["id"])
 
     # Create new reference tables with bigint ids
     op.create_table(
         "season",
-        sa.Column("id", sa.BigInteger(), nullable=False, server_default="nextval('season_id_seq'::regclass)"),
+        sa.Column(
+            "id",
+            sa.BigInteger(),
+            nullable=False,
+            server_default="nextval('season_id_seq'::regclass)"
+        ),
         sa.Column("name", sa.String(255), nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("name", name="uq_season_name"),
@@ -85,7 +91,12 @@ def upgrade() -> None:
 
     op.create_table(
         "crop_stage",
-        sa.Column("id", sa.BigInteger(), nullable=False, server_default="nextval('crop_stage_id_seq'::regclass)"),
+        sa.Column(
+            "id",
+            sa.BigInteger(),
+            nullable=False,
+            server_default="nextval('crop_stage_id_seq'::regclass)"
+        ),
         sa.Column("name", sa.String(255), nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("name", name="uq_crop_stage_name"),

@@ -1,7 +1,5 @@
 """Pydantic schemas for reference data endpoints."""
 
-from uuid import UUID
-
 from pydantic import BaseModel, Field
 
 

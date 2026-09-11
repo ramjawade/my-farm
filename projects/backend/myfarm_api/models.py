@@ -3,11 +3,7 @@
 from datetime import datetime
 from decimal import Decimal
 from typing import Any
-from uuid import UUID
 
-from sqlalchemy import (
-    UUID as SQLUuid,
-)
 from sqlalchemy import (
     DateTime,
     ForeignKey,
@@ -23,7 +19,6 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from myfarm_api.core.db import Base
-from myfarm_api.core.ids import uuid7
 
 
 class TenantScopedBase(Base):
