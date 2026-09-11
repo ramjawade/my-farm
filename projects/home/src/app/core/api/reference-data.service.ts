@@ -65,7 +65,12 @@ export class ReferenceDataService {
    * clearing its own cache slot — and only its own — on failure so a
    * retry doesn't refetch endpoints that already succeeded. */
   private load(
-    slot: 'cropsPromise' | 'expensesPromise' | 'activityTypesPromise' | 'seasonsPromise' | 'stagesPromise',
+    slot:
+      | 'cropsPromise'
+      | 'expensesPromise'
+      | 'activityTypesPromise'
+      | 'seasonsPromise'
+      | 'stagesPromise',
     path: string,
   ): Promise<ReferenceItem[]> {
     if (!this[slot]) {
