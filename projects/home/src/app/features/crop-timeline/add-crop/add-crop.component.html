@@ -12,27 +12,25 @@
     <form [formGroup]="cropForm" (ngSubmit)="onSubmit()">
       <div class="row g-3">
         <div class="col-md-6">
-          <label for="name" class="field-label required-label">Crop Name (User-Friendly)</label>
-          <input
-            type="text"
+          <label for="season" class="field-label required-label">Season</label>
+          <select id="season" class="form-select" formControlName="season">
+            @for (s of seasons; track s) {
+              <option [value]="s">{{ s }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label for="name" class="field-label required-label">Crop Name</label>
+          <app-combobox
             id="name"
-            class="form-control"
             formControlName="name"
-            placeholder="e.g. My North Field Soybeans"
-            [class.is-invalid]="cropForm.get('name')?.touched && cropForm.get('name')?.invalid"
+            [options]="cropNames()"
+            (itemAdded)="onNameAdded($event)"
           />
           @if (cropForm.get('name')?.touched && cropForm.get('name')?.invalid) {
             <div class="text-danger small mt-1">Provide a valid name (at least 2 characters).</div>
           }
-        </div>
-
-        <div class="col-md-6">
-          <label for="cropType" class="field-label required-label">Crop Type</label>
-          <select id="cropType" class="form-select" formControlName="cropType">
-            @for (cName of cropNameOptions; track cName) {
-              <option [value]="cName">{{ cName }}</option>
-            }
-          </select>
         </div>
 
         <div class="col-md-6">
@@ -84,17 +82,9 @@
           <input type="date" id="sowingDate" class="form-control" formControlName="sowingDate" />
         </div>
 
-        <div class="col-md-6">
-          <label for="currentStage" class="field-label required-label">Current Sowing Stage</label>
-          <select id="currentStage" class="form-select" formControlName="currentStage">
-            @for (stg of stages; track stg) {
-              <option [value]="stg">{{ stg }}</option>
-            }
-          </select>
-        </div>
 
         <div class="col-12 mt-4 pt-3 border-top text-end">
-          <button type="submit" class="btn btn-success px-4" [disabled]="cropForm.invalid">
+          <button type="submit" class="btn btn-success px-4" [disabled]="cropForm.invalid || creatingName()">
             <i class="bi bi-check-lg me-1"></i>Create Profile
           </button>
         </div>
