@@ -56,7 +56,7 @@ async def create_land(
     try:
         land = await land_repo.create(current_farmer.id, land)
     except ConflictError:
-        raise HTTPException(status_code=409, detail="Land with this ID already exists")
+        raise HTTPException(status_code=409, detail="Land with this ID already exists") from None
 
     # Add points if provided
     if data.points:

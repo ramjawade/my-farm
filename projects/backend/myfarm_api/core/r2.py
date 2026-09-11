@@ -1,7 +1,6 @@
 """Cloudflare R2 storage service for activity attachments."""
 
-import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any
 from uuid import UUID
 
@@ -94,7 +93,7 @@ class R2Service:
         if not self.s3_client:
             raise ValueError("R2 not configured")
 
-        return self.s3_client.generate_presigned_url(
+        url: str = self.s3_client.generate_presigned_url(
             "get_object",
             Params={
                 "Bucket": self.settings.r2_bucket_name,
@@ -102,6 +101,7 @@ class R2Service:
             },
             ExpiresIn=86400,  # 24 hours
         )
+        return url
 
     def delete_file(self, storage_key: str) -> bool:
         """Delete a file from R2.

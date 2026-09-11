@@ -55,7 +55,7 @@ async def create_farm(
     try:
         farm = await farm_repo.create(current_farmer.id, farm)
     except ConflictError:
-        raise HTTPException(status_code=409, detail="Farm with this ID already exists")
+        raise HTTPException(status_code=409, detail="Farm with this ID already exists") from None
     return FarmRead.model_validate(farm)
 
 

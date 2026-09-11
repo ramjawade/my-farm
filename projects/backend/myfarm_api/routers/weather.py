@@ -28,4 +28,4 @@ async def get_weather_data(
         weather = await get_weather(lat, lng)
         return WeatherResponse(**weather)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch weather: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch weather: {str(e)}") from e

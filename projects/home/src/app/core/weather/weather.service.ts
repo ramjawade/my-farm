@@ -167,7 +167,7 @@ export class WeatherService extends IWeatherService {
     return this.weatherDataSignal();
   }
 
-private handleError(error: any, location: WeatherLocation): WeatherData {
+  private handleError(error: any, location: WeatherLocation): WeatherData {
     console.error('Weather API error:', error);
 
     // Tier 2: Fallback to cached data
