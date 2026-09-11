@@ -29,7 +29,14 @@ def upgrade() -> None:
     for seq in sequences:
         op.execute(f"CREATE SEQUENCE {seq}")
 
-    # Step 1: Convert reference table PKs FIRST (they have no FKs)
+    # Step 1: Drop FK constraints pointing to reference tables
+    # This allows us to convert the reference table PKs without CASCADE issues
+    op.drop_constraint("crop_crop_catalog_id_fkey", "crop", type_="foreignkey")
+    op.drop_constraint("farm_crop_crop_catalog_id_fkey", "farm_crop", type_="foreignkey")
+    op.drop_constraint("activity_activity_type_id_fkey", "activity", type_="foreignkey")
+    op.drop_constraint("activity_expense_expense_category_id_fkey", "activity_expense", type_="foreignkey")
+
+    # Step 2: Convert reference table PKs (they have no FKs now)
     # These tables' PKs are referenced by FKs in other tables
     reference_tables_with_sequences = [
         ("crop_catalog", "crop_catalog_id_seq"),
@@ -49,7 +56,7 @@ def upgrade() -> None:
         )
         op.create_primary_key(f"{table_name}_pkey", table_name, ["id"])
 
-    # Step 2: Convert FKs to reference tables (now that their PKs are BIGINT)
+    # Step 3: Convert FKs to reference tables (now that their PKs are BIGINT)
     op.execute(
         "ALTER TABLE activity "
         "ALTER COLUMN activity_type_id TYPE bigint USING (activity_type_id::text::bigint)"
@@ -67,7 +74,25 @@ def upgrade() -> None:
         "ALTER COLUMN crop_catalog_id TYPE bigint USING (crop_catalog_id::text::bigint)"
     )
 
-    # Step 3: Convert tenant-scoped FKs and main table PKs
+    # Recreate FK constraints to reference tables
+    op.create_foreign_key(
+        "crop_crop_catalog_id_fkey", "crop", "crop_catalog",
+        ["crop_catalog_id"], ["id"]
+    )
+    op.create_foreign_key(
+        "farm_crop_crop_catalog_id_fkey", "farm_crop", "crop_catalog",
+        ["crop_catalog_id"], ["id"]
+    )
+    op.create_foreign_key(
+        "activity_activity_type_id_fkey", "activity", "activity_type",
+        ["activity_type_id"], ["id"]
+    )
+    op.create_foreign_key(
+        "activity_expense_expense_category_id_fkey", "activity_expense", "expense_category",
+        ["expense_category_id"], ["id"]
+    )
+
+    # Step 4: Convert tenant-scoped FKs and main table PKs
     # Start with farmer (has no FKs, everything references it)
     op.drop_constraint("farmer_pkey", "farmer", type_="primary")
     op.drop_column("farmer", "id")
