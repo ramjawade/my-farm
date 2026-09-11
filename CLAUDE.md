@@ -27,3 +27,4 @@ Non-negotiables:
 
 - **Don't drive the Browser** unless asked. Run `npm run build` to catch errors, but don't screenshot or navigate to verify UI unless requested.
 - **Prefer Bootstrap CSS** over custom CSS. Use utility classes (`d-flex`, `btn`, `badge`) first; write custom CSS only as a last resort.
+- **Angular/TypeScript coding rules:** the `angular-best-practices` skill ([`.claude/skills/angular-best-practices/SKILL.md`](.claude/skills/angular-best-practices/SKILL.md)). Load it whenever writing or reviewing frontend code.
