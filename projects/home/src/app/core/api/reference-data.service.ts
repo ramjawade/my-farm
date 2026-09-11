@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { EnvironmentService } from '../services/environment.service';
 import { ReferenceItem } from './contracts';
 
 /**
@@ -20,7 +20,8 @@ import { ReferenceItem } from './contracts';
 
 @Injectable({ providedIn: 'root' })
 export class ReferenceDataService {
-  private readonly baseUrl = `${environment.apiBaseUrl}/reference`;
+  private readonly envService = inject(EnvironmentService);
+  private readonly baseUrl = `${this.envService.getApiUrl()}/reference`;
   private token: string | null = null;
 
   private cropsByName = new Map<string, string>();

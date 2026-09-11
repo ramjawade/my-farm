@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { environment } from '../../../environments/environment';
+import { Component, inject } from '@angular/core';
+import { EnvironmentService } from '../../core/services/environment.service';
 
 @Component({
   standalone: true,
@@ -8,7 +8,9 @@ import { environment } from '../../../environments/environment';
   styleUrl: './footer.scss',
 })
 export class Footer {
+  private readonly envService = inject(EnvironmentService);
+
   protected readonly year = new Date().getFullYear();
-  protected readonly version = environment.appVersion;
-  protected readonly build = environment.buildStamp;
+  protected readonly version = this.envService.appVersion;
+  protected readonly build = this.envService.buildStamp;
 }
