@@ -1,4 +1,5 @@
 import { provideZonelessChangeDetection } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { MapMyFarmComponent } from './map-my-farm.component';
 import { FarmDrawService } from '../../farm-draw/farm-draw.service';
@@ -30,6 +31,7 @@ describe('MapMyFarmComponent', () => {
       providers: [
         { provide: IStorageService, useClass: InMemoryStorageService },
         provideZonelessChangeDetection(),
+        provideHttpClient(),
         { provide: FarmDrawService, useValue: mockFarmDraw },
       ],
     }).compileComponents();

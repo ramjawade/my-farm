@@ -1,4 +1,5 @@
 import { provideZonelessChangeDetection } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { ActivityService } from './activity.service';
 import { Activity } from './activity.models';
@@ -13,6 +14,7 @@ describe('ActivityService', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
+        provideHttpClient(),
         { provide: IStorageService, useClass: InMemoryStorageService },
       ],
     });

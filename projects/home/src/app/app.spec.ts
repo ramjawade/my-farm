@@ -1,5 +1,6 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { App } from './app';
 import { IStorageService } from './core/storage/storage.interface';
@@ -13,6 +14,7 @@ describe('App', () => {
         { provide: IStorageService, useClass: InMemoryStorageService },
         provideZonelessChangeDetection(),
         provideRouter([]),
+        provideHttpClient(),
       ],
     }).compileComponents();
   });

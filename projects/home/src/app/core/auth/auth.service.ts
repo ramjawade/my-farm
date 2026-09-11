@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { FarmerRegistrationService } from '../../features/farmer-registration/farmer-registration.service';
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
 import { WorkflowStateService } from '../workflow/workflow-state.service';
-import { IStorageService } from '../storage/storage.interface';
+import { HttpService } from '../http/http.service';
 
 const ACTIVE_USER_ID_KEY = 'my_farm_active_user_id';
 const SESSION_EXPIRY_KEY = 'my_farm_session_expiry';
@@ -17,7 +17,7 @@ export class AuthService {
   private readonly router = inject(Router);
   private readonly registrationService = inject(FarmerRegistrationService);
   private readonly workflowService = inject(WorkflowStateService);
-  private readonly storageService = inject(IStorageService);
+  private readonly httpService = inject(HttpService);
 
   private readonly currentUserSignal = signal<FarmerRegistrationData | null>(null);
   readonly currentUser = this.currentUserSignal.asReadonly();
@@ -68,9 +68,7 @@ export class AuthService {
     } else {
       localStorage.removeItem(SESSION_TOKEN_KEY);
     }
-    if (this.isApiStorageService(this.storageService)) {
-      this.storageService.setAuthToken(sessionToken ?? null);
-    }
+    this.httpService.setAuthToken(sessionToken ?? null);
 
     this.workflowService.markPhaseComplete('registration');
   }
@@ -84,9 +82,7 @@ export class AuthService {
    */
   private clearSessionToken(): void {
     localStorage.removeItem(SESSION_TOKEN_KEY);
-    if (this.isApiStorageService(this.storageService)) {
-      this.storageService.setAuthToken(null);
-    }
+    this.httpService.setAuthToken(null);
   }
 
   /**
@@ -95,16 +91,9 @@ export class AuthService {
    */
   private restoreSessionToken(): void {
     const token = localStorage.getItem(SESSION_TOKEN_KEY);
-    if (token && this.isApiStorageService(this.storageService)) {
-      this.storageService.setAuthToken(token);
+    if (token) {
+      this.httpService.setAuthToken(token);
     }
-  }
-
-  /** Type guard to check if storage service has a setAuthToken method (ApiStorageService). */
-  private isApiStorageService(
-    service: IStorageService,
-  ): service is IStorageService & { setAuthToken(token: string | null): void } {
-    return typeof (service as { setAuthToken?: unknown }).setAuthToken === 'function';
   }
 
   updateProfile(updates: Partial<FarmerRegistrationData>): void {

@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
-import { EnvironmentService } from '../services/environment.service';
+import { HttpService } from '../http/http.service';
 import { IStorageService } from '../storage/storage.interface';
 import { Activity, ActivityExpense } from '../../features/activity/activity.models';
 import {
@@ -50,18 +48,14 @@ function timestampToDateString(value: number | undefined): string | undefined {
  */
 @Injectable({ providedIn: 'root' })
 export class ApiStorageService extends IStorageService {
-  private baseUrl: string;
-  private token: string | null = null;
   private defaultFarmIdPromise: Promise<string> | null = null;
   private writeQueue: Promise<any> = Promise.resolve();
 
   constructor(
-    private http: HttpClient,
+    private httpService: HttpService,
     private referenceData: ReferenceDataService,
-    private envService: EnvironmentService,
   ) {
     super();
-    this.baseUrl = this.envService.getApiUrl();
   }
 
   private enqueueWrite<T>(fn: () => Promise<T>): Promise<T> {
@@ -72,31 +66,8 @@ export class ApiStorageService extends IStorageService {
     return promise;
   }
 
-  /**
-   * Set (or, with `null`, clear) the Firebase ID token for subsequent
-   * requests. Called by the auth service after sign-in, and on logout /
-   * session expiry — this service is a root singleton, so a token left
-   * behind on logout would be sent as the next farmer's credentials.
-   */
-  setAuthToken(token: string | null): void {
-    this.token = token;
-    this.referenceData.setAuthToken(token);
-  }
-
-  private getHeaders(): HttpHeaders {
-    const headers: Record<string, string> = {};
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`;
-    }
-    return new HttpHeaders(headers);
-  }
-
-  private async fetchList<T>(url: string): Promise<T[]> {
-    const resp = await firstValueFrom(
-      this.http.get<{ items: T[] }>(url, {
-        headers: this.getHeaders(),
-      }),
-    );
+  private async fetchList<T>(path: string): Promise<T[]> {
+    const resp = await this.httpService.get<{ items: T[] }>(path);
     return resp.items;
   }
 
@@ -114,21 +85,11 @@ export class ApiStorageService extends IStorageService {
   }
 
   private async resolveDefaultFarmId(): Promise<string> {
-    const list = await firstValueFrom(
-      this.http.get<{ items: { id: string }[] }>(`${this.baseUrl}/farms`, {
-        headers: this.getHeaders(),
-      }),
-    );
+    const list = await this.httpService.get<{ items: { id: string }[] }>('/farms');
     if (list.items.length > 0) {
       return list.items[0].id;
     }
-    const response = await firstValueFrom(
-      this.http.post<{ id: string }>(
-        `${this.baseUrl}/farms`,
-        { name: 'My Farm' },
-        { headers: this.getHeaders() },
-      ),
-    );
+    const response = await this.httpService.post<{ id: string }>('/farms', { name: 'My Farm' });
     return response.id;
   }
 
@@ -138,7 +99,7 @@ export class ApiStorageService extends IStorageService {
 
   async getActivities(userId: string): Promise<Activity[]> {
     try {
-      const items = await this.fetchList<unknown>(`${this.baseUrl}/activities`);
+      const items = await this.fetchList<unknown>('/activities');
       return await Promise.all(items.map((item) => this.mapFromBackendActivity(item)));
     } catch (error) {
       console.error('Failed to get activities:', error);
@@ -150,11 +111,7 @@ export class ApiStorageService extends IStorageService {
     return this.enqueueWrite(async () => {
       const payload = await this.mapToBackendActivity(activity);
       try {
-        const response = await firstValueFrom(
-          this.http.post<unknown>(`${this.baseUrl}/activities`, payload, {
-            headers: this.getHeaders(),
-          }),
-        );
+        const response = await this.httpService.post<unknown>('/activities', payload);
         return await this.mapFromBackendActivity(response);
       } catch (error) {
         console.error('Failed to save activity:', error);
@@ -167,11 +124,7 @@ export class ApiStorageService extends IStorageService {
     return this.enqueueWrite(async () => {
       const payload = await this.mapToBackendActivity(updates);
       try {
-        await firstValueFrom(
-          this.http.patch(`${this.baseUrl}/activities/${id}`, payload, {
-            headers: this.getHeaders(),
-          }),
-        );
+        await this.httpService.patch(`/activities/${id}`, payload);
       } catch (error) {
         console.error('Failed to update activity:', error);
         throw error;
@@ -182,9 +135,7 @@ export class ApiStorageService extends IStorageService {
   async deleteActivity(userId: string, id: string): Promise<void> {
     return this.enqueueWrite(async () => {
       try {
-        await firstValueFrom(
-          this.http.delete(`${this.baseUrl}/activities/${id}`, { headers: this.getHeaders() }),
-        );
+        await this.httpService.delete(`/activities/${id}`);
       } catch (error) {
         console.error('Failed to delete activity:', error);
         throw error;
@@ -204,9 +155,7 @@ export class ApiStorageService extends IStorageService {
 
   async syncExpensesForActivity(userId: string, activityId: string): Promise<ActivityExpense[]> {
     try {
-      const items = await this.fetchList<unknown>(
-        `${this.baseUrl}/activities/${activityId}/expenses`,
-      );
+      const items = await this.fetchList<unknown>(`/activities/${activityId}/expenses`);
       return await Promise.all(items.map((item) => this.mapFromBackendExpense(item)));
     } catch (error) {
       console.error('Failed to sync expenses for activity:', error);
@@ -220,7 +169,7 @@ export class ApiStorageService extends IStorageService {
 
   async getExpenses(userId: string): Promise<ActivityExpense[]> {
     try {
-      const items = await this.fetchList<unknown>(`${this.baseUrl}/expenses`);
+      const items = await this.fetchList<unknown>('/expenses');
       return await Promise.all(items.map((item) => this.mapFromBackendExpense(item)));
     } catch (error) {
       console.error('Failed to get expenses:', error);
@@ -232,12 +181,9 @@ export class ApiStorageService extends IStorageService {
     return this.enqueueWrite(async () => {
       const payload = await this.mapToBackendExpense(expense);
       try {
-        const response = await firstValueFrom(
-          this.http.post<unknown>(
-            `${this.baseUrl}/activities/${expense.activityId}/expenses`,
-            payload,
-            { headers: this.getHeaders() },
-          ),
+        const response = await this.httpService.post<unknown>(
+          `/activities/${expense.activityId}/expenses`,
+          payload,
         );
         return await this.mapFromBackendExpense(response);
       } catch (error) {
@@ -259,11 +205,7 @@ export class ApiStorageService extends IStorageService {
       }
       const payload = await this.mapToBackendExpense(updates);
       try {
-        await firstValueFrom(
-          this.http.patch(`${this.baseUrl}/activities/${activityId}/expenses/${id}`, payload, {
-            headers: this.getHeaders(),
-          }),
-        );
+        await this.httpService.patch(`/activities/${activityId}/expenses/${id}`, payload);
       } catch (error) {
         console.error('Failed to update expense:', error);
         throw error;
@@ -279,11 +221,7 @@ export class ApiStorageService extends IStorageService {
         return;
       }
       try {
-        await firstValueFrom(
-          this.http.delete(`${this.baseUrl}/activities/${activityId}/expenses/${id}`, {
-            headers: this.getHeaders(),
-          }),
-        );
+        await this.httpService.delete(`/activities/${activityId}/expenses/${id}`);
       } catch (error) {
         console.error('Failed to delete expense:', error);
         throw error;
@@ -307,7 +245,7 @@ export class ApiStorageService extends IStorageService {
 
   async getCrops(userId: string): Promise<CropEntity[]> {
     try {
-      const items = await this.fetchList<unknown>(`${this.baseUrl}/crops`);
+      const items = await this.fetchList<unknown>('/crops');
       return await Promise.all(items.map((item) => this.mapFromBackendCrop(item)));
     } catch (error) {
       console.error('Failed to get crops:', error);
@@ -319,9 +257,7 @@ export class ApiStorageService extends IStorageService {
     return this.enqueueWrite(async () => {
       const payload = await this.mapToBackendCrop(crop);
       try {
-        const response = await firstValueFrom(
-          this.http.post<unknown>(`${this.baseUrl}/crops`, payload, { headers: this.getHeaders() }),
-        );
+        const response = await this.httpService.post<unknown>('/crops', payload);
         return await this.mapFromBackendCrop(response);
       } catch (error) {
         console.error('Failed to save crop:', error);
@@ -334,9 +270,7 @@ export class ApiStorageService extends IStorageService {
     return this.enqueueWrite(async () => {
       const payload = await this.mapToBackendCrop(updates);
       try {
-        await firstValueFrom(
-          this.http.patch(`${this.baseUrl}/crops/${id}`, payload, { headers: this.getHeaders() }),
-        );
+        await this.httpService.patch(`/crops/${id}`, payload);
       } catch (error) {
         console.error('Failed to update crop:', error);
         throw error;
@@ -347,9 +281,7 @@ export class ApiStorageService extends IStorageService {
   async deleteCrop(userId: string, id: string): Promise<void> {
     return this.enqueueWrite(async () => {
       try {
-        await firstValueFrom(
-          this.http.delete(`${this.baseUrl}/crops/${id}`, { headers: this.getHeaders() }),
-        );
+        await this.httpService.delete(`/crops/${id}`);
       } catch (error) {
         console.error('Failed to delete crop:', error);
         throw error;
@@ -363,7 +295,7 @@ export class ApiStorageService extends IStorageService {
 
   async getFarms(userId: string): Promise<SavedFarm[]> {
     try {
-      const items = await this.fetchList<unknown>(`${this.baseUrl}/lands`);
+      const items = await this.fetchList<unknown>('/lands');
       return items.map((item) => this.mapFromBackendLand(item));
     } catch (error) {
       console.error('Failed to get farms:', error);
@@ -376,9 +308,7 @@ export class ApiStorageService extends IStorageService {
       const farmId = await this.getOrCreateDefaultFarmId();
       const payload = this.mapToBackendLand(farm, farmId);
       try {
-        const response = await firstValueFrom(
-          this.http.post<unknown>(`${this.baseUrl}/lands`, payload, { headers: this.getHeaders() }),
-        );
+        const response = await this.httpService.post<unknown>('/lands', payload);
         const mapped = this.mapFromBackendLand(response);
         return { ...mapped, points: farm.points, geoJson: farm.geoJson };
       } catch (error) {
@@ -392,9 +322,7 @@ export class ApiStorageService extends IStorageService {
     return this.enqueueWrite(async () => {
       const payload = this.mapToBackendLand(updates);
       try {
-        await firstValueFrom(
-          this.http.patch(`${this.baseUrl}/lands/${id}`, payload, { headers: this.getHeaders() }),
-        );
+        await this.httpService.patch(`/lands/${id}`, payload);
       } catch (error) {
         console.error('Failed to update farm:', error);
         throw error;
@@ -405,9 +333,7 @@ export class ApiStorageService extends IStorageService {
   async deleteFarm(userId: string, id: string): Promise<void> {
     return this.enqueueWrite(async () => {
       try {
-        await firstValueFrom(
-          this.http.delete(`${this.baseUrl}/lands/${id}`, { headers: this.getHeaders() }),
-        );
+        await this.httpService.delete(`/lands/${id}`);
       } catch (error) {
         console.error('Failed to delete farm:', error);
         throw error;
@@ -424,11 +350,7 @@ export class ApiStorageService extends IStorageService {
     // read is its own, via /me. `AuthService.loadSession` passes the active
     // user's id here, so a match is the normal case.
     try {
-      const response = await firstValueFrom(
-        this.http.get<FarmerResponse>(`${this.baseUrl}/me`, {
-          headers: this.getHeaders(),
-        }),
-      );
+      const response = await this.httpService.get<FarmerResponse>('/me');
       return response.id === id ? this.mapFromBackendFarmer(response) : undefined;
     } catch (error) {
       console.error('Failed to get farmer by id:', error);
@@ -454,11 +376,7 @@ export class ApiStorageService extends IStorageService {
         preferred_language: farmer.preferredLanguage || null,
       };
       try {
-        const response = await firstValueFrom(
-          this.http.patch<FarmerResponse>(`${this.baseUrl}/me`, body, {
-            headers: this.getHeaders(),
-          }),
-        );
+        const response = await this.httpService.patch<FarmerResponse>('/me', body);
         return this.mapFromBackendFarmer(response);
       } catch (error) {
         console.error('Failed to save farmer profile:', error);

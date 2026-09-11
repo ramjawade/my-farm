@@ -3,10 +3,12 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ApiStorageService } from './api-storage.service';
+import { HttpService } from '../http/http.service';
 import { flushPromises } from '../../testing/flush-promises';
 
 describe('ApiStorageService', () => {
   let service: ApiStorageService;
+  let httpService: HttpService;
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
@@ -19,6 +21,7 @@ describe('ApiStorageService', () => {
       ],
     });
     service = TestBed.inject(ApiStorageService);
+    httpService = TestBed.inject(HttpService);
     httpMock = TestBed.inject(HttpTestingController);
   });
 
@@ -42,7 +45,7 @@ describe('ApiStorageService', () => {
     });
 
     it('should send the bearer token once set', () => {
-      service.setAuthToken('token-a');
+      httpService.setAuthToken('token-a');
       const promise = service.getFarms('u1');
 
       const req = httpMock.expectOne((r) => r.url === '/api/v1/lands');
@@ -53,8 +56,8 @@ describe('ApiStorageService', () => {
     });
 
     it('should stop sending the token once set back to null', () => {
-      service.setAuthToken('token-a');
-      service.setAuthToken(null);
+      httpService.setAuthToken('token-a');
+      httpService.setAuthToken(null);
       const promise = service.getFarms('u1');
 
       const req = httpMock.expectOne((r) => r.url === '/api/v1/lands');
@@ -86,7 +89,7 @@ describe('ApiStorageService', () => {
 
   describe('farmer profile', () => {
     it('saveFarmer PATCHes /me with the backend-owned fields only', async () => {
-      service.setAuthToken('token-a');
+      httpService.setAuthToken('token-a');
       const promise = service.saveFarmer({
         id: 'f1',
         fullName: 'Asha Rao',

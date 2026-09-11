@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection, ComponentRef } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
 import { ActivitiesSummaryComponent } from './activities-summary.component';
 import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
@@ -40,6 +41,7 @@ describe('ActivitiesSummaryComponent', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideRouter([]),
+        provideHttpClient(),
         CropTimelineService,
         AuthService,
         { provide: IStorageService, useClass: InMemoryStorageService },

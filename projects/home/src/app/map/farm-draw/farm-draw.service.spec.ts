@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
 import { FarmDrawService } from './farm-draw.service';
 import { LatLngPoint, SavedFarm } from '../models/map.models';
 import { IStorageService } from '../../core/storage/storage.interface';
@@ -24,6 +25,7 @@ describe('FarmDrawService', () => {
         { provide: IStorageService, useClass: InMemoryStorageService },
         FarmDrawService,
         provideZonelessChangeDetection(),
+        provideHttpClient(),
       ],
     });
     service = TestBed.inject(FarmDrawService);
