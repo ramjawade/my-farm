@@ -1,145 +1,105 @@
 import {
   Component,
-  Input,
-  Output,
-  EventEmitter,
   inject,
   signal,
   OnInit,
-  effect,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { CropTimelineComponent } from '../crop-timeline.component';
-import { CropStage } from '../crop-timeline.models';
+import { CropStage, CROP_STAGES } from '../crop-timeline.models';
 import { CropTimelineService } from '../crop-timeline.service';
-import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
+import { FarmLookupService } from '../../../core/farms/farm-lookup.service';
 import { SavedFarm } from '../../../map/models/map.models';
 import { AuthService } from '../../../core/auth/auth.service';
-import { ToastService } from 'shared';
+import { ToastService, WorkflowStateService } from 'shared';
+
+const CROP_NAME_OPTIONS = [
+  'Soybeans',
+  'Wheat',
+  'Rice',
+  'Corn',
+  'Cotton',
+  'Sugarcane',
+  'Mustard',
+  'Vegetables',
+  'Fruits',
+];
 
 @Component({
   standalone: true,
   selector: 'app-add-crop',
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './add-crop.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddCropComponent implements OnInit {
-  private readonly parent = inject(CropTimelineComponent, { optional: true });
-  private readonly router = inject(Router, { optional: true });
+  private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
   private readonly cropService = inject(CropTimelineService);
-  private readonly farmDrawService = inject(FarmDrawService);
+  private readonly farmLookup = inject(FarmLookupService);
   private readonly authService = inject(AuthService);
   private readonly toast = inject(ToastService);
+  private readonly workflowService = inject(WorkflowStateService);
 
   readonly savedFarms = signal<SavedFarm[]>([]);
+  readonly cropForm = this.fb.nonNullable.group({
+    name: ['', [Validators.required, Validators.minLength(2)]],
+    cropType: ['Soybeans', Validators.required],
+    fieldId: ['', [Validators.required, Validators.minLength(2)]],
+    area: ['', [Validators.required, Validators.min(0.01)]],
+    areaUnit: ['hectares', Validators.required],
+    sowingDate: [''],
+    currentStage: ['Land Preparation' as CropStage, Validators.required],
+  });
 
-  constructor() {
-    effect(
-      () => {
-        const fields = this.savedFarms();
-        const cropNames = this.cropNameOptions;
-        const stagesList = this.stages;
-        const form = this.cropForm;
-
-        if (form) {
-          // Auto-select crop type if only one option exists
-          if (cropNames.length === 1) {
-            form.patchValue({ cropType: cropNames[0] });
-          }
-
-          // Auto-select fieldId (land) if only one option exists
-          if (fields.length === 1) {
-            form.patchValue({ fieldId: fields[0].id });
-          }
-
-          // Auto-select currentStage if only one option exists
-          if (stagesList.length === 1) {
-            form.patchValue({ currentStage: stagesList[0] });
-          }
-        }
-      },
-      { allowSignalWrites: true },
-    );
-  }
-
-  private _cropForm!: FormGroup;
-  @Input() set cropForm(value: FormGroup) {
-    this._cropForm = value;
-  }
-  get cropForm(): FormGroup {
-    return this._cropForm || this.parent?.cropForm;
-  }
-
-  private _cropNameOptions!: string[];
-  @Input() set cropNameOptions(value: string[]) {
-    this._cropNameOptions = value;
-  }
-  get cropNameOptions(): string[] {
-    return this._cropNameOptions || this.parent?.cropNameOptions || [];
-  }
-
-  private _stages!: CropStage[];
-  @Input() set stages(value: CropStage[]) {
-    this._stages = value;
-  }
-  get stages(): CropStage[] {
-    return this._stages || this.parent?.stages || [];
-  }
-
-  @Output() readonly cancelClicked = new EventEmitter<void>();
-  @Output() readonly submitCrop = new EventEmitter<void>();
+  readonly stages = CROP_STAGES;
+  readonly cropNameOptions = CROP_NAME_OPTIONS;
 
   async ngOnInit(): Promise<void> {
-    if (this.parent) {
-      this.parent.selectedCrop.set(null);
-      this.parent.currentView.set('add-crop');
-    }
-
     const user = this.authService.currentUser();
     if (user) {
-      this.savedFarms.set(await this.farmDrawService.loadFarms(user.id));
+      this.savedFarms.set(await this.farmLookup.loadForCurrentUser());
+      // Auto-select field if only one farm exists
+      if (this.savedFarms().length === 1) {
+        this.cropForm.patchValue({ fieldId: this.savedFarms()[0].id });
+      }
     }
   }
 
   onCancel(): void {
-    this.cancelClicked.emit();
-    if (this.router) {
-      this.router.navigate(['/crops']);
-    }
+    this.router.navigate(['/crops']);
   }
 
   onSubmit(): void {
-    if (this.cropForm.valid) {
-      const values = this.cropForm.value;
-      const newCrop = this.cropService.addCrop({
-        name: values.name,
-        cropType: values.cropType,
-        fieldId: values.fieldId,
-        area: Number(values.area),
-        areaUnit: values.areaUnit,
-        sowingDate: values.sowingDate ? new Date(values.sowingDate).getTime() : undefined,
-        currentStage: values.currentStage as CropStage,
-        status: 'Active',
-      });
+    if (!this.cropForm.valid) return;
 
-      this.submitCrop.emit();
-      this.toast.success(`${newCrop.name} added with its growth-stage timeline.`);
+    const values = this.cropForm.getRawValue();
+    const newCrop = this.cropService.addCrop({
+      name: values.name,
+      cropType: values.cropType,
+      fieldId: values.fieldId,
+      area: Number(values.area),
+      areaUnit: values.areaUnit,
+      sowingDate: values.sowingDate ? new Date(values.sowingDate).getTime() : undefined,
+      currentStage: values.currentStage,
+      status: 'Active',
+    });
 
-      this.cropForm.reset({
-        name: '',
-        cropType: 'Soybeans',
-        fieldId: '',
-        area: '',
-        areaUnit: 'hectares',
-        sowingDate: '',
-        currentStage: 'Land Preparation',
-      });
+    this.workflowService.markPhaseComplete('crop');
+    this.toast.success(`${newCrop.name} added with its growth-stage timeline.`);
 
-      if (this.router) {
-        this.router.navigate(['/crops']);
-      }
-    }
+    this.cropForm.reset({
+      name: '',
+      cropType: 'Soybeans',
+      fieldId: '',
+      area: '',
+      areaUnit: 'hectares',
+      sowingDate: '',
+      currentStage: 'Land Preparation',
+    });
+
+    this.router.navigate(['/crops']);
   }
 }
