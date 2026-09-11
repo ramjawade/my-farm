@@ -53,7 +53,6 @@ describe('AddCropComponent', () => {
     // Fill form to make it valid
     component.cropForm.patchValue({
       name: 'My Soy Crop',
-      cropType: 'Soybeans',
       fieldId: 'Field C',
       area: '10',
       areaUnit: 'hectares',
