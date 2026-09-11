@@ -37,11 +37,9 @@ class TenantScopedBase(Base):
 
     __abstract__ = True
 
-    id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
-    )
-    farmer_id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), ForeignKey("farmer.id"), nullable=False
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    farmer_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("farmer.id"), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
@@ -56,9 +54,7 @@ class Farmer(Base):
 
     __tablename__ = "farmer"
 
-    id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     auth_uid: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)
     phone: Mapped[str | None] = mapped_column(String(20), unique=True, nullable=True)
     # Set only for PIN accounts (auth_uid starts "pin:"). PBKDF2-SHA256,
@@ -98,9 +94,7 @@ class CropCatalog(Base):
 
     __tablename__ = "crop_catalog"
 
-    id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     common_names: Mapped[str | None] = mapped_column(Text, nullable=True)
 
@@ -195,14 +189,14 @@ class FarmCrop(Base):
         UniqueConstraint("farm_id", "crop_catalog_id", name="uq_farm_crop_catalog"),
     )
 
-    farm_id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True),
+    farm_id: Mapped[int] = mapped_column(
+        Integer,
         ForeignKey("farm.id"),
         primary_key=True,
         nullable=False,
     )
-    crop_catalog_id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True),
+    crop_catalog_id: Mapped[int] = mapped_column(
+        Integer,
         ForeignKey("crop_catalog.id"),
         primary_key=True,
         nullable=False,
@@ -245,8 +239,8 @@ class LandPoint(Base):
         Index("idx_land_id", "land_id"),
     )
 
-    land_id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True),
+    land_id: Mapped[int] = mapped_column(
+        Integer,
         ForeignKey("land.id"),
         primary_key=True,
         nullable=False,
@@ -261,11 +255,11 @@ class Crop(TenantScopedBase):
 
     __tablename__ = "crop"
 
-    land_id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), ForeignKey("land.id"), nullable=False
+    land_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("land.id"), nullable=False
     )
-    crop_catalog_id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), ForeignKey("crop_catalog.id"), nullable=False
+    crop_catalog_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("crop_catalog.id"), nullable=False
     )
     label: Mapped[str | None] = mapped_column(String(255), nullable=True)
     area: Mapped[Decimal | None] = mapped_column(Numeric(10, 2), nullable=True)
@@ -291,17 +285,17 @@ class Activity(TenantScopedBase):
 
     __tablename__ = "activity"
 
-    parent_activity_id: Mapped[UUID | None] = mapped_column(
-        SQLUuid(as_uuid=True), ForeignKey("activity.id"), nullable=True
+    parent_activity_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("activity.id"), nullable=True
     )
-    crop_id: Mapped[UUID | None] = mapped_column(
-        SQLUuid(as_uuid=True), ForeignKey("crop.id"), nullable=True
+    crop_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("crop.id"), nullable=True
     )
-    land_id: Mapped[UUID | None] = mapped_column(
-        SQLUuid(as_uuid=True), ForeignKey("land.id"), nullable=True
+    land_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("land.id"), nullable=True
     )
-    activity_type_id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), ForeignKey("activity_type.id"), nullable=False
+    activity_type_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("activity_type.id"), nullable=False
     )
     custom_activity_name: Mapped[str | None] = mapped_column(
         String(255), nullable=True
@@ -332,14 +326,12 @@ class ActivityExpense(Base):
 
     __tablename__ = "activity_expense"
 
-    id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    activity_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("activity.id"), nullable=False
     )
-    activity_id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), ForeignKey("activity.id"), nullable=False
-    )
-    expense_category_id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), ForeignKey("expense_category.id"), nullable=False
+    expense_category_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("expense_category.id"), nullable=False
     )
     item_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     resource_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
@@ -364,11 +356,9 @@ class ActivityAttachment(Base):
 
     __tablename__ = "activity_attachment"
 
-    id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
-    )
-    activity_id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), ForeignKey("activity.id"), nullable=False
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    activity_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("activity.id"), nullable=False
     )
     storage_key: Mapped[str] = mapped_column(String(1024), nullable=False)
     content_type: Mapped[str | None] = mapped_column(String(100), nullable=True)
@@ -393,9 +383,7 @@ class WeatherCache(Base):
         Index("idx_grid_location", "grid_lat", "grid_lng"),
     )
 
-    id: Mapped[UUID] = mapped_column(
-        SQLUuid(as_uuid=True), primary_key=True, default=uuid7
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     grid_lat: Mapped[Decimal] = mapped_column(Numeric(9, 6), nullable=False)
     grid_lng: Mapped[Decimal] = mapped_column(Numeric(9, 6), nullable=False)
     place_name: Mapped[str | None] = mapped_column(String(255), nullable=True)

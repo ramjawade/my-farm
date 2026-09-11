@@ -12,7 +12,7 @@
  */
 
 export interface ReferenceItem {
-  id: string | number;
+  id: number;
   name: string;
 }
 

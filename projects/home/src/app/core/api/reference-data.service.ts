@@ -20,16 +20,16 @@ import { ReferenceItem } from './contracts';
 export class ReferenceDataService {
   private readonly httpService = inject(HttpService);
 
-  private cropsByName = new Map<string, string | number>();
-  private cropsById = new Map<string | number, string>();
-  private expensesByName = new Map<string, string | number>();
-  private expensesById = new Map<string | number, string>();
-  private activityTypesByName = new Map<string, string | number>();
-  private activityTypesById = new Map<string | number, string>();
-  private seasonsByName = new Map<string, string | number>();
-  private seasonsById = new Map<string | number, string>();
-  private stagesByName = new Map<string, string | number>();
-  private stagesById = new Map<string | number, string>();
+  private cropsByName = new Map<string, number>();
+  private cropsById = new Map<number, string>();
+  private expensesByName = new Map<string, number>();
+  private expensesById = new Map<number, string>();
+  private activityTypesByName = new Map<string, number>();
+  private activityTypesById = new Map<number, string>();
+  private seasonsByName = new Map<string, number>();
+  private seasonsById = new Map<number, string>();
+  private stagesByName = new Map<string, number>();
+  private stagesById = new Map<number, string>();
 
   private loadingPromise: Promise<void> | null = null;
 
@@ -107,30 +107,30 @@ export class ReferenceDataService {
     return resp.items;
   }
 
-  async cropCatalogIdForName(name: string): Promise<string> {
+  async cropCatalogIdForName(name: string): Promise<number> {
     await this.ensureLoaded();
     const id = this.cropsByName.get(name);
     if (!id) {
       throw new Error(`Unknown crop "${name}" — run /api/v1/admin/seed-reference-data`);
     }
-    return String(id);
+    return id;
   }
 
-  async cropNameForId(id: string): Promise<string> {
+  async cropNameForId(id: number): Promise<string> {
     await this.ensureLoaded();
-    return this.cropsById.get(id) ?? id;
+    return this.cropsById.get(id) ?? String(id);
   }
 
   async expenseCategoryIdForName(name: string): Promise<number> {
     await this.ensureLoaded();
     const id = this.expensesByName.get(name);
-    if (id === undefined || typeof id !== 'number') {
+    if (id === undefined) {
       throw new Error(`Unknown expense category "${name}" — run /api/v1/admin/seed-reference-data`);
     }
     return id;
   }
 
-  async expenseCategoryNameForId(id: number | string): Promise<string> {
+  async expenseCategoryNameForId(id: number): Promise<string> {
     await this.ensureLoaded();
     return this.expensesById.get(id) ?? String(id);
   }
@@ -138,13 +138,13 @@ export class ReferenceDataService {
   async activityTypeIdForName(name: string): Promise<number> {
     await this.ensureLoaded();
     const id = this.activityTypesByName.get(name);
-    if (id === undefined || typeof id !== 'number') {
+    if (id === undefined) {
       throw new Error(`Unknown activity type "${name}" — run /api/v1/admin/seed-reference-data`);
     }
     return id;
   }
 
-  async activityTypeNameForId(id: number | string): Promise<string> {
+  async activityTypeNameForId(id: number): Promise<string> {
     await this.ensureLoaded();
     return this.activityTypesById.get(id) ?? String(id);
   }
@@ -154,8 +154,8 @@ export class ReferenceDataService {
     return Array.from(this.cropsByName.keys()).sort();
   }
 
-  async createCrop(name: string): Promise<string> {
-    const resp = await this.httpService.post<{ id: string; name: string }>('/reference/crops', {
+  async createCrop(name: string): Promise<number> {
+    const resp = await this.httpService.post<ReferenceItem>('/reference/crops', {
       name,
     });
     this.cropsByName.set(resp.name, resp.id);

@@ -14,7 +14,7 @@ class CropCatalogCreate(BaseModel):
 class CropCatalogRead(BaseModel):
     """Read a crop catalog record."""
 
-    id: UUID
+    id: int
     name: str
     common_names: str | None = None
 
