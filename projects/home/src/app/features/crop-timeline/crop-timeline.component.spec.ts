@@ -152,17 +152,6 @@ describe('CropTimelineComponent', () => {
     expect(timelineService.crops().length).toBe(2);
   });
 
-  describe('adding a crop', () => {
-    it.skip('creates 8 stage activities (2 completed / 6 scheduled) when a sowing date is given', () => {
-      // TODO: update this test after AddCropComponent refactor
-    });
-
-    it.skip('leaves all 8 stage activities unscheduled when no sowing date is given', () => {
-      // TODO: update this test after AddCropComponent refactor
-      expect(stageActs.every((a) => a.date === undefined)).toBeTrue();
-    });
-  });
-
   it('calculates days after sowing', () => {
     expect(component.getDaysAfterSowing(soySowingDate)).toBe(soySownDaysAgo);
     expect(component.getDaysAfterSowing(undefined)).toBe(0);
