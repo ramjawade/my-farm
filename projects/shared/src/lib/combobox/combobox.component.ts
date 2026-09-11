@@ -12,7 +12,7 @@ import { ClickOutsideDirective } from './click-outside.directive';
 
 @Component({
   standalone: true,
-  selector: 'app-combobox',
+  selector: 'lib-combobox',
   imports: [CommonModule, ClickOutsideDirective],
   templateUrl: './combobox.component.html',
   styleUrl: './combobox.component.scss',
