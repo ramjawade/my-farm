@@ -16,7 +16,7 @@
         type="text"
         class="form-control ps-5 w-100"
         placeholder="Search crops or fields..."
-        [ngModel]="searchTerm"
+        [ngModel]="searchTerm()"
         (ngModelChange)="onSearchTermChange($event)"
       />
     </div>
