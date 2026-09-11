@@ -19,86 +19,77 @@ depends_on: Sequence[str] | None = None
 
 
 def upgrade() -> None:
-    # Create season table with bigint id
+    # Create SERIAL sequences for all tables
+    sequences = [
+        "farmer_id_seq", "farm_id_seq", "land_id_seq", "crop_id_seq",
+        "activity_id_seq", "activity_expense_id_seq", "activity_attachment_id_seq",
+        "crop_catalog_id_seq", "activity_type_id_seq", "expense_category_id_seq",
+        "season_id_seq", "crop_stage_id_seq", "weather_cache_id_seq",
+    ]
+    for seq in sequences:
+        op.execute(f"CREATE SEQUENCE {seq}")
+
+    # Convert all FKs to bigint before converting PKs
+    # Reference table FKs
+    op.alter_column("activity", "activity_type_id", existing_type=sa.UUID(), type_=sa.BigInteger())
+    op.alter_column("activity_expense", "expense_category_id", existing_type=sa.UUID(), type_=sa.BigInteger())
+    op.alter_column("crop", "crop_catalog_id", existing_type=sa.UUID(), type_=sa.BigInteger())
+    op.alter_column("farm_crop", "crop_catalog_id", existing_type=sa.UUID(), type_=sa.BigInteger())
+
+    # Tenant-scoped FKs
+    op.alter_column("farm", "farmer_id", existing_type=sa.UUID(), type_=sa.BigInteger())
+    op.alter_column("land", "farmer_id", existing_type=sa.UUID(), type_=sa.BigInteger())
+    op.alter_column("land", "farm_id", existing_type=sa.UUID(), type_=sa.BigInteger())
+    op.alter_column("crop", "farmer_id", existing_type=sa.UUID(), type_=sa.BigInteger())
+    op.alter_column("crop", "land_id", existing_type=sa.UUID(), type_=sa.BigInteger())
+    op.alter_column("activity", "farmer_id", existing_type=sa.UUID(), type_=sa.BigInteger())
+    op.alter_column("activity", "crop_id", existing_type=sa.UUID(), type_=sa.BigInteger())
+    op.alter_column("activity", "land_id", existing_type=sa.UUID(), type_=sa.BigInteger())
+    op.alter_column("activity", "parent_activity_id", existing_type=sa.UUID(), type_=sa.BigInteger(), nullable=True)
+    op.alter_column("activity_expense", "activity_id", existing_type=sa.UUID(), type_=sa.BigInteger())
+    op.alter_column("activity_attachment", "activity_id", existing_type=sa.UUID(), type_=sa.BigInteger())
+    op.alter_column("land_point", "land_id", existing_type=sa.UUID(), type_=sa.BigInteger())
+
+    # Now convert all primary keys to bigint with sequences
+    tables_with_sequences = [
+        ("farmer", "farmer_id_seq"),
+        ("farm", "farm_id_seq"),
+        ("land", "land_id_seq"),
+        ("crop", "crop_id_seq"),
+        ("activity", "activity_id_seq"),
+        ("activity_expense", "activity_expense_id_seq"),
+        ("activity_attachment", "activity_attachment_id_seq"),
+        ("crop_catalog", "crop_catalog_id_seq"),
+        ("activity_type", "activity_type_id_seq"),
+        ("expense_category", "expense_category_id_seq"),
+        ("weather_cache", "weather_cache_id_seq"),
+    ]
+
+    for table_name, seq_name in tables_with_sequences:
+        op.drop_constraint(f"{table_name}_pkey", table_name, type_="primary")
+        op.drop_column(table_name, "id")
+        op.add_column(
+            table_name,
+            sa.Column("id", sa.BigInteger(), nullable=False, server_default=f"nextval('{seq_name}'::regclass)")
+        )
+        op.create_primary_key(f"{table_name}_pkey", table_name, ["id"])
+
+    # Create new reference tables with bigint ids
     op.create_table(
         "season",
-        sa.Column("id", sa.BigInteger(), nullable=False, autoincrement=True),
+        sa.Column("id", sa.BigInteger(), nullable=False, server_default="nextval('season_id_seq'::regclass)"),
         sa.Column("name", sa.String(255), nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("name", name="uq_season_name"),
     )
 
-    # Create crop_stage table with bigint id
     op.create_table(
         "crop_stage",
-        sa.Column("id", sa.BigInteger(), nullable=False, autoincrement=True),
+        sa.Column("id", sa.BigInteger(), nullable=False, server_default="nextval('crop_stage_id_seq'::regclass)"),
         sa.Column("name", sa.String(255), nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("name", name="uq_crop_stage_name"),
     )
-
-    # Convert reference tables to bigint
-    # activity_type
-    op.drop_constraint("activity_type_pkey", "activity_type", type_="primary")
-    op.drop_column("activity_type", "id")
-    op.add_column("activity_type", sa.Column("id", sa.BigInteger(), nullable=False, autoincrement=True))
-    op.create_primary_key("activity_type_pkey", "activity_type", ["id"])
-
-    # expense_category
-    op.drop_constraint("expense_category_pkey", "expense_category", type_="primary")
-    op.drop_column("expense_category", "id")
-    op.add_column("expense_category", sa.Column("id", sa.BigInteger(), nullable=False, autoincrement=True))
-    op.create_primary_key("expense_category_pkey", "expense_category", ["id"])
-
-    # crop_catalog
-    op.drop_constraint("crop_catalog_pkey", "crop_catalog", type_="primary")
-    op.drop_column("crop_catalog", "id")
-    op.add_column("crop_catalog", sa.Column("id", sa.BigInteger(), nullable=False, autoincrement=True))
-    op.create_primary_key("crop_catalog_pkey", "crop_catalog", ["id"])
-
-    # Convert tenant-scoped tables: convert FKs first, then IDs
-    # Update activity_type_id FK in activity (reference)
-    op.alter_column("activity", "activity_type_id", existing_type=sa.UUID(), type_=sa.BigInteger())
-
-    # Update expense_category_id FK in activity_expense (reference)
-    op.alter_column("activity_expense", "expense_category_id", existing_type=sa.UUID(), type_=sa.BigInteger())
-
-    # Update crop_catalog_id FK in crop (reference)
-    op.alter_column("crop", "crop_catalog_id", existing_type=sa.UUID(), type_=sa.BigInteger())
-
-    # Update crop_catalog_id FK in farm_crop (reference)
-    op.alter_column("farm_crop", "crop_catalog_id", existing_type=sa.UUID(), type_=sa.BigInteger())
-
-    # Now convert all tenant-scoped entity IDs: farmer, farm, land, crop, activity, etc.
-    tables_to_convert = [
-        ("farmer", []),  # farmer has no UUID FK deps
-        ("farm", ["farmer_id"]),
-        ("land", ["farmer_id", "farm_id"]),
-        ("crop", ["farmer_id", "land_id", "crop_catalog_id"]),
-        ("activity", ["farmer_id", "crop_id", "land_id", "activity_type_id"]),
-        ("activity_expense", ["activity_id", "expense_category_id"]),
-        ("activity_attachment", ["activity_id"]),
-        ("land_point", ["land_id"]),
-        ("farm_crop", ["farm_id", "crop_catalog_id"]),
-        ("weather_cache", []),
-    ]
-
-    for table_name, fk_columns in tables_to_convert:
-        # Convert FK columns to bigint first
-        for fk_col in fk_columns:
-            if fk_col.endswith("_id"):
-                op.alter_column(table_name, fk_col, existing_type=sa.UUID(), type_=sa.BigInteger())
-
-    # Manually handle special FKs with different logic
-    # activity.parent_activity_id is self-referential
-    op.alter_column("activity", "parent_activity_id", existing_type=sa.UUID(), type_=sa.BigInteger(), nullable=True)
-
-    # Now convert primary keys from UUID to bigint for all tables
-    for table_name, _ in tables_to_convert:
-        op.drop_constraint(f"{table_name}_pkey", table_name, type_="primary")
-        op.drop_column(table_name, "id")
-        op.add_column(table_name, sa.Column("id", sa.BigInteger(), nullable=False, autoincrement=True))
-        op.create_primary_key(f"{table_name}_pkey", table_name, ["id"])
 
     # Seed reference data
     seasons = ["Kharif", "Rabi", "Zaid"]
@@ -130,5 +121,4 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     # Downgrade is complex; revert to UUID for all tables
-    # This is a major schema change, so downgrade is omitted
     pass
