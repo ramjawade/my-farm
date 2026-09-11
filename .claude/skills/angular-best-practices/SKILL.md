@@ -24,6 +24,16 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Do NOT use `@HostBinding`/`@HostListener` — put host bindings in the `host` object of `@Component`/`@Directive`
 - Use `NgOptimizedImage` for static images (does not work for inline base64 images)
 
+## SOLID
+
+- **Single Responsibility**: a component owns one page/view's presentation and local state; a service owns one domain's logic and persistence. If a component is doing data-fetch orchestration, business rules, AND rendering, split it — pull the business rule into a service method the component calls.
+- **Open/Closed**: extend via composition (new component, new `input()`/`output()`, a new service method) rather than branching an existing method on a type flag to add a case.
+- **Liskov**: an abstract-service consumer (e.g. code depending on `IWeatherService`) must work unchanged against any implementation (`WeatherService`, a future mock/alt source) — don't have implementations narrow the contract or throw on inputs the interface allows.
+- **Interface Segregation**: keep `input()`/`output()` surfaces to what a component actually uses — don't hand a child the whole parent service just so it can call one method; pass the specific data/callback it needs.
+- **Dependency Inversion**: components and services depend on `inject()`-provided abstractions (interfaces like `IStorageService`/`IWeatherService`, or a service's public API), never reach into another feature's internals or concrete implementation type.
+
+In practice for this repo: a routed page component (e.g. `MapComponent`) owns its page's data lifecycle (fetch-on-init, local state) and delegates the actual business logic and persistence to its service; a true parent-child (e.g. `SavedFarmsComponent` under `MapComponent`) is presentation-only, receiving data via `input()` and reporting intent via `output()` — it should not inject a domain service itself.
+
 ## Data loading (routes)
 
 - Fetch page data with a **functional route resolver** (`ResolveFn`, `inject()`), not from a component's `ngOnInit`/constructor. The resolver calls the owning service's load method directly; wire it up via the route's `resolve` config.
