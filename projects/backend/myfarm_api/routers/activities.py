@@ -106,7 +106,9 @@ async def create_activity(
     try:
         activity = await activity_repo.create(current_farmer.id, activity)
     except ConflictError:
-        raise HTTPException(status_code=409, detail="Activity with this ID already exists")
+        raise HTTPException(
+            status_code=409, detail="Activity with this ID already exists"
+        ) from None
     return ActivityRead.model_validate(activity)
 
 
@@ -210,7 +212,9 @@ async def create_activity_expense(
         except Exception as e:
             await session.rollback()
             if "duplicate key" in str(e).lower() or "integrity" in str(e).lower():
-                raise HTTPException(status_code=409, detail="Expense with this ID already exists")
+                raise HTTPException(
+                    status_code=409, detail="Expense with this ID already exists"
+                ) from e
             raise
         await session.refresh(expense)
     return ActivityExpenseRead.model_validate(expense)
@@ -350,9 +354,11 @@ async def get_attachment_upload_url(
         )
         return ActivityAttachmentUploadResponse(**response)
     except ValueError as e:
-        raise HTTPException(status_code=503, detail=str(e))
+        raise HTTPException(status_code=503, detail=str(e)) from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate upload URL: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to generate upload URL: {str(e)}"
+        ) from e
 
 
 @router.post(

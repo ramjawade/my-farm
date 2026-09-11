@@ -15,7 +15,9 @@ _weather_cache: dict[str, tuple[dict[str, Any], datetime]] = {}
 CACHE_TTL_MINUTES = 30
 
 
-def round_coordinates(lat: Decimal, lng: Decimal, precision: int = 1) -> tuple[float, float]:
+def round_coordinates(
+    lat: Decimal | float, lng: Decimal | float, precision: int = 1
+) -> tuple[float, float]:
     """Round coordinates to nearest grid cell (default 1 degree)."""
     rounded_lat = round(float(lat), precision)
     rounded_lng = round(float(lng), precision)
@@ -103,7 +105,8 @@ async def _fetch_from_api(lat: float, lng: float) -> dict[str, Any]:
             },
         )
         response.raise_for_status()
-        return response.json()
+        data: dict[str, Any] = response.json()
+        return data
 
 
 def _get_mock_weather(lat: float, lng: float) -> dict[str, Any]:

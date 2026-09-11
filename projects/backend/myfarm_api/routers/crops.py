@@ -55,7 +55,7 @@ async def create_crop(
     try:
         crop = await crop_repo.create(current_farmer.id, crop)
     except ConflictError:
-        raise HTTPException(status_code=409, detail="Crop with this ID already exists")
+        raise HTTPException(status_code=409, detail="Crop with this ID already exists") from None
     return CropRead.model_validate(crop)
 
 
