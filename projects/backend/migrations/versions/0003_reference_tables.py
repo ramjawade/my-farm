@@ -29,64 +29,73 @@ def upgrade() -> None:
     for seq in sequences:
         op.execute(f"CREATE SEQUENCE {seq}")
 
-    # Convert all FKs to bigint before converting PKs
+    # Convert all FKs to bigint before converting PKs (using direct SQL with USING clause)
     # Reference table FKs
-    op.alter_column(
-        "activity", "activity_type_id", existing_type=sa.UUID(),
-        type_=sa.BigInteger()
+    op.execute(
+        "ALTER TABLE activity "
+        "ALTER COLUMN activity_type_id TYPE bigint USING (activity_type_id::text::bigint)"
     )
-    op.alter_column(
-        "activity_expense", "expense_category_id",
-        existing_type=sa.UUID(), type_=sa.BigInteger()
+    op.execute(
+        "ALTER TABLE activity_expense "
+        "ALTER COLUMN expense_category_id TYPE bigint USING (expense_category_id::text::bigint)"
     )
-    op.alter_column(
-        "crop", "crop_catalog_id", existing_type=sa.UUID(),
-        type_=sa.BigInteger()
+    op.execute(
+        "ALTER TABLE crop "
+        "ALTER COLUMN crop_catalog_id TYPE bigint USING (crop_catalog_id::text::bigint)"
     )
-    op.alter_column(
-        "farm_crop", "crop_catalog_id", existing_type=sa.UUID(),
-        type_=sa.BigInteger()
+    op.execute(
+        "ALTER TABLE farm_crop "
+        "ALTER COLUMN crop_catalog_id TYPE bigint USING (crop_catalog_id::text::bigint)"
     )
 
     # Tenant-scoped FKs
-    op.alter_column(
-        "farm", "farmer_id", existing_type=sa.UUID(), type_=sa.BigInteger()
+    op.execute(
+        "ALTER TABLE farm "
+        "ALTER COLUMN farmer_id TYPE bigint USING (farmer_id::text::bigint)"
     )
-    op.alter_column(
-        "land", "farmer_id", existing_type=sa.UUID(), type_=sa.BigInteger()
+    op.execute(
+        "ALTER TABLE land "
+        "ALTER COLUMN farmer_id TYPE bigint USING (farmer_id::text::bigint)"
     )
-    op.alter_column(
-        "land", "farm_id", existing_type=sa.UUID(), type_=sa.BigInteger()
+    op.execute(
+        "ALTER TABLE land "
+        "ALTER COLUMN farm_id TYPE bigint USING (farm_id::text::bigint)"
     )
-    op.alter_column(
-        "crop", "farmer_id", existing_type=sa.UUID(), type_=sa.BigInteger()
+    op.execute(
+        "ALTER TABLE crop "
+        "ALTER COLUMN farmer_id TYPE bigint USING (farmer_id::text::bigint)"
     )
-    op.alter_column(
-        "crop", "land_id", existing_type=sa.UUID(), type_=sa.BigInteger()
+    op.execute(
+        "ALTER TABLE crop "
+        "ALTER COLUMN land_id TYPE bigint USING (land_id::text::bigint)"
     )
-    op.alter_column(
-        "activity", "farmer_id", existing_type=sa.UUID(), type_=sa.BigInteger()
+    op.execute(
+        "ALTER TABLE activity "
+        "ALTER COLUMN farmer_id TYPE bigint USING (farmer_id::text::bigint)"
     )
-    op.alter_column(
-        "activity", "crop_id", existing_type=sa.UUID(), type_=sa.BigInteger()
+    op.execute(
+        "ALTER TABLE activity "
+        "ALTER COLUMN crop_id TYPE bigint USING (crop_id::text::bigint)"
     )
-    op.alter_column(
-        "activity", "land_id", existing_type=sa.UUID(), type_=sa.BigInteger()
+    op.execute(
+        "ALTER TABLE activity "
+        "ALTER COLUMN land_id TYPE bigint USING (land_id::text::bigint)"
     )
-    op.alter_column(
-        "activity", "parent_activity_id",
-        existing_type=sa.UUID(), type_=sa.BigInteger(), nullable=True
+    op.execute(
+        "ALTER TABLE activity "
+        "ALTER COLUMN parent_activity_id TYPE bigint USING (parent_activity_id::text::bigint)"
     )
-    op.alter_column(
-        "activity_expense", "activity_id",
-        existing_type=sa.UUID(), type_=sa.BigInteger()
+    op.execute(
+        "ALTER TABLE activity_expense "
+        "ALTER COLUMN activity_id TYPE bigint USING (activity_id::text::bigint)"
     )
-    op.alter_column(
-        "activity_attachment", "activity_id",
-        existing_type=sa.UUID(), type_=sa.BigInteger()
+    op.execute(
+        "ALTER TABLE activity_attachment "
+        "ALTER COLUMN activity_id TYPE bigint USING (activity_id::text::bigint)"
     )
-    op.alter_column(
-        "land_point", "land_id", existing_type=sa.UUID(), type_=sa.BigInteger()
+    op.execute(
+        "ALTER TABLE land_point "
+        "ALTER COLUMN land_id TYPE bigint USING (land_id::text::bigint)"
     )
 
     # Now convert all primary keys to bigint with sequences
