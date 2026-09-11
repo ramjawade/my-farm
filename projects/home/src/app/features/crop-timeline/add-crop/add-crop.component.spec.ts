@@ -29,18 +29,6 @@ describe('AddCropComponent', () => {
 
     fixture = TestBed.createComponent(AddCropComponent);
     component = fixture.componentInstance;
-
-    // Assign inputs
-    component.cropNameOptions = ['Soybeans', 'Wheat'];
-    component.cropForm = fb.group({
-      name: ['', Validators.required],
-      cropType: ['Soybeans', Validators.required],
-      fieldId: ['', Validators.required],
-      area: [10, [Validators.required, Validators.min(1)]],
-      areaUnit: ['hectares'],
-      sowingDate: [''],
-    });
-
     fixture.detectChanges();
   });
 
