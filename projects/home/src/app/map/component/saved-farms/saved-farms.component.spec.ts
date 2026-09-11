@@ -1,4 +1,5 @@
 import { provideZonelessChangeDetection } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { SavedFarmsComponent } from './saved-farms.component';
 import { FarmDrawService } from '../../farm-draw/farm-draw.service';
@@ -35,6 +36,7 @@ describe('SavedFarmsComponent', () => {
       imports: [SavedFarmsComponent],
       providers: [
         provideZonelessChangeDetection(),
+        provideHttpClient(),
         { provide: FarmDrawService, useValue: mockFarmDraw },
         { provide: IStorageService, useClass: InMemoryStorageService },
       ],

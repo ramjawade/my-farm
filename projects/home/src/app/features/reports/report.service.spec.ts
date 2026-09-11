@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
 import { ReportService } from './report.service';
 import { ActivityService } from '../activity/activity.service';
 import { CropTimelineService } from '../crop-timeline/crop-timeline.service';
@@ -13,6 +14,7 @@ describe('ReportService', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
+        provideHttpClient(),
         ReportService,
         ActivityService,
         CropTimelineService,

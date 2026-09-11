@@ -1,26 +1,13 @@
 import { TestBed } from '@angular/core/testing';
-import { Injectable, provideZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { AuthService } from './auth.service';
+import { HttpService } from '../http/http.service';
 import { FarmerRegistrationService } from '../../features/farmer-registration/farmer-registration.service';
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
 import { IStorageService } from '../storage/storage.interface';
 import { InMemoryStorageService } from '../../testing/in-memory-storage.service';
-
-/**
- * A storage implementation that carries an API credential, like
- * `ApiStorageService` does. The plain in-memory double has no token API,
- * so the token paths would be invisible to it.
- */
-@Injectable()
-class TokenAwareStorageService extends InMemoryStorageService {
-  authToken: string | null = null;
-
-  setAuthToken(token: string | null): void {
-    this.authToken = token;
-  }
-}
 
 const mockFarmer: FarmerRegistrationData = {
   id: 'f-test-1',
@@ -103,13 +90,13 @@ describe('AuthService', () => {
 });
 
 /**
- * The API storage service is a root singleton holding the bearer token, so an
- * identity that outlives its session is a cross-tenant read: the next farmer
- * on this browser would be authenticated as the previous one.
+ * `HttpService` is a root singleton holding the bearer token, so an identity
+ * that outlives its session is a cross-tenant read: the next farmer on this
+ * browser would be authenticated as the previous one.
  */
 describe('AuthService — API token lifecycle', () => {
   let service: AuthService;
-  let storage: TokenAwareStorageService;
+  let httpService: HttpService;
 
   const otherFarmer: FarmerRegistrationData = { ...mockFarmer, id: 'f-test-2' };
 
@@ -118,7 +105,7 @@ describe('AuthService — API token lifecycle', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
-        { provide: IStorageService, useClass: TokenAwareStorageService },
+        { provide: IStorageService, useClass: InMemoryStorageService },
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideRouter([]),
@@ -127,25 +114,27 @@ describe('AuthService — API token lifecycle', () => {
       ],
     });
     service = TestBed.inject(AuthService);
-    storage = TestBed.inject(IStorageService) as TokenAwareStorageService;
+    httpService = TestBed.inject(HttpService);
   });
 
   afterEach(() => {
     localStorage.clear();
   });
 
-  it('should hand a supplied token to the storage service', () => {
+  it('should hand a supplied token to HttpService', () => {
+    const spy = spyOn(httpService, 'setAuthToken');
     service.login(mockFarmer, 'token-a');
 
-    expect(storage.authToken).toBe('token-a');
+    expect(spy).toHaveBeenCalledWith('token-a');
     expect(localStorage.getItem('my_farm_session_token')).toBe('token-a');
   });
 
   it('should clear the token on logout', () => {
     service.login(mockFarmer, 'token-a');
+    const spy = spyOn(httpService, 'setAuthToken');
     service.logout();
 
-    expect(storage.authToken).toBeNull();
+    expect(spy).toHaveBeenCalledWith(null);
     expect(localStorage.getItem('my_farm_session_token')).toBeFalsy();
   });
 
@@ -154,25 +143,28 @@ describe('AuthService — API token lifecycle', () => {
     service.logout();
 
     // Farmer B signs in with a PIN — no Firebase token in play.
+    const spy = spyOn(httpService, 'setAuthToken');
     service.login(otherFarmer);
 
-    expect(storage.authToken).toBeNull();
+    expect(spy).toHaveBeenCalledWith(null);
     expect(localStorage.getItem('my_farm_session_token')).toBeFalsy();
   });
 
   it('should rebind the token when a second farmer logs in with their own', () => {
     service.login(mockFarmer, 'token-a');
+    const spy = spyOn(httpService, 'setAuthToken');
     service.login(otherFarmer, 'token-b');
 
-    expect(storage.authToken).toBe('token-b');
+    expect(spy).toHaveBeenCalledWith('token-b');
   });
 
   it('should clear the token when the session expires', () => {
     service.login(mockFarmer, 'token-a');
+    const spy = spyOn(httpService, 'setAuthToken');
     localStorage.setItem('my_farm_session_expiry', String(Date.now() - 1000));
 
     expect(service.isSessionValid()).toBeFalse();
-    expect(storage.authToken).toBeNull();
+    expect(spy).toHaveBeenCalledWith(null);
     expect(localStorage.getItem('my_farm_session_token')).toBeFalsy();
   });
 });

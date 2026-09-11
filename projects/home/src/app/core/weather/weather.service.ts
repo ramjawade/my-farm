@@ -1,5 +1,5 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpService } from '../http/http.service';
 import { AuthService } from '../auth/auth.service';
 import { IWeatherService } from './weather.interface';
 import { WeatherCacheService } from './weather-cache.service';
@@ -11,18 +11,16 @@ import {
   OpenWeatherResponse,
   OpenWeatherForecastResponse,
 } from './weather.models';
-import { EnvironmentService } from '../services/environment.service';
 import { FarmDrawService } from '../../map/farm-draw/farm-draw.service';
 
 type DataSource = 'live' | 'cache' | 'demo';
 
 @Injectable({ providedIn: 'root' })
 export class WeatherService extends IWeatherService {
-  private readonly http = inject(HttpClient);
+  private readonly httpService = inject(HttpService);
   private readonly authService = inject(AuthService);
   private readonly cacheService = inject(WeatherCacheService);
   private readonly farmDraw = inject(FarmDrawService);
-  private readonly envService = inject(EnvironmentService);
 
   private readonly weatherDataSignal = signal<WeatherData | null>(null);
   readonly weatherData = computed(() => this.weatherDataSignal());
@@ -193,18 +191,13 @@ private handleError(error: any, location: WeatherLocation): WeatherData {
     forecast: { days: any[]; fetchedAt: number };
     alerts: WeatherAlert[];
   }> {
-    const baseUrl = this.envService.getApiUrl();
-    const response = await this.http
-      .get<{
-        data: OpenWeatherResponse;
-        source: string;
-      }>(`${baseUrl}/weather`, {
-        params: {
-          lat: String(location.lat),
-          lng: String(location.lng),
-        },
-      })
-      .toPromise();
+    const response = await this.httpService.get<{
+      data: OpenWeatherResponse;
+      source: string;
+    }>('/weather', {
+      lat: String(location.lat),
+      lng: String(location.lng),
+    });
 
     if (!response?.data) throw new Error('Empty response from backend weather API');
 

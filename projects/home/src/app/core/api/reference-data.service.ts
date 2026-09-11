@@ -1,7 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
-import { EnvironmentService } from '../services/environment.service';
+import { HttpService } from '../http/http.service';
 import { ReferenceItem } from './contracts';
 
 /**
@@ -20,9 +18,7 @@ import { ReferenceItem } from './contracts';
 
 @Injectable({ providedIn: 'root' })
 export class ReferenceDataService {
-  private readonly envService = inject(EnvironmentService);
-  private readonly baseUrl = `${this.envService.getApiUrl()}/reference`;
-  private token: string | null = null;
+  private readonly httpService = inject(HttpService);
 
   private cropsByName = new Map<string, string>();
   private cropsById = new Map<string, string>();
@@ -32,20 +28,6 @@ export class ReferenceDataService {
   private activityTypesById = new Map<string, string>();
 
   private loadingPromise: Promise<void> | null = null;
-
-  constructor(private http: HttpClient) {}
-
-  setAuthToken(token: string | null): void {
-    this.token = token;
-  }
-
-  private getHeaders(): HttpHeaders {
-    const headers: Record<string, string> = {};
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`;
-    }
-    return new HttpHeaders(headers);
-  }
 
   /** Force a re-fetch on next lookup (e.g. after seeding reference data). */
   invalidate(): void {
@@ -74,9 +56,9 @@ export class ReferenceDataService {
 
   private async loadAll(): Promise<void> {
     const [crops, expenses, activityTypes] = await Promise.all([
-      this.fetchAll(`${this.baseUrl}/crops`),
-      this.fetchAll(`${this.baseUrl}/expense-categories`),
-      this.fetchAll(`${this.baseUrl}/activity-types`),
+      this.fetchAll('/reference/crops'),
+      this.fetchAll('/reference/expense-categories'),
+      this.fetchAll('/reference/activity-types'),
     ]);
     this.applyMaps(crops, expenses, activityTypes);
   }
@@ -100,10 +82,8 @@ export class ReferenceDataService {
     }
   }
 
-  private async fetchAll(url: string): Promise<ReferenceItem[]> {
-    const resp = await firstValueFrom(
-      this.http.get<{ items: ReferenceItem[] }>(url, { headers: this.getHeaders() }),
-    );
+  private async fetchAll(path: string): Promise<ReferenceItem[]> {
+    const resp = await this.httpService.get<{ items: ReferenceItem[] }>(path);
     return resp.items;
   }
 

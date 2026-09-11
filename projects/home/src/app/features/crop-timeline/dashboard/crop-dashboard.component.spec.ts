@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
 import { CropDashboardComponent } from './crop-dashboard.component';
 import { CropTimelineService } from '../crop-timeline.service';
 import { CropEntity } from '../crop-timeline.models';
@@ -29,6 +30,7 @@ describe('CropDashboardComponent', () => {
       imports: [CropDashboardComponent],
       providers: [
         provideZonelessChangeDetection(),
+        provideHttpClient(),
         CropTimelineService,
         { provide: IStorageService, useClass: InMemoryStorageService },
       ],

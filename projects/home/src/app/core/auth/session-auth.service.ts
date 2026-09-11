@@ -1,7 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
-import { EnvironmentService } from '../services/environment.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { HttpService } from '../http/http.service';
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
 import {
   FarmerResponse,
@@ -74,9 +73,7 @@ function mapFarmer(f: FarmerResponse): FarmerRegistrationData {
  */
 @Injectable({ providedIn: 'root' })
 export class SessionAuthService {
-  private readonly http = inject(HttpClient);
-  private readonly envService = inject(EnvironmentService);
-  private readonly baseUrl = this.envService.getApiUrl();
+  private readonly httpService = inject(HttpService);
 
   /** Exchange phone + PIN for a session. The backend's status code maps
    * straight to the outcome — `404 -> no-account`, `401 -> wrong-pin` — so
@@ -84,9 +81,7 @@ export class SessionAuthService {
   async createSession(phone: string, pin: string): Promise<SessionOutcome> {
     try {
       const body: SessionRequest = { phone, pin };
-      const resp = await firstValueFrom(
-        this.http.post<SessionResponse>(`${this.baseUrl}/auth/session`, body),
-      );
+      const resp = await this.httpService.post<SessionResponse>('/auth/session', body);
       return { status: 'ok', result: { token: resp.token, farmer: mapFarmer(resp.farmer) } };
     } catch (err) {
       if (err instanceof HttpErrorResponse) {
@@ -106,9 +101,7 @@ export class SessionAuthService {
         pin: req.pin,
         preferred_language: req.preferredLanguage ?? 'en',
       };
-      const resp = await firstValueFrom(
-        this.http.post<SessionResponse>(`${this.baseUrl}/auth/register`, body),
-      );
+      const resp = await this.httpService.post<SessionResponse>('/auth/register', body);
       return { status: 'ok', result: { token: resp.token, farmer: mapFarmer(resp.farmer) } };
     } catch (err) {
       if (err instanceof HttpErrorResponse && err.status === 409) {

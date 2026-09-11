@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CropTimelineDetailComponent } from './crop-timeline-detail.component';
@@ -45,6 +46,7 @@ describe('CropTimelineDetailComponent', () => {
       imports: [CropTimelineDetailComponent, ReactiveFormsModule],
       providers: [
         provideZonelessChangeDetection(),
+        provideHttpClient(),
         { provide: Router, useValue: spyRouter },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
         CropTimelineService,
