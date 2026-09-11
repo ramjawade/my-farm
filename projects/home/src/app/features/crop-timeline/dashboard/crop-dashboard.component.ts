@@ -1,10 +1,9 @@
-import { Component, Input, Output, EventEmitter, inject, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CropTimelineService } from '../crop-timeline.service';
-import { CropTimelineComponent } from '../crop-timeline.component';
-import { CropEntity, CropStage } from '../crop-timeline.models';
+import { CropEntity, CropStage, CROP_STAGES } from '../crop-timeline.models';
 
 @Component({
   standalone: true,
@@ -12,69 +11,39 @@ import { CropEntity, CropStage } from '../crop-timeline.models';
   imports: [CommonModule, FormsModule],
   templateUrl: './crop-dashboard.component.html',
   styleUrl: './crop-dashboard.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CropDashboardComponent implements OnInit {
   private readonly timelineService = inject(CropTimelineService);
-  private readonly parent = inject(CropTimelineComponent, { optional: true });
-  private readonly router = inject(Router, { optional: true });
+  private readonly router = inject(Router);
 
-  private _filteredCrops?: CropEntity[];
-  @Input() set filteredCrops(value: CropEntity[]) {
-    this._filteredCrops = value;
-  }
-  get filteredCrops(): CropEntity[] {
-    return this._filteredCrops || this.parent?.filteredCrops() || [];
-  }
+  readonly searchTerm = signal<string>('');
 
-  private _searchTerm?: string;
-  @Input() set searchTerm(value: string) {
-    this._searchTerm = value;
-  }
-  get searchTerm(): string {
-    return this._searchTerm !== undefined ? this._searchTerm : this.parent?.searchTerm() || '';
-  }
+  readonly filteredCrops = computed(() => {
+    const term = this.searchTerm().trim().toLowerCase();
+    const allCrops = this.timelineService.crops();
+    if (!term) return allCrops;
+    return allCrops.filter(
+      (c) => c.name.toLowerCase().includes(term) || c.fieldId.toLowerCase().includes(term),
+    );
+  });
 
-  @Output() readonly searchTermChange = new EventEmitter<string>();
-  @Output() readonly cropSelected = new EventEmitter<CropEntity>();
-  @Output() readonly addCropClicked = new EventEmitter<void>();
-
-  readonly stages: CropStage[] = [
-    'Land Preparation',
-    'Sowing',
-    'Germination',
-    'Vegetative Growth',
-    'Flowering',
-    'Fruiting / Pod Formation',
-    'Maturity',
-    'Harvest',
-  ];
+  readonly stages = CROP_STAGES;
 
   ngOnInit(): void {
-    if (this.parent) {
-      this.parent.selectedCrop.set(null);
-      this.parent.currentView.set('dashboard');
-    }
+    void this.timelineService.reload();
   }
 
   onSearchTermChange(value: string): void {
-    this.searchTermChange.emit(value);
-    if (this.parent) {
-      this.parent.searchTerm.set(value);
-    }
+    this.searchTerm.set(value);
   }
 
   onCropSelected(crop: CropEntity): void {
-    this.cropSelected.emit(crop);
-    if (this.router) {
-      this.router.navigate(['/crops', crop.id]);
-    }
+    this.router.navigate(['/crops', crop.id]);
   }
 
   onAddCropClicked(): void {
-    this.addCropClicked.emit();
-    if (this.router) {
-      this.router.navigate(['/crops/add']);
-    }
+    this.router.navigate(['/crops/add']);
   }
 
   getDaysAfterSowing(sowingDate: number | undefined): number {
@@ -87,7 +56,7 @@ export class CropDashboardComponent implements OnInit {
   getDaysSinceLastActivity(cropId: string): string {
     const cropActs = this.timelineService
       .activities()
-      .filter((a) => a.cropId === cropId && a.status === 'Completed')
+      .filter((a) => a.cropId === cropId && a.status === 'Completed' && !a.parentActivityId)
       .sort((a, b) => (b.date || 0) - (a.date || 0));
 
     if (cropActs.length === 0) {
