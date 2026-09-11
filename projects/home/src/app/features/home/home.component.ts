@@ -54,9 +54,9 @@ export class HomeComponent implements OnInit {
     const user = this.authService.currentUser();
     if (user) {
       this.farms.set(await this.farmDrawService.loadFarms(user.id));
+      void this.cropService.reload();
+      void this.activityService.reload();
     }
-    void this.cropService.reload();
-    void this.activityService.reload();
   }
 
   // Authentication State
