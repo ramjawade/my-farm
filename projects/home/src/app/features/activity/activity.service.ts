@@ -29,6 +29,16 @@ export class ActivityService {
     return totals;
   });
 
+  /** Pending activities for today (not completed, with a date matching today). */
+  readonly todaysPendingActivities = computed(() => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    return this.activitiesSignal().filter((a) => {
+      if (!a.date) return false;
+      const aStr = new Date(a.date).toISOString().split('T')[0];
+      return aStr === todayStr && a.status !== 'Completed';
+    });
+  });
+
   constructor() {
     // Reload whenever the signed-in user changes (login, logout, session restore).
     effect(() => {

@@ -102,6 +102,10 @@ export function expenseCategoryIcon(category: ExpenseCategory): string {
       return 'bi-tools';
     case 'Fuel':
       return 'bi-fuel-pump';
+    case 'Transport':
+      return 'bi-truck';
+    case 'Machine Rent':
+      return 'bi-tools';
     case 'Other':
       return 'bi-question-circle';
     default:

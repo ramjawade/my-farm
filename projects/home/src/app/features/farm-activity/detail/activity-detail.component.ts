@@ -18,6 +18,7 @@ import { SavedFarm } from '../../../map/models/map.models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ConfirmDialogComponent, ToastService } from 'shared';
 import { ActivityStatus } from '../../activity/activity.models';
+import { expenseCategoryIcon } from '../../activity/activity-display';
 
 @Component({
   selector: 'app-activity-detail',
@@ -87,26 +88,8 @@ export class ActivityDetailComponent implements OnInit {
     return farm ? farm.name : act.fieldId;
   });
 
-  // Resolve category icons dynamically
-  getCategoryIcon(cat: string): string {
-    switch (cat) {
-      case 'Transport':
-        return 'bi-truck';
-      case 'Machine Rent':
-        return 'bi-tools';
-      case 'Workers':
-        return 'bi-people';
-      case 'Seeds':
-        return 'bi-flower1';
-      case 'Fertilizer':
-        return 'bi-moisture';
-      case 'Pesticides':
-        return 'bi-shield-shaded';
-      case 'Irrigation Fuel':
-        return 'bi-droplet-half';
-      default:
-        return 'bi-box-seam';
-    }
+  getCategoryIcon(category: string): string {
+    return expenseCategoryIcon(category as any);
   }
 
   // Dynamic chronological timeline of events

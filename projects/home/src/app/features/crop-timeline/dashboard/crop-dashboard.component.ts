@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CropTimelineService } from '../crop-timeline.service';
 import { CropEntity, CropStage, CROP_STAGES } from '../crop-timeline.models';
+import { stageIndex, stageProgressPercent } from '../crop-timeline.utils';
 
 @Component({
   standalone: true,
@@ -75,7 +76,7 @@ export class CropDashboardComponent implements OnInit {
   }
 
   getNextStage(currentStage: CropStage): string {
-    const idx = this.stages.indexOf(currentStage);
+    const idx = stageIndex(currentStage);
     if (idx === -1 || idx === this.stages.length - 1) {
       return 'Fully Mature';
     }
@@ -83,10 +84,10 @@ export class CropDashboardComponent implements OnInit {
   }
 
   getStageIndex(stage: CropStage): number {
-    return this.stages.indexOf(stage);
+    return stageIndex(stage);
   }
 
   getStagePercent(stage: CropStage): number {
-    return ((this.getStageIndex(stage) + 1) / this.stages.length) * 100;
+    return stageProgressPercent(stage);
   }
 }
