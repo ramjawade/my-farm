@@ -140,6 +140,11 @@ export class CropTimelineDetailComponent implements OnInit {
     return crop ? (this.timelineService?.costForCrop(crop.id) ?? 0) : 0;
   });
 
+  readonly timelineActivities = computed(() => {
+    const crop = this.selectedCropSignal();
+    return crop && this.timelineService ? this.timelineService.getActivitiesForCrop(crop.id) : [];
+  });
+
   readonly nextStage = computed(() => {
     const crop = this.selectedCropSignal();
     return crop && this.timelineService

@@ -112,7 +112,7 @@
 </div>
 
 <app-activities-summary
-  [cropId]="selectedCrop?.id"
+  [activities]="timelineActivities()"
   [isTimeline]="true"
   (editActivity)="onEditActivityClicked($event)"
   (markActivityCompleted)="onMarkActivityCompletedClicked($event)"

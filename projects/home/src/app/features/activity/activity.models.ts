@@ -16,6 +16,18 @@ export type ActivityType =
 
 export type ActivityStatus = 'Draft' | 'Scheduled' | 'In Progress' | 'Completed' | 'Cancelled';
 
+export type ExpenseCategory =
+  | 'Machine Rent'
+  | 'Labour'
+  | 'Seeds'
+  | 'Fertilizer'
+  | 'Pesticide'
+  | 'Transport'
+  | 'Water'
+  | 'Equipment'
+  | 'Fuel'
+  | 'Other';
+
 export interface Activity {
   id: string;
   parentActivityId?: string;
