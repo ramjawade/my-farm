@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, output, effect } from '@angular/core';
+import { Component, inject, input, signal, computed, output, effect } from '@angular/core';
 
 import { formatArea, getPolygonCentroid } from '../../farm-draw/farm-area.utils';
 import { FarmDrawService } from '../../farm-draw/farm-draw.service';
@@ -21,15 +21,17 @@ export class MapMyFarmComponent {
   private readonly authService = inject(AuthService);
   private readonly workflowService = inject(WorkflowStateService);
   private readonly onboardingService = inject(OnboardingGuideService);
+  readonly hasFarms = input(false);
+
   readonly farmName = signal('');
   readonly setSatelliteLayer = output<void>();
   readonly locateMeRequest = output<void>();
+  readonly farmSaved = output<string>();
   readonly geolocating = signal(false);
 
   readonly shouldShowLandPrompt = computed(() => {
-    const hasNoFarms = this.draw.savedFarms().length === 0;
     const promptNotDismissed = this.onboardingService.shouldShowPrompt('land');
-    return hasNoFarms && promptNotDismissed && this.workflowService.isFirstTime();
+    return !this.hasFarms() && promptNotDismissed && this.workflowService.isFirstTime();
   });
 
   readonly formattedArea = () => {
@@ -95,7 +97,7 @@ export class MapMyFarmComponent {
 
   save(): void {
     const nameVal = this.farmName();
-    this.draw.saveFarm(nameVal);
+    this.farmSaved.emit(nameVal);
     this.toast.success(`Land "${nameVal.trim() || 'Farm'}" saved.`);
 
     // Mark land workflow phase complete

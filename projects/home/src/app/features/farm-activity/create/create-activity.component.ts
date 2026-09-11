@@ -16,6 +16,8 @@ import { CommonModule } from '@angular/common';
 import { ActivityService } from '../../activity/activity.service';
 import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
+import { SavedFarm } from '../../../map/models/map.models';
+import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from 'shared';
 
 @Component({
@@ -33,6 +35,7 @@ export class CreateActivityComponent implements OnInit {
   private readonly activityService = inject(ActivityService);
   private readonly cropService = inject(CropTimelineService);
   private readonly farmDrawService = inject(FarmDrawService);
+  private readonly authService = inject(AuthService);
   private readonly toast = inject(ToastService);
 
   @Input() cropId?: string;
@@ -82,7 +85,7 @@ export class CreateActivityComponent implements OnInit {
 
   // Populate dropdowns from services
   readonly crops = this.cropService.crops;
-  readonly savedFarms = this.farmDrawService.savedFarms;
+  readonly savedFarms = signal<SavedFarm[]>([]);
 
   readonly selectedCropId = signal<string>('');
 
@@ -109,6 +112,11 @@ export class CreateActivityComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    const user = this.authService.currentUser();
+    if (user) {
+      void this.farmDrawService.loadFarms(user.id).then((farms) => this.savedFarms.set(farms));
+    }
+
     // 1. If we are running in modal mode, inputs might be passed directly
     if (this.cropId) {
       this.form.patchValue({ cropId: this.cropId });

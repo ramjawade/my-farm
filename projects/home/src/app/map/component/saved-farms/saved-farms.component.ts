@@ -1,8 +1,7 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, input, output, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ConfirmDialogComponent, ToastService } from 'shared';
-import { FarmDrawService } from '../../farm-draw/farm-draw.service';
 import { FarmAreaResult, SavedFarm } from '../../models/map.models';
 import { CropTimelineService } from '../../../features/crop-timeline/crop-timeline.service';
 import { LandDetailComponent } from '../land-detail/land-detail.component';
@@ -17,21 +16,31 @@ type LandStatus = 'planted' | 'fallow' | 'multiple';
   styleUrl: './saved-farms.component.scss',
 })
 export class SavedFarmsComponent {
-  readonly farmDraw = inject(FarmDrawService);
+  readonly farms = input.required<SavedFarm[]>();
+  readonly selected = input<SavedFarm | null>(null);
+
+  readonly selectFarm = output<SavedFarm>();
+  readonly renameFarm = output<{ id: string; newName: string }>();
+  readonly deleteFarm = output<string>();
+  readonly updateNotes = output<{ id: string; notes: string }>();
+
   private readonly crops = inject(CropTimelineService);
   private readonly toast = inject(ToastService);
 
   readonly savedFarmsCollapsed = signal(false);
   readonly showDeleteConfirm = signal(false);
   readonly pendingDeleteId = signal<string | null>(null);
-  readonly selectedLandDetail = signal<SavedFarm | null>(null);
+  readonly selectedLandDetailId = signal<string | null>(null);
+  readonly selectedLandDetail = computed(
+    () => this.farms().find((f) => f.id === this.selectedLandDetailId()) ?? null,
+  );
   readonly searchFilter = signal('');
   readonly renamingId = signal<string | null>(null);
   readonly renamingValue = signal('');
 
   readonly filteredFarms = computed(() => {
     const filter = this.searchFilter().toLowerCase();
-    return this.farmDraw.savedFarms().filter((f) => f.name.toLowerCase().includes(filter));
+    return this.farms().filter((f) => f.name.toLowerCase().includes(filter));
   });
 
   toggleSavedFarmsCollapse(): void {
@@ -48,7 +57,7 @@ export class SavedFarmsComponent {
   }
 
   showLandDetail(land: SavedFarm): void {
-    this.selectedLandDetail.set(land);
+    this.selectedLandDetailId.set(land.id);
   }
 
   getLandStatus(farmId: string): LandStatus {
@@ -94,7 +103,7 @@ export class SavedFarmsComponent {
   saveRename(id: string): void {
     const newName = this.renamingValue().trim();
     if (newName) {
-      this.farmDraw.renameFarm(id, newName);
+      this.renameFarm.emit({ id, newName });
       this.toast.success('Land renamed.');
     }
     this.renamingId.set(null);
@@ -117,8 +126,12 @@ export class SavedFarmsComponent {
   confirmDelete(): void {
     const id = this.pendingDeleteId();
     if (!id) return;
-    this.farmDraw.deleteFarm(id);
+    this.deleteFarm.emit(id);
     this.pendingDeleteId.set(null);
     this.toast.success('Land deleted.');
+  }
+
+  onLandNotesUpdated(event: { id: string; notes: string }): void {
+    this.updateNotes.emit(event);
   }
 }

@@ -35,7 +35,6 @@ describe('HomeComponent', () => {
   let authService: AuthService;
   let cropService: CropTimelineService;
   let activityService: ActivityService;
-  let farmDrawService: FarmDrawService;
 
   beforeEach(async () => {
     // Clear storage for isolation
@@ -59,7 +58,6 @@ describe('HomeComponent', () => {
     authService = TestBed.inject(AuthService);
     cropService = TestBed.inject(CropTimelineService);
     activityService = TestBed.inject(ActivityService);
-    farmDrawService = TestBed.inject(FarmDrawService);
     fixture.detectChanges();
   });
 
@@ -174,7 +172,7 @@ describe('HomeComponent', () => {
         createdAt: Date.now(),
       },
     ];
-    farmDrawService.savedFarms.set(mockFarms);
+    component.farms.set(mockFarms);
     fixture.detectChanges();
 
     expect(component.metrics().acreage).toBe(2.5); // 1.0 + 1.5
@@ -219,7 +217,7 @@ describe('HomeComponent', () => {
         createdAt: Date.now(),
       },
     ];
-    farmDrawService.savedFarms.set(mockFarms);
+    component.farms.set(mockFarms);
     fixture.detectChanges();
 
     expect(component.metrics().acreage).toBe(6.17); // 2.47 + 3.7

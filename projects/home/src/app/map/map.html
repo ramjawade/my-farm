@@ -2,7 +2,14 @@
   <div class="map-page__wrapper">
     <!-- Saved Farms Panel -->
     @if (!isPicker) {
-      <app-saved-farms />
+      <app-saved-farms
+        [farms]="farms()"
+        [selected]="selected()"
+        (selectFarm)="onSelectFarm($event)"
+        (renameFarm)="onRenameFarm($event.id, $event.newName)"
+        (deleteFarm)="onDeleteFarm($event)"
+        (updateNotes)="onUpdateFarmNotes($event.id, $event.notes)"
+      />
     }
 
     @if (!isPicker || showSearch) {
@@ -16,8 +23,10 @@
     @if (!isPicker) {
       <app-map-my-farm
         class="map-page__farm-draw"
+        [hasFarms]="farms().length > 0"
         (setSatelliteLayer)="setLayer('satellite')"
         (locateMeRequest)="locateMeGPS()"
+        (farmSaved)="onSaveFarm($event)"
       />
     }
 

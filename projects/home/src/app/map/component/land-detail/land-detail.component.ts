@@ -1,9 +1,8 @@
-import { Component, Input, Output, EventEmitter, inject, computed, signal } from '@angular/core';
+import { Component, inject, input, output, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { SavedFarm } from '../../models/map.models';
-import { FarmDrawService } from '../../farm-draw/farm-draw.service';
 import { CropTimelineService } from '../../../features/crop-timeline/crop-timeline.service';
 
 type LandStatus = 'planted' | 'fallow' | 'multiple';
@@ -16,10 +15,10 @@ type LandStatus = 'planted' | 'fallow' | 'multiple';
   styleUrl: './land-detail.component.scss',
 })
 export class LandDetailComponent {
-  @Input() land: SavedFarm | null = null;
-  @Output() closed = new EventEmitter<void>();
+  readonly land = input<SavedFarm | null>(null);
+  readonly closed = output<void>();
+  readonly notesUpdated = output<{ id: string; notes: string }>();
 
-  private readonly farmDraw = inject(FarmDrawService);
   private readonly cropService = inject(CropTimelineService);
 
   readonly cropCosts = new Map<string, number>();
@@ -27,8 +26,9 @@ export class LandDetailComponent {
   readonly notesValue = signal('');
 
   readonly cropsOnLand = computed(() => {
-    if (!this.land) return [];
-    const crops = this.cropService.cropsForField(this.land.id);
+    const land = this.land();
+    if (!land) return [];
+    const crops = this.cropService.cropsForField(land.id);
     crops.forEach((c) => {
       this.cropCosts.set(c.id, this.cropService.costForCrop(c.id));
     });
@@ -43,7 +43,7 @@ export class LandDetailComponent {
   });
 
   getLandStatus(): LandStatus {
-    if (!this.land) return 'fallow';
+    if (!this.land()) return 'fallow';
     const count = this.cropsOnLand().length;
     if (count === 0) return 'fallow';
     if (count === 1) return 'planted';
@@ -75,13 +75,14 @@ export class LandDetailComponent {
   }
 
   startEditingNotes(): void {
-    this.notesValue.set(this.land?.notes || '');
+    this.notesValue.set(this.land()?.notes || '');
     this.editingNotes.set(true);
   }
 
   saveNotes(): void {
-    if (this.land) {
-      this.farmDraw.updateFarmNotes(this.land.id, this.notesValue());
+    const land = this.land();
+    if (land) {
+      this.notesUpdated.emit({ id: land.id, notes: this.notesValue() });
       this.editingNotes.set(false);
     }
   }

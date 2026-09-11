@@ -1,4 +1,13 @@
-import { Component, Input, Output, EventEmitter, inject, OnInit, effect } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  inject,
+  signal,
+  OnInit,
+  effect,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -6,6 +15,8 @@ import { CropTimelineComponent } from '../crop-timeline.component';
 import { CropStage } from '../crop-timeline.models';
 import { CropTimelineService } from '../crop-timeline.service';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
+import { SavedFarm } from '../../../map/models/map.models';
+import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from 'shared';
 
 @Component({
@@ -19,9 +30,10 @@ export class AddCropComponent implements OnInit {
   private readonly router = inject(Router, { optional: true });
   private readonly cropService = inject(CropTimelineService);
   private readonly farmDrawService = inject(FarmDrawService);
+  private readonly authService = inject(AuthService);
   private readonly toast = inject(ToastService);
 
-  readonly savedFarms = this.farmDrawService.savedFarms;
+  readonly savedFarms = signal<SavedFarm[]>([]);
 
   constructor() {
     effect(
@@ -79,10 +91,15 @@ export class AddCropComponent implements OnInit {
   @Output() readonly cancelClicked = new EventEmitter<void>();
   @Output() readonly submitCrop = new EventEmitter<void>();
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     if (this.parent) {
       this.parent.selectedCrop.set(null);
       this.parent.currentView.set('add-crop');
+    }
+
+    const user = this.authService.currentUser();
+    if (user) {
+      this.savedFarms.set(await this.farmDrawService.loadFarms(user.id));
     }
   }
 

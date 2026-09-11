@@ -36,21 +36,17 @@ describe('FarmDrawService', () => {
     expect(service.status()).toBe('idle');
     expect(service.points()).toEqual([]);
     expect(service.area()).toBeNull();
-    expect(service.savedFarms()).toEqual([]);
-    expect(service.selectedSavedFarm()).toBeNull();
   });
 
   it('should start drawing and clear current state', () => {
     service.status.set('completed');
     service.points.set(mockPoints);
-    service.selectedSavedFarm.set({} as SavedFarm);
 
     service.startDrawing();
 
     expect(service.status()).toBe('drawing');
     expect(service.points()).toEqual([]);
     expect(service.area()).toBeNull();
-    expect(service.selectedSavedFarm()).toBeNull();
   });
 
   it('should add points during drawing status', () => {
@@ -104,16 +100,23 @@ describe('FarmDrawService', () => {
     service.points.set(mockPoints);
     service.finishDrawing(); // Calculate area
 
-    const initialSavedCount = service.savedFarms().length;
-    service.saveFarm('Green Acres');
+    const farm = service.saveFarm('Green Acres', []);
 
-    expect(service.savedFarms().length).toBe(initialSavedCount + 1);
-    expect(service.savedFarms()[0].name).toBe('Green Acres');
-    expect(service.selectedSavedFarm()).toEqual(service.savedFarms()[0]);
+    expect(farm).not.toBeNull();
+    expect(farm?.name).toBe('Green Acres');
     expect(service.status()).toBe('idle'); // Automatically resets on save
   });
 
-  it('should delete a saved farm', () => {
+  it('should return null when saving without a completed drawing', () => {
+    service.status.set('idle');
+    expect(service.saveFarm('Green Acres', [])).toBeNull();
+  });
+
+  it('should not throw when deleting a farm', () => {
+    expect(() => service.deleteFarm('farm-123')).not.toThrow();
+  });
+
+  it('should rename a farm from the current list', () => {
     const mockFarm: SavedFarm = {
       id: 'farm-123',
       name: 'Old Farm',
@@ -122,16 +125,28 @@ describe('FarmDrawService', () => {
       geoJson: {} as any,
       createdAt: Date.now(),
     };
-    service.savedFarms.set([mockFarm]);
-    service.selectedSavedFarm.set(mockFarm);
 
-    service.deleteFarm('farm-123');
+    const updated = service.renameFarm('farm-123', 'New Name', [mockFarm]);
 
-    expect(service.savedFarms().length).toBe(0);
-    expect(service.selectedSavedFarm()).toBeNull();
+    expect(updated?.name).toBe('New Name');
   });
 
-  it('should select saved farm and trigger zoomRequest$', (done) => {
+  it('should update farm notes from the current list', () => {
+    const mockFarm: SavedFarm = {
+      id: 'farm-123',
+      name: 'Old Farm',
+      points: mockPoints,
+      area: { squareMeters: 125000, hectares: 12.5, acres: 30.8 },
+      geoJson: {} as any,
+      createdAt: Date.now(),
+    };
+
+    const updated = service.updateFarmNotes('farm-123', 'soil is loamy', [mockFarm]);
+
+    expect(updated?.notes).toBe('soil is loamy');
+  });
+
+  it('should notify farm selection and trigger zoomRequest$', (done) => {
     const mockFarm: SavedFarm = {
       id: 'farm-456',
       name: 'Cozy Farm',
@@ -140,15 +155,15 @@ describe('FarmDrawService', () => {
       geoJson: {} as any,
       createdAt: Date.now(),
     };
+    service.status.set('drawing');
 
     service.zoomRequest$.subscribe((requested) => {
       expect(requested).toEqual(mockFarm);
       done();
     });
 
-    service.selectFarm(mockFarm);
+    service.notifyFarmSelected(mockFarm);
 
-    expect(service.selectedSavedFarm()).toEqual(mockFarm);
     expect(service.status()).toBe('idle'); // Selecting farm cancels active drawing
   });
 });

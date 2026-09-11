@@ -13,12 +13,7 @@
     />
   }
 
-  @if (
-    draw.savedFarms().length === 0 &&
-    !draw.isDrawing() &&
-    !draw.isCompleted() &&
-    !shouldShowLandPrompt()
-  ) {
+  @if (!hasFarms() && !draw.isDrawing() && !draw.isCompleted() && !shouldShowLandPrompt()) {
     <div
       class="alert alert-success p-2.5 mb-2 border-0 rounded-3 text-start animate-fade-in"
       style="

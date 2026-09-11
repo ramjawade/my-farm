@@ -90,14 +90,17 @@ describe('MapMyFarmComponent', () => {
     expect(component.farmName()).toBe('Sky Farm');
   });
 
-  it('should call saveFarm and clear farmName signal on save', () => {
+  it('should emit farmSaved and clear farmName signal on save', () => {
     const fixture = TestBed.createComponent(MapMyFarmComponent);
     const component = fixture.componentInstance;
+
+    const emitted: string[] = [];
+    component.farmSaved.subscribe((name) => emitted.push(name));
 
     component.farmName.set('Valley Farm');
     component.save();
 
-    expect(mockFarmDraw.saveFarm).toHaveBeenCalledWith('Valley Farm');
+    expect(emitted).toEqual(['Valley Farm']);
     expect(component.farmName()).toBe('');
   });
 

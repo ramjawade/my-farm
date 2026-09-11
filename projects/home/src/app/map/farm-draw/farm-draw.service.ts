@@ -1,4 +1,4 @@
-import { computed, Injectable, signal, inject, effect } from '@angular/core';
+import { computed, Injectable, signal, inject } from '@angular/core';
 import { Subject } from 'rxjs';
 
 import { calculateFarmArea, toGeoJsonPolygon } from './farm-area.utils';
@@ -10,49 +10,19 @@ import { IStorageService } from '../../core/storage/storage.interface';
 export class FarmDrawService {
   private readonly authService = inject(AuthService);
   private readonly storage = inject(IStorageService);
-  private generation = 0;
 
   readonly status = signal<FarmDrawStatus>('idle');
   readonly points = signal<LatLngPoint[]>([]);
   readonly area = signal<FarmAreaResult | null>(null);
-
-  // Saved Farms state
-  readonly savedFarms = signal<SavedFarm[]>([]);
-  readonly selectedSavedFarm = signal<SavedFarm | null>(null);
 
   readonly isDrawing = computed(() => this.status() === 'drawing');
   readonly isCompleted = computed(() => this.status() === 'completed');
   readonly canFinish = computed(() => this.points().length >= 3);
   readonly pointCount = computed(() => this.points().length);
 
-  constructor() {
-    effect(() => {
-      const user = this.authService.currentUser();
-      if (user) {
-        this.loadSavedFarms(user.id);
-      } else {
-        this.savedFarms.set([]);
-        this.selectedSavedFarm.set(null);
-      }
-    });
-  }
-
-  /** Re-read the signed-in user's lands from storage. */
-  reload(): Promise<void> {
-    const user = this.authService.currentUser();
-    return user ? this.loadSavedFarms(user.id) : Promise.resolve();
-  }
-
-  private async loadSavedFarms(userId: string): Promise<void> {
-    const generation = ++this.generation;
-    try {
-      const farms = await this.storage.getFarms(userId);
-      if (generation !== this.generation) return;
-      this.savedFarms.set(farms);
-    } catch (e) {
-      console.error('Failed to load saved farms', e);
-      this.savedFarms.set([]);
-    }
+  /** Read the signed-in user's lands from storage. */
+  loadFarms(userId: string): Promise<SavedFarm[]> {
+    return this.storage.getFarms(userId);
   }
 
   private persistNewFarm(farm: SavedFarm): void {
@@ -82,7 +52,6 @@ export class FarmDrawService {
     this.status.set('drawing');
     this.points.set([]);
     this.area.set(null);
-    this.selectedSavedFarm.set(null);
   }
 
   addPoint(point: LatLngPoint): void {
@@ -119,70 +88,57 @@ export class FarmDrawService {
     this.points.update((current) => current.slice(0, -1));
   }
 
-  saveFarm(name: string): void {
+  /** Build and persist a new farm from the current drawing; returns it, or null if the drawing isn't valid. */
+  saveFarm(name: string, currentFarms: SavedFarm[]): SavedFarm | null {
     if (!this.isCompleted()) {
-      return;
+      return null;
     }
     const currentArea = this.area();
     const currentPoints = this.points();
     if (!currentArea || currentPoints.length < 3) {
-      return;
+      return null;
     }
 
     const newFarm: SavedFarm = {
       id: crypto.randomUUID(),
-      name: name.trim() || `Farm #${this.savedFarms().length + 1}`,
+      name: name.trim() || `Farm #${currentFarms.length + 1}`,
       points: currentPoints,
       area: currentArea,
       geoJson: toGeoJsonPolygon(currentPoints),
       createdAt: Date.now(),
     };
 
-    this.generation++;
-    this.savedFarms.set([newFarm, ...this.savedFarms()]);
     this.persistNewFarm(newFarm);
-
-    this.selectedSavedFarm.set(newFarm);
     this.cancelDrawing();
+    return newFarm;
   }
 
   deleteFarm(id: string): void {
-    this.generation++;
-    this.savedFarms.set(this.savedFarms().filter((f) => f.id !== id));
     this.persistFarmDelete(id);
-    if (this.selectedSavedFarm()?.id === id) {
-      this.selectedSavedFarm.set(null);
-    }
   }
 
-  renameFarm(id: string, newName: string): void {
+  /** Returns the updated farm, or null if the name is blank or the farm isn't found. */
+  renameFarm(id: string, newName: string, currentFarms: SavedFarm[]): SavedFarm | null {
     const trimmed = newName.trim();
-    if (!trimmed) return;
-    this.generation++;
-    const farms = this.savedFarms().map((f) => (f.id === id ? { ...f, name: trimmed } : f));
-    this.savedFarms.set(farms);
+    if (!trimmed) return null;
+    const updated = currentFarms.find((f) => f.id === id);
+    if (!updated) return null;
     this.persistFarmUpdate(id, { name: trimmed });
-    const updated = farms.find((f) => f.id === id);
-    if (updated) {
-      this.selectedSavedFarm.set(updated);
-    }
+    return { ...updated, name: trimmed };
   }
 
-  updateFarmNotes(id: string, notes: string): void {
-    this.generation++;
-    const farms = this.savedFarms().map((f) => (f.id === id ? { ...f, notes } : f));
-    this.savedFarms.set(farms);
+  /** Returns the updated farm, or null if not found. */
+  updateFarmNotes(id: string, notes: string, currentFarms: SavedFarm[]): SavedFarm | null {
+    const found = currentFarms.find((f) => f.id === id);
+    if (!found) return null;
     this.persistFarmUpdate(id, { notes });
-    const updated = farms.find((f) => f.id === id);
-    if (updated) {
-      this.selectedSavedFarm.set(updated);
-    }
+    return { ...found, notes };
   }
 
   readonly zoomRequest$ = new Subject<SavedFarm>();
 
-  selectFarm(farm: SavedFarm | null): void {
-    this.selectedSavedFarm.set(farm);
+  /** Side effects of selecting a farm on the map (cancel any in-progress drawing, zoom to it). */
+  notifyFarmSelected(farm: SavedFarm | null): void {
     if (farm) {
       this.cancelDrawing();
       this.zoomRequest$.next(farm);
