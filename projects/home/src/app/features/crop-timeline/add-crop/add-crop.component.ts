@@ -9,6 +9,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CROP_STAGES } from '../crop-timeline.models';
 import { CropTimelineService } from '../crop-timeline.service';
 import { FarmLookupService } from '../../../core/farms/farm-lookup.service';
@@ -17,6 +18,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { WorkflowStateService } from '../../../core/workflow/workflow-state.service';
 import { ToastService, ComboboxComponent } from 'shared';
 import { SEASONS, seasonForDate } from '../../../core/models/season';
+import { convertArea, AreaUnit } from '../../../core/pipes/area.pipe';
 
 const CROP_NAME_OPTIONS = [
   'Soybeans',
@@ -48,6 +50,7 @@ export class AddCropComponent implements OnInit {
 
   readonly savedFarms = signal<SavedFarm[]>([]);
   readonly creatingName = signal(false);
+  readonly areaIsAutoFilled = signal(true);
 
   readonly cropForm = this.fb.nonNullable.group({
     season: [seasonForDate(), Validators.required],
@@ -64,6 +67,50 @@ export class AddCropComponent implements OnInit {
     const names = crops.map((c) => c.name);
     return [...new Set(names)].sort();
   });
+
+  constructor() {
+    const fieldIdCtrl = this.cropForm.get('fieldId');
+    const areaCtrl = this.cropForm.get('area');
+    const areaUnitCtrl = this.cropForm.get('areaUnit');
+
+    fieldIdCtrl?.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe((fieldId) => {
+        if (fieldId) {
+          const farm = this.savedFarms().find((f) => f.id === fieldId);
+          if (farm) {
+            const unit = areaUnitCtrl?.value as AreaUnit || 'hectares';
+            const areaValue = unit === 'acres' ? farm.area.acres : farm.area.hectares;
+            areaCtrl?.setValue(String(areaValue), { emitEvent: false });
+            this.areaIsAutoFilled.set(true);
+          }
+        }
+      });
+
+    areaUnitCtrl?.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe((newUnit) => {
+        const fieldId = fieldIdCtrl?.value;
+        const currentArea = areaCtrl?.value;
+        if (this.areaIsAutoFilled() && fieldId && currentArea) {
+          const farm = this.savedFarms().find((f) => f.id === fieldId);
+          if (farm) {
+            const areaValue = (newUnit as AreaUnit) === 'acres' ? farm.area.acres : farm.area.hectares;
+            areaCtrl?.setValue(String(areaValue), { emitEvent: false });
+          }
+        } else if (!this.areaIsAutoFilled() && currentArea) {
+          const oldUnit = newUnit === 'acres' ? 'hectares' : 'acres';
+          const converted = convertArea(Number(currentArea), oldUnit as AreaUnit, newUnit as AreaUnit);
+          areaCtrl?.setValue(String(converted), { emitEvent: false });
+        }
+      });
+
+    areaCtrl?.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        this.areaIsAutoFilled.set(false);
+      });
+  }
 
   async ngOnInit(): Promise<void> {
     const user = this.authService.currentUser();
