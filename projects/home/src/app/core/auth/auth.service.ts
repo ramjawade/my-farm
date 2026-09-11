@@ -30,8 +30,15 @@ export class AuthService {
   constructor() {
     this.readyPromise = this.loadSession().then(() => this.initialized.set(true));
 
+    // Persist `currentUserSignal` changes to storage. Session restore
+    // (`loadSession`) hasn't resolved on the very first run of this effect —
+    // `currentUserSignal` is still its initial `null` — so that first run
+    // must not be read as "the user logged out": doing so wiped the
+    // just-restored session's keys before `loadSession` finished reading
+    // them, logging every user out on their very next reload.
     effect(() => {
       const user = this.currentUserSignal();
+      if (!this.initialized()) return;
       if (user) {
         localStorage.setItem(ACTIVE_USER_ID_KEY, String(user.id));
       } else {
