@@ -194,47 +194,88 @@ export class CropTimelineService {
       });
     }
 
-    // Logging work under a scheduled stage marks the stage reached.
-    if (input.parentActivityId) {
-      const parent = this.activityService.getActivityById(input.parentActivityId);
-      if (parent && parent.status !== 'Completed' && parent.status !== 'Cancelled') {
-        this.activityService.updateActivity(parent.id, {
-          status: 'Completed',
-          date: input.date ?? Date.now(),
-        });
-        const stage = this.stageFromNote(parent.notes);
-        if (stage) {
-          this.updateCrop(input.cropId, { currentStage: stage });
-
-          // Auto-advance to next stage: create a scheduled activity for the next stage if it exists
-          const nextStage = this.getNextStage(stage);
-          if (nextStage) {
-            const crop = this.getCropById(input.cropId);
-            const sowingTime = crop?.sowingDate ? Number(crop.sowingDate) : 0;
-            const nextStageDate =
-              crop?.sowingDate && crop.sowingDate > 0
-                ? sowingTime + STAGE_OFFSET_DAYS[nextStage] * ONE_DAY
-                : undefined;
-
-            // Create scheduled activity for next stage if one doesn't already exist
-            const existingNext = this.findMainActivityForStage(input.cropId, nextStage);
-            if (!existingNext) {
-              this.addActivity({
-                cropId: input.cropId,
-                type: stageActivityType(nextStage),
-                date: nextStageDate,
-                status: 'Scheduled',
-                cost: 0,
-                notes: stageNote(nextStage),
-              });
-            }
-          }
-        }
-      }
+    // Sync stage advancement if this activity is linked to a crop
+    if (input.cropId) {
+      this.syncStageFromActivity(created.id);
     }
 
     this.updateCropUpcomingActivity(input.cropId);
     return this.getCropActivity(created.id)!;
+  }
+
+  /** Sync crop stage based on completed activities. */
+  syncStageFromActivity(activityId: string): void {
+    const activity = this.activityService.getActivityById(activityId);
+    if (!activity?.cropId || activity.status !== 'Completed') return;
+
+    // Case 1: sub-activity under a stage — complete the parent stage
+    if (activity.parentActivityId) {
+      const parent = this.activityService.getActivityById(activity.parentActivityId);
+      if (parent && parent.status !== 'Completed') {
+        this.activityService.updateActivity(parent.id, {
+          status: 'Completed',
+          date: activity.date ?? Date.now(),
+        });
+        const stage = this.stageFromNote(parent.notes);
+        if (stage) {
+          this.reachStage(activity.cropId, stage);
+        }
+      }
+      return;
+    }
+
+    // Case 2: a stage activity (from notes) reached
+    const stage = this.stageFromNote(activity.notes);
+    if (stage) {
+      this.reachStage(activity.cropId, stage);
+      return;
+    }
+
+    // Case 3: Harvest activity completed
+    if (activity.type === 'Harvest') {
+      this.reachStage(activity.cropId, 'Harvest');
+    }
+  }
+
+  /** Advance crop to a stage only if it's ahead of the current stage. */
+  private reachStage(cropId: string, stage: CropStage): void {
+    const crop = this.getCropById(cropId);
+    if (!crop) return;
+
+    const currentIdx = CROP_STAGES.indexOf(crop.currentStage);
+    const targetIdx = CROP_STAGES.indexOf(stage);
+    if (targetIdx <= currentIdx) return; // Only move forward
+
+    this.updateCrop(cropId, { currentStage: stage });
+
+    // Make sure the next stage has a scheduled activity
+    const nextStage = this.getNextStage(stage);
+    if (nextStage) {
+      this.ensureScheduledActivityForStage(cropId, nextStage);
+    }
+  }
+
+  /** Shorthand: update activity to Completed and sync stage. */
+  completeActivity(id: string): void {
+    const existing = this.activityService.getActivityById(id);
+    if (!existing) return;
+    this.updateActivity(id, {
+      status: 'Completed',
+      date: Date.now(),
+    });
+    if (existing.cropId) {
+      this.syncStageFromActivity(id);
+    }
+  }
+
+  /** Manually advance to the next stage. */
+  advanceStage(cropId: string): void {
+    const crop = this.getCropById(cropId);
+    if (!crop) return;
+    const nextStage = this.getNextStage(crop.currentStage);
+    if (nextStage) {
+      this.reachStage(cropId, nextStage);
+    }
   }
 
   updateActivity(id: string, updates: Partial<CropActivityInput>): void {
@@ -380,7 +421,7 @@ export class CropTimelineService {
     }
   }
 
-  /** Backward compatibility: migrate crops by checking for completed stages and auto-advancing if needed. */
+  /** Backward compatibility: migrate crops by catching up to the furthest completed stage. */
   private migrateAutoAdvancedCrops(crops: CropEntity[]): CropEntity[] {
     return crops.map((crop) => {
       // Find the latest completed stage activity
@@ -399,11 +440,12 @@ export class CropTimelineService {
       const latestCompletedStage = completedStages.reduce((furthest, stage) =>
         CROP_STAGES.indexOf(stage) > CROP_STAGES.indexOf(furthest) ? stage : furthest,
       );
-      const nextStage = this.getNextStage(latestCompletedStage);
 
-      // If crop is still at the completed stage but a next stage exists, auto-advance it
-      if (crop.currentStage === latestCompletedStage && nextStage) {
-        return { ...crop, currentStage: nextStage };
+      // Catch up to the latest completed stage, but never beyond it
+      if (
+        CROP_STAGES.indexOf(crop.currentStage) < CROP_STAGES.indexOf(latestCompletedStage)
+      ) {
+        return { ...crop, currentStage: latestCompletedStage };
       }
 
       return crop;

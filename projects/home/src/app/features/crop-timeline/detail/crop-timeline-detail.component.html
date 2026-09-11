@@ -3,11 +3,11 @@
 >
   <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
     <div>
-      <h2 class="mf-page-title">{{ selectedCrop?.name }} Timeline</h2>
+      <h2 class="mf-page-title">{{ crop()?.name }} Timeline</h2>
       <p class="text-muted small mt-1.5 mb-1">
-        @if (selectedCrop?.sowingDate) {
-          Sown on {{ selectedCrop?.sowingDate | date: 'mediumDate' }} ·
-          <strong>{{ getDaysAfterSowing(selectedCrop?.sowingDate) }} Days After Sowing</strong>
+        @if (crop()?.sowingDate) {
+          Sown on {{ crop()?.sowingDate | date: 'mediumDate' }} ·
+          <strong>{{ getDaysAfterSowing(crop()?.sowingDate) }} Days After Sowing</strong>
         } @else {
           Sowing date not set
         }
@@ -112,7 +112,7 @@
 </div>
 
 <app-activities-summary
-  [activities]="timelineActivities()"
+  [activities]="activities()"
   [isTimeline]="true"
   (editActivity)="onEditActivityClicked($event)"
   (markActivityCompleted)="onMarkActivityCompletedClicked($event)"
