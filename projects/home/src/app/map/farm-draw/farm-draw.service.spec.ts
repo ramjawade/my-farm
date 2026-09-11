@@ -5,6 +5,7 @@ import { FarmDrawService } from './farm-draw.service';
 import { LatLngPoint, SavedFarm } from '../models/map.models';
 import { IStorageService } from '../../core/storage/storage.interface';
 import { InMemoryStorageService } from '../../testing/in-memory-storage.service';
+import { AuthService } from '../../core/auth/auth.service';
 
 describe('FarmDrawService', () => {
   let service: FarmDrawService;
@@ -95,30 +96,32 @@ describe('FarmDrawService', () => {
     expect(service.area()).toBeNull();
   });
 
-  it('should save completed farm drawing', () => {
+  it('should save completed farm drawing', async () => {
+    TestBed.inject(AuthService).login({ id: 1 } as any);
     service.status.set('completed');
     service.points.set(mockPoints);
     service.finishDrawing(); // Calculate area
 
-    const farm = service.saveFarm('Green Acres', []);
+    const farm = await service.saveFarm('Green Acres', []);
 
     expect(farm).not.toBeNull();
+    expect(typeof farm?.id).toBe('number'); // minted by storage, not the client
     expect(farm?.name).toBe('Green Acres');
     expect(service.status()).toBe('idle'); // Automatically resets on save
   });
 
-  it('should return null when saving without a completed drawing', () => {
+  it('should return null when saving without a completed drawing', async () => {
     service.status.set('idle');
-    expect(service.saveFarm('Green Acres', [])).toBeNull();
+    expect(await service.saveFarm('Green Acres', [])).toBeNull();
   });
 
   it('should not throw when deleting a farm', () => {
-    expect(() => service.deleteFarm('farm-123')).not.toThrow();
+    expect(() => service.deleteFarm(123)).not.toThrow();
   });
 
   it('should rename a farm from the current list', () => {
     const mockFarm: SavedFarm = {
-      id: 'farm-123',
+      id: 123,
       name: 'Old Farm',
       points: mockPoints,
       area: { squareMeters: 125000, hectares: 12.5, acres: 30.8 },
@@ -126,14 +129,14 @@ describe('FarmDrawService', () => {
       createdAt: Date.now(),
     };
 
-    const updated = service.renameFarm('farm-123', 'New Name', [mockFarm]);
+    const updated = service.renameFarm(123, 'New Name', [mockFarm]);
 
     expect(updated?.name).toBe('New Name');
   });
 
   it('should update farm notes from the current list', () => {
     const mockFarm: SavedFarm = {
-      id: 'farm-123',
+      id: 123,
       name: 'Old Farm',
       points: mockPoints,
       area: { squareMeters: 125000, hectares: 12.5, acres: 30.8 },
@@ -141,14 +144,14 @@ describe('FarmDrawService', () => {
       createdAt: Date.now(),
     };
 
-    const updated = service.updateFarmNotes('farm-123', 'soil is loamy', [mockFarm]);
+    const updated = service.updateFarmNotes(123, 'soil is loamy', [mockFarm]);
 
     expect(updated?.notes).toBe('soil is loamy');
   });
 
   it('should notify farm selection and trigger zoomRequest$', (done) => {
     const mockFarm: SavedFarm = {
-      id: 'farm-456',
+      id: 456,
       name: 'Cozy Farm',
       points: mockPoints,
       area: { squareMeters: 55000, hectares: 5.5, acres: 13.5 },

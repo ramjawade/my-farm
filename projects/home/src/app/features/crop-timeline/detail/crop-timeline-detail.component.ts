@@ -17,6 +17,7 @@ import { stageIndex } from '../crop-timeline.utils';
 import { CreateActivityComponent } from '../../farm-activity/create/create-activity.component';
 import { ActivitiesSummaryComponent } from '../../farm-activity/summary/activities-summary.component';
 import { ConfirmDialogComponent, ToastService } from 'shared';
+import { parseId } from '../../../core/models/entity-id';
 
 @Component({
   standalone: true,
@@ -40,8 +41,8 @@ export class CropTimelineDetailComponent implements OnInit {
 
   // Read crop ID from route params
   private readonly cropId = toSignal(
-    this.route.paramMap.pipe(map((params) => params.get('id') || '')),
-    { initialValue: '' },
+    this.route.paramMap.pipe(map((params) => parseId(params.get('id')))),
+    { initialValue: null },
   );
 
   // Get crop from service by ID
@@ -72,8 +73,8 @@ export class CropTimelineDetailComponent implements OnInit {
 
   // Modal state
   readonly showActivityModal = signal(false);
-  readonly parentActivityIdForModal = signal<string | null>(null);
-  readonly editingActivityIdForModal = signal<string | null>(null);
+  readonly parentActivityIdForModal = signal<number | null>(null);
+  readonly editingActivityIdForModal = signal<number | null>(null);
   readonly showDeleteCropConfirm = signal(false);
 
   readonly stages = CROP_STAGES;
@@ -86,12 +87,15 @@ export class CropTimelineDetailComponent implements OnInit {
     this.router.navigate(['/crops']);
   }
 
-  onUpdateStageClicked(stage: CropStage): void {
+  async onUpdateStageClicked(stage: CropStage): Promise<void> {
     const c = this.crop();
     if (!c) return;
-    let mainAct = this.timelineService.findMainActivityForStage(c.id, stage);
-    if (!mainAct) {
-      mainAct = this.timelineService.ensureScheduledActivityForStage(c.id, stage);
+    let mainAct: CropActivity;
+    try {
+      mainAct = await this.timelineService.ensureScheduledActivityForStage(c.id, stage);
+    } catch {
+      this.toast.error('Could not create the stage activity. Please try again.');
+      return;
     }
     this.parentActivityIdForModal.set(mainAct.id);
     this.editingActivityIdForModal.set(null);
@@ -110,7 +114,7 @@ export class CropTimelineDetailComponent implements OnInit {
     this.showActivityModal.set(true);
   }
 
-  onDeleteActivityClicked(id: string): void {
+  onDeleteActivityClicked(id: number): void {
     this.timelineService.deleteActivity(id);
     this.toast.success('Activity deleted.');
   }
@@ -129,7 +133,7 @@ export class CropTimelineDetailComponent implements OnInit {
     }
   }
 
-  onMarkActivityCompletedClicked(id: string): void {
+  onMarkActivityCompletedClicked(id: number): void {
     this.timelineService.completeActivity(id);
   }
 

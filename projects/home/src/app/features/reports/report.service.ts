@@ -10,7 +10,7 @@ export interface ExpenseByCategory {
 }
 
 export interface ExpenseByCrop {
-  cropId: string;
+  cropId: number;
   cropName: string;
   total: number;
   activities: number;
@@ -80,7 +80,7 @@ export class ReportService {
   }
 
   private aggregateByCrop(activities: any[], expenses: any[]): ExpenseByCrop[] {
-    const map = new Map<string, { cropName: string; total: number; activities: number }>();
+    const map = new Map<number, { cropName: string; total: number; activities: number }>();
     activities.forEach((a) => {
       if (!a.cropId) return;
       const crop = this.cropService.getCropById(a.cropId);

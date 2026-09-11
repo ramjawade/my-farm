@@ -112,9 +112,9 @@
             <div class="col-12 col-md-6">
               <label class="form-label">Link to Crop (Optional)</label>
               <select class="form-select" formControlName="cropId">
-                <option value="">-- No Linked Crop --</option>
+                <option [ngValue]="null">-- No Linked Crop --</option>
                 @for (c of crops(); track c.id) {
-                  <option [value]="c.id">{{ c.name }} ({{ c.fieldId }})</option>
+                  <option [ngValue]="c.id">{{ c.name }} ({{ c.fieldId }})</option>
                 }
               </select>
               <span class="text-muted mt-1 d-block" style="font-size: 0.75rem"
@@ -126,9 +126,9 @@
             <div class="col-12 col-md-6">
               <label class="form-label">Link to Field / Plot (Optional)</label>
               <select class="form-select" formControlName="fieldId">
-                <option value="">-- No Linked Field --</option>
+                <option [ngValue]="null">-- No Linked Field --</option>
                 @for (f of savedFarms(); track f.id) {
-                  <option [value]="f.id">{{ f.name }}</option>
+                  <option [ngValue]="f.id">{{ f.name }}</option>
                 }
               </select>
               <span class="text-muted mt-1 d-block" style="font-size: 0.75rem">
@@ -144,9 +144,9 @@
             <div class="col-12 col-md-6">
               <label class="form-label">Link to Parent Activity (Optional)</label>
               <select class="form-select" formControlName="parentActivityId">
-                <option value="">-- No Parent Activity --</option>
+                <option [ngValue]="null">-- No Parent Activity --</option>
                 @for (pa of availableParentActivities(); track pa.id) {
-                  <option [value]="pa.id">
+                  <option [ngValue]="pa.id">
                     {{ pa.type }} - {{ pa.notes || 'No Notes' }}
                     @if (pa.date) {
                       ({{ pa.date | date: 'shortDate' }})

@@ -9,7 +9,7 @@ import { AuditFields } from './common.contract';
 
 /** `FarmerRead` — the current authenticated farmer. */
 export interface FarmerResponse extends AuditFields {
-  id: string;
+  id: number;
   auth_uid: string;
   user_role: string;
   full_name: string | null;

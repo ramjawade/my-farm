@@ -14,10 +14,10 @@ describe('CropDashboardComponent', () => {
   let router: Router;
 
   const mockCrop: CropEntity = {
-    id: 'c1',
+    id: 1,
     name: 'Soybeans',
     cropType: 'Soybeans',
-    fieldId: 'Field A',
+    fieldId: 7,
     area: 10,
     areaUnit: 'hectares',
     sowingDate: Date.now(),

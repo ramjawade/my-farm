@@ -19,6 +19,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { ConfirmDialogComponent, ToastService } from 'shared';
 import { ActivityStatus } from '../../activity/activity.models';
 import { expenseCategoryIcon } from '../../activity/activity-display';
+import { parseId } from '../../../core/models/entity-id';
 
 @Component({
   selector: 'app-activity-detail',
@@ -42,7 +43,7 @@ export class ActivityDetailComponent implements OnInit {
   readonly showExpenseModal = signal(false);
   readonly showDeleteActivityConfirm = signal(false);
   readonly showDeleteExpenseConfirm = signal(false);
-  readonly selectedExpenseId = signal<string | null>(null);
+  readonly selectedExpenseId = signal<number | null>(null);
   readonly savedFarms = signal<SavedFarm[]>([]);
 
   async ngOnInit(): Promise<void> {
@@ -53,8 +54,10 @@ export class ActivityDetailComponent implements OnInit {
   }
 
   // Extract ID from routing params reactive signal
-  private readonly routeParams$ = this.route.paramMap.pipe(map((params) => params.get('id') || ''));
-  readonly activityId = toSignal(this.routeParams$, { initialValue: '' });
+  private readonly routeParams$ = this.route.paramMap.pipe(
+    map((params) => parseId(params.get('id'))),
+  );
+  readonly activityId = toSignal(this.routeParams$, { initialValue: null });
 
   // Get current activity
   readonly activity = computed(() => {
@@ -85,7 +88,7 @@ export class ActivityDetailComponent implements OnInit {
     const act = this.activity();
     if (!act || !act.fieldId) return '';
     const farm = this.savedFarms().find((f) => f.id === act.fieldId);
-    return farm ? farm.name : act.fieldId;
+    return farm ? farm.name : String(act.fieldId);
   });
 
   getCategoryIcon(category: string): string {
@@ -198,7 +201,7 @@ export class ActivityDetailComponent implements OnInit {
     }
   }
 
-  addExpense(): void {
+  async addExpense(): Promise<void> {
     if (this.expenseForm.invalid) {
       this.expenseForm.markAllAsTouched();
       return;
@@ -208,19 +211,22 @@ export class ActivityDetailComponent implements OnInit {
     if (!id) return;
 
     const val = this.expenseForm.value;
-    this.activityService.addExpense({
-      activityId: id,
-      category: val.category,
-      itemId: val.itemId?.trim() || undefined,
-      resourceId: val.resourceId?.trim() || undefined,
-      quantity: val.quantity ?? undefined,
-      unit: val.unit?.trim() || undefined,
-      rate: val.rate ?? undefined,
-      amount: val.amount,
-      remarks: val.remarks?.trim() || undefined,
-    });
-
-    this.closeExpenseModal();
+    try {
+      await this.activityService.addExpense({
+        activityId: id,
+        category: val.category,
+        itemId: val.itemId?.trim() || undefined,
+        resourceId: val.resourceId?.trim() || undefined,
+        quantity: val.quantity ?? undefined,
+        unit: val.unit?.trim() || undefined,
+        rate: val.rate ?? undefined,
+        amount: val.amount,
+        remarks: val.remarks?.trim() || undefined,
+      });
+      this.closeExpenseModal();
+    } catch {
+      this.toast.error('Could not save the expense. Please try again.');
+    }
   }
 
   openExpenseModal(): void {
@@ -241,7 +247,7 @@ export class ActivityDetailComponent implements OnInit {
     });
   }
 
-  deleteExpense(expenseId: string): void {
+  deleteExpense(expenseId: number): void {
     this.selectedExpenseId.set(expenseId);
     this.showDeleteExpenseConfirm.set(true);
   }

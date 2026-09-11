@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { AddCropComponent } from './add-crop.component';
 import { CropTimelineService } from '../crop-timeline.service';
@@ -45,26 +45,28 @@ describe('AddCropComponent', () => {
     expect(cropService.addCrop).not.toHaveBeenCalled();
   });
 
-  it('should call addCrop with CROP_STAGES[0] as currentStage on submit', () => {
+  it('should call addCrop with CROP_STAGES[0] as currentStage on submit', async () => {
     const cropService = TestBed.inject(CropTimelineService);
-    spyOn(cropService, 'addCrop').and.returnValue({ id: 'test-id', name: 'Test Crop' } as any);
+    spyOn(cropService, 'addCrop').and.resolveTo({ id: 1, name: 'Test Crop' } as any);
+    const navigateSpy = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
 
     // Fill form to make it valid
     component.cropForm.patchValue({
       name: 'My Soy Crop',
-      fieldId: 'Field C',
+      fieldId: 7,
       area: '10',
       areaUnit: 'hectares',
       sowingDate: '2026-09-12',
     });
     fixture.detectChanges();
 
-    component.onSubmit();
+    await component.onSubmit();
     expect(cropService.addCrop).toHaveBeenCalledWith(
       jasmine.objectContaining({
         name: 'My Soy Crop',
         currentStage: 'Land Preparation',
       }),
     );
+    expect(navigateSpy).toHaveBeenCalledWith(['/crops']);
   });
 });

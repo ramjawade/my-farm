@@ -21,7 +21,7 @@ export class ActivityDashboardComponent {
     this.router.navigate(['/activities/create'], { queryParams: { activityId: act.id } });
   }
 
-  onMarkActivityCompleted(id: string): void {
+  onMarkActivityCompleted(id: number): void {
     this.timelineService.updateActivity(id, {
       status: 'Completed',
       date: Date.now(),

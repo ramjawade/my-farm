@@ -64,10 +64,10 @@ export class ActivityListComponent implements OnInit {
   }
 
   readonly showDeleteConfirm = signal(false);
-  readonly selectedActivityId = signal<string | null>(null);
+  readonly selectedActivityId = signal<number | null>(null);
   readonly viewMode = signal<'grid' | 'list'>('grid');
 
-  // Active filters using Signals
+  // Active filters using Signals. Crop/field filters hold the <select> value, i.e. 'All' or a stringified id.
   readonly seasonFilter = signal<string>('All');
   readonly cropFilter = signal<string>('All');
   readonly fieldFilter = signal<string>('All');
@@ -93,14 +93,17 @@ export class ActivityListComponent implements OnInit {
     const activeFieldNames = this.activityService
       .activities()
       .map((a) => a.fieldId)
-      .filter((fid): fid is string => !!fid && !saved.some((f) => f.id === fid));
+      .filter((fid): fid is number => !!fid && !saved.some((f) => f.id === fid));
 
-    const uniqueActiveFields = Array.from(new Set(activeFieldNames)).map((name) => ({
-      id: name,
-      name,
+    const uniqueActiveFields = Array.from(new Set(activeFieldNames)).map((id) => ({
+      id,
+      name: String(id),
     }));
     return [...saved, ...uniqueActiveFields];
   });
+
+  readonly cropFilterName = computed(() => this.getCropName(Number(this.cropFilter())));
+  readonly fieldFilterName = computed(() => this.getFieldName(Number(this.fieldFilter())));
 
   // Dynamic activity types from reference data service
   readonly activityTypesList = computed(() => {
@@ -120,12 +123,12 @@ export class ActivityListComponent implements OnInit {
 
     const crop = this.cropFilter();
     if (crop !== 'All') {
-      list = list.filter((a) => a.cropId === crop);
+      list = list.filter((a) => String(a.cropId) === crop);
     }
 
     const field = this.fieldFilter();
     if (field !== 'All') {
-      list = list.filter((a) => a.fieldId === field);
+      list = list.filter((a) => String(a.fieldId) === field);
     }
 
     const type = this.typeFilter();
@@ -153,20 +156,20 @@ export class ActivityListComponent implements OnInit {
     return list;
   });
 
-  getActivityTotalCost(activityId: string): number {
+  getActivityTotalCost(activityId: number): number {
     return this.activityService.getTotalExpenseForActivity(activityId);
   }
 
-  getCropName(cropId?: string): string {
+  getCropName(cropId?: number): string {
     if (!cropId) return '';
     const crop = this.cropsList().find((c) => c.id === cropId);
     return crop ? crop.name : 'Unknown Crop';
   }
 
-  getFieldName(fieldId?: string): string {
+  getFieldName(fieldId?: number): string {
     if (!fieldId) return '';
     const farm = this.fieldsList().find((f) => f.id === fieldId);
-    return farm ? farm.name : fieldId;
+    return farm ? farm.name : String(fieldId);
   }
 
   // Filter setters
@@ -206,7 +209,7 @@ export class ActivityListComponent implements OnInit {
 
   getActivityEmoji = activityTypeEmoji;
 
-  onDeleteActivityClick(id: string, event: Event): void {
+  onDeleteActivityClick(id: number, event: Event): void {
     event.stopPropagation();
     event.preventDefault();
     this.selectedActivityId.set(id);

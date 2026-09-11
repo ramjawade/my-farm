@@ -15,8 +15,8 @@
 import { AuditFields } from './common.contract';
 
 export interface FarmResponse extends AuditFields {
-  id: string;
-  farmer_id: string;
+  id: number;
+  farmer_id: number;
   name: string;
   area: number | null;
   area_unit: string;

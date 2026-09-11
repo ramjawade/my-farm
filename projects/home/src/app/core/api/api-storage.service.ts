@@ -1,14 +1,20 @@
 import { Injectable } from '@angular/core';
 import { HttpService } from '../http/http.service';
 import { IStorageService } from '../storage/storage.interface';
-import { Activity, ActivityExpense } from '../../features/activity/activity.models';
+import {
+  Activity,
+  ActivityExpense,
+  NewActivity,
+  NewActivityExpense,
+} from '../../features/activity/activity.models';
 import {
   CropEntity,
   CropStage,
   CropStatus,
+  NewCrop,
 } from '../../features/crop-timeline/crop-timeline.models';
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
-import { SavedFarm, FarmAreaResult } from '../../map/models/map.models';
+import { SavedFarm, FarmAreaResult, NewSavedFarm } from '../../map/models/map.models';
 import { WeatherData } from '../weather/weather.models';
 import { ReferenceDataService } from './reference-data.service';
 import { FarmerResponse, FarmerUpdateRequest } from './contracts';
@@ -48,7 +54,7 @@ function timestampToDateString(value: number | undefined): string | undefined {
  */
 @Injectable({ providedIn: 'root' })
 export class ApiStorageService extends IStorageService {
-  private defaultFarmIdPromise: Promise<string> | null = null;
+  private defaultFarmIdPromise: Promise<number> | null = null;
   private writeQueue: Promise<any> = Promise.resolve();
 
   constructor(
@@ -77,19 +83,19 @@ export class ApiStorageService extends IStorageService {
    * multi-farm model. Get-or-create a single default Farm per farmer,
    * cached in memory for the lifetime of this service.
    */
-  async getOrCreateDefaultFarmId(): Promise<string> {
+  async getOrCreateDefaultFarmId(): Promise<number> {
     if (!this.defaultFarmIdPromise) {
       this.defaultFarmIdPromise = this.resolveDefaultFarmId();
     }
     return this.defaultFarmIdPromise;
   }
 
-  private async resolveDefaultFarmId(): Promise<string> {
-    const list = await this.httpService.get<{ items: { id: string }[] }>('/farms');
+  private async resolveDefaultFarmId(): Promise<number> {
+    const list = await this.httpService.get<{ items: { id: number }[] }>('/farms');
     if (list.items.length > 0) {
       return list.items[0].id;
     }
-    const response = await this.httpService.post<{ id: string }>('/farms', { name: 'My Farm' });
+    const response = await this.httpService.post<{ id: number }>('/farms', { name: 'My Farm' });
     return response.id;
   }
 
@@ -97,7 +103,7 @@ export class ApiStorageService extends IStorageService {
   // Activities
   // ============================================================================
 
-  async getActivities(userId: string): Promise<Activity[]> {
+  async getActivities(userId: number): Promise<Activity[]> {
     try {
       const items = await this.fetchList<unknown>('/activities');
       return await Promise.all(items.map((item) => this.mapFromBackendActivity(item)));
@@ -107,7 +113,7 @@ export class ApiStorageService extends IStorageService {
     }
   }
 
-  async saveActivity(userId: string, activity: Activity): Promise<Activity> {
+  async saveActivity(userId: number, activity: NewActivity): Promise<Activity> {
     return this.enqueueWrite(async () => {
       const payload = await this.mapToBackendActivity(activity);
       try {
@@ -120,7 +126,7 @@ export class ApiStorageService extends IStorageService {
     });
   }
 
-  async updateActivity(userId: string, id: string, updates: Partial<Activity>): Promise<void> {
+  async updateActivity(userId: number, id: number, updates: Partial<Activity>): Promise<void> {
     return this.enqueueWrite(async () => {
       const payload = await this.mapToBackendActivity(updates);
       try {
@@ -132,7 +138,7 @@ export class ApiStorageService extends IStorageService {
     });
   }
 
-  async deleteActivity(userId: string, id: string): Promise<void> {
+  async deleteActivity(userId: number, id: number): Promise<void> {
     return this.enqueueWrite(async () => {
       try {
         await this.httpService.delete(`/activities/${id}`);
@@ -143,7 +149,7 @@ export class ApiStorageService extends IStorageService {
     });
   }
 
-  async syncActivitiesForField(userId: string, fieldId: string): Promise<Activity[]> {
+  async syncActivitiesForField(userId: number, fieldId: number): Promise<Activity[]> {
     try {
       const activities = await this.getActivities(userId);
       return activities.filter((a) => a.fieldId === fieldId);
@@ -153,7 +159,7 @@ export class ApiStorageService extends IStorageService {
     }
   }
 
-  async syncExpensesForActivity(userId: string, activityId: string): Promise<ActivityExpense[]> {
+  async syncExpensesForActivity(userId: number, activityId: number): Promise<ActivityExpense[]> {
     try {
       const items = await this.fetchList<unknown>(`/activities/${activityId}/expenses`);
       return await Promise.all(items.map((item) => this.mapFromBackendExpense(item)));
@@ -167,7 +173,7 @@ export class ApiStorageService extends IStorageService {
   // Expenses (nested under an activity)
   // ============================================================================
 
-  async getExpenses(userId: string): Promise<ActivityExpense[]> {
+  async getExpenses(userId: number): Promise<ActivityExpense[]> {
     try {
       const items = await this.fetchList<unknown>('/expenses');
       return await Promise.all(items.map((item) => this.mapFromBackendExpense(item)));
@@ -177,7 +183,7 @@ export class ApiStorageService extends IStorageService {
     }
   }
 
-  async saveExpense(userId: string, expense: ActivityExpense): Promise<ActivityExpense> {
+  async saveExpense(userId: number, expense: NewActivityExpense): Promise<ActivityExpense> {
     return this.enqueueWrite(async () => {
       const payload = await this.mapToBackendExpense(expense);
       try {
@@ -194,8 +200,8 @@ export class ApiStorageService extends IStorageService {
   }
 
   async updateExpense(
-    userId: string,
-    id: string,
+    userId: number,
+    id: number,
     updates: Partial<ActivityExpense>,
   ): Promise<void> {
     return this.enqueueWrite(async () => {
@@ -213,7 +219,7 @@ export class ApiStorageService extends IStorageService {
     });
   }
 
-  async deleteExpense(userId: string, id: string): Promise<void> {
+  async deleteExpense(userId: number, id: number): Promise<void> {
     return this.enqueueWrite(async () => {
       const activityId = await this.findExpenseActivityId(id);
       if (!activityId) {
@@ -229,9 +235,9 @@ export class ApiStorageService extends IStorageService {
     });
   }
 
-  private async findExpenseActivityId(expenseId: string): Promise<string | null> {
+  private async findExpenseActivityId(expenseId: number): Promise<number | null> {
     try {
-      const expenses = await this.getExpenses('');
+      const expenses = await this.getExpenses(0);
       const expense = expenses.find((e) => e.id === expenseId);
       return expense?.activityId ?? null;
     } catch {
@@ -243,7 +249,7 @@ export class ApiStorageService extends IStorageService {
   // Crops
   // ============================================================================
 
-  async getCrops(userId: string): Promise<CropEntity[]> {
+  async getCrops(userId: number): Promise<CropEntity[]> {
     try {
       const items = await this.fetchList<unknown>('/crops');
       return await Promise.all(items.map((item) => this.mapFromBackendCrop(item)));
@@ -253,7 +259,7 @@ export class ApiStorageService extends IStorageService {
     }
   }
 
-  async saveCrop(userId: string, crop: CropEntity): Promise<CropEntity> {
+  async saveCrop(userId: number, crop: NewCrop): Promise<CropEntity> {
     return this.enqueueWrite(async () => {
       const payload = await this.mapToBackendCrop(crop);
       try {
@@ -266,7 +272,7 @@ export class ApiStorageService extends IStorageService {
     });
   }
 
-  async updateCrop(userId: string, id: string, updates: Partial<CropEntity>): Promise<void> {
+  async updateCrop(userId: number, id: number, updates: Partial<CropEntity>): Promise<void> {
     return this.enqueueWrite(async () => {
       const payload = await this.mapToBackendCrop(updates);
       try {
@@ -278,7 +284,7 @@ export class ApiStorageService extends IStorageService {
     });
   }
 
-  async deleteCrop(userId: string, id: string): Promise<void> {
+  async deleteCrop(userId: number, id: number): Promise<void> {
     return this.enqueueWrite(async () => {
       try {
         await this.httpService.delete(`/crops/${id}`);
@@ -293,7 +299,7 @@ export class ApiStorageService extends IStorageService {
   // Farms (SavedFarm here means a plot — backend calls it a Land)
   // ============================================================================
 
-  async getFarms(userId: string): Promise<SavedFarm[]> {
+  async getFarms(userId: number): Promise<SavedFarm[]> {
     try {
       const items = await this.fetchList<unknown>('/lands');
       return items.map((item) => this.mapFromBackendLand(item));
@@ -303,7 +309,7 @@ export class ApiStorageService extends IStorageService {
     }
   }
 
-  async saveFarm(userId: string, farm: SavedFarm): Promise<SavedFarm> {
+  async saveFarm(userId: number, farm: NewSavedFarm): Promise<SavedFarm> {
     return this.enqueueWrite(async () => {
       const farmId = await this.getOrCreateDefaultFarmId();
       const payload = this.mapToBackendLand(farm, farmId);
@@ -318,7 +324,7 @@ export class ApiStorageService extends IStorageService {
     });
   }
 
-  async updateFarm(userId: string, id: string, updates: Partial<SavedFarm>): Promise<void> {
+  async updateFarm(userId: number, id: number, updates: Partial<SavedFarm>): Promise<void> {
     return this.enqueueWrite(async () => {
       const payload = this.mapToBackendLand(updates);
       try {
@@ -330,7 +336,7 @@ export class ApiStorageService extends IStorageService {
     });
   }
 
-  async deleteFarm(userId: string, id: string): Promise<void> {
+  async deleteFarm(userId: number, id: number): Promise<void> {
     return this.enqueueWrite(async () => {
       try {
         await this.httpService.delete(`/lands/${id}`);
@@ -345,7 +351,7 @@ export class ApiStorageService extends IStorageService {
   // Farmers
   // ============================================================================
 
-  async getFarmerById(id: string): Promise<FarmerRegistrationData | undefined> {
+  async getFarmerById(id: number): Promise<FarmerRegistrationData | undefined> {
     // The backend has no GET /farmers/{id} — the only farmer this token can
     // read is its own, via /me. `AuthService.loadSession` passes the active
     // user's id here, so a match is the normal case.
@@ -362,7 +368,6 @@ export class ApiStorageService extends IStorageService {
    * Not supported on the API path. Sign-in is a single online
    * `POST /auth/session` (issue #50) — the login screen never resolves a
    * phone to a farmer record first, so there is nothing to return here.
-   * `LocalStorageService` still implements this for the demo user.
    */
   async getFarmerByPhone(phone: string): Promise<FarmerRegistrationData | undefined> {
     return undefined;
@@ -392,11 +397,11 @@ export class ApiStorageService extends IStorageService {
   // Weather history isn't persisted server-side — the live client-side
   // OpenWeather path (WeatherService) covers the MVP. Deliberate no-ops,
   // not errors: callers treat "no history" as normal.
-  async getWeatherHistory(userId: string): Promise<WeatherData[]> {
+  async getWeatherHistory(userId: number): Promise<WeatherData[]> {
     return [];
   }
 
-  async saveWeatherSnapshot(userId: string, snapshot: WeatherData): Promise<WeatherData> {
+  async saveWeatherSnapshot(userId: number, snapshot: WeatherData): Promise<WeatherData> {
     return snapshot;
   }
 
@@ -426,7 +431,6 @@ export class ApiStorageService extends IStorageService {
 
   async mapToBackendActivity(activity: Partial<Activity>): Promise<Record<string, unknown>> {
     return {
-      id: activity.id,
       activity_type_id:
         activity.type !== undefined
           ? await this.referenceData.activityTypeIdForName(activity.type)
@@ -464,7 +468,6 @@ export class ApiStorageService extends IStorageService {
 
   async mapToBackendExpense(expense: Partial<ActivityExpense>): Promise<Record<string, unknown>> {
     return {
-      id: expense.id,
       expense_category_id:
         expense.category !== undefined
           ? await this.referenceData.expenseCategoryIdForName(expense.category)
@@ -501,7 +504,6 @@ export class ApiStorageService extends IStorageService {
 
   async mapToBackendCrop(crop: Partial<CropEntity>): Promise<Record<string, unknown>> {
     return {
-      id: crop.id,
       land_id: crop.fieldId,
       crop_catalog_id:
         crop.cropType !== undefined
@@ -539,9 +541,8 @@ export class ApiStorageService extends IStorageService {
     };
   }
 
-  mapToBackendLand(farm: Partial<SavedFarm>, farmId?: string): Record<string, unknown> {
+  mapToBackendLand(farm: Partial<SavedFarm>, farmId?: number): Record<string, unknown> {
     return {
-      id: farm.id,
       name: farm.name,
       farm_id: farmId,
       area_sq_m: farm.area?.squareMeters,
@@ -554,7 +555,7 @@ export class ApiStorageService extends IStorageService {
    * mapped from the API starts here. */
   private blankFarmer(): FarmerRegistrationData {
     return {
-      id: '',
+      id: 0,
       fullName: '',
       phone: '',
       preferredLanguage: 'en',

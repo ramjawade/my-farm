@@ -1,5 +1,5 @@
 import { Injectable, signal, computed, inject, effect } from '@angular/core';
-import { Activity, ActivityExpense } from './activity.models';
+import { Activity, ActivityExpense, NewActivity, NewActivityExpense } from './activity.models';
 import { IStorageService } from '../../core/storage/storage.interface';
 import { AuthService } from '../../core/auth/auth.service';
 
@@ -22,7 +22,7 @@ export class ActivityService {
 
   /** Total expense per activity id, recomputed whenever expenses change. */
   readonly costByActivity = computed(() => {
-    const totals: Record<string, number> = {};
+    const totals: Record<number, number> = {};
     for (const e of this.expensesSignal()) {
       totals[e.activityId] = (totals[e.activityId] || 0) + (e.amount || 0);
     }
@@ -47,9 +47,8 @@ export class ActivityService {
     });
   }
 
-  private getCurrentUserId(): string {
-    const user = this.auth.currentUser();
-    return user?.id || 'anonymous';
+  private getCurrentUserId(): number {
+    return this.auth.currentUser()?.id ?? 0;
   }
 
   /** Re-read the signed-in user's activities and expenses from storage. */
@@ -81,28 +80,17 @@ export class ActivityService {
     }
   }
 
-  addActivity(data: Omit<Activity, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): Activity {
-    const now = Date.now();
-    const activity: Activity = {
-      ...data,
-      id: data.id || crypto.randomUUID(),
-      createdAt: now,
-      updatedAt: now,
-    };
-
+  /** Saves the activity; resolves with the stored record carrying its server-minted id. */
+  async addActivity(data: NewActivity): Promise<Activity> {
     this.mutationGeneration++;
-    this.activitiesSignal.update((acts) => [...acts, activity]);
-
-    const userId = this.getCurrentUserId();
-    this.storage.saveActivity(userId, activity).catch((err) => {
-      console.error('Failed to save activity:', err);
-      this.reload();
-    });
-
-    return activity;
+    const saved = await this.storage.saveActivity(this.getCurrentUserId(), data);
+    this.activitiesSignal.update((acts) =>
+      acts.some((a) => a.id === saved.id) ? acts : [...acts, saved],
+    );
+    return saved;
   }
 
-  updateActivity(id: string, updates: Partial<Activity>): void {
+  updateActivity(id: number, updates: Partial<Activity>): void {
     this.mutationGeneration++;
     this.activitiesSignal.update((acts) =>
       acts.map((act) => (act.id === id ? { ...act, ...updates, updatedAt: Date.now() } : act)),
@@ -115,7 +103,7 @@ export class ActivityService {
     });
   }
 
-  deleteActivity(id: string): void {
+  deleteActivity(id: number): void {
     const userId = this.getCurrentUserId();
     const expensesForActivity = this.expensesSignal().filter((e) => e.activityId === id);
 
@@ -137,7 +125,7 @@ export class ActivityService {
   }
 
   /** Remove every activity (and its expenses) linked to a crop. */
-  deleteActivitiesForCrop(cropId: string): void {
+  deleteActivitiesForCrop(cropId: number): void {
     const ids = new Set(
       this.activitiesSignal()
         .filter((a) => a.cropId === cropId)
@@ -158,42 +146,33 @@ export class ActivityService {
     }
   }
 
-  getActivityById(id: string): Activity | undefined {
+  getActivityById(id: number): Activity | undefined {
     return this.activitiesSignal().find((act) => act.id === id);
   }
 
-  getActivitiesForCrop(cropId: string): Activity[] {
+  getActivitiesForCrop(cropId: number): Activity[] {
     return this.activitiesSignal().filter((act) => act.cropId === cropId);
   }
 
-  getActivitiesForField(fieldId: string): Activity[] {
+  getActivitiesForField(fieldId: number): Activity[] {
     return this.activitiesSignal().filter((act) => act.fieldId === fieldId);
   }
 
-  getSubActivities(parentActivityId: string): Activity[] {
+  getSubActivities(parentActivityId: number): Activity[] {
     return this.activitiesSignal().filter((act) => act.parentActivityId === parentActivityId);
   }
 
-  addExpense(data: Omit<ActivityExpense, 'id' | 'createdAt'>): ActivityExpense {
-    const expense: ActivityExpense = {
-      ...data,
-      id: crypto.randomUUID(),
-      createdAt: Date.now(),
-    };
-
+  /** Saves the expense; resolves with the stored record carrying its server-minted id. */
+  async addExpense(data: NewActivityExpense): Promise<ActivityExpense> {
     this.mutationGeneration++;
-    this.expensesSignal.update((exps) => [...exps, expense]);
-
-    const userId = this.getCurrentUserId();
-    this.storage.saveExpense(userId, expense).catch((err) => {
-      console.error('Failed to save expense:', err);
-      this.reload();
-    });
-
-    return expense;
+    const saved = await this.storage.saveExpense(this.getCurrentUserId(), data);
+    this.expensesSignal.update((exps) =>
+      exps.some((e) => e.id === saved.id) ? exps : [...exps, saved],
+    );
+    return saved;
   }
 
-  updateExpense(id: string, updates: Partial<ActivityExpense>): void {
+  updateExpense(id: number, updates: Partial<ActivityExpense>): void {
     this.mutationGeneration++;
     this.expensesSignal.update((exps) =>
       exps.map((exp) => (exp.id === id ? { ...exp, ...updates } : exp)),
@@ -206,7 +185,7 @@ export class ActivityService {
     });
   }
 
-  deleteExpense(id: string): void {
+  deleteExpense(id: number): void {
     this.mutationGeneration++;
     this.expensesSignal.update((exps) => exps.filter((exp) => exp.id !== id));
 
@@ -217,15 +196,15 @@ export class ActivityService {
     });
   }
 
-  getExpensesForActivity(activityId: string): ActivityExpense[] {
+  getExpensesForActivity(activityId: number): ActivityExpense[] {
     return this.expensesSignal().filter((exp) => exp.activityId === activityId);
   }
 
-  getTotalExpenseForActivity(activityId: string): number {
+  getTotalExpenseForActivity(activityId: number): number {
     return this.getExpensesForActivity(activityId).reduce((sum, exp) => sum + (exp.amount || 0), 0);
   }
 
-  getExpensesByCategory(activityId: string): Record<string, number> {
+  getExpensesByCategory(activityId: number): Record<string, number> {
     const expenses = this.getExpensesForActivity(activityId);
     return expenses.reduce(
       (acc, exp) => {

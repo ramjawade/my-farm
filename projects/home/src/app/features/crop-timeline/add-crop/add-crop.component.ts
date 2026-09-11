@@ -50,12 +50,13 @@ export class AddCropComponent implements OnInit {
 
   readonly savedFarms = signal<SavedFarm[]>([]);
   readonly creatingName = signal(false);
+  readonly saving = signal(false);
   readonly areaIsAutoFilled = signal(true);
 
   readonly cropForm = this.fb.nonNullable.group({
     season: [seasonForDate(), Validators.required],
     name: ['', [Validators.required, Validators.minLength(2)]],
-    fieldId: ['', [Validators.required, Validators.minLength(2)]],
+    fieldId: [null as number | null, Validators.required],
     area: ['', [Validators.required, Validators.min(0.01)]],
     areaUnit: ['hectares', Validators.required],
     sowingDate: [''],
@@ -132,34 +133,43 @@ export class AddCropComponent implements OnInit {
     this.creatingName.set(false);
   }
 
-  onSubmit(): void {
-    if (!this.cropForm.valid || this.creatingName()) return;
-
+  async onSubmit(): Promise<void> {
     const values = this.cropForm.getRawValue();
-    const newCrop = this.cropService.addCrop({
-      name: values.name,
-      cropType: values.name,
-      fieldId: values.fieldId,
-      area: Number(values.area),
-      areaUnit: values.areaUnit as 'acres' | 'hectares',
-      season: values.season,
-      sowingDate: values.sowingDate ? new Date(values.sowingDate).getTime() : undefined,
-      currentStage: CROP_STAGES[0],
-      status: 'Active',
-    });
+    if (!this.cropForm.valid || this.creatingName() || this.saving() || values.fieldId === null) {
+      return;
+    }
 
-    this.workflowService.markPhaseComplete('crop');
-    this.toast.success(`${newCrop.name} added with its growth-stage timeline.`);
+    this.saving.set(true);
+    try {
+      const newCrop = await this.cropService.addCrop({
+        name: values.name,
+        cropType: values.name,
+        fieldId: values.fieldId,
+        area: Number(values.area),
+        areaUnit: values.areaUnit as 'acres' | 'hectares',
+        season: values.season,
+        sowingDate: values.sowingDate ? new Date(values.sowingDate).getTime() : undefined,
+        currentStage: CROP_STAGES[0],
+        status: 'Active',
+      });
 
-    this.cropForm.reset({
-      season: seasonForDate(),
-      name: '',
-      fieldId: '',
-      area: '',
-      areaUnit: 'hectares',
-      sowingDate: '',
-    });
+      this.workflowService.markPhaseComplete('crop');
+      this.toast.success(`${newCrop.name} added with its growth-stage timeline.`);
 
-    this.router.navigate(['/crops']);
+      this.cropForm.reset({
+        season: seasonForDate(),
+        name: '',
+        fieldId: null,
+        area: '',
+        areaUnit: 'hectares',
+        sowingDate: '',
+      });
+
+      this.router.navigate(['/crops']);
+    } catch {
+      this.toast.error('Could not save the crop. Please try again.');
+    } finally {
+      this.saving.set(false);
+    }
   }
 }

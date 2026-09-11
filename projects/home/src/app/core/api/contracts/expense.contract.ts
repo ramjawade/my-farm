@@ -15,9 +15,9 @@
 import { AuditFields } from './common.contract';
 
 export interface ExpenseResponse extends AuditFields {
-  id: string;
-  activity_id: string;
-  expense_category_id: string;
+  id: number;
+  activity_id: number;
+  expense_category_id: number;
   item_id: string | null;
   resource_id: string | null;
   quantity: number | null;
@@ -29,7 +29,7 @@ export interface ExpenseResponse extends AuditFields {
 
 /** `ActivityExpenseCreate` — no `activity_id` (it's in the path). */
 export interface ExpenseCreateRequest {
-  expense_category_id: string;
+  expense_category_id: number;
   item_id?: string | null;
   resource_id?: string | null;
   quantity?: number | null;
@@ -40,7 +40,7 @@ export interface ExpenseCreateRequest {
 }
 
 export interface ExpenseUpdateRequest {
-  expense_category_id?: string;
+  expense_category_id?: number;
   item_id?: string | null;
   resource_id?: string | null;
   quantity?: number | null;

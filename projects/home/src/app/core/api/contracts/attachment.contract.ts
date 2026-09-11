@@ -13,8 +13,8 @@
 import { AuditFields } from './common.contract';
 
 export interface AttachmentResponse extends AuditFields {
-  id: string;
-  activity_id: string;
+  id: number;
+  activity_id: number;
   storage_key: string;
   content_type: string | null;
   size_bytes: number | null;

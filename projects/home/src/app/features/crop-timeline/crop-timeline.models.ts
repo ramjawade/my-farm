@@ -29,8 +29,8 @@ export const CROP_STAGES: readonly CropStage[] = [
 export type CropStatus = 'Active' | 'Completed' | 'Archived';
 
 export interface CropEntity {
-  id: string;
-  fieldId: string; // SavedFarm.id of the land this crop grows on
+  id: number;
+  fieldId: number; // SavedFarm.id of the land this crop grows on
   name: string; // User-friendly name
   cropType: string; // e.g. "Soybeans", "Wheat", "Rice"
   area: number; // size value as entered
@@ -43,12 +43,14 @@ export interface CropEntity {
   upcomingActivity?: string; // Quick dashboard note
 }
 
+export type NewCrop = Omit<CropEntity, 'id'>;
+
 /**
  * Read-only view of a unified `Activity` that is linked to a crop, with its
  * expense total folded in. Produced by `CropTimelineService.activities`.
  */
 export interface CropActivity extends Activity {
-  cropId: string;
+  cropId: number;
   cost: number;
   notes: string;
   attachments: string[];
@@ -57,9 +59,8 @@ export interface CropActivity extends Activity {
 
 /** Input shape for logging an activity from the crop timeline. */
 export interface CropActivityInput {
-  id?: string;
-  cropId: string;
-  parentActivityId?: string;
+  cropId: number;
+  parentActivityId?: number;
   type: ActivityType;
   date?: number;
   status: ActivityStatus;

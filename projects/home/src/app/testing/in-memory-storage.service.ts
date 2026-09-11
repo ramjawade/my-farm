@@ -1,9 +1,14 @@
 import { Injectable } from '@angular/core';
 import { IStorageService } from '../core/storage/storage.interface';
-import { Activity, ActivityExpense } from '../features/activity/activity.models';
-import { CropEntity } from '../features/crop-timeline/crop-timeline.models';
+import {
+  Activity,
+  ActivityExpense,
+  NewActivity,
+  NewActivityExpense,
+} from '../features/activity/activity.models';
+import { CropEntity, NewCrop } from '../features/crop-timeline/crop-timeline.models';
 import { FarmerRegistrationData } from '../features/farmer-registration/farmer-registration.models';
-import { SavedFarm } from '../map/models/map.models';
+import { NewSavedFarm, SavedFarm } from '../map/models/map.models';
 import { WeatherData } from '../core/weather/weather.models';
 
 /**
@@ -11,6 +16,7 @@ import { WeatherData } from '../core/weather/weather.models';
  * no HTTP. The real implementations are `ApiStorageService` (production,
  * online-only) and this one for specs that only need the persistence seam
  * satisfied. Seed it directly via the public arrays before a test runs.
+ * Like the backend, `save*` mints the numeric id.
  */
 @Injectable()
 export class InMemoryStorageService extends IStorageService {
@@ -21,72 +27,79 @@ export class InMemoryStorageService extends IStorageService {
   farmers: FarmerRegistrationData[] = [];
   weather: WeatherData[] = [];
 
+  private nextId = 1000;
+
   async getActivities(): Promise<Activity[]> {
     return [...this.activities];
   }
   async getExpenses(): Promise<ActivityExpense[]> {
     return [...this.expenses];
   }
-  async saveActivity(_userId: string, activity: Activity): Promise<Activity> {
-    this.activities.push(activity);
-    return activity;
+  async saveActivity(_userId: number, activity: NewActivity): Promise<Activity> {
+    const now = Date.now();
+    const saved: Activity = { ...activity, id: this.nextId++, createdAt: now, updatedAt: now };
+    this.activities.push(saved);
+    return saved;
   }
-  async saveExpense(_userId: string, expense: ActivityExpense): Promise<ActivityExpense> {
-    this.expenses.push(expense);
-    return expense;
+  async saveExpense(_userId: number, expense: NewActivityExpense): Promise<ActivityExpense> {
+    const saved: ActivityExpense = { ...expense, id: this.nextId++, createdAt: Date.now() };
+    this.expenses.push(saved);
+    return saved;
   }
-  async updateActivity(_userId: string, id: string, updates: Partial<Activity>): Promise<void> {
+  async updateActivity(_userId: number, id: number, updates: Partial<Activity>): Promise<void> {
     this.activities = this.activities.map((a) => (a.id === id ? { ...a, ...updates } : a));
   }
   async updateExpense(
-    _userId: string,
-    id: string,
+    _userId: number,
+    id: number,
     updates: Partial<ActivityExpense>,
   ): Promise<void> {
     this.expenses = this.expenses.map((e) => (e.id === id ? { ...e, ...updates } : e));
   }
-  async deleteActivity(_userId: string, id: string): Promise<void> {
+  async deleteActivity(_userId: number, id: number): Promise<void> {
     this.activities = this.activities.filter((a) => a.id !== id);
   }
-  async deleteExpense(_userId: string, id: string): Promise<void> {
+  async deleteExpense(_userId: number, id: number): Promise<void> {
     this.expenses = this.expenses.filter((e) => e.id !== id);
   }
-  async syncActivitiesForField(_userId: string, fieldId: string): Promise<Activity[]> {
+  async syncActivitiesForField(_userId: number, fieldId: number): Promise<Activity[]> {
     return this.activities.filter((a) => a.fieldId === fieldId);
   }
-  async syncExpensesForActivity(_userId: string, activityId: string): Promise<ActivityExpense[]> {
+  async syncExpensesForActivity(_userId: number, activityId: number): Promise<ActivityExpense[]> {
     return this.expenses.filter((e) => e.activityId === activityId);
   }
 
   async getCrops(): Promise<CropEntity[]> {
     return [...this.crops];
   }
-  async saveCrop(_userId: string, crop: CropEntity): Promise<CropEntity> {
-    this.crops.push(crop);
-    return crop;
+  async saveCrop(_userId: number, crop: NewCrop): Promise<CropEntity> {
+    const saved: CropEntity = { ...crop, id: this.nextId++ };
+    this.crops.push(saved);
+    return saved;
   }
-  async updateCrop(_userId: string, id: string, updates: Partial<CropEntity>): Promise<void> {
+  async updateCrop(_userId: number, id: number, updates: Partial<CropEntity>): Promise<void> {
     this.crops = this.crops.map((c) => (c.id === id ? { ...c, ...updates } : c));
   }
-  async deleteCrop(_userId: string, id: string): Promise<void> {
+  async deleteCrop(_userId: number, id: number): Promise<void> {
     this.crops = this.crops.filter((c) => c.id !== id);
   }
 
   async getFarms(): Promise<SavedFarm[]> {
     return [...this.farms];
   }
-  async saveFarm(_userId: string, farm: SavedFarm): Promise<SavedFarm> {
-    this.farms.push(farm);
-    return farm;
+  async saveFarm(_userId: number, farm: NewSavedFarm): Promise<SavedFarm> {
+    const saved: SavedFarm = { ...farm, id: this.nextId++, createdAt: Date.now() };
+    this.farms.push(saved);
+    return saved;
   }
-  async updateFarm(_userId: string, id: string, updates: Partial<SavedFarm>): Promise<void> {
+  async updateFarm(_userId: number, id: number, updates: Partial<SavedFarm>): Promise<void> {
     this.farms = this.farms.map((f) => (f.id === id ? { ...f, ...updates } : f));
   }
-  async deleteFarm(_userId: string, id: string): Promise<void> {
+  async deleteFarm(_userId: number, id: number): Promise<void> {
     this.farms = this.farms.filter((f) => f.id !== id);
   }
 
-  async getFarmerById(id: string): Promise<FarmerRegistrationData | undefined> {
+  async getFarmerById(id: number): Promise<FarmerRegistrationData | undefined> {
     return this.farmers.find((f) => f.id === id);
   }
   async getFarmerByPhone(phone: string): Promise<FarmerRegistrationData | undefined> {
@@ -102,7 +115,7 @@ export class InMemoryStorageService extends IStorageService {
   async getWeatherHistory(): Promise<WeatherData[]> {
     return [...this.weather];
   }
-  async saveWeatherSnapshot(_userId: string, snapshot: WeatherData): Promise<WeatherData> {
+  async saveWeatherSnapshot(_userId: number, snapshot: WeatherData): Promise<WeatherData> {
     this.weather.push(snapshot);
     return snapshot;
   }

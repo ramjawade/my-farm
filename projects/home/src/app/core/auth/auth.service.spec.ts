@@ -10,7 +10,7 @@ import { IStorageService } from '../storage/storage.interface';
 import { InMemoryStorageService } from '../../testing/in-memory-storage.service';
 
 const mockFarmer: FarmerRegistrationData = {
-  id: 'f-test-1',
+  id: 1,
   fullName: 'Test Farmer',
   phone: '9998887776',
   preferredLanguage: 'English',
@@ -62,7 +62,7 @@ describe('AuthService', () => {
     service.login(mockFarmer);
 
     expect(service.isLoggedIn()).toBeTrue();
-    expect(service.currentUser()?.id).toBe('f-test-1');
+    expect(service.currentUser()?.id).toBe(1);
     expect(localStorage.getItem('my_farm_session_expiry')).toBeTruthy();
   });
 
@@ -98,7 +98,7 @@ describe('AuthService — API token lifecycle', () => {
   let service: AuthService;
   let httpService: HttpService;
 
-  const otherFarmer: FarmerRegistrationData = { ...mockFarmer, id: 'f-test-2' };
+  const otherFarmer: FarmerRegistrationData = { ...mockFarmer, id: 2 };
 
   beforeEach(() => {
     localStorage.clear();

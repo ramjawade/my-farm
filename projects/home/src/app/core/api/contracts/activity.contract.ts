@@ -15,12 +15,12 @@
 import { AuditFields, IsoDate } from './common.contract';
 
 export interface ActivityResponse extends AuditFields {
-  id: string;
-  farmer_id: string;
-  activity_type_id: string;
-  crop_id: string | null;
-  land_id: string | null;
-  parent_activity_id: string | null;
+  id: number;
+  farmer_id: number;
+  activity_type_id: number;
+  crop_id: number | null;
+  land_id: number | null;
+  parent_activity_id: number | null;
   custom_activity_name: string | null;
   date: IsoDate | null;
   season: string | null;
@@ -30,10 +30,10 @@ export interface ActivityResponse extends AuditFields {
 }
 
 export interface ActivityCreateRequest {
-  activity_type_id: string;
-  crop_id?: string | null;
-  land_id?: string | null;
-  parent_activity_id?: string | null;
+  activity_type_id: number;
+  crop_id?: number | null;
+  land_id?: number | null;
+  parent_activity_id?: number | null;
   custom_activity_name?: string | null;
   date?: IsoDate | null;
   season?: string | null;
