@@ -1,72 +1,49 @@
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { WeatherService } from './weather.service';
 import { AuthService } from '../auth/auth.service';
 import { WeatherCacheService } from './weather-cache.service';
 import { IStorageService } from '../storage/storage.interface';
 import { InMemoryStorageService } from '../../testing/in-memory-storage.service';
-import { API_CONFIG } from '../config/api.config';
-import {
-  WeatherLocation,
-  OpenWeatherResponse,
-  OpenWeatherForecastResponse,
-} from './weather.models';
+import { WeatherLocation, OpenWeatherResponse } from './weather.models';
 
 describe('WeatherService', () => {
   let service: WeatherService;
   let httpMock: HttpTestingController;
-  let authService: jasmine.SpyObj<AuthService>;
   let cacheService: WeatherCacheService;
 
   const testLocation: WeatherLocation = { lat: 19.1136, lng: 79.0882, name: 'Nashik' };
 
-  const mockOpenWeatherResponse: OpenWeatherResponse = {
-    main: {
-      temp: 28,
-      feels_like: 31,
-      humidity: 68,
-      pressure: 1013,
-      visibility: 10000,
+  // The backend's `/weather` response wraps the raw OpenWeather payload —
+  // see `WeatherService.fetchFromBackend`, which reads `response.data`.
+  const mockBackendResponse: { data: OpenWeatherResponse; source: string } = {
+    source: 'live',
+    data: {
+      main: {
+        temp: 28,
+        feels_like: 31,
+        humidity: 68,
+        pressure: 1013,
+        visibility: 10000,
+      },
+      weather: [{ id: 801, main: 'Clouds', description: 'few clouds', icon: '02d' }],
+      wind: { speed: 3.9, deg: 290 },
+      clouds: { all: 20 },
+      dt: Math.floor(Date.now() / 1000),
     },
-    weather: [{ id: 801, main: 'Clouds', description: 'few clouds', icon: '02d' }],
-    wind: { speed: 3.9, deg: 290 },
-    clouds: { all: 20 },
-    dt: Math.floor(Date.now() / 1000),
-  };
-
-  const mockForecastResponse: OpenWeatherForecastResponse = {
-    list: [
-      {
-        dt: Math.floor(Date.now() / 1000),
-        main: { temp_max: 29, temp_min: 22, temp: 25 },
-        weather: [{ id: 801, main: 'Clouds', icon: '04d' }],
-        clouds: { all: 50 },
-        pop: 0.3,
-      },
-      {
-        dt: Math.floor(Date.now() / 1000) + 86400,
-        main: { temp_max: 26, temp_min: 20, temp: 23 },
-        weather: [{ id: 500, main: 'Rain', icon: '10d' }],
-        clouds: { all: 90 },
-        pop: 0.8,
-        rain: { '3h': 5 },
-      },
-    ],
   };
 
   beforeEach(() => {
-    // The test environment has no OpenWeather key, so the service would skip
-    // the live-API path and return mock data. Stub a key so live-path tests run.
-    spyOnProperty(API_CONFIG.openWeatherMap, 'apiKey', 'get').and.returnValue('test-api-key');
-
     const authServiceSpy = jasmine.createSpyObj('AuthService', ['currentUser']);
     authServiceSpy.currentUser.and.returnValue(null);
 
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
       providers: [
         provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         WeatherService,
         WeatherCacheService,
         { provide: AuthService, useValue: authServiceSpy },
@@ -76,56 +53,35 @@ describe('WeatherService', () => {
 
     service = TestBed.inject(WeatherService);
     httpMock = TestBed.inject(HttpTestingController);
-    authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
     cacheService = TestBed.inject(WeatherCacheService);
   });
 
   afterEach(() => {
-    try {
-      httpMock.verify();
-    } catch (e) {
-      // Ignore verify errors - some tests may have unhandled requests
-      // that are intentionally not mocked
-    }
+    httpMock.verify();
   });
 
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should fetch and return weather data', (done) => {
-    service.getWeatherData(testLocation).then((result) => {
-      expect(result).toBeTruthy();
-      expect(result.current.temp).toBe(28);
-      expect(result.current.condition).toBe('Clouds');
-      expect(result.forecast.days.length).toBeGreaterThan(0);
-      done();
-    });
+  it('should fetch and return weather data from the single backend /weather endpoint', async () => {
+    const promise = service.getWeatherData(testLocation);
 
-    // Handle requests in order as they're queued
-    Promise.resolve()
-      .then(() => {
-        const currentReq = httpMock.expectOne(
-          (req) => req.url.includes('/weather') && !req.url.includes('/alerts'),
-        );
-        currentReq.flush(mockOpenWeatherResponse);
+    const req = httpMock.expectOne(
+      (r) => r.url === '/api/v1/weather' && r.params.get('lat') === String(testLocation.lat),
+    );
+    req.flush(mockBackendResponse);
 
-        const forecastReq = httpMock.expectOne((req) => req.url.includes('/forecast'));
-        forecastReq.flush(mockForecastResponse);
-      })
-      .then(() => {
-        // Wait for alerts request to be queued
-        return new Promise<void>((resolve) => {
-          setTimeout(() => {
-            const alertsReqs = httpMock.match((req) => req.url.includes('/weather/alerts'));
-            alertsReqs.forEach((req) => req.flush({ alerts: [] }));
-            resolve();
-          }, 10);
-        });
-      });
+    const result = await promise;
+
+    expect(result.current.temp).toBe(28);
+    expect(result.current.condition).toBe('Clouds');
+    expect(result.forecast.days.length).toBeGreaterThan(0);
+    expect(result.isStale).toBeFalse();
+    expect(service.source()).toBe('live');
   });
 
-  it('should return fresh data from cache', async () => {
+  it('should return fresh data from cache without a network call', async () => {
     const weatherData = {
       location: testLocation,
       current: { temp: 25, condition: 'Clear', fetchedAt: Date.now() } as any,
@@ -133,46 +89,57 @@ describe('WeatherService', () => {
       lastRefreshed: Date.now(),
       isStale: false,
     };
-
     cacheService.set(testLocation, weatherData);
 
     const result = await service.getWeatherData(testLocation);
 
     expect(result).toEqual(weatherData);
-    httpMock.expectNone((req) => req.url.includes('/weather'));
+    httpMock.expectNone((req) => req.url === '/api/v1/weather');
   });
 
-  it('should handle API errors with fallback', async () => {
+  it('should fall back to mock data when the backend call fails and there is no cache', async () => {
     const promise = service.getWeatherData(testLocation);
 
-    const currentReq = httpMock.expectOne((req) => req.url.includes('/weather'));
-    currentReq.error(new ErrorEvent('Network error'));
-
-    const forecastReq = httpMock.expectOne((req) => req.url.includes('/forecast'));
-    forecastReq.error(new ErrorEvent('Network error'));
+    const req = httpMock.expectOne((r) => r.url === '/api/v1/weather');
+    req.error(new ErrorEvent('Network error'));
 
     const result = await promise;
 
     expect(result).toBeTruthy();
     expect(result.current).toBeTruthy();
     expect(result.isStale).toBeTrue();
+    expect(service.source()).toBe('demo');
   });
 
-  it('should refresh current weather', async () => {
+  it('should fall back to stale cached data when the backend call fails', async () => {
     const weatherData = {
       location: testLocation,
       current: { temp: 25, condition: 'Clear', fetchedAt: Date.now() } as any,
       forecast: { days: [], fetchedAt: Date.now() } as any,
-      lastRefreshed: Date.now(),
+      lastRefreshed: Date.now() - 60 * 60 * 1000,
       isStale: false,
     };
-
+    // Backdate the cache entry past the freshness window so getWeatherData
+    // attempts a live fetch instead of returning it directly.
     cacheService.set(testLocation, weatherData);
+    spyOn(cacheService, 'isFresh').and.returnValue(false);
 
+    const promise = service.getWeatherData(testLocation);
+
+    const req = httpMock.expectOne((r) => r.url === '/api/v1/weather');
+    req.error(new ErrorEvent('Network error'));
+
+    const result = await promise;
+
+    expect(result.isStale).toBeTrue();
+    expect(service.source()).toBe('cache');
+  });
+
+  it('should refresh current weather', async () => {
     const promise = service.refreshCurrentWeather(testLocation);
 
-    const req = httpMock.expectOne((r) => r.url.includes('/weather'));
-    req.flush(mockOpenWeatherResponse);
+    const req = httpMock.expectOne((r) => r.url === '/api/v1/weather');
+    req.flush(mockBackendResponse);
 
     const result = await promise;
 
@@ -180,35 +147,30 @@ describe('WeatherService', () => {
     expect(result.condition).toBe('Clouds');
   });
 
-  it('should fetch weather alerts', async () => {
-    const mockAlertsResponse = {
-      alerts: [
-        {
-          event: 'Heavy Rain',
-          severity: 'high',
-          description: 'Heavy rain expected',
-          start: Math.floor(Date.now() / 1000),
-          end: Math.floor(Date.now() / 1000) + 3600,
-        },
-      ],
-    };
+  it('should rethrow when refreshing current weather fails', async () => {
+    const promise = service.refreshCurrentWeather(testLocation);
 
+    const req = httpMock.expectOne((r) => r.url === '/api/v1/weather');
+    req.error(new ErrorEvent('Network error'));
+
+    await expectAsync(promise).toBeRejected();
+  });
+
+  it('getWeatherAlerts returns no alerts (no alerts endpoint is wired up yet)', async () => {
     const promise = service.getWeatherAlerts(testLocation);
 
-    const req = httpMock.expectOne((r) => r.url.includes('/weather/alerts'));
-    req.flush(mockAlertsResponse);
+    const req = httpMock.expectOne((r) => r.url === '/api/v1/weather');
+    req.flush(mockBackendResponse);
 
     const alerts = await promise;
 
-    expect(alerts.length).toBe(1);
-    expect(alerts[0].title).toBe('Heavy Rain');
-    expect(alerts[0].severity).toBe('high');
+    expect(alerts).toEqual([]);
   });
 
   it('should return empty alerts on error', async () => {
     const promise = service.getWeatherAlerts(testLocation);
 
-    const req = httpMock.expectOne((r) => r.url.includes('/weather/alerts'));
+    const req = httpMock.expectOne((r) => r.url === '/api/v1/weather');
     req.error(new ErrorEvent('Network error'));
 
     const alerts = await promise;
@@ -216,7 +178,7 @@ describe('WeatherService', () => {
     expect(alerts).toEqual([]);
   });
 
-  it('should clear cache', async () => {
+  it('should clear the cache and current weather', () => {
     const weatherData = {
       location: testLocation,
       current: { temp: 25, condition: 'Clear', fetchedAt: Date.now() } as any,
@@ -224,16 +186,16 @@ describe('WeatherService', () => {
       lastRefreshed: Date.now(),
       isStale: false,
     };
-
     cacheService.set(testLocation, weatherData);
     expect(cacheService.get(testLocation)).toBeTruthy();
 
     service.clearCache();
 
+    expect(cacheService.get(testLocation)).toBeNull();
     expect(service.getCachedWeather()).toBeNull();
   });
 
-  it('should return cached weather', async () => {
+  it('should return the last fetched weather as cached weather', async () => {
     const weatherData = {
       location: testLocation,
       current: { temp: 25, condition: 'Clear', fetchedAt: Date.now() } as any,
@@ -241,18 +203,14 @@ describe('WeatherService', () => {
       lastRefreshed: Date.now(),
       isStale: false,
     };
-
     cacheService.set(testLocation, weatherData);
 
-    const promise = service.getWeatherData(testLocation);
-    const result = await promise;
+    await service.getWeatherData(testLocation);
 
-    const cached = service.getCachedWeather();
-
-    expect(cached).toEqual(weatherData);
+    expect(service.getCachedWeather()).toEqual(weatherData);
   });
 
-  it('should have loading and error signals', () => {
+  it('should have loading and error signals default to false/null', () => {
     expect(service.isLoading()).toBeFalse();
     expect(service.error()).toBeNull();
   });
