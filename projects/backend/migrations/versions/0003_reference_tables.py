@@ -1,4 +1,4 @@
-"""Add reference tables: season and crop_stage; seed all reference data.
+"""Add reference tables: season and crop_stage; convert reference tables to numeric IDs.
 
 Revision ID: 0003_reference_tables
 Revises: 0002_farmer_pin_hash
@@ -36,6 +36,24 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("name", name="uq_crop_stage_name"),
     )
+
+    # Alter activity_type table: drop old UUID id, add new serial id
+    op.drop_constraint("activity_type_pkey", "activity_type", type_="primary")
+    op.drop_column("activity_type", "id")
+    op.add_column(
+        "activity_type",
+        sa.Column("id", sa.Integer(), nullable=False, autoincrement=True, server_default="nextval('activity_type_id_seq'::regclass)")
+    )
+    op.create_primary_key("activity_type_pkey", "activity_type", ["id"])
+
+    # Alter expense_category table: drop old UUID id, add new serial id
+    op.drop_constraint("expense_category_pkey", "expense_category", type_="primary")
+    op.drop_column("expense_category", "id")
+    op.add_column(
+        "expense_category",
+        sa.Column("id", sa.Integer(), nullable=False, autoincrement=True, server_default="nextval('expense_category_id_seq'::regclass)")
+    )
+    op.create_primary_key("expense_category_pkey", "expense_category", ["id"])
 
     # Seed seasons
     seasons = ["Kharif", "Rabi", "Zaid"]
@@ -100,5 +118,23 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    # Downgrade reference tables to UUID
+    op.drop_constraint("activity_type_pkey", "activity_type", type_="primary")
+    op.drop_column("activity_type", "id")
+    op.add_column(
+        "activity_type",
+        sa.Column("id", sa.UUID(), nullable=False, server_default="gen_random_uuid()")
+    )
+    op.create_primary_key("activity_type_pkey", "activity_type", ["id"])
+
+    op.drop_constraint("expense_category_pkey", "expense_category", type_="primary")
+    op.drop_column("expense_category", "id")
+    op.add_column(
+        "expense_category",
+        sa.Column("id", sa.UUID(), nullable=False, server_default="gen_random_uuid()")
+    )
+    op.create_primary_key("expense_category_pkey", "expense_category", ["id"])
+
+    # Drop new tables
     op.drop_table("crop_stage")
     op.drop_table("season")
