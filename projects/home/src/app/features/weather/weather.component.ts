@@ -144,6 +144,10 @@ export class WeatherComponent implements OnInit {
     return source === 'live' ? 'bg-success' : source === 'cache' ? 'bg-warning' : 'bg-secondary';
   });
 
+  // A small badge alone is easy to miss — surface an unmissable banner
+  // whenever what's on screen is mock data, not a real forecast.
+  readonly isDemoData = computed(() => this.weatherService.source() === 'demo');
+
   // Weather data from service
   readonly weatherData = computed(() => {
     this.authService.currentUser();

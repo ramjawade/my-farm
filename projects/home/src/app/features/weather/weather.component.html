@@ -31,6 +31,14 @@
     </div>
   </div>
 
+  <!-- Demo-data notice: the live weather API is unavailable, so what's shown below is sample data, not a real forecast. -->
+  @if (isDemoData()) {
+    <div class="alert alert-warning d-flex align-items-center gap-2 mb-3 mb-sm-4" role="alert">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>Showing sample weather data — live forecasts are temporarily unavailable.</span>
+    </div>
+  }
+
   <!-- Workflow Prompt: Location Setup -->
   @if (shouldShowLocationPrompt()) {
     <app-workflow-prompt-card
