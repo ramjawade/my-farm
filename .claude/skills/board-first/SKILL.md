@@ -39,16 +39,36 @@ gh project item-edit --project-id PVT_kwHOAse-7M4Bi2uX \
 gh api repos/ramjawade/my-farm/issues/P/sub_issues -F sub_issue_id=$(gh api repos/ramjawade/my-farm/issues/C --jq .id)
 ```
 
-## Flow
+## Flow (single issue)
 
-1. **Plan** — write the issue body with the template below; big work = parent issue + one sub-issue per PR. Stop and wait for the user to approve. No code before approval.
+1. **Plan** — write the issue body with the template below; big work = parent issue + one sub-issue per PR (see parent-epic flow below). Stop and wait for the user to approve. No code before approval.
 2. **Start** ("start N") — read issue N (it is the plan), then:
    `git fetch origin && git checkout -b claude/feature-N-<slug> origin/main`, and move the item to **In Progress**.
 3. **Build** — follow the plan exactly. If it must change, comment on the issue and ask; don't patch silently.
 4. **Gates** — `npm run lint` and `npm run build` for frontend changes. Backend: `ruff`, `mypy`, `pytest` (Python may not be on PATH locally — then say so; CI runs them). Never claim a gate passed that didn't run.
-5. **PR** — commit messages end with `(Fixes #N)` on the final commit; push `-u origin`; `gh pr create` with the PR template. Leave the item in In Progress.
-6. **After merge** (user says merged) — `git checkout main && git pull origin main && git branch -D <branch>`. Check the item reached Done.
-7. **Parent done?** — verify every sub-issue is closed *and* every requirement in each body exists in the code (grep for it). A closed issue is not proof the work was built.
+5. **PR** — commit messages end with `(Fixes #N)` on the final commit; push `-u origin`; `gh pr create` with the PR template, targeting `main`. Leave the item in In Progress.
+6. **Watch CI** — after the PR exists, read status with the `ccd_pr` tools (`get_status`) instead of polling `gh pr checks` by hand. If a check fails: pull the actual failure (`gh run view <run> --job <job> --log-failed`), diagnose the real cause (don't just retry), fix it, rerun the affected local gates, and push a **new commit** (never amend/force-push) to the same branch. Repeat until every check is green. Frontend and backend gates can fail independently — a green frontend run doesn't mean the backend job passed too; check both.
+7. **After merge** (user says merged) — `git checkout main && git pull origin main && git branch -D <branch>`. Check the item reached Done.
+
+Bugs found along the way go into a new issue in Todo, not into the current PR.
+
+## Flow (parent epic + sub-issues)
+
+A big feature is a parent issue plus one sub-issue per PR, but sub-issue PRs do **not** target `main` directly — they stack onto the parent's own feature branch, which is the last thing merged to `main`.
+
+1. **Plan** — parent issue holds the overall plan; each sub-issue holds its own slice. Link sub-issues under the parent (`sub_issues` API command above). Wait for approval before any code.
+2. **Start the parent** ("start P") — `git fetch origin && git checkout -b claude/feature-P-<slug> origin/main`, push it once (`git push -u origin`) so sub-issue branches have something to fork from. Move the parent item to In Progress.
+3. **Start each sub-issue** ("start N") — branch **from the parent branch, not `origin/main`**: `git fetch origin && git checkout -b claude/feature-N-<slug> origin/claude/feature-P-<slug>`. Move the sub-issue item to In Progress.
+4. **Build → Gates** — same as the single-issue flow, per sub-issue.
+5. **Sub-issue PR** — targets the **parent branch** (`gh pr create --base claude/feature-P-<slug>`), not `main`. `(Fixes #N)` in the final commit still applies so the sub-issue closes when this PR merges.
+6. **Watch CI, fix, merge the sub-issue PR into the parent branch** — same fix-commit-push loop as step 6 of the single-issue flow. After merging, pull the parent branch locally (`git checkout claude/feature-P-<slug> && git pull origin claude/feature-P-<slug>`) before starting or rebasing the next sub-issue on it.
+7. **Repeat** step 3–6 for every sub-issue.
+8. **Parent PR** — once every sub-issue is merged into the parent branch, open the parent's own PR from `claude/feature-P-<slug>` into `main`, with `Fixes #P #<sub1> #<sub2> …` in the description so every linked issue auto-closes on merge. Run the same Watch CI loop (step 6 above) against this PR before merging.
+9. **After the parent merges to main** (user says merged) — `git checkout main && git pull origin main && git branch -D claude/feature-P-<slug>` (and any leftover local sub-issue branches).
+10. **Reverify** — this is the step that matters most for a parent epic, since it's the one moment everything actually lands on `main` together:
+    - Confirm the parent **and every sub-issue** actually closed: `gh issue view N --json state,closedAt` for each, and that the board item reached **Done**.
+    - Re-run the full local gate set (lint/build/test, and ruff/mypy/pytest if backend was touched and Python is on PATH) against the freshly-pulled `main` — sub-issue branches each passed CI individually against the parent branch, but the parent branch itself may never have been gate-checked against `main` until this final merge.
+11. **Parent done?** — verify every requirement in every sub-issue's body actually exists in the code (grep for it, don't trust a closed checkbox). A closed issue is not proof the work was built.
 
 Bugs found along the way go into a new issue in Todo, not into the current PR.
 
