@@ -2,15 +2,11 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { SavedFarmsComponent } from './saved-farms.component';
-import { FarmDrawService } from '../../farm-draw/farm-draw.service';
 import { FarmAreaResult, SavedFarm } from '../../models/map.models';
-import { signal } from '@angular/core';
 import { IStorageService } from '../../../core/storage/storage.interface';
 import { InMemoryStorageService } from '../../../testing/in-memory-storage.service';
 
 describe('SavedFarmsComponent', () => {
-  let mockFarmDraw: jasmine.SpyObj<FarmDrawService>;
-
   const mockFarms: SavedFarm[] = [
     {
       id: 'farm-1',
@@ -27,30 +23,31 @@ describe('SavedFarmsComponent', () => {
   ];
 
   beforeEach(async () => {
-    mockFarmDraw = jasmine.createSpyObj('FarmDrawService', ['deleteFarm', 'selectFarm']);
-    // Setup mock signal states
-    (mockFarmDraw as any).savedFarms = signal(mockFarms);
-    (mockFarmDraw as any).selectedSavedFarm = signal(null);
-
     await TestBed.configureTestingModule({
       imports: [SavedFarmsComponent],
       providers: [
         provideZonelessChangeDetection(),
         provideHttpClient(),
-        { provide: FarmDrawService, useValue: mockFarmDraw },
         { provide: IStorageService, useClass: InMemoryStorageService },
       ],
     }).compileComponents();
   });
 
-  it('should create', () => {
+  function createComponent() {
     const fixture = TestBed.createComponent(SavedFarmsComponent);
-    const component = fixture.componentInstance;
-    expect(component).toBeTruthy();
+    fixture.componentRef.setInput('farms', mockFarms);
+    fixture.componentRef.setInput('selected', null);
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  it('should create', () => {
+    const fixture = createComponent();
+    expect(fixture.componentInstance).toBeTruthy();
   });
 
   it('should toggle collapse state of saved farms list', () => {
-    const fixture = TestBed.createComponent(SavedFarmsComponent);
+    const fixture = createComponent();
     const component = fixture.componentInstance;
 
     expect(component.savedFarmsCollapsed()).toBeFalse();
@@ -59,7 +56,7 @@ describe('SavedFarmsComponent', () => {
   });
 
   it('should format farm area result string correctly', () => {
-    const fixture = TestBed.createComponent(SavedFarmsComponent);
+    const fixture = createComponent();
     const component = fixture.componentInstance;
 
     const mockArea: FarmAreaResult = { squareMeters: 5000, hectares: 0.5, acres: 1.235 };
@@ -68,9 +65,12 @@ describe('SavedFarmsComponent', () => {
     expect(formatted).toBe('0.50 ha (1.24 ac)');
   });
 
-  it('should call deleteFarm service method when deleting a farm', () => {
-    const fixture = TestBed.createComponent(SavedFarmsComponent);
+  it('should emit deleteFarm when deleting a farm is confirmed', () => {
+    const fixture = createComponent();
     const component = fixture.componentInstance;
+
+    const emitted: string[] = [];
+    component.deleteFarm.subscribe((id) => emitted.push(id));
 
     const clickEvent = new MouseEvent('click');
     spyOn(clickEvent, 'stopPropagation');
@@ -80,6 +80,6 @@ describe('SavedFarmsComponent', () => {
     component.confirmDelete();
 
     expect(clickEvent.stopPropagation).toHaveBeenCalled();
-    expect(mockFarmDraw.deleteFarm).toHaveBeenCalledWith('farm-1');
+    expect(emitted).toEqual(['farm-1']);
   });
 });

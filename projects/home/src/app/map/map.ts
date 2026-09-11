@@ -5,6 +5,7 @@ import {
   ElementRef,
   inject,
   OnDestroy,
+  OnInit,
   signal,
   viewChild,
   Input,
@@ -15,7 +16,7 @@ import * as L from 'leaflet';
 import { FarmDrawLayer } from './farm-draw/farm-draw-layer';
 import { MapMyFarmComponent } from './component/map-my-farm/map-my-farm.component';
 import { FarmDrawService } from './farm-draw/farm-draw.service';
-import { MapSearchResult } from './models/map.models';
+import { MapSearchResult, SavedFarm } from './models/map.models';
 import { HomeControl, LayerToggleControl } from './controls';
 import { MapSearchComponent } from './component/map-search/map-search.component';
 import { SavedFarmsComponent } from './component/saved-farms/saved-farms.component';
@@ -32,7 +33,7 @@ const SEARCH_ZOOM = 15;
   templateUrl: './map.html',
   styleUrl: './map.scss',
 })
-export class MapComponent implements AfterViewInit, OnDestroy {
+export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() isPicker = false;
   @Input() showSearch = false;
   @Input() mapMode: 'pin' | 'draw' = 'pin';
@@ -53,29 +54,84 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   readonly activeView = signal<MapLayer>('satellite');
 
+  readonly farms = signal<SavedFarm[]>([]);
+  readonly selected = signal<SavedFarm | null>(null);
+
   constructor() {
     effect(() => {
       this.farmDraw.status();
       this.farmDraw.points();
       this.farmDraw.area();
-      this.farmDraw.selectedSavedFarm();
+      this.selected();
       queueMicrotask(() => this.farmDrawLayer?.redraw());
     });
 
-    effect(() => {
-      const drawing = this.farmDraw.isDrawing();
-      const container = this.map?.getContainer();
-      container?.classList.toggle('map-drawing', drawing);
-      if (drawing) {
-        this.map?.doubleClickZoom.disable();
-      } else {
-        this.map?.doubleClickZoom.enable();
-      }
-    });
+    effect(
+      () => {
+        const drawing = this.farmDraw.isDrawing();
+        const container = this.map?.getContainer();
+        container?.classList.toggle('map-drawing', drawing);
+        if (drawing) {
+          this.map?.doubleClickZoom.disable();
+          this.selected.set(null);
+        } else {
+          this.map?.doubleClickZoom.enable();
+        }
+      },
+      { allowSignalWrites: true },
+    );
+  }
+
+  async ngOnInit(): Promise<void> {
+    const user = this.authService.currentUser();
+    if (user) {
+      this.farms.set(await this.farmDraw.loadFarms(user.id));
+    }
   }
 
   ngAfterViewInit(): void {
     this.initMap();
+  }
+
+  onSaveFarm(name: string): void {
+    const farm = this.farmDraw.saveFarm(name, this.farms());
+    if (farm) {
+      this.farms.update((fs) => [farm, ...fs]);
+      this.selected.set(farm);
+    }
+  }
+
+  onDeleteFarm(id: string): void {
+    this.farmDraw.deleteFarm(id);
+    this.farms.update((fs) => fs.filter((f) => f.id !== id));
+    if (this.selected()?.id === id) {
+      this.selected.set(null);
+    }
+  }
+
+  onRenameFarm(id: string, newName: string): void {
+    const updated = this.farmDraw.renameFarm(id, newName, this.farms());
+    if (updated) {
+      this.farms.update((fs) => fs.map((f) => (f.id === id ? updated : f)));
+      if (this.selected()?.id === id) {
+        this.selected.set(updated);
+      }
+    }
+  }
+
+  onUpdateFarmNotes(id: string, notes: string): void {
+    const updated = this.farmDraw.updateFarmNotes(id, notes, this.farms());
+    if (updated) {
+      this.farms.update((fs) => fs.map((f) => (f.id === id ? updated : f)));
+      if (this.selected()?.id === id) {
+        this.selected.set(updated);
+      }
+    }
+  }
+
+  onSelectFarm(farm: SavedFarm | null): void {
+    this.farmDraw.notifyFarmSelected(farm);
+    this.selected.set(farm);
   }
 
   ngOnDestroy(): void {
@@ -230,7 +286,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(this.map);
 
     if (this.map) {
-      this.farmDrawLayer = new FarmDrawLayer(this.map, this.farmDraw);
+      this.farmDrawLayer = new FarmDrawLayer(this.map, this.farmDraw, this.selected);
       this.mapReady.emit(this.map);
 
       this.map.on('click', (e: L.LeafletMouseEvent) => {

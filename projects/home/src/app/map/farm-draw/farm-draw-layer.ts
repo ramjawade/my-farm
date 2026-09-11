@@ -1,8 +1,9 @@
+import { Signal } from '@angular/core';
 import * as L from 'leaflet';
 import { Subscription } from 'rxjs';
 
 import { formatArea, getPolygonCentroid } from './farm-area.utils';
-import { FarmAreaResult, LatLngPoint } from '../models/map.models';
+import { FarmAreaResult, LatLngPoint, SavedFarm } from '../models/map.models';
 import { FarmDrawService } from './farm-draw.service';
 
 const DRAWING_COLOR = '#0d6efd';
@@ -25,6 +26,7 @@ export class FarmDrawLayer {
   constructor(
     private readonly map: L.Map,
     private readonly drawService: FarmDrawService,
+    private readonly selectedFarm: Signal<SavedFarm | null>,
   ) {
     this.layerGroup.addTo(this.map);
     this.map.on('click', this.onMapClick);
@@ -56,7 +58,7 @@ export class FarmDrawLayer {
     const points = this.drawService.points();
     const status = this.drawService.status();
     const area = this.drawService.area();
-    const selectedFarm = this.drawService.selectedSavedFarm();
+    const selectedFarm = this.selectedFarm();
 
     let displayPoints = points;
     let displayStatus = status;

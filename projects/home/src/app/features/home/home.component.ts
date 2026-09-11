@@ -1,4 +1,11 @@
-import { Component, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  ChangeDetectionStrategy,
+  OnInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -6,6 +13,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { CropTimelineService } from '../crop-timeline/crop-timeline.service';
 import { ActivityService } from '../activity/activity.service';
 import { FarmDrawService } from '../../map/farm-draw/farm-draw.service';
+import { SavedFarm } from '../../map/models/map.models';
 import { Activity } from '../activity/activity.models';
 
 import { ProfileEditDialogComponent } from '../profile/components/profile-edit-dialog.component';
@@ -31,13 +39,22 @@ import { WorkflowProgressBarComponent } from '../shared/components/workflow-prog
   styleUrl: './home.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
   readonly authService = inject(AuthService);
   private readonly cropService = inject(CropTimelineService);
   private readonly activityService = inject(ActivityService);
   private readonly farmDrawService = inject(FarmDrawService);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
+
+  readonly farms = signal<SavedFarm[]>([]);
+
+  async ngOnInit(): Promise<void> {
+    const user = this.authService.currentUser();
+    if (user) {
+      this.farms.set(await this.farmDrawService.loadFarms(user.id));
+    }
+  }
 
   // Authentication State
   readonly isLoggedIn = this.authService.isLoggedIn;
@@ -142,7 +159,7 @@ export class HomeComponent {
 
   // Profile completeness check
   readonly hasBoundary = computed(() => {
-    return this.farmDrawService.savedFarms().length > 0;
+    return this.farms().length > 0;
   });
 
   readonly hasLocation = computed(() => {
@@ -155,7 +172,7 @@ export class HomeComponent {
     const cropsCount = this.cropService.crops().length;
     const user = this.currentUser();
 
-    const savedFarmsList = this.farmDrawService.savedFarms();
+    const savedFarmsList = this.farms();
     const landsCount = savedFarmsList.length;
     const unit = user?.farmAreaUnit || 'hectares';
 

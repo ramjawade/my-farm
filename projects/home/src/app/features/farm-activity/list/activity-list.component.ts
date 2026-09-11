@@ -11,6 +11,8 @@ import { DatePipe, CommonModule } from '@angular/common';
 import { ActivityService } from '../../activity/activity.service';
 import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
+import { SavedFarm } from '../../../map/models/map.models';
+import { AuthService } from '../../../core/auth/auth.service';
 import { Activity } from '../../activity/activity.models';
 import { ConfirmDialogComponent, ToastService } from 'shared';
 
@@ -27,10 +29,13 @@ export class ActivityListComponent implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly cropService = inject(CropTimelineService);
   private readonly farmDrawService = inject(FarmDrawService);
+  private readonly authService = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
-  ngOnInit(): void {
+  readonly savedFarms = signal<SavedFarm[]>([]);
+
+  async ngOnInit(): Promise<void> {
     this.route.queryParams.subscribe((params) => {
       const status = params['status'];
       if (status) {
@@ -39,6 +44,11 @@ export class ActivityListComponent implements OnInit {
         this.statusFilter.set('All');
       }
     });
+
+    const user = this.authService.currentUser();
+    if (user) {
+      this.savedFarms.set(await this.farmDrawService.loadFarms(user.id));
+    }
   }
 
   readonly showDeleteConfirm = signal(false);
@@ -67,7 +77,7 @@ export class ActivityListComponent implements OnInit {
 
   // Fields list can combine drawn farms and unique field IDs from activities
   readonly fieldsList = computed(() => {
-    const saved = this.farmDrawService.savedFarms().map((f) => ({ id: f.id, name: f.name }));
+    const saved = this.savedFarms().map((f) => ({ id: f.id, name: f.name }));
     const activeFieldNames = this.activityService
       .activities()
       .map((a) => a.fieldId)

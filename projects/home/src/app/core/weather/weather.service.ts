@@ -1,6 +1,5 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpService } from '../http/http.service';
-import { AuthService } from '../auth/auth.service';
 import { IWeatherService } from './weather.interface';
 import { WeatherCacheService } from './weather-cache.service';
 import {
@@ -11,16 +10,12 @@ import {
   OpenWeatherResponse,
   OpenWeatherForecastResponse,
 } from './weather.models';
-import { FarmDrawService } from '../../map/farm-draw/farm-draw.service';
-
 type DataSource = 'live' | 'cache' | 'demo';
 
 @Injectable({ providedIn: 'root' })
 export class WeatherService extends IWeatherService {
   private readonly httpService = inject(HttpService);
-  private readonly authService = inject(AuthService);
   private readonly cacheService = inject(WeatherCacheService);
-  private readonly farmDraw = inject(FarmDrawService);
 
   private readonly weatherDataSignal = signal<WeatherData | null>(null);
   readonly weatherData = computed(() => this.weatherDataSignal());
@@ -35,50 +30,6 @@ export class WeatherService extends IWeatherService {
   readonly source = computed(() => this.sourceSignal());
 
   readonly currentWeather = computed(() => this.weatherDataSignal());
-
-  private getLocationForWeather(): WeatherLocation {
-    const user = this.authService.currentUser();
-
-    // Priority 1: Farm centroid (first saved land)
-    const savedFarms = this.farmDraw.savedFarms();
-    if (savedFarms.length > 0) {
-      const farm = savedFarms[0];
-      const centroid = this.calculateCentroid(farm.points);
-      return {
-        lat: centroid.lat,
-        lng: centroid.lng,
-        name: farm.name,
-        state: user?.state || 'Unknown',
-      };
-    }
-
-    // Priority 2: User profile location
-    if (user?.location) {
-      return {
-        lat: user.location.lat,
-        lng: user.location.lng,
-        name: user.village || 'Profile Location',
-        state: user.state || 'Unknown',
-      };
-    }
-
-    // Priority 3: Fallback
-    return {
-      lat: 19.1136,
-      lng: 79.0882,
-      name: 'Nashik',
-      state: 'Maharashtra',
-    };
-  }
-
-  private calculateCentroid(points: { lat: number; lng: number }[]): { lat: number; lng: number } {
-    if (points.length === 0) return { lat: 19.1136, lng: 79.0882 };
-    const sum = points.reduce((acc, p) => ({ lat: acc.lat + p.lat, lng: acc.lng + p.lng }), {
-      lat: 0,
-      lng: 0,
-    });
-    return { lat: sum.lat / points.length, lng: sum.lng / points.length };
-  }
 
   override async getWeatherData(location: WeatherLocation): Promise<WeatherData> {
     try {

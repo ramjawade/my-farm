@@ -1,4 +1,11 @@
-import { Component, inject, computed, ChangeDetectionStrategy, signal } from '@angular/core';
+import {
+  Component,
+  inject,
+  computed,
+  ChangeDetectionStrategy,
+  signal,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -7,6 +14,8 @@ import { map } from 'rxjs/operators';
 import { ActivityService } from '../../activity/activity.service';
 import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
+import { SavedFarm } from '../../../map/models/map.models';
+import { AuthService } from '../../../core/auth/auth.service';
 import { ConfirmDialogComponent, ToastService } from 'shared';
 import { ActivityStatus } from '../../activity/activity.models';
 
@@ -18,7 +27,7 @@ import { ActivityStatus } from '../../activity/activity.models';
   styleUrl: './activity-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ActivityDetailComponent {
+export class ActivityDetailComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -27,11 +36,20 @@ export class ActivityDetailComponent {
   private readonly toast = inject(ToastService);
   private readonly cropService = inject(CropTimelineService);
   private readonly farmDrawService = inject(FarmDrawService);
+  private readonly authService = inject(AuthService);
 
   readonly showExpenseModal = signal(false);
   readonly showDeleteActivityConfirm = signal(false);
   readonly showDeleteExpenseConfirm = signal(false);
   readonly selectedExpenseId = signal<string | null>(null);
+  readonly savedFarms = signal<SavedFarm[]>([]);
+
+  async ngOnInit(): Promise<void> {
+    const user = this.authService.currentUser();
+    if (user) {
+      this.savedFarms.set(await this.farmDrawService.loadFarms(user.id));
+    }
+  }
 
   // Extract ID from routing params reactive signal
   private readonly routeParams$ = this.route.paramMap.pipe(map((params) => params.get('id') || ''));
@@ -65,7 +83,7 @@ export class ActivityDetailComponent {
   readonly fieldName = computed(() => {
     const act = this.activity();
     if (!act || !act.fieldId) return '';
-    const farm = this.farmDrawService.savedFarms().find((f) => f.id === act.fieldId);
+    const farm = this.savedFarms().find((f) => f.id === act.fieldId);
     return farm ? farm.name : act.fieldId;
   });
 

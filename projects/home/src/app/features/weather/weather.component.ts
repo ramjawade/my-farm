@@ -1,10 +1,11 @@
-import { Component, computed, signal, HostListener, inject, effect } from '@angular/core';
+import { Component, computed, signal, HostListener, inject, effect, OnInit } from '@angular/core';
 import { SunPathComponent } from './sun-path/sun-path.component';
 import { HistoryTrendComponent } from './history-trend/history-trend.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { IWeatherService } from '../../core/weather/weather.interface';
 import { ProfileEditDialogComponent } from '../profile/components/profile-edit-dialog.component';
 import { FarmDrawService } from '../../map/farm-draw/farm-draw.service';
+import { SavedFarm } from '../../map/models/map.models';
 import { WeatherService } from '../../core/weather/weather.service';
 import { WorkflowStateService } from '../../core/workflow/workflow-state.service';
 import { OnboardingGuideService } from '../../core/workflow/onboarding-guide.service';
@@ -44,12 +45,21 @@ interface SoilMetric {
   templateUrl: './weather.component.html',
   styleUrl: './weather.component.scss',
 })
-export class WeatherComponent {
+export class WeatherComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly weatherService = inject(IWeatherService) as WeatherService;
   private readonly farmDraw = inject(FarmDrawService);
   private readonly workflowService = inject(WorkflowStateService);
   private readonly onboardingService = inject(OnboardingGuideService);
+
+  readonly farms = signal<SavedFarm[]>([]);
+
+  async ngOnInit(): Promise<void> {
+    const user = this.authService.currentUser();
+    if (user) {
+      this.farms.set(await this.farmDraw.loadFarms(user.id));
+    }
+  }
 
   // Progressive location profiling signals
   readonly shouldShowLocationPrompt = computed(() => {
@@ -102,7 +112,7 @@ export class WeatherComponent {
 
   // Location information
   private getLocationForDisplay(): { name: string; state: string } {
-    const savedFarms = this.farmDraw.savedFarms();
+    const savedFarms = this.farms();
     if (savedFarms.length > 0) {
       return {
         name: savedFarms[0].name,
@@ -117,7 +127,7 @@ export class WeatherComponent {
   }
 
   readonly locationName = computed(() => {
-    this.farmDraw.savedFarms();
+    this.farms();
     this.authService.currentUser();
     const loc = this.getLocationForDisplay();
     return `${loc.name}, ${loc.state}`;
@@ -270,7 +280,7 @@ export class WeatherComponent {
   constructor() {
     effect(() => {
       const user = this.authService.currentUser();
-      this.farmDraw.savedFarms();
+      this.farms();
       if (user) {
         const loc = this.getLocationForDisplay();
         const location = this.getResolvedLocation();
@@ -280,7 +290,7 @@ export class WeatherComponent {
   }
 
   private getResolvedLocation(): { lat: number; lng: number; name: string; state: string } {
-    const savedFarms = this.farmDraw.savedFarms();
+    const savedFarms = this.farms();
     if (savedFarms.length > 0) {
       const farm = savedFarms[0];
       const centroid = this.calculateCentroid(farm.points);
