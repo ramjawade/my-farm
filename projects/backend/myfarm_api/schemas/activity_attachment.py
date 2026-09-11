@@ -1,7 +1,6 @@
 """Pydantic schemas for activity attachment endpoints."""
 
 from datetime import datetime
-from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -9,7 +8,7 @@ from pydantic import BaseModel
 class ActivityAttachmentBase(BaseModel):
     """Shared activity attachment fields."""
 
-    activity_id: UUID
+    activity_id: int
     storage_key: str
     content_type: str | None = None
     size_bytes: int | None = None
@@ -26,7 +25,7 @@ class ActivityAttachmentCreate(BaseModel):
 class ActivityAttachmentRead(ActivityAttachmentBase):
     """Read an activity attachment record."""
 
-    id: UUID
+    id: int
     created_at: datetime
     updated_at: datetime
     deleted_at: datetime | None = None

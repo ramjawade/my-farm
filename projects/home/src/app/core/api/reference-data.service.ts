@@ -20,12 +20,16 @@ import { ReferenceItem } from './contracts';
 export class ReferenceDataService {
   private readonly httpService = inject(HttpService);
 
-  private cropsByName = new Map<string, string>();
-  private cropsById = new Map<string, string>();
-  private expensesByName = new Map<string, string>();
-  private expensesById = new Map<string, string>();
-  private activityTypesByName = new Map<string, string>();
-  private activityTypesById = new Map<string, string>();
+  private cropsByName = new Map<string, number>();
+  private cropsById = new Map<number, string>();
+  private expensesByName = new Map<string, number>();
+  private expensesById = new Map<number, string>();
+  private activityTypesByName = new Map<string, number>();
+  private activityTypesById = new Map<number, string>();
+  private seasonsByName = new Map<string, number>();
+  private seasonsById = new Map<number, string>();
+  private stagesByName = new Map<string, number>();
+  private stagesById = new Map<number, string>();
 
   private loadingPromise: Promise<void> | null = null;
 
@@ -38,6 +42,10 @@ export class ReferenceDataService {
     this.expensesById.clear();
     this.activityTypesByName.clear();
     this.activityTypesById.clear();
+    this.seasonsByName.clear();
+    this.seasonsById.clear();
+    this.stagesByName.clear();
+    this.stagesById.clear();
   }
 
   private async ensureLoaded(): Promise<void> {
@@ -55,18 +63,22 @@ export class ReferenceDataService {
   }
 
   private async loadAll(): Promise<void> {
-    const [crops, expenses, activityTypes] = await Promise.all([
+    const [crops, expenses, activityTypes, seasons, stages] = await Promise.all([
       this.fetchAll('/reference/crops'),
       this.fetchAll('/reference/expense-categories'),
       this.fetchAll('/reference/activity-types'),
+      this.fetchAll('/reference/seasons'),
+      this.fetchAll('/reference/crop-stages'),
     ]);
-    this.applyMaps(crops, expenses, activityTypes);
+    this.applyMaps(crops, expenses, activityTypes, seasons, stages);
   }
 
   private applyMaps(
     crops: ReferenceItem[],
     expenses: ReferenceItem[],
     activityTypes: ReferenceItem[],
+    seasons: ReferenceItem[],
+    stages: ReferenceItem[],
   ): void {
     for (const c of crops) {
       this.cropsByName.set(c.name, c.id);
@@ -80,6 +92,14 @@ export class ReferenceDataService {
       this.activityTypesByName.set(a.name, a.id);
       this.activityTypesById.set(a.id, a.name);
     }
+    for (const s of seasons) {
+      this.seasonsByName.set(s.name, s.id);
+      this.seasonsById.set(s.id, s.name);
+    }
+    for (const st of stages) {
+      this.stagesByName.set(st.name, st.id);
+      this.stagesById.set(st.id, st.name);
+    }
   }
 
   private async fetchAll(path: string): Promise<ReferenceItem[]> {
@@ -87,7 +107,7 @@ export class ReferenceDataService {
     return resp.items;
   }
 
-  async cropCatalogIdForName(name: string): Promise<string> {
+  async cropCatalogIdForName(name: string): Promise<number> {
     await this.ensureLoaded();
     const id = this.cropsByName.get(name);
     if (!id) {
@@ -96,37 +116,37 @@ export class ReferenceDataService {
     return id;
   }
 
-  async cropNameForId(id: string): Promise<string> {
+  async cropNameForId(id: number): Promise<string> {
     await this.ensureLoaded();
-    return this.cropsById.get(id) ?? id;
+    return this.cropsById.get(id) ?? String(id);
   }
 
-  async expenseCategoryIdForName(name: string): Promise<string> {
+  async expenseCategoryIdForName(name: string): Promise<number> {
     await this.ensureLoaded();
     const id = this.expensesByName.get(name);
-    if (!id) {
+    if (id === undefined) {
       throw new Error(`Unknown expense category "${name}" — run /api/v1/admin/seed-reference-data`);
     }
     return id;
   }
 
-  async expenseCategoryNameForId(id: string): Promise<string> {
+  async expenseCategoryNameForId(id: number): Promise<string> {
     await this.ensureLoaded();
-    return this.expensesById.get(id) ?? id;
+    return this.expensesById.get(id) ?? String(id);
   }
 
-  async activityTypeIdForName(name: string): Promise<string> {
+  async activityTypeIdForName(name: string): Promise<number> {
     await this.ensureLoaded();
     const id = this.activityTypesByName.get(name);
-    if (!id) {
+    if (id === undefined) {
       throw new Error(`Unknown activity type "${name}" — run /api/v1/admin/seed-reference-data`);
     }
     return id;
   }
 
-  async activityTypeNameForId(id: string): Promise<string> {
+  async activityTypeNameForId(id: number): Promise<string> {
     await this.ensureLoaded();
-    return this.activityTypesById.get(id) ?? id;
+    return this.activityTypesById.get(id) ?? String(id);
   }
 
   async listCropNames(): Promise<string[]> {
@@ -134,12 +154,40 @@ export class ReferenceDataService {
     return Array.from(this.cropsByName.keys()).sort();
   }
 
-  async createCrop(name: string): Promise<string> {
+  async createCrop(name: string): Promise<number> {
     const resp = await this.httpService.post<ReferenceItem>('/reference/crops', {
       name,
     });
     this.cropsByName.set(resp.name, resp.id);
     this.cropsById.set(resp.id, resp.name);
     return resp.id;
+  }
+
+  async listSeasons(): Promise<ReferenceItem[]> {
+    await this.ensureLoaded();
+    return Array.from(this.seasonsByName.entries())
+      .map(([name, id]) => ({ id, name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  async listCropStages(): Promise<ReferenceItem[]> {
+    await this.ensureLoaded();
+    return Array.from(this.stagesByName.entries())
+      .map(([name, id]) => ({ id, name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  async listActivityTypes(): Promise<ReferenceItem[]> {
+    await this.ensureLoaded();
+    return Array.from(this.activityTypesByName.entries())
+      .map(([name, id]) => ({ id, name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  async listExpenseCategories(): Promise<ReferenceItem[]> {
+    await this.ensureLoaded();
+    return Array.from(this.expensesByName.entries())
+      .map(([name, id]) => ({ id, name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
   }
 }

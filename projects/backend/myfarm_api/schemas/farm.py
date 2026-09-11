@@ -2,7 +2,6 @@
 
 from datetime import datetime
 from decimal import Decimal
-from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -28,8 +27,6 @@ class FarmBase(BaseModel):
 class FarmCreate(FarmBase):
     """Create a farm."""
 
-    id: UUID | None = None
-
 
 class FarmUpdate(BaseModel):
     """Update farm fields."""
@@ -52,8 +49,8 @@ class FarmUpdate(BaseModel):
 class FarmRead(FarmBase):
     """Read a farm record."""
 
-    id: UUID
-    farmer_id: UUID
+    id: int
+    farmer_id: int
     setup_completed: bool
     created_at: datetime
     updated_at: datetime

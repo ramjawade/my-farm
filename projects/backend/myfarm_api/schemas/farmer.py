@@ -1,7 +1,6 @@
 """Pydantic schemas for farmer endpoints."""
 
 from datetime import datetime
-from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -32,7 +31,7 @@ class FarmerUpdate(BaseModel):
 class FarmerRead(FarmerBase):
     """Read a farmer record (current authenticated farmer)."""
 
-    id: UUID
+    id: int
     auth_uid: str
     user_role: str
     created_at: datetime
