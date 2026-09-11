@@ -13,6 +13,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
 import { CropTimelineService } from '../crop-timeline.service';
 import { CropEntity, CropActivity, CropStage, CROP_STAGES } from '../crop-timeline.models';
+import { stageIndex } from '../crop-timeline.utils';
 import { CreateActivityComponent } from '../../farm-activity/create/create-activity.component';
 import { ActivitiesSummaryComponent } from '../../farm-activity/summary/activities-summary.component';
 import { ConfirmDialogComponent, ToastService } from 'shared';
@@ -146,6 +147,6 @@ export class CropTimelineDetailComponent implements OnInit {
   }
 
   getStageIndex(stage: CropStage): number {
-    return this.stages.indexOf(stage);
+    return stageIndex(stage);
   }
 }

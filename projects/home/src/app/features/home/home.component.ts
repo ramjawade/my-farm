@@ -15,6 +15,7 @@ import { ActivityService } from '../activity/activity.service';
 import { FarmDrawService } from '../../map/farm-draw/farm-draw.service';
 import { SavedFarm } from '../../map/models/map.models';
 import { Activity } from '../activity/activity.models';
+import { daysAfterSowing, stageProgressPercent } from '../crop-timeline/crop-timeline.utils';
 
 import { ProfileEditDialogComponent } from '../profile/components/profile-edit-dialog.component';
 import { ToastService } from 'shared';
@@ -189,13 +190,7 @@ export class HomeComponent implements OnInit {
       acreage = user && user.farmArea ? user.farmArea : 0;
     }
 
-    const allActs = this.activityService.activities();
-    const todayStr = new Date().toISOString().split('T')[0];
-    const todayTasks = allActs.filter((a) => {
-      if (!a.date) return false;
-      const aStr = new Date(a.date).toISOString().split('T')[0];
-      return aStr === todayStr && a.status !== 'Completed';
-    }).length;
+    const todayTasks = this.activityService.todaysPendingActivities().length;
 
     // Calculate total expenses this month
     const currentMonth = new Date().getMonth();
@@ -222,39 +217,15 @@ export class HomeComponent implements OnInit {
   // Active Crops list with formatted stages
   readonly activeCrops = computed(() => {
     const crops = this.cropService.crops();
+    const lastActByC = this.cropService.lastActivityDateByCrop();
     return crops.map((crop) => {
-      // Calculate days after sowing
-      let days: number | null = null;
-      if (crop.sowingDate) {
-        const diff = Date.now() - crop.sowingDate;
-        days = isNaN(diff) ? null : Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
-      }
-
-      // Determine stage index and progress (out of 8 stages)
-      const stages = [
-        'Land Preparation',
-        'Sowing',
-        'Germination',
-        'Vegetative Growth',
-        'Flowering',
-        'Fruiting / Pod Formation',
-        'Maturity',
-        'Harvest',
-      ];
-      const stageIndex = stages.indexOf(crop.currentStage);
-      const progressPercent =
-        stageIndex >= 0 ? Math.round(((stageIndex + 1) / stages.length) * 100) : 0;
-
-      // Check if no activity logged recently (e.g. 7 days)
-      const cropActs = this.activityService
-        .activities()
-        .filter((a) => a.cropId === crop.id && a.status === 'Completed')
-        .sort((a, b) => (b.date || 0) - (a.date || 0));
+      const days = daysAfterSowing(crop.sowingDate);
+      const progressPercent = stageProgressPercent(crop.currentStage);
 
       let lastActivityDays = -1;
-      if (cropActs.length > 0 && cropActs[0].date) {
-        const diff = Date.now() - cropActs[0].date;
-        lastActivityDays = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const lastActDate = lastActByC[crop.id];
+      if (lastActDate) {
+        lastActivityDays = Math.floor((Date.now() - lastActDate) / (1000 * 60 * 60 * 24));
       }
 
       return {
@@ -290,14 +261,7 @@ export class HomeComponent implements OnInit {
   });
 
   // Today's pending activities
-  readonly todayActivities = computed(() => {
-    const todayStr = new Date().toISOString().split('T')[0];
-    return this.activityService.activities().filter((a) => {
-      if (!a.date) return false;
-      const aStr = new Date(a.date).toISOString().split('T')[0];
-      return aStr === todayStr && a.status !== 'Completed';
-    });
-  });
+  readonly todayActivities = computed(() => this.activityService.todaysPendingActivities());
 
   private formatDate(timestamp: number | undefined): string {
     if (!timestamp) return '';

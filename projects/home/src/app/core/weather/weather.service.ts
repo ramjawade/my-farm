@@ -26,7 +26,7 @@ export class WeatherService extends IWeatherService {
   private readonly errorSignal = signal<string | null>(null);
   readonly error = computed(() => this.errorSignal());
 
-  readonly sourceSignal = signal<DataSource>('demo');
+  private readonly sourceSignal = signal<DataSource>('demo');
   readonly source = computed(() => this.sourceSignal());
 
   readonly currentWeather = computed(() => this.weatherDataSignal());

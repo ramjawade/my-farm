@@ -47,7 +47,7 @@ interface SoilMetric {
 })
 export class WeatherComponent implements OnInit {
   private readonly authService = inject(AuthService);
-  private readonly weatherService = inject(IWeatherService) as WeatherService;
+  private readonly weatherService = inject(IWeatherService);
   private readonly farmDraw = inject(FarmDrawService);
   private readonly workflowService = inject(WorkflowStateService);
   private readonly onboardingService = inject(OnboardingGuideService);

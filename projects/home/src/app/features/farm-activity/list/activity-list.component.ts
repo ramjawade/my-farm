@@ -15,6 +15,7 @@ import { SavedFarm } from '../../../map/models/map.models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Activity } from '../../activity/activity.models';
 import { ConfirmDialogComponent, ToastService } from 'shared';
+import { activityTypeEmoji } from '../../activity/activity-display';
 
 @Component({
   selector: 'app-activity-list',
@@ -204,32 +205,8 @@ export class ActivityListComponent implements OnInit {
       queryParams: {},
     });
   }
-  getActivityEmoji(type: string): string {
-    switch (type) {
-      case 'Sowing':
-        return '🌱';
-      case 'Irrigation':
-        return '💧';
-      case 'Fertilizer Application':
-        return '🌿';
-      case 'Spray Application':
-        return '🐛';
-      case 'Weeding':
-        return '✂️';
-      case 'Field Inspection':
-        return '📷';
-      case 'Labour Activity':
-        return '👥';
-      case 'Harvest':
-        return '🌾';
-      case 'Sale':
-        return '💰';
-      case 'Weather Incident':
-        return '⚡';
-      default:
-        return '📅';
-    }
-  }
+
+  getActivityEmoji = activityTypeEmoji;
 
   onDeleteActivityClick(id: string, event: Event): void {
     event.stopPropagation();

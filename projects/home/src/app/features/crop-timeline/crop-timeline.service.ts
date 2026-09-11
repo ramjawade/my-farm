@@ -89,6 +89,19 @@ export class CropTimelineService {
       }));
   });
 
+  /** Last completed activity date per crop. Used to detect stale crops. */
+  readonly lastActivityDateByCrop = computed<Record<string, number | null>>(() => {
+    const result: Record<string, number | null> = {};
+    const acts = this.activityService.activities();
+    for (const crop of this.cropsSignal()) {
+      const cropActs = acts
+        .filter((a) => a.cropId === crop.id && a.status === 'Completed')
+        .sort((a, b) => (b.date || 0) - (a.date || 0));
+      result[crop.id] = cropActs.length > 0 && cropActs[0].date ? cropActs[0].date : null;
+    }
+    return result;
+  });
+
   constructor() {
     effect(() => {
       const user = this.authService.currentUser();
