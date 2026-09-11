@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, effect } from '@angular/core';
+import { Component, inject, signal, computed, effect, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -29,7 +29,7 @@ import { WorkflowStateService } from '../../core/workflow/workflow-state.service
   templateUrl: './crop-timeline.component.html',
   styleUrl: './crop-timeline.component.scss',
 })
-export class CropTimelineComponent {
+export class CropTimelineComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   readonly timelineService = inject(CropTimelineService);
@@ -186,6 +186,10 @@ export class CropTimelineComponent {
         }
       }
     });
+  }
+
+  ngOnInit(): void {
+    void this.timelineService.reload();
   }
 
   // --- View Helpers ---

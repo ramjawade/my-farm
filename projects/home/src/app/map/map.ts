@@ -5,6 +5,7 @@ import {
   ElementRef,
   inject,
   OnDestroy,
+  OnInit,
   signal,
   viewChild,
   Input,
@@ -32,7 +33,7 @@ const SEARCH_ZOOM = 15;
   templateUrl: './map.html',
   styleUrl: './map.scss',
 })
-export class MapComponent implements AfterViewInit, OnDestroy {
+export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() isPicker = false;
   @Input() showSearch = false;
   @Input() mapMode: 'pin' | 'draw' = 'pin';
@@ -72,6 +73,10 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         this.map?.doubleClickZoom.enable();
       }
     });
+  }
+
+  ngOnInit(): void {
+    void this.farmDraw.reload();
   }
 
   ngAfterViewInit(): void {
