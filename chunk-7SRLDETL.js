@@ -1,0 +1,1 @@
+import{a as t}from"./chunk-MW544KSN.js";var e=1440*60*1e3;function o(n){return t.indexOf(n)}function i(n){let r=o(n);return r>=0?Math.round((r+1)/t.length*100):0}function f(n){if(!n)return null;let r=Date.now()-n;return isNaN(r)?null:Math.max(0,Math.floor(r/e))}export{o as a,i as b,f as c};
