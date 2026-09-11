@@ -1,0 +1,51 @@
+<div class="combobox-wrapper" appClickOutside (appClickOutside)="onClickOutside()">
+  <input
+    type="text"
+    class="form-control"
+    role="combobox"
+    [attr.aria-expanded]="isOpen()"
+    aria-autocomplete="list"
+    [attr.aria-controls]="isOpen() ? 'combobox-listbox' : null"
+    [attr.aria-activedescendant]="focusedIndex() >= 0 ? getItemId(focusedIndex()) : null"
+    (focus)="onInputFocus()"
+    (input)="onInputChange($event)"
+    (keydown)="onInputKeydown($event)"
+    [value]="value() || ''"
+    placeholder="Select or type..."
+  />
+  @if (isOpen()) {
+    <div
+      id="combobox-listbox"
+      class="combobox-dropdown"
+      role="listbox"
+    >
+      @for (item of visibleItems(); track item; let i = $index) {
+        @if (item === '') {
+          <button
+            type="button"
+            class="combobox-item combobox-create"
+            [class.focused]="isFocused(i)"
+            (click)="onCreateClick()"
+            [id]="getItemId(i)"
+            role="option"
+          >
+            + Add "{{ searchText() }}"
+          </button>
+        } @else {
+          <button
+            type="button"
+            class="combobox-item"
+            [class.selected]="isSelected(item)"
+            [class.focused]="isFocused(i)"
+            (click)="selectItem(item)"
+            [id]="getItemId(i)"
+            role="option"
+            [attr.aria-selected]="isSelected(item)"
+          >
+            {{ item }}
+          </button>
+        }
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,50 @@
+.combobox-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.combobox-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-top: none;
+  background: var(--bs-body-bg, white);
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.combobox-item {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: inherit;
+  color: inherit;
+
+  &:hover,
+  &.focused {
+    background-color: var(--bs-light, #f8f9fa);
+  }
+
+  &.selected {
+    background-color: var(--bs-info, #0d6efd);
+    color: white;
+  }
+
+  &.combobox-create {
+    font-style: italic;
+    color: var(--bs-secondary, #6c757d);
+
+    &.focused {
+      background-color: var(--bs-success, #198754);
+      color: white;
+    }
+  }
+}
