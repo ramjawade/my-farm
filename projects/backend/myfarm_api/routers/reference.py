@@ -1,7 +1,6 @@
 """Reference data endpoints: list and create catalog entries."""
 
 from typing import Any
-from uuid import uuid4
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
@@ -51,7 +50,7 @@ async def create_or_get_crop(
         if existing_crop:
             return existing_crop
 
-        new_crop = CropCatalog(id=uuid4(), name=crop_name)
+        new_crop = CropCatalog(name=crop_name)
         session.add(new_crop)
         await session.commit()
         await session.refresh(new_crop)

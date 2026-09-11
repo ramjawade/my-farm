@@ -2,7 +2,6 @@
 
 from datetime import datetime
 from decimal import Decimal
-from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -10,8 +9,8 @@ from pydantic import BaseModel, Field
 class CropBase(BaseModel):
     """Shared crop fields."""
 
-    land_id: UUID
-    crop_catalog_id: UUID
+    land_id: int
+    crop_catalog_id: int
     label: str | None = None
     area: Decimal | None = None
     area_unit: str = Field(default="sq_m", max_length=50)
@@ -24,8 +23,6 @@ class CropBase(BaseModel):
 
 class CropCreate(CropBase):
     """Create a crop."""
-
-    id: UUID | None = None
 
 
 class CropUpdate(BaseModel):
@@ -44,8 +41,8 @@ class CropUpdate(BaseModel):
 class CropRead(CropBase):
     """Read a crop record."""
 
-    id: UUID
-    farmer_id: UUID
+    id: int
+    farmer_id: int
     created_at: datetime
     updated_at: datetime
     deleted_at: datetime | None = None

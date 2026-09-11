@@ -1,7 +1,6 @@
 """Admin endpoints for database seeding and maintenance."""
 
 from typing import Any
-from uuid import uuid4
 
 from fastapi import APIRouter
 from sqlalchemy import Select, select
@@ -76,7 +75,7 @@ async def seed_reference_data() -> dict[str, Any]:
             stmt: Select[Any] = select(CropCatalog).where(CropCatalog.name == crop_name)
             result = await session.execute(stmt)
             if not result.scalar_one_or_none():
-                crop = CropCatalog(id=uuid4(), name=crop_name)
+                crop = CropCatalog(name=crop_name)
                 session.add(crop)
                 crops_created += 1
 
@@ -88,7 +87,7 @@ async def seed_reference_data() -> dict[str, Any]:
             )
             result = await session.execute(stmt)
             if not result.scalar_one_or_none():
-                expense = ExpenseCategory(id=uuid4(), name=expense_name)
+                expense = ExpenseCategory(name=expense_name)
                 session.add(expense)
                 expenses_created += 1
 
@@ -98,7 +97,7 @@ async def seed_reference_data() -> dict[str, Any]:
             stmt = select(ActivityType).where(ActivityType.name == activity_name)
             result = await session.execute(stmt)
             if not result.scalar_one_or_none():
-                activity = ActivityType(id=uuid4(), name=activity_name)
+                activity = ActivityType(name=activity_name)
                 session.add(activity)
                 activities_created += 1
 

@@ -2,7 +2,6 @@
 
 from datetime import datetime
 from decimal import Decimal
-from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -18,7 +17,7 @@ class LandBase(BaseModel):
     """Shared land fields."""
 
     name: str = Field(..., max_length=255)
-    farm_id: UUID
+    farm_id: int
     area_sq_m: Decimal | None = None
     notes: str | None = None
     points: list[LandPoint] | None = None
@@ -26,8 +25,6 @@ class LandBase(BaseModel):
 
 class LandCreate(LandBase):
     """Create a land."""
-
-    id: UUID | None = None
 
 
 class LandUpdate(BaseModel):
@@ -42,8 +39,8 @@ class LandUpdate(BaseModel):
 class LandRead(LandBase):
     """Read a land record."""
 
-    id: UUID
-    farmer_id: UUID
+    id: int
+    farmer_id: int
     created_at: datetime
     updated_at: datetime
     deleted_at: datetime | None = None
