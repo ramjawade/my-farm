@@ -16,6 +16,8 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { Activity } from '../../activity/activity.models';
 import { ConfirmDialogComponent, ToastService } from 'shared';
 import { activityTypeEmoji } from '../../activity/activity-display';
+import { ReferenceDataService } from '../../../core/api/reference-data.service';
+import { ReferenceItem } from '../../../core/api/contracts';
 
 @Component({
   selector: 'app-activity-list',
@@ -33,8 +35,10 @@ export class ActivityListComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly referenceDataService = inject(ReferenceDataService);
 
   readonly savedFarms = signal<SavedFarm[]>([]);
+  readonly referenceActivityTypes = signal<ReferenceItem[]>([]);
 
   async ngOnInit(): Promise<void> {
     this.route.queryParams.subscribe((params) => {
@@ -49,6 +53,13 @@ export class ActivityListComponent implements OnInit {
     const user = this.authService.currentUser();
     if (user) {
       this.savedFarms.set(await this.farmDrawService.loadFarms(user.id));
+    }
+
+    try {
+      const types = await this.referenceDataService.listActivityTypes();
+      this.referenceActivityTypes.set(types);
+    } catch (error) {
+      console.error('Failed to load activity types:', error);
     }
   }
 
@@ -91,24 +102,11 @@ export class ActivityListComponent implements OnInit {
     return [...saved, ...uniqueActiveFields];
   });
 
-  // Dynamic activity types based on recorded data plus common operations
+  // Dynamic activity types from reference data service
   readonly activityTypesList = computed(() => {
+    const referenceTypes = this.referenceActivityTypes().map((t) => t.name);
     const recorded = this.activityService.activities().map((a) => a.type);
-    const standard = [
-      'Sowing',
-      'Irrigation',
-      'Fertilizer Application',
-      'Spray Application',
-      'Weeding',
-      'Field Inspection',
-      'Labour Activity',
-      'Harvest',
-      'Sale',
-      'Weather Incident',
-      'Maintenance',
-      'Custom',
-    ];
-    return Array.from(new Set([...recorded, ...standard]));
+    return Array.from(new Set([...referenceTypes, ...recorded]));
   });
 
   // Main filtered & sorted list
