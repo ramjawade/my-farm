@@ -2,7 +2,13 @@ import { computed, Injectable, signal, inject } from '@angular/core';
 import { Subject } from 'rxjs';
 
 import { calculateFarmArea, toGeoJsonPolygon } from './farm-area.utils';
-import { FarmAreaResult, FarmDrawStatus, LatLngPoint, SavedFarm } from '../models/map.models';
+import {
+  FarmAreaResult,
+  FarmDrawStatus,
+  LatLngPoint,
+  NewSavedFarm,
+  SavedFarm,
+} from '../models/map.models';
 import { AuthService } from '../../core/auth/auth.service';
 import { IStorageService } from '../../core/storage/storage.interface';
 
@@ -21,18 +27,11 @@ export class FarmDrawService {
   readonly pointCount = computed(() => this.points().length);
 
   /** Read the signed-in user's lands from storage. */
-  loadFarms(userId: string): Promise<SavedFarm[]> {
+  loadFarms(userId: number): Promise<SavedFarm[]> {
     return this.storage.getFarms(userId);
   }
 
-  private persistNewFarm(farm: SavedFarm): void {
-    const user = this.authService.currentUser();
-    if (user) {
-      this.storage.saveFarm(user.id, farm).catch((e) => console.error('Failed to save farm', e));
-    }
-  }
-
-  private persistFarmUpdate(id: string, updates: Partial<SavedFarm>): void {
+  private persistFarmUpdate(id: number, updates: Partial<SavedFarm>): void {
     const user = this.authService.currentUser();
     if (user) {
       this.storage
@@ -41,7 +40,7 @@ export class FarmDrawService {
     }
   }
 
-  private persistFarmDelete(id: string): void {
+  private persistFarmDelete(id: number): void {
     const user = this.authService.currentUser();
     if (user) {
       this.storage.deleteFarm(user.id, id).catch((e) => console.error('Failed to delete farm', e));
@@ -88,9 +87,14 @@ export class FarmDrawService {
     this.points.update((current) => current.slice(0, -1));
   }
 
-  /** Build and persist a new farm from the current drawing; returns it, or null if the drawing isn't valid. */
-  saveFarm(name: string, currentFarms: SavedFarm[]): SavedFarm | null {
-    if (!this.isCompleted()) {
+  /**
+   * Persist a new farm from the current drawing. Resolves with the saved farm
+   * (server-minted id), or null if the drawing isn't valid or nobody is signed in.
+   * The drawing is kept if the save fails, so the farmer can retry.
+   */
+  async saveFarm(name: string, currentFarms: SavedFarm[]): Promise<SavedFarm | null> {
+    const user = this.authService.currentUser();
+    if (!user || !this.isCompleted()) {
       return null;
     }
     const currentArea = this.area();
@@ -99,26 +103,24 @@ export class FarmDrawService {
       return null;
     }
 
-    const newFarm: SavedFarm = {
-      id: crypto.randomUUID(),
+    const draft: NewSavedFarm = {
       name: name.trim() || `Farm #${currentFarms.length + 1}`,
       points: currentPoints,
       area: currentArea,
       geoJson: toGeoJsonPolygon(currentPoints),
-      createdAt: Date.now(),
     };
 
-    this.persistNewFarm(newFarm);
+    const saved = await this.storage.saveFarm(user.id, draft);
     this.cancelDrawing();
-    return newFarm;
+    return saved;
   }
 
-  deleteFarm(id: string): void {
+  deleteFarm(id: number): void {
     this.persistFarmDelete(id);
   }
 
   /** Returns the updated farm, or null if the name is blank or the farm isn't found. */
-  renameFarm(id: string, newName: string, currentFarms: SavedFarm[]): SavedFarm | null {
+  renameFarm(id: number, newName: string, currentFarms: SavedFarm[]): SavedFarm | null {
     const trimmed = newName.trim();
     if (!trimmed) return null;
     const updated = currentFarms.find((f) => f.id === id);
@@ -128,7 +130,7 @@ export class FarmDrawService {
   }
 
   /** Returns the updated farm, or null if not found. */
-  updateFarmNotes(id: string, notes: string, currentFarms: SavedFarm[]): SavedFarm | null {
+  updateFarmNotes(id: number, notes: string, currentFarms: SavedFarm[]): SavedFarm | null {
     const found = currentFarms.find((f) => f.id === id);
     if (!found) return null;
     this.persistFarmUpdate(id, { notes });

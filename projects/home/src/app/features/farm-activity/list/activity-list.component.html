@@ -191,10 +191,10 @@
             <span class="badge bg-success">Season: {{ seasonFilter() }}</span>
           }
           @if (cropFilter() !== 'All') {
-            <span class="badge bg-success">Crop: {{ getCropName(cropFilter()) }}</span>
+            <span class="badge bg-success">Crop: {{ cropFilterName() }}</span>
           }
           @if (fieldFilter() !== 'All') {
-            <span class="badge bg-success">Field: {{ getFieldName(fieldFilter()) }}</span>
+            <span class="badge bg-success">Field: {{ fieldFilterName() }}</span>
           }
           @if (typeFilter() !== 'All') {
             <span class="badge bg-success">Type: {{ typeFilter() }}</span>

@@ -19,7 +19,7 @@ export interface FarmAreaResult {
 }
 
 export interface SavedFarm {
-  id: string;
+  id: number;
   name: string;
   points: LatLngPoint[];
   area: FarmAreaResult;
@@ -27,5 +27,7 @@ export interface SavedFarm {
   createdAt: number;
   notes?: string;
 }
+
+export type NewSavedFarm = Omit<SavedFarm, 'id' | 'createdAt'>;
 
 export type FarmDrawStatus = 'idle' | 'drawing' | 'completed';

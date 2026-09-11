@@ -93,15 +93,19 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     this.initMap();
   }
 
-  onSaveFarm(name: string): void {
-    const farm = this.farmDraw.saveFarm(name, this.farms());
-    if (farm) {
-      this.farms.update((fs) => [farm, ...fs]);
-      this.selected.set(farm);
+  async onSaveFarm(name: string): Promise<void> {
+    try {
+      const farm = await this.farmDraw.saveFarm(name, this.farms());
+      if (farm) {
+        this.farms.update((fs) => [farm, ...fs]);
+        this.selected.set(farm);
+      }
+    } catch (e) {
+      console.error('Failed to save farm', e);
     }
   }
 
-  onDeleteFarm(id: string): void {
+  onDeleteFarm(id: number): void {
     this.farmDraw.deleteFarm(id);
     this.farms.update((fs) => fs.filter((f) => f.id !== id));
     if (this.selected()?.id === id) {
@@ -109,7 +113,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  onRenameFarm(id: string, newName: string): void {
+  onRenameFarm(id: number, newName: string): void {
     const updated = this.farmDraw.renameFarm(id, newName, this.farms());
     if (updated) {
       this.farms.update((fs) => fs.map((f) => (f.id === id ? updated : f)));
@@ -119,7 +123,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  onUpdateFarmNotes(id: string, notes: string): void {
+  onUpdateFarmNotes(id: number, notes: string): void {
     const updated = this.farmDraw.updateFarmNotes(id, notes, this.farms());
     if (updated) {
       this.farms.update((fs) => fs.map((f) => (f.id === id ? updated : f)));

@@ -33,7 +33,7 @@ export class AuthService {
     effect(() => {
       const user = this.currentUserSignal();
       if (user) {
-        localStorage.setItem(ACTIVE_USER_ID_KEY, user.id);
+        localStorage.setItem(ACTIVE_USER_ID_KEY, String(user.id));
       } else {
         localStorage.removeItem(ACTIVE_USER_ID_KEY);
         localStorage.removeItem(SESSION_EXPIRY_KEY);
@@ -132,10 +132,12 @@ export class AuthService {
 
   private async loadSession(): Promise<void> {
     try {
-      const activeId = localStorage.getItem(ACTIVE_USER_ID_KEY);
+      const storedId = localStorage.getItem(ACTIVE_USER_ID_KEY);
       const expiry = localStorage.getItem(SESSION_EXPIRY_KEY);
+      // A session saved before ids went numeric holds a UUID -> NaN -> treated as no session.
+      const activeId = Number(storedId);
 
-      if (activeId && expiry && Date.now() <= Number(expiry)) {
+      if (Number.isInteger(activeId) && activeId > 0 && expiry && Date.now() <= Number(expiry)) {
         const found = await this.registrationService.findById(activeId);
         if (found) {
           this.currentUserSignal.set(found);
@@ -146,7 +148,7 @@ export class AuthService {
         }
       }
 
-      if (activeId || expiry) {
+      if (storedId || expiry) {
         localStorage.removeItem(ACTIVE_USER_ID_KEY);
         localStorage.removeItem(SESSION_EXPIRY_KEY);
         this.clearSessionToken();

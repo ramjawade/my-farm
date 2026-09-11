@@ -32,7 +32,7 @@ export class CropDashboardComponent implements OnInit {
     const allCrops = this.timelineService.crops();
     if (!term) return allCrops;
     return allCrops.filter(
-      (c) => c.name.toLowerCase().includes(term) || c.fieldId.toLowerCase().includes(term),
+      (c) => c.name.toLowerCase().includes(term) || String(c.fieldId).includes(term),
     );
   });
 
@@ -61,7 +61,7 @@ export class CropDashboardComponent implements OnInit {
     return days < 0 ? 0 : days;
   }
 
-  getDaysSinceLastActivity(cropId: string): string {
+  getDaysSinceLastActivity(cropId: number): string {
     const cropActs = this.timelineService
       .activities()
       .filter((a) => a.cropId === cropId && a.status === 'Completed' && !a.parentActivityId)

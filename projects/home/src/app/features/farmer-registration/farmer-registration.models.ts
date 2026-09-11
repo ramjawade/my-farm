@@ -1,7 +1,7 @@
 import { LatLngPoint } from '../../map/models/map.models';
 
 export interface FarmerRegistrationData {
-  id: string;
+  id: number;
   fullName: string;
   phone: string;
   email?: string;

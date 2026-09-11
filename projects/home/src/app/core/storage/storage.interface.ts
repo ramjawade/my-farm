@@ -1,9 +1,13 @@
-import { Activity, ActivityExpense } from '../../features/activity/activity.models';
-import { CropEntity } from '../../features/crop-timeline/crop-timeline.models';
+import {
+  Activity,
+  ActivityExpense,
+  NewActivity,
+  NewActivityExpense,
+} from '../../features/activity/activity.models';
+import { CropEntity, NewCrop } from '../../features/crop-timeline/crop-timeline.models';
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
-import { SavedFarm } from '../../map/models/map.models';
+import { NewSavedFarm, SavedFarm } from '../../map/models/map.models';
 import { WeatherData } from '../weather/weather.models';
-import { BackupFile } from './backup.models';
 
 /**
  * Single persistence boundary for the app. Feature services talk to this and
@@ -15,45 +19,48 @@ import { BackupFile } from './backup.models';
  * replace over a network causes lost-update races between devices editing
  * different records at the same time, and (for farmers specifically) a
  * whole-table read/write is something no authenticated API should expose.
+ *
+ * Ids are numeric and minted by the backend: `save*` takes a record without
+ * one and resolves with the stored record, id included.
  */
 export abstract class IStorageService {
   // --- Activities & expenses ---
-  abstract getActivities(userId: string): Promise<Activity[]>;
-  abstract getExpenses(userId: string): Promise<ActivityExpense[]>;
-  abstract saveActivity(userId: string, activity: Activity): Promise<Activity>;
-  abstract saveExpense(userId: string, expense: ActivityExpense): Promise<ActivityExpense>;
-  abstract updateActivity(userId: string, id: string, updates: Partial<Activity>): Promise<void>;
+  abstract getActivities(userId: number): Promise<Activity[]>;
+  abstract getExpenses(userId: number): Promise<ActivityExpense[]>;
+  abstract saveActivity(userId: number, activity: NewActivity): Promise<Activity>;
+  abstract saveExpense(userId: number, expense: NewActivityExpense): Promise<ActivityExpense>;
+  abstract updateActivity(userId: number, id: number, updates: Partial<Activity>): Promise<void>;
   abstract updateExpense(
-    userId: string,
-    id: string,
+    userId: number,
+    id: number,
     updates: Partial<ActivityExpense>,
   ): Promise<void>;
-  abstract deleteActivity(userId: string, id: string): Promise<void>;
-  abstract deleteExpense(userId: string, id: string): Promise<void>;
-  abstract syncActivitiesForField(userId: string, fieldId: string): Promise<Activity[]>;
-  abstract syncExpensesForActivity(userId: string, activityId: string): Promise<ActivityExpense[]>;
+  abstract deleteActivity(userId: number, id: number): Promise<void>;
+  abstract deleteExpense(userId: number, id: number): Promise<void>;
+  abstract syncActivitiesForField(userId: number, fieldId: number): Promise<Activity[]>;
+  abstract syncExpensesForActivity(userId: number, activityId: number): Promise<ActivityExpense[]>;
 
   // --- Crops ---
-  abstract getCrops(userId: string): Promise<CropEntity[]>;
-  abstract saveCrop(userId: string, crop: CropEntity): Promise<CropEntity>;
-  abstract updateCrop(userId: string, id: string, updates: Partial<CropEntity>): Promise<void>;
-  abstract deleteCrop(userId: string, id: string): Promise<void>;
+  abstract getCrops(userId: number): Promise<CropEntity[]>;
+  abstract saveCrop(userId: number, crop: NewCrop): Promise<CropEntity>;
+  abstract updateCrop(userId: number, id: number, updates: Partial<CropEntity>): Promise<void>;
+  abstract deleteCrop(userId: number, id: number): Promise<void>;
 
   // --- Lands (drawn farm plots) ---
-  abstract getFarms(userId: string): Promise<SavedFarm[]>;
-  abstract saveFarm(userId: string, farm: SavedFarm): Promise<SavedFarm>;
-  abstract updateFarm(userId: string, id: string, updates: Partial<SavedFarm>): Promise<void>;
-  abstract deleteFarm(userId: string, id: string): Promise<void>;
+  abstract getFarms(userId: number): Promise<SavedFarm[]>;
+  abstract saveFarm(userId: number, farm: NewSavedFarm): Promise<SavedFarm>;
+  abstract updateFarm(userId: number, id: number, updates: Partial<SavedFarm>): Promise<void>;
+  abstract deleteFarm(userId: number, id: number): Promise<void>;
 
   // --- Farmer profiles (accounts) ---
   // Lookup only — never a whole-table read or write. A backend can serve
   // these from an authenticated identity lookup; nothing here can be asked
   // to dump every farmer on the device (or, later, the tenant).
-  abstract getFarmerById(id: string): Promise<FarmerRegistrationData | undefined>;
+  abstract getFarmerById(id: number): Promise<FarmerRegistrationData | undefined>;
   abstract getFarmerByPhone(phone: string): Promise<FarmerRegistrationData | undefined>;
   abstract saveFarmer(farmer: FarmerRegistrationData): Promise<FarmerRegistrationData>;
 
   // --- Weather ---
-  abstract getWeatherHistory(userId: string): Promise<WeatherData[]>;
-  abstract saveWeatherSnapshot(userId: string, snapshot: WeatherData): Promise<WeatherData>;
+  abstract getWeatherHistory(userId: number): Promise<WeatherData[]>;
+  abstract saveWeatherSnapshot(userId: number, snapshot: WeatherData): Promise<WeatherData>;
 }

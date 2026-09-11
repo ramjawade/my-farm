@@ -19,6 +19,8 @@ import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
 import { SavedFarm } from '../../../map/models/map.models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { WorkflowStateService } from '../../../core/workflow/workflow-state.service';
+import { parseId } from '../../../core/models/entity-id';
+import { Activity } from '../../activity/activity.models';
 import { ToastService } from 'shared';
 
 @Component({
@@ -40,9 +42,9 @@ export class CreateActivityComponent implements OnInit {
   private readonly workflowService = inject(WorkflowStateService);
   private readonly toast = inject(ToastService);
 
-  @Input() cropId?: string;
-  @Input() parentActivityId?: string;
-  @Input() activityId?: string;
+  @Input() cropId?: number;
+  @Input() parentActivityId?: number;
+  @Input() activityId?: number;
   @Input() isModal = false;
 
   @Output() readonly activitySaved = new EventEmitter<void>();
@@ -53,9 +55,9 @@ export class CreateActivityComponent implements OnInit {
     date: [new Date().toISOString().substring(0, 10), Validators.required],
     season: ['Kharif', Validators.required],
     type: ['', Validators.required],
-    cropId: [''],
-    fieldId: [''],
-    parentActivityId: [''],
+    cropId: [null as number | null],
+    fieldId: [null as number | null],
+    parentActivityId: [null as number | null],
     status: ['Completed', Validators.required],
     notes: [''],
   });
@@ -89,7 +91,8 @@ export class CreateActivityComponent implements OnInit {
   readonly crops = this.cropService.crops;
   readonly savedFarms = signal<SavedFarm[]>([]);
 
-  readonly selectedCropId = signal<string>('');
+  readonly selectedCropId = signal<number | null>(null);
+  readonly saving = signal(false);
 
   // Pre-defined common suggestions
   readonly commonActivitySuggestions = [
@@ -131,9 +134,9 @@ export class CreateActivityComponent implements OnInit {
     // 2. If we are running in route mode, read from query parameters
     if (!this.isModal) {
       this.route.queryParams.subscribe((params) => {
-        const routeCropId = params['cropId'];
-        const routeParentId = params['parentActivityId'];
-        const routeActivityId = params['activityId'];
+        const routeCropId = parseId(params['cropId']);
+        const routeParentId = parseId(params['parentActivityId']);
+        const routeActivityId = parseId(params['activityId']);
 
         if (routeCropId) {
           this.form.patchValue({ cropId: routeCropId });
@@ -156,9 +159,9 @@ export class CreateActivityComponent implements OnInit {
           date: act.date ? new Date(act.date).toISOString().substring(0, 10) : '',
           season: act.season,
           type: act.type,
-          cropId: act.cropId || '',
-          fieldId: act.fieldId || '',
-          parentActivityId: act.parentActivityId || '',
+          cropId: act.cropId ?? null,
+          fieldId: act.fieldId ?? null,
+          parentActivityId: act.parentActivityId ?? null,
           status: act.status,
           notes: act.notes || '',
         });
@@ -172,17 +175,17 @@ export class CreateActivityComponent implements OnInit {
     // Subscribe to form cropId changes to update the signal reactively.
     // The land is derived from the crop (an activity can't be on a crop in one
     // land and a different land), so the field control follows the crop.
-    this.form.get('cropId')!.valueChanges.subscribe((val) => {
-      this.selectedCropId.set(val || '');
-      this.applyFieldFromCrop(val || '');
+    this.form.get('cropId')!.valueChanges.subscribe((val: number | null) => {
+      this.selectedCropId.set(val ?? null);
+      this.applyFieldFromCrop(val ?? null);
     });
-    this.applyFieldFromCrop(this.form.get('cropId')?.value || '');
+    this.applyFieldFromCrop(this.form.get('cropId')?.value ?? null);
   }
 
   /** True when a crop is linked: the land is then derived and not user-editable. */
   readonly fieldLockedToCrop = computed(() => !!this.selectedCropId());
 
-  private applyFieldFromCrop(cropId: string): void {
+  private applyFieldFromCrop(cropId: number | null): void {
     const fieldControl = this.form.get('fieldId');
     if (!fieldControl) return;
     if (!cropId) {
@@ -190,7 +193,7 @@ export class CreateActivityComponent implements OnInit {
       return;
     }
     const crop = this.crops().find((c) => c.id === cropId);
-    fieldControl.setValue(crop?.fieldId || '', { emitEvent: false });
+    fieldControl.setValue(crop?.fieldId ?? null, { emitEvent: false });
     if (fieldControl.enabled) fieldControl.disable({ emitEvent: false });
   }
 
@@ -217,11 +220,12 @@ export class CreateActivityComponent implements OnInit {
     this.uploadedImages.update((current) => current.filter((_, i) => i !== index));
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
+    if (this.saving()) return;
 
     const val = this.form.getRawValue();
 
@@ -250,17 +254,26 @@ export class CreateActivityComponent implements OnInit {
       this.toast.success('Activity updated.');
     } else {
       // Create activity
-      const newAct = this.activityService.addActivity({
-        date: val.date ? new Date(val.date).getTime() : Date.now(),
-        season: val.season,
-        type: val.type.trim(),
-        cropId: val.cropId || undefined,
-        fieldId: val.fieldId || undefined,
-        status: val.status,
-        notes: val.notes?.trim() || undefined,
-        parentActivityId: val.parentActivityId || undefined,
-        attachments: this.uploadedImages(),
-      });
+      let newAct: Activity;
+      this.saving.set(true);
+      try {
+        newAct = await this.activityService.addActivity({
+          date: val.date ? new Date(val.date).getTime() : Date.now(),
+          season: val.season,
+          type: val.type.trim(),
+          cropId: val.cropId || undefined,
+          fieldId: val.fieldId || undefined,
+          status: val.status,
+          notes: val.notes?.trim() || undefined,
+          parentActivityId: val.parentActivityId || undefined,
+          attachments: this.uploadedImages(),
+        });
+      } catch {
+        this.toast.error('Could not save the activity. Please try again.');
+        return;
+      } finally {
+        this.saving.set(false);
+      }
 
       // Sync stage if crop-linked
       if (val.cropId) {

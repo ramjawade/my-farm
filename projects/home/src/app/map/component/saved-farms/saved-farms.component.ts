@@ -20,22 +20,22 @@ export class SavedFarmsComponent {
   readonly selected = input<SavedFarm | null>(null);
 
   readonly selectFarm = output<SavedFarm>();
-  readonly renameFarm = output<{ id: string; newName: string }>();
-  readonly deleteFarm = output<string>();
-  readonly updateNotes = output<{ id: string; notes: string }>();
+  readonly renameFarm = output<{ id: number; newName: string }>();
+  readonly deleteFarm = output<number>();
+  readonly updateNotes = output<{ id: number; notes: string }>();
 
   private readonly crops = inject(CropTimelineService);
   private readonly toast = inject(ToastService);
 
   readonly savedFarmsCollapsed = signal(false);
   readonly showDeleteConfirm = signal(false);
-  readonly pendingDeleteId = signal<string | null>(null);
-  readonly selectedLandDetailId = signal<string | null>(null);
+  readonly pendingDeleteId = signal<number | null>(null);
+  readonly selectedLandDetailId = signal<number | null>(null);
   readonly selectedLandDetail = computed(
     () => this.farms().find((f) => f.id === this.selectedLandDetailId()) ?? null,
   );
   readonly searchFilter = signal('');
-  readonly renamingId = signal<string | null>(null);
+  readonly renamingId = signal<number | null>(null);
   readonly renamingValue = signal('');
 
   readonly filteredFarms = computed(() => {
@@ -52,7 +52,7 @@ export class SavedFarmsComponent {
   }
 
   /** Number of crops growing on a land (a land with crops cannot be deleted). */
-  cropCount(landId: string): number {
+  cropCount(landId: number): number {
     return this.crops.cropsForField(landId).length;
   }
 
@@ -60,7 +60,7 @@ export class SavedFarmsComponent {
     this.selectedLandDetailId.set(land.id);
   }
 
-  getLandStatus(farmId: string): LandStatus {
+  getLandStatus(farmId: number): LandStatus {
     const count = this.cropCount(farmId);
     if (count === 0) return 'fallow';
     if (count === 1) return 'planted';
@@ -100,7 +100,7 @@ export class SavedFarmsComponent {
     this.renamingValue.set('');
   }
 
-  saveRename(id: string): void {
+  saveRename(id: number): void {
     const newName = this.renamingValue().trim();
     if (newName) {
       this.renameFarm.emit({ id, newName });
@@ -110,7 +110,7 @@ export class SavedFarmsComponent {
     this.renamingValue.set('');
   }
 
-  onDeleteSavedFarm(event: Event, id: string): void {
+  onDeleteSavedFarm(event: Event, id: number): void {
     event.stopPropagation();
     const count = this.cropCount(id);
     if (count > 0) {
@@ -131,7 +131,7 @@ export class SavedFarmsComponent {
     this.toast.success('Land deleted.');
   }
 
-  onLandNotesUpdated(event: { id: string; notes: string }): void {
+  onLandNotesUpdated(event: { id: number; notes: string }): void {
     this.updateNotes.emit(event);
   }
 }

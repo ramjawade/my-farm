@@ -14,7 +14,7 @@ describe('ProfileComponent', () => {
   let authService: AuthService;
 
   const mockUser: FarmerRegistrationData = {
-    id: 'f-test',
+    id: 1,
     fullName: 'Test Farmer Name',
     phone: '1122334455',
     email: 'test@example.com',

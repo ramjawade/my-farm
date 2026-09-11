@@ -14,10 +14,10 @@
 import { AuditFields, IsoDate } from './common.contract';
 
 export interface CropResponse extends AuditFields {
-  id: string;
-  farmer_id: string;
-  land_id: string;
-  crop_catalog_id: string;
+  id: number;
+  farmer_id: number;
+  land_id: number;
+  crop_catalog_id: number;
   label: string | null;
   area: number | null;
   area_unit: string;
@@ -29,8 +29,8 @@ export interface CropResponse extends AuditFields {
 }
 
 export interface CropCreateRequest {
-  land_id: string;
-  crop_catalog_id: string;
+  land_id: number;
+  crop_catalog_id: number;
   label?: string | null;
   area?: number | null;
   area_unit?: string;

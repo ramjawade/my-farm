@@ -29,8 +29,8 @@ export type ExpenseCategory =
   | 'Other';
 
 export interface Activity {
-  id: string;
-  parentActivityId?: string;
+  id: number;
+  parentActivityId?: number;
 
   // Timing
   date?: number; // timestamp; undefined = not yet scheduled
@@ -39,8 +39,8 @@ export interface Activity {
   // Links (both optional). When cropId is set, fieldId is derived from the crop's land
   // (see ActivityService.resolveFieldId) so an activity can never point at a land that
   // disagrees with its crop.
-  cropId?: string; // Link to CropEntity
-  fieldId?: string; // Link to SavedFarm
+  cropId?: number; // Link to CropEntity
+  fieldId?: number; // Link to SavedFarm
 
   // Activity definition
   type: ActivityType;
@@ -82,9 +82,12 @@ export interface Activity {
   updatedAt: number;
 }
 
+/** An activity before it is saved — the backend mints `id` and the audit timestamps. */
+export type NewActivity = Omit<Activity, 'id' | 'createdAt' | 'updatedAt'>;
+
 export interface ActivityExpense {
-  id: string;
-  activityId: string;
+  id: number;
+  activityId: number;
   category: string; // Machine Rent, Labour, Seeds, Fertilizer, Transport, etc.
   itemId?: string;
   resourceId?: string;
@@ -95,3 +98,5 @@ export interface ActivityExpense {
   remarks?: string;
   createdAt: number;
 }
+
+export type NewActivityExpense = Omit<ActivityExpense, 'id' | 'createdAt'>;

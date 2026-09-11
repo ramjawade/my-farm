@@ -12,7 +12,7 @@ import { IStorageService } from '../../core/storage/storage.interface';
 import { InMemoryStorageService } from '../../testing/in-memory-storage.service';
 
 const baseUser: FarmerRegistrationData = {
-  id: 'f-test',
+  id: 1,
   fullName: 'Test Farmer',
   phone: '1234567890',
   preferredLanguage: 'English',
@@ -77,7 +77,7 @@ describe('HomeComponent', () => {
 
   it('should transition to dashboard page (logged in state)', () => {
     const mockUser: FarmerRegistrationData = {
-      id: 'f-test',
+      id: 1,
       fullName: 'Test Farmer',
       phone: '1234567890',
       preferredLanguage: 'English',
@@ -106,7 +106,7 @@ describe('HomeComponent', () => {
 
   it('should contain redirection links to /map and /crops on the metrics cards when logged in', () => {
     const mockUser: FarmerRegistrationData = {
-      id: 'f-test',
+      id: 1,
       fullName: 'Test Farmer',
       phone: '1234567890',
       preferredLanguage: 'English',
@@ -135,7 +135,7 @@ describe('HomeComponent', () => {
 
   it('should sum all saved land areas and set landsCount in metrics', () => {
     const mockUser: FarmerRegistrationData = {
-      id: 'f-test',
+      id: 1,
       fullName: 'Test Farmer',
       phone: '1234567890',
       preferredLanguage: 'English',
@@ -156,7 +156,7 @@ describe('HomeComponent', () => {
     // Set mock saved farms
     const mockFarms = [
       {
-        id: '1',
+        id: 1,
         name: 'Land 1',
         points: [],
         area: { squareMeters: 10000, hectares: 1.0, acres: 2.47 },
@@ -164,7 +164,7 @@ describe('HomeComponent', () => {
         createdAt: Date.now(),
       },
       {
-        id: '2',
+        id: 2,
         name: 'Land 2',
         points: [],
         area: { squareMeters: 15000, hectares: 1.5, acres: 3.7 },
@@ -181,7 +181,7 @@ describe('HomeComponent', () => {
 
   it('should sum saved land areas in acres if farmAreaUnit is acres', () => {
     const mockUser: FarmerRegistrationData = {
-      id: 'f-test',
+      id: 1,
       fullName: 'Test Farmer',
       phone: '1234567890',
       preferredLanguage: 'English',
@@ -201,7 +201,7 @@ describe('HomeComponent', () => {
 
     const mockFarms = [
       {
-        id: '1',
+        id: 1,
         name: 'Land 1',
         points: [],
         area: { squareMeters: 10000, hectares: 1.0, acres: 2.47 },
@@ -209,7 +209,7 @@ describe('HomeComponent', () => {
         createdAt: Date.now(),
       },
       {
-        id: '2',
+        id: 2,
         name: 'Land 2',
         points: [],
         area: { squareMeters: 15000, hectares: 1.5, acres: 3.7 },
@@ -226,7 +226,7 @@ describe('HomeComponent', () => {
 
   it('should show the onboarding checklist for a fresh registration', () => {
     authService.login({
-      id: 'f-new',
+      id: 2,
       fullName: 'New Farmer',
       phone: '9000000000',
       preferredLanguage: 'English',
@@ -252,7 +252,7 @@ describe('HomeComponent', () => {
 
   it('should show farm setup prompt for user who has not completed setup', () => {
     const mockUser: FarmerRegistrationData = {
-      id: 'f-test',
+      id: 1,
       fullName: 'Test Farmer',
       phone: '1234567890',
       preferredLanguage: 'English',
@@ -276,7 +276,7 @@ describe('HomeComponent', () => {
 
   it('should hide farm setup prompt for user who has completed setup', () => {
     const mockUser: FarmerRegistrationData = {
-      id: 'f-test',
+      id: 1,
       fullName: 'Test Farmer',
       phone: '1234567890',
       preferredLanguage: 'English',
@@ -315,7 +315,7 @@ describe('HomeComponent', () => {
     beforeEach(() => {
       // Login to establish user context for storage key calculations
       const mockUser: FarmerRegistrationData = {
-        id: 'f-test',
+        id: 1,
         fullName: 'Test Farmer',
         phone: '1234567890',
         preferredLanguage: 'English',
@@ -335,11 +335,11 @@ describe('HomeComponent', () => {
       fixture.detectChanges();
     });
 
-    it('should expose an activity logged on the crop timeline through ActivityService', () => {
+    it('should expose an activity logged on the crop timeline through ActivityService', async () => {
       const initialCropActivitiesCount = cropService.activities().length;
 
-      const newCropAct = cropService.addActivity({
-        cropId: 'c-test-crop',
+      const newCropAct = await cropService.addActivity({
+        cropId: 42,
         type: 'Irrigation',
         date: Date.now(),
         status: 'Completed',
@@ -355,7 +355,7 @@ describe('HomeComponent', () => {
       const syncedFarmAct = activityService.activities().find((a) => a.id === newCropAct.id);
       expect(syncedFarmAct).toBeTruthy();
       expect(syncedFarmAct?.type).toBe('Irrigation');
-      expect(syncedFarmAct?.cropId).toBe('c-test-crop');
+      expect(syncedFarmAct?.cropId).toBe(42);
       expect(syncedFarmAct?.notes).toBe('Irrigated for 30 minutes');
       expect(syncedFarmAct?.status).toBe('Completed');
 
@@ -365,15 +365,15 @@ describe('HomeComponent', () => {
       expect(expenses[0].amount).toBe(250);
     });
 
-    it('should expose an activity created in ActivityService on the crop timeline', () => {
+    it('should expose an activity created in ActivityService on the crop timeline', async () => {
       const initialFarmActivitiesCount = activityService.activities().length;
 
-      const newFarmAct = activityService.addActivity({
+      const newFarmAct = await activityService.addActivity({
         date: new Date('2026-06-13').getTime(),
         season: 'Kharif',
         type: 'Weeding',
-        cropId: 'c-test-crop',
-        fieldId: 'Field A',
+        cropId: 42,
+        fieldId: 7,
         status: 'Completed',
         notes: 'Manual mechanical weeding',
       });
@@ -383,7 +383,7 @@ describe('HomeComponent', () => {
       const syncedCropAct = cropService.activities().find((a) => a.id === newFarmAct.id);
       expect(syncedCropAct).toBeDefined();
       expect(syncedCropAct!.type).toBe('Weeding');
-      expect(syncedCropAct!.cropId).toBe('c-test-crop');
+      expect(syncedCropAct!.cropId).toBe(42);
       expect(syncedCropAct!.notes).toBe('Manual mechanical weeding');
       expect(syncedCropAct!.status).toBe('Completed');
     });

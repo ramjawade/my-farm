@@ -8,8 +8,8 @@ import { IStorageService } from '../../core/storage/storage.interface';
  *
  * Sign-in and account creation run through `SessionAuthService` (online-only,
  * issues #45 / #50); this service only keeps the farmer the backend returned
- * in local storage so `findById` works across a reload, and lets the demo /
- * `LocalStorageService` path persist profile edits.
+ * in local storage so `findById` works across a reload, and persists profile
+ * edits.
  */
 @Injectable({
   providedIn: 'root',
@@ -23,7 +23,7 @@ export class FarmerRegistrationService {
     this.storage.saveFarmer(farmer).catch((e) => console.error('Failed to save farmer', e));
   }
 
-  findById(id: string): Promise<FarmerRegistrationData | undefined> {
+  findById(id: number): Promise<FarmerRegistrationData | undefined> {
     return this.storage.getFarmerById(id);
   }
 }

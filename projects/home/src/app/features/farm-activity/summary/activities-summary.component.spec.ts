@@ -13,8 +13,8 @@ describe('ActivitiesSummaryComponent', () => {
   const allActivities: CropActivity[] = [
     {
       ...base,
-      id: 'act-s-1',
-      cropId: 'c1',
+      id: 1,
+      cropId: 10,
       type: 'Irrigation',
       date: 1000,
       status: 'Completed',
@@ -23,8 +23,8 @@ describe('ActivitiesSummaryComponent', () => {
     },
     {
       ...base,
-      id: 'act-s-2',
-      cropId: 'c2',
+      id: 2,
+      cropId: 20,
       type: 'Fertilizer Application',
       date: 2000,
       status: 'Completed',
@@ -33,8 +33,8 @@ describe('ActivitiesSummaryComponent', () => {
     },
     {
       ...base,
-      id: 'act-s-3',
-      cropId: 'c1',
+      id: 3,
+      cropId: 10,
       type: 'Weeding',
       date: 1500,
       status: 'Scheduled',
@@ -72,7 +72,7 @@ describe('ActivitiesSummaryComponent', () => {
   });
 
   it('should compute metrics filtered by cropId when given a pre-filtered list', () => {
-    const cropActivities = allActivities.filter((a) => a.cropId === 'c1');
+    const cropActivities = allActivities.filter((a) => a.cropId === 10);
     componentRef.setInput('activities', cropActivities);
     fixture.detectChanges();
 
@@ -90,10 +90,10 @@ describe('ActivitiesSummaryComponent', () => {
     const chartData = component.chartData();
     expect(chartData.length).toBe(2); // Completed ones only (Irrigation, Fertilizer)
     // Irrigation (date 1000) is first
-    expect(chartData[0].id).toBe('act-s-1');
+    expect(chartData[0].id).toBe(1);
     expect(chartData[0].cumulativeCost).toBe(500);
     // Fertilizer (date 2000) is second
-    expect(chartData[1].id).toBe('act-s-2');
+    expect(chartData[1].id).toBe(2);
     expect(chartData[1].cumulativeCost).toBe(2000); // 500 + 1500
   });
 });

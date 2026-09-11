@@ -34,7 +34,7 @@ export class ActivitiesSummaryComponent {
   readonly isTimeline = input<boolean>(false);
 
   readonly editActivity = output<CropActivity>();
-  readonly markActivityCompleted = output<string>();
+  readonly markActivityCompleted = output<number>();
 
   /** Scheduled/draft/in-progress work that has not been completed or cancelled. */
   private isPending(a: CropActivity): boolean {
@@ -292,7 +292,7 @@ export class ActivitiesSummaryComponent {
     this.editActivity.emit(act);
   }
 
-  onMarkActivityCompletedClicked(id: string): void {
+  onMarkActivityCompletedClicked(id: number): void {
     this.markActivityCompleted.emit(id);
   }
 }

@@ -6,6 +6,7 @@ import {
   CropStage,
   CROP_STAGES,
   ActivityType,
+  NewCrop,
 } from './crop-timeline.models';
 import { AuthService } from '../../core/auth/auth.service';
 import { ActivityService } from '../activity/activity.service';
@@ -79,7 +80,7 @@ export class CropTimelineService {
     const costs = this.activityService.costByActivity();
     return this.activityService
       .activities()
-      .filter((a): a is Activity & { cropId: string } => !!a.cropId)
+      .filter((a): a is Activity & { cropId: number } => !!a.cropId)
       .map((a) => ({
         ...a,
         cost: costs[a.id] || 0,
@@ -90,8 +91,8 @@ export class CropTimelineService {
   });
 
   /** Last completed activity date per crop. Used to detect stale crops. */
-  readonly lastActivityDateByCrop = computed<Record<string, number | null>>(() => {
-    const result: Record<string, number | null> = {};
+  readonly lastActivityDateByCrop = computed<Record<number, number | null>>(() => {
+    const result: Record<number, number | null> = {};
     const acts = this.activityService.activities();
     for (const crop of this.cropsSignal()) {
       const cropActs = acts
@@ -113,55 +114,57 @@ export class CropTimelineService {
     });
   }
 
+  private currentUserId(): number {
+    return this.authService.currentUser()?.id ?? 0;
+  }
+
   // --- Crop API ---
-  getCropById(id: string): CropEntity | undefined {
+  getCropById(id: number): CropEntity | undefined {
     return this.cropsSignal().find((c) => c.id === id);
   }
 
-  cropsForField(fieldId: string): CropEntity[] {
+  cropsForField(fieldId: number): CropEntity[] {
     return this.cropsSignal().filter((c) => c.fieldId === fieldId);
   }
 
   /** Total expenses across every activity linked to the crop. */
-  costForCrop(cropId: string): number {
+  costForCrop(cropId: number): number {
     return this.activities()
       .filter((a) => a.cropId === cropId)
       .reduce((sum, a) => sum + a.cost, 0);
   }
 
-  addCrop(cropData: Omit<CropEntity, 'id'>): CropEntity {
-    const newCrop: CropEntity = {
+  /** Saves the crop, then creates its stage activities linked to the crop's server-minted id. */
+  async addCrop(cropData: NewCrop): Promise<CropEntity> {
+    this.generation++;
+    const saved = await this.storage.saveCrop(this.currentUserId(), {
       ...cropData,
       season:
         cropData.season ?? (cropData.sowingDate ? seasonForDate(cropData.sowingDate) : undefined),
-      id: crypto.randomUUID(),
-    };
-
-    this.generation++;
-    this.cropsSignal.set([newCrop, ...this.cropsSignal()]);
-    this.persistNewCrop(newCrop);
+    });
+    this.cropsSignal.update((crops) => [saved, ...crops.filter((c) => c.id !== saved.id)]);
 
     // One activity per lifecycle stage: past stages completed, later ones scheduled.
-    const hasSowingDate = newCrop.sowingDate !== undefined && newCrop.sowingDate !== null;
-    const sowingTime = hasSowingDate ? Number(newCrop.sowingDate) : 0;
-    const currentStageIdx = CROP_STAGES.indexOf(newCrop.currentStage);
+    // Sequential so each stage's lookups (findMainActivityForStage) see the earlier ones.
+    const hasSowingDate = saved.sowingDate !== undefined && saved.sowingDate !== null;
+    const sowingTime = hasSowingDate ? Number(saved.sowingDate) : 0;
+    const currentStageIdx = CROP_STAGES.indexOf(saved.currentStage);
 
-    CROP_STAGES.forEach((stage, idx) => {
-      const reached = idx <= currentStageIdx;
-      this.addActivity({
-        cropId: newCrop.id,
+    for (const [idx, stage] of CROP_STAGES.entries()) {
+      await this.addActivity({
+        cropId: saved.id,
         type: stageActivityType(stage),
         date: hasSowingDate ? sowingTime + STAGE_OFFSET_DAYS[stage] * ONE_DAY : undefined,
-        status: reached ? 'Completed' : 'Scheduled',
+        status: idx <= currentStageIdx ? 'Completed' : 'Scheduled',
         cost: 0,
         notes: stageNote(stage),
       });
-    });
+    }
 
-    return newCrop;
+    return saved;
   }
 
-  updateCrop(id: string, updates: Partial<CropEntity>): void {
+  updateCrop(id: number, updates: Partial<CropEntity>): void {
     this.generation++;
     this.cropsSignal.set(this.cropsSignal().map((c) => (c.id === id ? { ...c, ...updates } : c)));
     this.persistCropUpdate(id, updates);
@@ -174,7 +177,7 @@ export class CropTimelineService {
     return CROP_STAGES[currentIdx + 1];
   }
 
-  deleteCrop(id: string): void {
+  deleteCrop(id: number): void {
     this.generation++;
     this.cropsSignal.set(this.cropsSignal().filter((c) => c.id !== id));
     this.persistCropDelete(id);
@@ -182,10 +185,9 @@ export class CropTimelineService {
   }
 
   // --- Activity API (delegates to ActivityService) ---
-  addActivity(input: CropActivityInput): CropActivity {
+  async addActivity(input: CropActivityInput): Promise<CropActivity> {
     const crop = this.getCropById(input.cropId);
-    const created = this.activityService.addActivity({
-      id: input.id,
+    const created = await this.activityService.addActivity({
       parentActivityId: input.parentActivityId,
       cropId: input.cropId,
       fieldId: crop?.fieldId,
@@ -199,7 +201,7 @@ export class CropTimelineService {
     });
 
     if (input.cost > 0) {
-      this.activityService.addExpense({
+      await this.activityService.addExpense({
         activityId: created.id,
         category: defaultExpenseCategory(input.type),
         amount: input.cost,
@@ -207,17 +209,13 @@ export class CropTimelineService {
       });
     }
 
-    // Sync stage advancement if this activity is linked to a crop
-    if (input.cropId) {
-      this.syncStageFromActivity(created.id);
-    }
-
+    this.syncStageFromActivity(created.id);
     this.updateCropUpcomingActivity(input.cropId);
     return this.getCropActivity(created.id)!;
   }
 
   /** Sync crop stage based on completed activities. */
-  syncStageFromActivity(activityId: string): void {
+  syncStageFromActivity(activityId: number): void {
     const activity = this.activityService.getActivityById(activityId);
     if (!activity?.cropId || activity.status !== 'Completed') return;
 
@@ -251,7 +249,7 @@ export class CropTimelineService {
   }
 
   /** Advance crop to a stage only if it's ahead of the current stage. */
-  private reachStage(cropId: string, stage: CropStage): void {
+  private reachStage(cropId: number, stage: CropStage): void {
     const crop = this.getCropById(cropId);
     if (!crop) return;
 
@@ -264,12 +262,14 @@ export class CropTimelineService {
     // Make sure the next stage has a scheduled activity
     const nextStage = this.getNextStage(stage);
     if (nextStage) {
-      this.ensureScheduledActivityForStage(cropId, nextStage);
+      this.ensureScheduledActivityForStage(cropId, nextStage).catch((e) =>
+        console.error('Failed to schedule next stage activity', e),
+      );
     }
   }
 
   /** Shorthand: update activity to Completed and sync stage. */
-  completeActivity(id: string): void {
+  completeActivity(id: number): void {
     const existing = this.activityService.getActivityById(id);
     if (!existing) return;
     this.updateActivity(id, {
@@ -282,7 +282,7 @@ export class CropTimelineService {
   }
 
   /** Manually advance to the next stage. */
-  advanceStage(cropId: string): void {
+  advanceStage(cropId: number): void {
     const crop = this.getCropById(cropId);
     if (!crop) return;
     const nextStage = this.getNextStage(crop.currentStage);
@@ -291,7 +291,7 @@ export class CropTimelineService {
     }
   }
 
-  updateActivity(id: string, updates: Partial<CropActivityInput>): void {
+  updateActivity(id: number, updates: Partial<CropActivityInput>): void {
     const existing = this.activityService.getActivityById(id);
     if (!existing) return;
 
@@ -307,22 +307,22 @@ export class CropTimelineService {
     if (cropId) this.updateCropUpcomingActivity(cropId);
   }
 
-  deleteActivity(id: string): void {
+  deleteActivity(id: number): void {
     const existing = this.activityService.getActivityById(id);
     if (!existing) return;
     this.activityService.deleteActivity(id);
     if (existing.cropId) this.updateCropUpcomingActivity(existing.cropId);
   }
 
-  getActivitiesForCrop(cropId: string): CropActivity[] {
+  getActivitiesForCrop(cropId: number): CropActivity[] {
     return this.activities().filter((a) => a.cropId === cropId);
   }
 
-  getCropActivity(id: string): CropActivity | undefined {
+  getCropActivity(id: number): CropActivity | undefined {
     return this.activities().find((a) => a.id === id);
   }
 
-  findMainActivityForStage(cropId: string, stage: CropStage): CropActivity | undefined {
+  findMainActivityForStage(cropId: number, stage: CropStage): CropActivity | undefined {
     return this.getActivitiesForCrop(cropId).find(
       (a) =>
         !a.parentActivityId &&
@@ -332,26 +332,8 @@ export class CropTimelineService {
     );
   }
 
-  findOrCreateMainActivityForStage(cropId: string, stage: CropStage): CropActivity {
-    const existing = this.findMainActivityForStage(cropId, stage);
-    if (existing) {
-      if (existing.status !== 'Completed') {
-        this.updateActivity(existing.id, { status: 'Completed', date: Date.now() });
-        return this.getCropActivity(existing.id)!;
-      }
-      return existing;
-    }
-    return this.addActivity({
-      cropId,
-      type: stageActivityType(stage),
-      status: 'Scheduled',
-      cost: 0,
-      notes: stageNote(stage),
-    });
-  }
-
   /** Ensure a Scheduled placeholder activity exists for a stage, without completing an existing one. */
-  ensureScheduledActivityForStage(cropId: string, stage: CropStage): CropActivity {
+  async ensureScheduledActivityForStage(cropId: number, stage: CropStage): Promise<CropActivity> {
     const existing = this.findMainActivityForStage(cropId, stage);
     if (existing) return existing;
     return this.addActivity({
@@ -372,25 +354,27 @@ export class CropTimelineService {
   }
 
   /** Keep a single lump-sum expense line in sync with the timeline's `cost` field. */
-  private syncCost(activityId: string, type: ActivityType, cost: number): void {
+  private syncCost(activityId: number, type: ActivityType, cost: number): void {
     const expenses = this.activityService.getExpensesForActivity(activityId);
     if (cost > 0) {
       if (expenses.length > 0) {
         this.activityService.updateExpense(expenses[0].id, { amount: cost });
       } else {
-        this.activityService.addExpense({
-          activityId,
-          category: defaultExpenseCategory(type),
-          amount: cost,
-          remarks: 'Logged from crop timeline',
-        });
+        this.activityService
+          .addExpense({
+            activityId,
+            category: defaultExpenseCategory(type),
+            amount: cost,
+            remarks: 'Logged from crop timeline',
+          })
+          .catch((e) => console.error('Failed to save expense', e));
       }
     } else {
       expenses.forEach((e) => this.activityService.deleteExpense(e.id));
     }
   }
 
-  private updateCropUpcomingActivity(cropId: string): void {
+  private updateCropUpcomingActivity(cropId: number): void {
     if (!this.getCropById(cropId)) return;
     const planned = this.getActivitiesForCrop(cropId)
       .filter((a) => !a.parentActivityId && (a.status === 'Scheduled' || a.status === 'Draft'))
@@ -418,7 +402,7 @@ export class CropTimelineService {
     return user ? this.loadForUser(user.id) : Promise.resolve();
   }
 
-  private async loadForUser(userId: string): Promise<void> {
+  private async loadForUser(userId: number): Promise<void> {
     const generation = ++this.generation;
     try {
       let crops = await this.storage.getCrops(userId);
@@ -463,17 +447,7 @@ export class CropTimelineService {
     });
   }
 
-  private persistNewCrop(crop: CropEntity): void {
-    const user = this.authService.currentUser();
-    if (user) {
-      this.storage.saveCrop(user.id, crop).catch((e) => {
-        console.error('Failed to save crop', e);
-        this.reload();
-      });
-    }
-  }
-
-  private persistCropUpdate(id: string, updates: Partial<CropEntity>): void {
+  private persistCropUpdate(id: number, updates: Partial<CropEntity>): void {
     const user = this.authService.currentUser();
     if (user) {
       this.storage.updateCrop(user.id, id, updates).catch((e) => {
@@ -483,7 +457,7 @@ export class CropTimelineService {
     }
   }
 
-  private persistCropDelete(id: string): void {
+  private persistCropDelete(id: number): void {
     const user = this.authService.currentUser();
     if (user) {
       this.storage.deleteCrop(user.id, id).catch((e) => {

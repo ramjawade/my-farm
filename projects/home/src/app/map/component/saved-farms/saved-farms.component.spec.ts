@@ -9,7 +9,7 @@ import { InMemoryStorageService } from '../../../testing/in-memory-storage.servi
 describe('SavedFarmsComponent', () => {
   const mockFarms: SavedFarm[] = [
     {
-      id: 'farm-1',
+      id: 1,
       name: 'Central Pasture',
       points: [
         { lat: 10, lng: 10 },
@@ -69,17 +69,17 @@ describe('SavedFarmsComponent', () => {
     const fixture = createComponent();
     const component = fixture.componentInstance;
 
-    const emitted: string[] = [];
+    const emitted: number[] = [];
     component.deleteFarm.subscribe((id) => emitted.push(id));
 
     const clickEvent = new MouseEvent('click');
     spyOn(clickEvent, 'stopPropagation');
 
-    component.onDeleteSavedFarm(clickEvent, 'farm-1');
+    component.onDeleteSavedFarm(clickEvent, 1);
     // Deletion is now behind a confirm dialog — simulate the user confirming.
     component.confirmDelete();
 
     expect(clickEvent.stopPropagation).toHaveBeenCalled();
-    expect(emitted).toEqual(['farm-1']);
+    expect(emitted).toEqual([1]);
   });
 });

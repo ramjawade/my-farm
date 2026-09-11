@@ -43,7 +43,7 @@ describe('WeatherComponent', () => {
 
   it('should show location prompt if village/state is not configured', () => {
     const mockUser: FarmerRegistrationData = {
-      id: 'f-test',
+      id: 1,
       fullName: 'Test Farmer',
       phone: '1234567890',
       preferredLanguage: 'English',
@@ -67,7 +67,7 @@ describe('WeatherComponent', () => {
 
   it('should hide location prompt if village/state is configured', () => {
     const mockUser: FarmerRegistrationData = {
-      id: 'f-test',
+      id: 1,
       fullName: 'Test Farmer',
       phone: '1234567890',
       preferredLanguage: 'English',

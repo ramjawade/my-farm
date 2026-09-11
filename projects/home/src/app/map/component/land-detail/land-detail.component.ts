@@ -17,11 +17,11 @@ type LandStatus = 'planted' | 'fallow' | 'multiple';
 export class LandDetailComponent {
   readonly land = input<SavedFarm | null>(null);
   readonly closed = output<void>();
-  readonly notesUpdated = output<{ id: string; notes: string }>();
+  readonly notesUpdated = output<{ id: number; notes: string }>();
 
   private readonly cropService = inject(CropTimelineService);
 
-  readonly cropCosts = new Map<string, number>();
+  readonly cropCosts = new Map<number, number>();
   readonly editingNotes = signal(false);
   readonly notesValue = signal('');
 

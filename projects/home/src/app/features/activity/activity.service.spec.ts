@@ -2,10 +2,8 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { ActivityService } from './activity.service';
-import { Activity } from './activity.models';
 import { IStorageService } from '../../core/storage/storage.interface';
 import { InMemoryStorageService } from '../../testing/in-memory-storage.service';
-import { flushPromises } from '../../testing/flush-promises';
 
 describe('ActivityService', () => {
   let service: ActivityService;
@@ -31,35 +29,35 @@ describe('ActivityService', () => {
   });
 
   describe('addActivity', () => {
-    it('should add an activity', () => {
-      const activity = service.addActivity({
+    it('should add an activity with the id minted by storage', async () => {
+      const activity = await service.addActivity({
         date: Date.now(),
         type: 'Sowing',
         status: 'Completed',
-        cropId: 'crop_1',
+        cropId: 1,
       });
 
-      expect(activity.id).toBeDefined();
+      expect(typeof activity.id).toBe('number');
       expect(activity.type).toBe('Sowing');
       expect(service.activities().length).toBe(1);
+      expect(service.getActivityById(activity.id)).toEqual(activity);
     });
 
     it('should persist a new activity through the storage service', async () => {
       const storage = TestBed.inject(IStorageService) as InMemoryStorageService;
-      service.addActivity({
+      await service.addActivity({
         date: Date.now(),
         type: 'Irrigation',
         status: 'Completed',
       });
-      await flushPromises();
 
       expect(storage.activities.length).toBe(1);
     });
   });
 
   describe('updateActivity', () => {
-    it('should update an activity', () => {
-      const activity = service.addActivity({
+    it('should update an activity', async () => {
+      const activity = await service.addActivity({
         date: Date.now(),
         type: 'Sowing',
         status: 'Draft',
@@ -72,14 +70,14 @@ describe('ActivityService', () => {
   });
 
   describe('deleteActivity', () => {
-    it('should delete an activity and its expenses', () => {
-      const activity = service.addActivity({
+    it('should delete an activity and its expenses', async () => {
+      const activity = await service.addActivity({
         date: Date.now(),
         type: 'Sowing',
         status: 'Completed',
       });
 
-      service.addExpense({
+      await service.addExpense({
         activityId: activity.id,
         category: 'Labour',
         amount: 500,
@@ -92,42 +90,42 @@ describe('ActivityService', () => {
   });
 
   describe('getActivitiesForCrop', () => {
-    it('should filter activities by crop', () => {
-      service.addActivity({
+    it('should filter activities by crop', async () => {
+      await service.addActivity({
         date: Date.now(),
         type: 'Sowing',
         status: 'Completed',
-        cropId: 'crop_1',
+        cropId: 1,
       });
 
-      service.addActivity({
+      await service.addActivity({
         date: Date.now(),
         type: 'Irrigation',
         status: 'Completed',
-        cropId: 'crop_2',
+        cropId: 2,
       });
 
-      const cropActivities = service.getActivitiesForCrop('crop_1');
+      const cropActivities = service.getActivitiesForCrop(1);
       expect(cropActivities.length).toBe(1);
       expect(cropActivities[0].type).toBe('Sowing');
     });
   });
 
   describe('getExpensesForActivity', () => {
-    it('should fetch expenses for an activity', () => {
-      const activity = service.addActivity({
+    it('should fetch expenses for an activity', async () => {
+      const activity = await service.addActivity({
         date: Date.now(),
         type: 'Sowing',
         status: 'Completed',
       });
 
-      service.addExpense({
+      await service.addExpense({
         activityId: activity.id,
         category: 'Labour',
         amount: 500,
       });
 
-      service.addExpense({
+      await service.addExpense({
         activityId: activity.id,
         category: 'Seeds',
         amount: 300,
@@ -139,20 +137,20 @@ describe('ActivityService', () => {
   });
 
   describe('getTotalExpenseForActivity', () => {
-    it('should sum expenses for an activity', () => {
-      const activity = service.addActivity({
+    it('should sum expenses for an activity', async () => {
+      const activity = await service.addActivity({
         date: Date.now(),
         type: 'Sowing',
         status: 'Completed',
       });
 
-      service.addExpense({
+      await service.addExpense({
         activityId: activity.id,
         category: 'Labour',
         amount: 500,
       });
 
-      service.addExpense({
+      await service.addExpense({
         activityId: activity.id,
         category: 'Seeds',
         amount: 300,

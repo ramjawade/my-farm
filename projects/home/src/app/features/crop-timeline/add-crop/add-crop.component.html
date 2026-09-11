@@ -43,9 +43,9 @@
               cropForm.get('fieldId')?.touched && cropForm.get('fieldId')?.invalid
             "
           >
-            <option value="">-- Select Saved Land --</option>
+            <option [ngValue]="null">-- Select Saved Land --</option>
             @for (f of savedFarms(); track f.id) {
-              <option [value]="f.id">{{ f.name }}</option>
+              <option [ngValue]="f.id">{{ f.name }}</option>
             }
           </select>
           @if (cropForm.get('fieldId')?.touched && cropForm.get('fieldId')?.invalid) {

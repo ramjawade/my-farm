@@ -14,9 +14,9 @@
 import { AuditFields } from './common.contract';
 
 export interface LandResponse extends AuditFields {
-  id: string;
-  farmer_id: string;
-  farm_id: string;
+  id: number;
+  farmer_id: number;
+  farm_id: number;
   name: string;
   area_sq_m: number | null;
   notes: string | null;
@@ -25,7 +25,7 @@ export interface LandResponse extends AuditFields {
 /** `LandCreate` — `farm_id` is the default farm resolved by `ApiStorageService`. */
 export interface LandCreateRequest {
   name: string;
-  farm_id: string;
+  farm_id: number;
   area_sq_m?: number | null;
   notes?: string | null;
 }

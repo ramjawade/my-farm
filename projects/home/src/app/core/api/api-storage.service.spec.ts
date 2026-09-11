@@ -35,7 +35,7 @@ describe('ApiStorageService', () => {
 
   describe('auth token', () => {
     it('should omit the Authorization header when no token is set', () => {
-      const promise = service.getFarms('u1');
+      const promise = service.getFarms(1);
 
       const req = httpMock.expectOne((r) => r.url === '/api/v1/lands');
       expect(req.request.headers.has('Authorization')).toBeFalse();
@@ -46,7 +46,7 @@ describe('ApiStorageService', () => {
 
     it('should send the bearer token once set', () => {
       httpService.setAuthToken('token-a');
-      const promise = service.getFarms('u1');
+      const promise = service.getFarms(1);
 
       const req = httpMock.expectOne((r) => r.url === '/api/v1/lands');
       expect(req.request.headers.get('Authorization')).toBe('Bearer token-a');
@@ -58,7 +58,7 @@ describe('ApiStorageService', () => {
     it('should stop sending the token once set back to null', () => {
       httpService.setAuthToken('token-a');
       httpService.setAuthToken(null);
-      const promise = service.getFarms('u1');
+      const promise = service.getFarms(1);
 
       const req = httpMock.expectOne((r) => r.url === '/api/v1/lands');
       expect(req.request.headers.has('Authorization')).toBeFalse();
@@ -70,20 +70,45 @@ describe('ApiStorageService', () => {
 
   describe('list endpoints', () => {
     it('getFarms makes a single unpaginated GET and returns every item (#61)', async () => {
-      const promise = service.getFarms('u1');
+      const promise = service.getFarms(1);
 
       const reqs = httpMock.match((r) => r.url === '/api/v1/lands');
       expect(reqs.length).toBe(1);
       expect(reqs[0].request.params.has('cursor')).toBeFalse();
       reqs[0].flush({
         items: [
-          { id: 'l1', name: 'Plot 1', created_at: '2024-01-01T00:00:00Z' },
-          { id: 'l2', name: 'Plot 2', created_at: '2024-01-02T00:00:00Z' },
+          { id: 11, name: 'Plot 1', created_at: '2024-01-01T00:00:00Z' },
+          { id: 12, name: 'Plot 2', created_at: '2024-01-02T00:00:00Z' },
         ],
       });
 
       const farms = await promise;
-      expect(farms.map((f) => f.id)).toEqual(['l1', 'l2']);
+      expect(farms.map((f) => f.id)).toEqual([11, 12]);
+    });
+  });
+
+  describe('create payloads', () => {
+    it('saveFarm POSTs without an id and adopts the server-minted one', async () => {
+      const promise = service.saveFarm(1, {
+        name: 'Plot 1',
+        points: [],
+        area: { squareMeters: 100, hectares: 0.01, acres: 0.0247 },
+        geoJson: null,
+      });
+
+      await flushPromises();
+      httpMock
+        .expectOne((r) => r.method === 'GET' && r.url === '/api/v1/farms')
+        .flush({ items: [{ id: 5 }] });
+      await flushPromises();
+
+      const req = httpMock.expectOne((r) => r.method === 'POST' && r.url === '/api/v1/lands');
+      expect('id' in req.request.body).toBeFalse();
+      expect(req.request.body.farm_id).toBe(5);
+      req.flush({ id: 42, name: 'Plot 1', area_sq_m: 100, created_at: '2026-01-01T00:00:00Z' });
+
+      const saved = await promise;
+      expect(saved.id).toBe(42);
     });
   });
 
@@ -91,7 +116,7 @@ describe('ApiStorageService', () => {
     it('saveFarmer PATCHes /me with the backend-owned fields only', async () => {
       httpService.setAuthToken('token-a');
       const promise = service.saveFarmer({
-        id: 'f1',
+        id: 1,
         fullName: 'Asha Rao',
         phone: '9876500000',
         email: 'asha@example.com',
@@ -121,7 +146,7 @@ describe('ApiStorageService', () => {
         preferred_language: 'hi',
       });
       req.flush({
-        id: 'f1',
+        id: 1,
         auth_uid: 'pin:1',
         user_role: 'farmer',
         full_name: 'Asha Rao',
