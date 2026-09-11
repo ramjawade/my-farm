@@ -1,24 +1,26 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection, ComponentRef } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
-import { of } from 'rxjs';
 import { ActivitiesSummaryComponent } from './activities-summary.component';
-import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
-import { Activity, ActivityExpense } from '../../activity/activity.models';
-import { AuthService } from '../../../core/auth/auth.service';
-import { IStorageService } from '../../../core/storage/storage.interface';
-import { InMemoryStorageService } from '../../../testing/in-memory-storage.service';
-import { flushPromises } from '../../../testing/flush-promises';
+import { CropActivity } from '../../crop-timeline/crop-timeline.models';
 
 describe('ActivitiesSummaryComponent', () => {
   let component: ActivitiesSummaryComponent;
   let fixture: ComponentFixture<ActivitiesSummaryComponent>;
   let componentRef: ComponentRef<ActivitiesSummaryComponent>;
 
-  const base = { createdAt: 1, updatedAt: 1 };
-  const mockActivities: Activity[] = [
-    { ...base, id: 'act-s-1', cropId: 'c1', type: 'Irrigation', date: 1000, status: 'Completed' },
+  const base = { attachments: [], metadata: {}, createdAt: 1, updatedAt: 1 };
+  const allActivities: CropActivity[] = [
+    {
+      ...base,
+      id: 'act-s-1',
+      cropId: 'c1',
+      type: 'Irrigation',
+      date: 1000,
+      status: 'Completed',
+      cost: 500,
+      notes: '',
+    },
     {
       ...base,
       id: 'act-s-2',
@@ -26,51 +28,40 @@ describe('ActivitiesSummaryComponent', () => {
       type: 'Fertilizer Application',
       date: 2000,
       status: 'Completed',
+      cost: 1500,
+      notes: '',
     },
-    { ...base, id: 'act-s-3', cropId: 'c1', type: 'Weeding', date: 1500, status: 'Scheduled' },
-  ];
-  const mockExpenses: ActivityExpense[] = [
-    { id: 'e1', activityId: 'act-s-1', category: 'Water', amount: 500, createdAt: 1 },
-    { id: 'e2', activityId: 'act-s-2', category: 'Fertilizer', amount: 1500, createdAt: 1 },
-    { id: 'e3', activityId: 'act-s-3', category: 'Labour', amount: 300, createdAt: 1 },
+    {
+      ...base,
+      id: 'act-s-3',
+      cropId: 'c1',
+      type: 'Weeding',
+      date: 1500,
+      status: 'Scheduled',
+      cost: 300,
+      notes: '',
+    },
   ];
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ActivitiesSummaryComponent],
-      providers: [
-        provideZonelessChangeDetection(),
-        provideRouter([]),
-        provideHttpClient(),
-        CropTimelineService,
-        AuthService,
-        { provide: IStorageService, useClass: InMemoryStorageService },
-      ],
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
     }).compileComponents();
-
-    const storage = TestBed.inject(IStorageService) as InMemoryStorageService;
-    storage.activities = [...mockActivities];
-    storage.expenses = [...mockExpenses];
 
     fixture = TestBed.createComponent(ActivitiesSummaryComponent);
     component = fixture.componentInstance;
     componentRef = fixture.componentRef;
-
-    // Login mock user — triggers the services to load from storage
-    const authSvc = TestBed.inject(AuthService);
-    authSvc.login({ id: 'f-test' } as any);
-    TestBed.flushEffects();
-    await flushPromises();
-
-    fixture.detectChanges();
   });
 
   it('should create the component', () => {
+    componentRef.setInput('activities', allActivities);
+    fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
-  it('should compute metrics for all crops when cropId is not set', () => {
-    componentRef.setInput('cropId', undefined);
+  it('should compute metrics for all crops when given the full activity list', () => {
+    componentRef.setInput('activities', allActivities);
     fixture.detectChanges();
 
     expect(component.allActivities().length).toBe(3);
@@ -80,8 +71,9 @@ describe('ActivitiesSummaryComponent', () => {
     expect(component.completedCount()).toBe(2);
   });
 
-  it('should compute metrics filtered by cropId when set', () => {
-    componentRef.setInput('cropId', 'c1');
+  it('should compute metrics filtered by cropId when given a pre-filtered list', () => {
+    const cropActivities = allActivities.filter((a) => a.cropId === 'c1');
+    componentRef.setInput('activities', cropActivities);
     fixture.detectChanges();
 
     expect(component.allActivities().length).toBe(2);
@@ -92,7 +84,7 @@ describe('ActivitiesSummaryComponent', () => {
   });
 
   it('should compute correct chart data chronologically', () => {
-    componentRef.setInput('cropId', undefined);
+    componentRef.setInput('activities', allActivities);
     fixture.detectChanges();
 
     const chartData = component.chartData();

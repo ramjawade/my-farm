@@ -48,7 +48,6 @@ describe('AddCropComponent', () => {
   it('should call addCrop with CROP_STAGES[0] as currentStage on submit', () => {
     const cropService = TestBed.inject(CropTimelineService);
     spyOn(cropService, 'addCrop').and.returnValue({ id: 'test-id', name: 'Test Crop' } as any);
-    spyOn(component as any, 'router').and.returnValue({});
 
     // Fill form to make it valid
     component.cropForm.patchValue({

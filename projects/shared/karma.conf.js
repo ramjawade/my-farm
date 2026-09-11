@@ -18,6 +18,7 @@ module.exports = function (config) {
         // for example, you can disable the random execution with `random: false`
         // or set a specific seed with `seed: 4321`
       },
+      captureConsole: false, // app code logs console.error/warn for tested error paths; keep terminal output limited to real test failures
     },
     jasmineHtmlReporter: {
       suppressAll: true // removes the duplicated traces
@@ -30,7 +31,7 @@ module.exports = function (config) {
         { type: 'text-summary' }
       ]
     },
-    reporters: ['progress', 'kjhtml'],
+    reporters: ['dots', 'kjhtml'],
     browsers: ['ChromeHeadlessCI'],
     customLaunchers: {
       ChromeHeadlessCI: {

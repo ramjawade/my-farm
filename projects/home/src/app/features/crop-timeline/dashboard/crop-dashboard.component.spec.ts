@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
+import { provideRouter, Router } from '@angular/router';
 import { CropDashboardComponent } from './crop-dashboard.component';
 import { CropTimelineService } from '../crop-timeline.service';
 import { CropEntity } from '../crop-timeline.models';
@@ -10,20 +11,19 @@ import { InMemoryStorageService } from '../../../testing/in-memory-storage.servi
 describe('CropDashboardComponent', () => {
   let component: CropDashboardComponent;
   let fixture: ComponentFixture<CropDashboardComponent>;
+  let router: Router;
 
-  const mockCrops: CropEntity[] = [
-    {
-      id: 'c1',
-      name: 'Soybeans',
-      cropType: 'Soybeans',
-      fieldId: 'Field A',
-      area: 10,
-      areaUnit: 'hectares',
-      sowingDate: Date.now(),
-      currentStage: 'Sowing',
-      status: 'Active',
-    },
-  ];
+  const mockCrop: CropEntity = {
+    id: 'c1',
+    name: 'Soybeans',
+    cropType: 'Soybeans',
+    fieldId: 'Field A',
+    area: 10,
+    areaUnit: 'hectares',
+    sowingDate: Date.now(),
+    currentStage: 'Sowing',
+    status: 'Active',
+  };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -31,15 +31,15 @@ describe('CropDashboardComponent', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideHttpClient(),
+        provideRouter([]),
         CropTimelineService,
         { provide: IStorageService, useClass: InMemoryStorageService },
       ],
     }).compileComponents();
 
+    router = TestBed.inject(Router);
     fixture = TestBed.createComponent(CropDashboardComponent);
     component = fixture.componentInstance;
-    component.filteredCrops = mockCrops;
-    component.searchTerm = '';
     fixture.detectChanges();
   });
 
@@ -62,9 +62,9 @@ describe('CropDashboardComponent', () => {
     expect(component.getNextStage('Harvest')).toBe('Fully Mature');
   });
 
-  it('should emit cropSelected event on card click', () => {
-    spyOn(component.cropSelected, 'emit');
-    component.cropSelected.emit(mockCrops[0]);
-    expect(component.cropSelected.emit).toHaveBeenCalledWith(mockCrops[0]);
+  it('should navigate to crop detail on card click', () => {
+    spyOn(router, 'navigate');
+    component.onCropSelected(mockCrop);
+    expect(router.navigate).toHaveBeenCalledWith(['/crops', mockCrop.id]);
   });
 });
