@@ -175,7 +175,7 @@ export class ApiStorageService extends IStorageService {
 
   async getExpenses(userId: number): Promise<ActivityExpense[]> {
     try {
-      const items = await this.fetchList<unknown>('/expenses');
+      const items = await this.fetchList<unknown>('/activities/expenses');
       return await Promise.all(items.map((item) => this.mapFromBackendExpense(item)));
     } catch (error) {
       console.error('Failed to get expenses:', error);
