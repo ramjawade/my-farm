@@ -32,7 +32,6 @@ describe('AddCropComponent', () => {
 
     // Assign inputs
     component.cropNameOptions = ['Soybeans', 'Wheat'];
-    component.stages = ['Land Preparation', 'Sowing'];
     component.cropForm = fb.group({
       name: ['', Validators.required],
       cropType: ['Soybeans', Validators.required],
@@ -40,7 +39,6 @@ describe('AddCropComponent', () => {
       area: [10, [Validators.required, Validators.min(1)]],
       areaUnit: ['hectares'],
       sowingDate: [''],
-      currentStage: ['Sowing'],
     });
 
     fixture.detectChanges();
@@ -50,24 +48,37 @@ describe('AddCropComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should validate form and emit submitCrop on submit', () => {
-    spyOn(component.submitCrop, 'emit');
+  it('should not submit if form is invalid', () => {
+    const cropService = TestBed.inject(CropTimelineService);
+    spyOn(cropService, 'addCrop');
 
     // Invalid initially (name and fieldId empty)
     component.onSubmit();
-    expect(component.submitCrop.emit).not.toHaveBeenCalled();
+    expect(cropService.addCrop).not.toHaveBeenCalled();
+  });
+
+  it('should call addCrop with CROP_STAGES[0] as currentStage on submit', () => {
+    const cropService = TestBed.inject(CropTimelineService);
+    spyOn(cropService, 'addCrop').and.returnValue({ id: 'test-id', name: 'Test Crop' } as any);
+    spyOn(component as any, 'router').and.returnValue({});
 
     // Fill form to make it valid
-    component.cropForm.patchValue({ name: 'My Soy Crop', fieldId: 'Field C' });
+    component.cropForm.patchValue({
+      name: 'My Soy Crop',
+      cropType: 'Soybeans',
+      fieldId: 'Field C',
+      area: '10',
+      areaUnit: 'hectares',
+      sowingDate: '2026-09-12',
+    });
     fixture.detectChanges();
 
     component.onSubmit();
-    expect(component.submitCrop.emit).toHaveBeenCalled();
-  });
-
-  it('should emit cancelClicked event on cancel click', () => {
-    spyOn(component.cancelClicked, 'emit');
-    component.cancelClicked.emit();
-    expect(component.cancelClicked.emit).toHaveBeenCalled();
+    expect(cropService.addCrop).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        name: 'My Soy Crop',
+        currentStage: 'Land Preparation',
+      })
+    );
   });
 });
