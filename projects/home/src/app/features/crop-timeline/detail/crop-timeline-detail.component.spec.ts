@@ -1,24 +1,23 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
+import { BehaviorSubject, of } from 'rxjs';
 import { CropTimelineDetailComponent } from './crop-timeline-detail.component';
-import { CropEntity, CropActivity } from '../crop-timeline.models';
+import { CropActivity, CropEntity } from '../crop-timeline.models';
 import { CropTimelineService } from '../crop-timeline.service';
-import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { IStorageService } from '../../../core/storage/storage.interface';
 import { InMemoryStorageService } from '../../../testing/in-memory-storage.service';
-import { of } from 'rxjs';
 
 describe('CropTimelineDetailComponent', () => {
   let component: CropTimelineDetailComponent;
   let fixture: ComponentFixture<CropTimelineDetailComponent>;
-  const fb = new FormBuilder();
+  let timelineService: CropTimelineService;
+  let router: Router;
+  let paramMap$: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
 
-  const mockCrop: CropEntity = {
-    id: 'c1',
+  const mockCrop: Omit<CropEntity, 'id'> = {
     name: 'Soybeans',
     cropType: 'Soybeans',
     fieldId: 'Field A',
@@ -29,72 +28,35 @@ describe('CropTimelineDetailComponent', () => {
     status: 'Active',
   };
 
-  const mockUpcoming: CropActivity[] = [];
-  const mockActivities: CropActivity[] = [];
-
   beforeEach(async () => {
     const spyRouter = jasmine.createSpyObj('Router', ['navigate', 'createUrlTree', 'serializeUrl']);
     spyRouter.createUrlTree.and.returnValue({});
     spyRouter.serializeUrl.and.returnValue('');
     spyRouter.events = of();
-    const mockActivatedRoute = {
-      queryParams: of({}),
-      snapshot: { queryParams: {} },
-    };
+
+    paramMap$ = new BehaviorSubject(convertToParamMap({}));
+    const mockActivatedRoute = { paramMap: paramMap$ };
 
     await TestBed.configureTestingModule({
-      imports: [CropTimelineDetailComponent, ReactiveFormsModule],
+      imports: [CropTimelineDetailComponent],
       providers: [
         provideZonelessChangeDetection(),
         provideHttpClient(),
         { provide: Router, useValue: spyRouter },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
         CropTimelineService,
-        FarmDrawService,
         AuthService,
         { provide: IStorageService, useClass: InMemoryStorageService },
       ],
     }).compileComponents();
 
+    router = TestBed.inject(Router);
+    timelineService = TestBed.inject(CropTimelineService);
+    TestBed.inject(AuthService).login({ id: 'f-detail-test' } as any);
+    TestBed.flushEffects();
+
     fixture = TestBed.createComponent(CropTimelineDetailComponent);
     component = fixture.componentInstance;
-
-    // Assign inputs
-    component.selectedCrop = mockCrop;
-    component.stages = [
-      'Land Preparation',
-      'Sowing',
-      'Germination',
-      'Vegetative Growth',
-      'Flowering',
-    ];
-    component.upcomingActivities = mockUpcoming;
-    component.cropActivities = mockActivities;
-    component.showActivityModal = false;
-    component.editingActivity = null;
-    component.uploadedImages = [];
-    component.activityForm = fb.group({
-      type: ['Irrigation'],
-      date: ['2026-05-31'],
-      status: ['Completed'],
-      cost: [0],
-      notes: [''],
-      irrigationMethod: ['Drip'],
-      duration: [30],
-      waterQuantity: [1000],
-      fertilizerName: ['NPK 19-19-19'],
-      fertilizerQuantity: [25],
-      applicationMethod: ['Broadcasting'],
-      chemicalName: ['Neem Oil'],
-      dosage: ['500 ml/ha'],
-      sprayWaterQuantity: [200],
-      targetPest: ['Aphids'],
-      yieldQuantity: [500],
-      yieldUnit: ['kg'],
-      grade: ['A'],
-      sellingPrice: [40],
-    });
-
     fixture.detectChanges();
   });
 
@@ -111,23 +73,18 @@ describe('CropTimelineDetailComponent', () => {
     expect(component.getStageIndex('Flowering')).toBe(4);
   });
 
-  it('should resolve activity icons and colors', () => {
-    expect(component.getActivityIcon('Irrigation')).toBe('bi-droplet-half');
-    expect(component.getActivityColor('Irrigation')).toBe('#3182ce');
-    expect(component.getActivityEmoji('Irrigation')).toBe('💧');
+  it('should resolve the crop from the route id', () => {
+    const crop = timelineService.addCrop(mockCrop);
+
+    paramMap$.next(convertToParamMap({ id: crop.id }));
+    fixture.detectChanges();
+
+    expect(component.crop()).toEqual(jasmine.objectContaining({ id: crop.id, name: 'Soybeans' }));
   });
 
   it('should not update stage immediately when onUpdateStageClicked is called, but should set parentActivityIdForModal', () => {
-    const timelineSvc = TestBed.inject(CropTimelineService);
-
-    TestBed.inject(AuthService).login({ id: 'f-detail-test' } as any);
-    TestBed.flushEffects();
-
-    // Seed default activities for the mock crop
-    timelineSvc.addCrop(mockCrop);
-
-    const crop = timelineSvc.crops()[0];
-    component.selectedCrop = crop;
+    const crop = timelineService.addCrop(mockCrop);
+    paramMap$.next(convertToParamMap({ id: crop.id }));
     fixture.detectChanges();
 
     const initialStage = crop.currentStage;
@@ -138,17 +95,17 @@ describe('CropTimelineDetailComponent', () => {
     fixture.detectChanges();
 
     // Verify crop stage is NOT advanced immediately
-    const currentCrop = timelineSvc.crops().find((c) => c.id === crop.id)!;
+    const currentCrop = timelineService.crops().find((c) => c.id === crop.id)!;
     expect(currentCrop.currentStage).toBe('Flowering');
 
     // Verify parentActivityIdForModal is set to the pre-created Maturity stage activity
-    const maturityAct = timelineSvc.findMainActivityForStage(crop.id, 'Maturity')!;
+    const maturityAct = timelineService.findMainActivityForStage(crop.id, 'Maturity')!;
     expect(maturityAct).toBeTruthy();
     expect(maturityAct.status).toBe('Scheduled');
     expect(component.parentActivityIdForModal()).toBe(maturityAct.id);
 
     // Simulate submitting a subactivity under this parent activity
-    timelineSvc.addActivity({
+    timelineService.addActivity({
       cropId: crop.id,
       type: 'Labour Activity',
       date: Date.now(),
@@ -159,14 +116,14 @@ describe('CropTimelineDetailComponent', () => {
     });
 
     // Now verify parent activity is marked Completed and crop stage is advanced
-    const updatedMaturityAct = timelineSvc.activities().find((a) => a.id === maturityAct.id)!;
+    const updatedMaturityAct = timelineService.activities().find((a) => a.id === maturityAct.id)!;
     expect(updatedMaturityAct.status).toBe('Completed');
 
-    const updatedCrop = timelineSvc.crops().find((c) => c.id === crop.id)!;
+    const updatedCrop = timelineService.crops().find((c) => c.id === crop.id)!;
     expect(updatedCrop.currentStage).toBe('Maturity');
   });
 
-  it('should open edit modal locally with correct activity details when onEditActivityClicked is called', () => {
+  it('should set modal state when onEditActivityClicked is called', () => {
     const mockActivity: CropActivity = {
       id: 'act-edit-1',
       cropId: 'c1',
@@ -186,5 +143,20 @@ describe('CropTimelineDetailComponent', () => {
 
     expect(component.editingActivityIdForModal()).toBe('act-edit-1');
     expect(component.parentActivityIdForModal()).toBe('a-parent-id');
+    expect(component.showActivityModal()).toBeTrue();
+  });
+
+  it('should delete the crop and navigate to /crops on confirmDeleteCrop', () => {
+    const crop = timelineService.addCrop(mockCrop);
+    paramMap$.next(convertToParamMap({ id: crop.id }));
+    fixture.detectChanges();
+
+    component.onDeleteCropClicked();
+    expect(component.showDeleteCropConfirm()).toBeTrue();
+
+    component.confirmDeleteCrop();
+
+    expect(timelineService.crops().find((c) => c.id === crop.id)).toBeUndefined();
+    expect(router.navigate).toHaveBeenCalledWith(['/crops']);
   });
 });

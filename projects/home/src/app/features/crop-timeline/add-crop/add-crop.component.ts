@@ -4,17 +4,21 @@ import {
   signal,
   OnInit,
   ChangeDetectionStrategy,
+  computed,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { CropStage, CROP_STAGES } from '../crop-timeline.models';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { CROP_STAGES } from '../crop-timeline.models';
 import { CropTimelineService } from '../crop-timeline.service';
 import { FarmLookupService } from '../../../core/farms/farm-lookup.service';
 import { SavedFarm } from '../../../map/models/map.models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { WorkflowStateService } from '../../../core/workflow/workflow-state.service';
-import { ToastService } from 'shared';
+import { ToastService, ComboboxComponent } from 'shared';
+import { SEASONS, seasonForDate } from '../../../core/models/season';
+import { convertArea, AreaUnit } from '../../../core/pipes/area.pipe';
 
 const CROP_NAME_OPTIONS = [
   'Soybeans',
@@ -31,7 +35,7 @@ const CROP_NAME_OPTIONS = [
 @Component({
   standalone: true,
   selector: 'app-add-crop',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ComboboxComponent],
   templateUrl: './add-crop.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -45,18 +49,67 @@ export class AddCropComponent implements OnInit {
   private readonly workflowService = inject(WorkflowStateService);
 
   readonly savedFarms = signal<SavedFarm[]>([]);
+  readonly creatingName = signal(false);
+  readonly areaIsAutoFilled = signal(true);
+
   readonly cropForm = this.fb.nonNullable.group({
+    season: [seasonForDate(), Validators.required],
     name: ['', [Validators.required, Validators.minLength(2)]],
-    cropType: ['Soybeans', Validators.required],
     fieldId: ['', [Validators.required, Validators.minLength(2)]],
     area: ['', [Validators.required, Validators.min(0.01)]],
     areaUnit: ['hectares', Validators.required],
     sowingDate: [''],
-    currentStage: ['Land Preparation' as CropStage, Validators.required],
   });
 
-  readonly stages = CROP_STAGES;
-  readonly cropNameOptions = CROP_NAME_OPTIONS;
+  readonly seasons = SEASONS;
+  readonly cropNames = computed(() => {
+    const crops = this.cropService.crops();
+    const names = crops.map((c) => c.name);
+    return [...new Set(names)].sort();
+  });
+
+  constructor() {
+    const fieldIdCtrl = this.cropForm.get('fieldId');
+    const areaCtrl = this.cropForm.get('area');
+    const areaUnitCtrl = this.cropForm.get('areaUnit');
+
+    fieldIdCtrl?.valueChanges.pipe(takeUntilDestroyed()).subscribe((fieldId) => {
+      if (fieldId) {
+        const farm = this.savedFarms().find((f) => f.id === fieldId);
+        if (farm) {
+          const unit = (areaUnitCtrl?.value as AreaUnit) || 'hectares';
+          const areaValue = unit === 'acres' ? farm.area.acres : farm.area.hectares;
+          areaCtrl?.setValue(String(areaValue), { emitEvent: false });
+          this.areaIsAutoFilled.set(true);
+        }
+      }
+    });
+
+    areaUnitCtrl?.valueChanges.pipe(takeUntilDestroyed()).subscribe((newUnit) => {
+      const fieldId = fieldIdCtrl?.value;
+      const currentArea = areaCtrl?.value;
+      if (this.areaIsAutoFilled() && fieldId && currentArea) {
+        const farm = this.savedFarms().find((f) => f.id === fieldId);
+        if (farm) {
+          const areaValue =
+            (newUnit as AreaUnit) === 'acres' ? farm.area.acres : farm.area.hectares;
+          areaCtrl?.setValue(String(areaValue), { emitEvent: false });
+        }
+      } else if (!this.areaIsAutoFilled() && currentArea) {
+        const oldUnit = newUnit === 'acres' ? 'hectares' : 'acres';
+        const converted = convertArea(
+          Number(currentArea),
+          oldUnit as AreaUnit,
+          newUnit as AreaUnit,
+        );
+        areaCtrl?.setValue(String(converted), { emitEvent: false });
+      }
+    });
+
+    areaCtrl?.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
+      this.areaIsAutoFilled.set(false);
+    });
+  }
 
   async ngOnInit(): Promise<void> {
     const user = this.authService.currentUser();
@@ -73,18 +126,25 @@ export class AddCropComponent implements OnInit {
     this.router.navigate(['/crops']);
   }
 
+  onNameAdded(newName: string): void {
+    this.creatingName.set(true);
+    this.cropForm.patchValue({ name: newName });
+    this.creatingName.set(false);
+  }
+
   onSubmit(): void {
-    if (!this.cropForm.valid) return;
+    if (!this.cropForm.valid || this.creatingName()) return;
 
     const values = this.cropForm.getRawValue();
     const newCrop = this.cropService.addCrop({
       name: values.name,
-      cropType: values.cropType,
+      cropType: values.name,
       fieldId: values.fieldId,
       area: Number(values.area),
       areaUnit: values.areaUnit as 'acres' | 'hectares',
+      season: values.season,
       sowingDate: values.sowingDate ? new Date(values.sowingDate).getTime() : undefined,
-      currentStage: values.currentStage as CropStage,
+      currentStage: CROP_STAGES[0],
       status: 'Active',
     });
 
@@ -92,13 +152,12 @@ export class AddCropComponent implements OnInit {
     this.toast.success(`${newCrop.name} added with its growth-stage timeline.`);
 
     this.cropForm.reset({
+      season: seasonForDate(),
       name: '',
-      cropType: 'Soybeans',
       fieldId: '',
       area: '',
       areaUnit: 'hectares',
       sowingDate: '',
-      currentStage: 'Land Preparation',
     });
 
     this.router.navigate(['/crops']);

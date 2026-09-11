@@ -12,7 +12,11 @@ import {
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CropActivity, ActivityType } from '../../crop-timeline/crop-timeline.models';
-import { activityTypeEmoji, activityTypeIcon, activityTypeColor } from '../../activity/activity-display';
+import {
+  activityTypeEmoji,
+  activityTypeIcon,
+  activityTypeColor,
+} from '../../activity/activity-display';
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
