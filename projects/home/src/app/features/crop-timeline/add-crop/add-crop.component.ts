@@ -13,7 +13,8 @@ import { CropTimelineService } from '../crop-timeline.service';
 import { FarmLookupService } from '../../../core/farms/farm-lookup.service';
 import { SavedFarm } from '../../../map/models/map.models';
 import { AuthService } from '../../../core/auth/auth.service';
-import { ToastService, WorkflowStateService } from 'shared';
+import { WorkflowStateService } from '../../../core/workflow/workflow-state.service';
+import { ToastService } from 'shared';
 
 const CROP_NAME_OPTIONS = [
   'Soybeans',
@@ -81,9 +82,9 @@ export class AddCropComponent implements OnInit {
       cropType: values.cropType,
       fieldId: values.fieldId,
       area: Number(values.area),
-      areaUnit: values.areaUnit,
+      areaUnit: values.areaUnit as 'acres' | 'hectares',
       sowingDate: values.sowingDate ? new Date(values.sowingDate).getTime() : undefined,
-      currentStage: values.currentStage,
+      currentStage: values.currentStage as CropStage,
       status: 'Active',
     });
 

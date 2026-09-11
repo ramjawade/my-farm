@@ -12,7 +12,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
 import { CropTimelineService } from '../crop-timeline.service';
-import { CropEntity, CropActivity, CROP_STAGES } from '../crop-timeline.models';
+import { CropEntity, CropActivity, CropStage, CROP_STAGES } from '../crop-timeline.models';
 import { CreateActivityComponent } from '../../farm-activity/create/create-activity.component';
 import { ActivitiesSummaryComponent } from '../../farm-activity/summary/activities-summary.component';
 import { ConfirmDialogComponent, ToastService } from 'shared';

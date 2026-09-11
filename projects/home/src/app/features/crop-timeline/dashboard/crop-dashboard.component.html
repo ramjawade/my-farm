@@ -36,7 +36,7 @@
 
 <!-- Active Crops Grid -->
 <div class="row g-3">
-  @for (crop of filteredCrops; track crop.id) {
+  @for (crop of filteredCrops(); track crop.id) {
     <div class="col-12 col-sm-6 col-lg-4">
       <div
         class="card card-glass card-interactive p-4 text-start h-100 position-relative d-flex flex-column justify-content-between"
@@ -109,7 +109,7 @@
       </div>
     </div>
   }
-  @if (filteredCrops.length === 0) {
+  @if (filteredCrops().length === 0) {
     <div class="col-12">
       <div class="card card-glass p-5 text-center">
         <i class="bi bi-folder-x text-muted fs-1 d-block mb-3"></i>
