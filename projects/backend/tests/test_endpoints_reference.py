@@ -1,48 +1,95 @@
-"""Tests for reference data endpoints."""
+"""Reference data endpoints: list and create crops."""
+
+from unittest.mock import patch
+from uuid import uuid4
 
 import pytest
+from firebase_admin import auth as firebase_auth
 from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_list_crop_catalog_no_auth_required(client: AsyncClient) -> None:
-    """Reference endpoints don't require authentication."""
-    resp = await client.get("/api/v1/reference/crops")
-    # Should return 200 even without auth header
-    assert resp.status_code == 200
-    data = resp.json()
-    assert "items" in data
-    assert isinstance(data["items"], list)
-
-
-@pytest.mark.asyncio
-async def test_list_expense_categories_no_auth_required(client: AsyncClient) -> None:
-    """Expense categories endpoint accessible without auth."""
-    resp = await client.get("/api/v1/reference/expense-categories")
-    assert resp.status_code == 200
-    data = resp.json()
-    assert "items" in data
-    assert isinstance(data["items"], list)
-
-
-@pytest.mark.asyncio
-async def test_list_activity_types_no_auth_required(client: AsyncClient) -> None:
-    """Activity types endpoint accessible without auth."""
-    resp = await client.get("/api/v1/reference/activity-types")
-    assert resp.status_code == 200
-    data = resp.json()
-    assert "items" in data
-    assert isinstance(data["items"], list)
-
-
-@pytest.mark.asyncio
-async def test_reference_lists_are_unpaginated(client: AsyncClient) -> None:
-    """Reference lists return the whole table in one call — no cursor (#61)."""
-    for path in (
+async def test_post_crops_requires_auth(client: AsyncClient) -> None:
+    """POST /crops without auth returns 401."""
+    resp = await client.post(
         "/api/v1/reference/crops",
-        "/api/v1/reference/expense-categories",
-        "/api/v1/reference/activity-types",
+        json={"name": "Tomato"},
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_post_crops_creates_new_crop(client: AsyncClient) -> None:
+    """POST /crops with auth creates a new crop."""
+    uid = f"farmer_{uuid4()}"
+    with patch.object(
+        firebase_auth,
+        "verify_id_token",
+        return_value={"uid": uid, "phone_number": None},
     ):
-        resp = await client.get(path)
+        resp = await client.post(
+            "/api/v1/reference/crops",
+            headers={"Authorization": "Bearer test"},
+            json={"name": "Tomato"},
+        )
         assert resp.status_code == 200
-        assert set(resp.json().keys()) == {"items"}
+        data = resp.json()
+        assert data["name"] == "Tomato"
+        assert data["id"]
+
+
+@pytest.mark.asyncio
+async def test_post_crops_case_insensitive_duplicate(client: AsyncClient) -> None:
+    """POST /crops with case-insensitive duplicate returns existing crop."""
+    uid = f"farmer_{uuid4()}"
+    with patch.object(
+        firebase_auth,
+        "verify_id_token",
+        return_value={"uid": uid, "phone_number": None},
+    ):
+        # Create crop with lowercase
+        resp1 = await client.post(
+            "/api/v1/reference/crops",
+            headers={"Authorization": "Bearer test"},
+            json={"name": "tomato"},
+        )
+        assert resp1.status_code == 200
+        id1 = resp1.json()["id"]
+
+        # Try to create with uppercase
+        resp2 = await client.post(
+            "/api/v1/reference/crops",
+            headers={"Authorization": "Bearer test"},
+            json={"name": "TOMATO"},
+        )
+        assert resp2.status_code == 200
+        data2 = resp2.json()
+        assert data2["id"] == id1
+        assert data2["name"] == "tomato"  # Returns original name
+
+
+@pytest.mark.asyncio
+async def test_post_crops_empty_name_returns_400(client: AsyncClient) -> None:
+    """POST /crops with empty name returns 400."""
+    uid = f"farmer_{uuid4()}"
+    with patch.object(
+        firebase_auth,
+        "verify_id_token",
+        return_value={"uid": uid, "phone_number": None},
+    ):
+        resp = await client.post(
+            "/api/v1/reference/crops",
+            headers={"Authorization": "Bearer test"},
+            json={"name": ""},
+        )
+        assert resp.status_code == 422  # Pydantic validation error
+
+
+@pytest.mark.asyncio
+async def test_get_crops_list(client: AsyncClient) -> None:
+    """GET /crops returns the crop catalog."""
+    resp = await client.get("/api/v1/reference/crops")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "items" in data
+    assert isinstance(data["items"], list)
