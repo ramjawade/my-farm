@@ -29,8 +29,27 @@ def upgrade() -> None:
     for seq in sequences:
         op.execute(f"CREATE SEQUENCE {seq}")
 
-    # Convert all FKs to bigint before converting PKs (using direct SQL with USING clause)
-    # Reference table FKs
+    # Step 1: Convert reference table PKs FIRST (they have no FKs)
+    # These tables' PKs are referenced by FKs in other tables
+    reference_tables_with_sequences = [
+        ("crop_catalog", "crop_catalog_id_seq"),
+        ("activity_type", "activity_type_id_seq"),
+        ("expense_category", "expense_category_id_seq"),
+        ("weather_cache", "weather_cache_id_seq"),
+    ]
+
+    for table_name, seq_name in reference_tables_with_sequences:
+        op.drop_constraint(f"{table_name}_pkey", table_name, type_="primary")
+        op.drop_column(table_name, "id")
+        default_sql = f"nextval('{seq_name}'::regclass)"
+        op.add_column(
+            table_name,
+            sa.Column("id", sa.BigInteger(), nullable=False,
+                      server_default=default_sql)
+        )
+        op.create_primary_key(f"{table_name}_pkey", table_name, ["id"])
+
+    # Step 2: Convert FKs to reference tables (now that their PKs are BIGINT)
     op.execute(
         "ALTER TABLE activity "
         "ALTER COLUMN activity_type_id TYPE bigint USING (activity_type_id::text::bigint)"
@@ -48,7 +67,18 @@ def upgrade() -> None:
         "ALTER COLUMN crop_catalog_id TYPE bigint USING (crop_catalog_id::text::bigint)"
     )
 
-    # Tenant-scoped FKs
+    # Step 3: Convert tenant-scoped FKs and main table PKs
+    # Start with farmer (has no FKs, everything references it)
+    op.drop_constraint("farmer_pkey", "farmer", type_="primary")
+    op.drop_column("farmer", "id")
+    op.add_column(
+        "farmer",
+        sa.Column("id", sa.BigInteger(), nullable=False,
+                  server_default="nextval('farmer_id_seq'::regclass)")
+    )
+    op.create_primary_key("farmer_pkey", "farmer", ["id"])
+
+    # Now convert FK columns pointing to farmer
     op.execute(
         "ALTER TABLE farm "
         "ALTER COLUMN farmer_id TYPE bigint USING (farmer_id::text::bigint)"
@@ -58,29 +88,81 @@ def upgrade() -> None:
         "ALTER COLUMN farmer_id TYPE bigint USING (farmer_id::text::bigint)"
     )
     op.execute(
-        "ALTER TABLE land "
-        "ALTER COLUMN farm_id TYPE bigint USING (farm_id::text::bigint)"
-    )
-    op.execute(
         "ALTER TABLE crop "
         "ALTER COLUMN farmer_id TYPE bigint USING (farmer_id::text::bigint)"
     )
+    op.execute(
+        "ALTER TABLE activity "
+        "ALTER COLUMN farmer_id TYPE bigint USING (farmer_id::text::bigint)"
+    )
+
+    # Convert farm PK
+    op.drop_constraint("farm_pkey", "farm", type_="primary")
+    op.drop_column("farm", "id")
+    op.add_column(
+        "farm",
+        sa.Column("id", sa.BigInteger(), nullable=False,
+                  server_default="nextval('farm_id_seq'::regclass)")
+    )
+    op.create_primary_key("farm_pkey", "farm", ["id"])
+
+    # Convert FK columns pointing to farm
+    op.execute(
+        "ALTER TABLE land "
+        "ALTER COLUMN farm_id TYPE bigint USING (farm_id::text::bigint)"
+    )
+
+    # Convert land PK
+    op.drop_constraint("land_pkey", "land", type_="primary")
+    op.drop_column("land", "id")
+    op.add_column(
+        "land",
+        sa.Column("id", sa.BigInteger(), nullable=False,
+                  server_default="nextval('land_id_seq'::regclass)")
+    )
+    op.create_primary_key("land_pkey", "land", ["id"])
+
+    # Convert FK columns pointing to land
     op.execute(
         "ALTER TABLE crop "
         "ALTER COLUMN land_id TYPE bigint USING (land_id::text::bigint)"
     )
     op.execute(
         "ALTER TABLE activity "
-        "ALTER COLUMN farmer_id TYPE bigint USING (farmer_id::text::bigint)"
+        "ALTER COLUMN land_id TYPE bigint USING (land_id::text::bigint)"
     )
+    op.execute(
+        "ALTER TABLE land_point "
+        "ALTER COLUMN land_id TYPE bigint USING (land_id::text::bigint)"
+    )
+
+    # Convert crop PK
+    op.drop_constraint("crop_pkey", "crop", type_="primary")
+    op.drop_column("crop", "id")
+    op.add_column(
+        "crop",
+        sa.Column("id", sa.BigInteger(), nullable=False,
+                  server_default="nextval('crop_id_seq'::regclass)")
+    )
+    op.create_primary_key("crop_pkey", "crop", ["id"])
+
+    # Convert FK columns pointing to crop
     op.execute(
         "ALTER TABLE activity "
         "ALTER COLUMN crop_id TYPE bigint USING (crop_id::text::bigint)"
     )
-    op.execute(
-        "ALTER TABLE activity "
-        "ALTER COLUMN land_id TYPE bigint USING (land_id::text::bigint)"
+
+    # Convert activity PK
+    op.drop_constraint("activity_pkey", "activity", type_="primary")
+    op.drop_column("activity", "id")
+    op.add_column(
+        "activity",
+        sa.Column("id", sa.BigInteger(), nullable=False,
+                  server_default="nextval('activity_id_seq'::regclass)")
     )
+    op.create_primary_key("activity_pkey", "activity", ["id"])
+
+    # Convert FK columns pointing to activity
     op.execute(
         "ALTER TABLE activity "
         "ALTER COLUMN parent_activity_id TYPE bigint USING (parent_activity_id::text::bigint)"
@@ -93,36 +175,25 @@ def upgrade() -> None:
         "ALTER TABLE activity_attachment "
         "ALTER COLUMN activity_id TYPE bigint USING (activity_id::text::bigint)"
     )
-    op.execute(
-        "ALTER TABLE land_point "
-        "ALTER COLUMN land_id TYPE bigint USING (land_id::text::bigint)"
+
+    # Convert activity_expense and activity_attachment PKs
+    op.drop_constraint("activity_expense_pkey", "activity_expense", type_="primary")
+    op.drop_column("activity_expense", "id")
+    op.add_column(
+        "activity_expense",
+        sa.Column("id", sa.BigInteger(), nullable=False,
+                  server_default="nextval('activity_expense_id_seq'::regclass)")
     )
+    op.create_primary_key("activity_expense_pkey", "activity_expense", ["id"])
 
-    # Now convert all primary keys to bigint with sequences
-    tables_with_sequences = [
-        ("farmer", "farmer_id_seq"),
-        ("farm", "farm_id_seq"),
-        ("land", "land_id_seq"),
-        ("crop", "crop_id_seq"),
-        ("activity", "activity_id_seq"),
-        ("activity_expense", "activity_expense_id_seq"),
-        ("activity_attachment", "activity_attachment_id_seq"),
-        ("crop_catalog", "crop_catalog_id_seq"),
-        ("activity_type", "activity_type_id_seq"),
-        ("expense_category", "expense_category_id_seq"),
-        ("weather_cache", "weather_cache_id_seq"),
-    ]
-
-    for table_name, seq_name in tables_with_sequences:
-        op.drop_constraint(f"{table_name}_pkey", table_name, type_="primary")
-        op.drop_column(table_name, "id")
-        default_sql = f"nextval('{seq_name}'::regclass)"
-        op.add_column(
-            table_name,
-            sa.Column("id", sa.BigInteger(), nullable=False,
-                      server_default=default_sql)
-        )
-        op.create_primary_key(f"{table_name}_pkey", table_name, ["id"])
+    op.drop_constraint("activity_attachment_pkey", "activity_attachment", type_="primary")
+    op.drop_column("activity_attachment", "id")
+    op.add_column(
+        "activity_attachment",
+        sa.Column("id", sa.BigInteger(), nullable=False,
+                  server_default="nextval('activity_attachment_id_seq'::regclass)")
+    )
+    op.create_primary_key("activity_attachment_pkey", "activity_attachment", ["id"])
 
     # Create new reference tables with bigint ids
     op.create_table(
