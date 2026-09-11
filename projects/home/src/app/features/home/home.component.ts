@@ -299,12 +299,6 @@ export class HomeComponent implements OnInit {
     });
   });
 
-  // Quick Action: Complete an activity task from the list
-  completeActivityTask(id: string): void {
-    this.activityService.updateActivity(id, { status: 'Completed' });
-    this.toast.success('Task marked as completed.');
-  }
-
   private formatDate(timestamp: number | undefined): string {
     if (!timestamp) return '';
     try {

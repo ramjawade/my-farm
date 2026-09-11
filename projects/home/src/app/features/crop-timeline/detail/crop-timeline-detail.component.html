@@ -51,7 +51,7 @@
     <span
       class="badge bg-success-light text-success-dark font-monospace px-2.5 py-1 rounded-pill small"
     >
-      Active: {{ selectedCrop?.currentStage }}
+      Active: {{ crop()?.currentStage }}
     </span>
   </div>
 
@@ -62,8 +62,8 @@
           class="lifecycle-step"
           role="button"
           tabindex="0"
-          [class.completed]="getStageIndex(selectedCrop?.currentStage || 'Land Preparation') >= idx"
-          [class.active]="selectedCrop?.currentStage === stg"
+          [class.completed]="getStageIndex(crop()?.currentStage || 'Land Preparation') >= idx"
+          [class.active]="crop()?.currentStage === stg"
           (click)="onUpdateStageClicked(stg)"
           (keydown.enter)="onUpdateStageClicked(stg)"
         >
@@ -79,7 +79,7 @@
           <!-- Middle Circle Node Wrapper -->
           <div class="step-circle-wrapper">
             <span class="step-circle">
-              @if (getStageIndex(selectedCrop?.currentStage || 'Land Preparation') > idx) {
+              @if (getStageIndex(crop()?.currentStage || 'Land Preparation') > idx) {
                 <i class="bi bi-check-lg"></i>
               } @else {
                 {{ idx + 1 }}
@@ -101,7 +101,7 @@
             <div
               class="step-line"
               [class.completed]="
-                getStageIndex(selectedCrop?.currentStage || 'Land Preparation') > idx
+                getStageIndex(crop()?.currentStage || 'Land Preparation') > idx
               "
             ></div>
           }
@@ -112,7 +112,7 @@
 </div>
 
 <app-activities-summary
-  [cropId]="selectedCrop?.id"
+  [activities]="activities()"
   [isTimeline]="true"
   (editActivity)="onEditActivityClicked($event)"
   (markActivityCompleted)="onMarkActivityCompletedClicked($event)"
@@ -153,7 +153,7 @@
 <!-- ======================================================== -->
 <!-- 4. ADD/EDIT ACTIVITY OVERLAY DIALOG MODAL (REUSABLE)     -->
 <!-- ======================================================== -->
-@if (showActivityModal) {
+@if (showActivityModal()) {
   <div
     class="activity-modal-backdrop position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center px-3"
     style="z-index: 2000"
@@ -171,7 +171,7 @@
       </div>
 
       <app-create-activity
-        [cropId]="selectedCrop?.id"
+        [cropId]="crop()?.id"
         [parentActivityId]="parentActivityIdForModal() || undefined"
         [activityId]="editingActivityIdForModal() || undefined"
         [isModal]="true"

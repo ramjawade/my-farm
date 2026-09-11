@@ -10,11 +10,9 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, Router } from '@angular/router';
-import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
-import { ActivityService } from '../../activity/activity.service';
+import { RouterLink } from '@angular/router';
 import { CropActivity, ActivityType } from '../../crop-timeline/crop-timeline.models';
-import { WorkflowStateService } from '../../../core/workflow/workflow-state.service';
+import { activityTypeEmoji, activityTypeIcon, activityTypeColor } from '../../activity/activity-display';
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -28,12 +26,7 @@ Chart.register(...registerables);
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ActivitiesSummaryComponent {
-  private readonly timelineService = inject(CropTimelineService);
-  private readonly activityService = inject(ActivityService);
-  private readonly router = inject(Router);
-  private readonly workflowService = inject(WorkflowStateService);
-
-  readonly cropId = input<string | undefined>();
+  readonly activities = input.required<CropActivity[]>();
   readonly isTimeline = input<boolean>(false);
 
   readonly editActivity = output<CropActivity>();
@@ -44,14 +37,7 @@ export class ActivitiesSummaryComponent {
     return a.status === 'Scheduled' || a.status === 'Draft' || a.status === 'In Progress';
   }
 
-  readonly allActivities = computed(() => {
-    const cid = this.cropId();
-    const all = this.timelineService.activities();
-    if (cid) {
-      return all.filter((a) => a.cropId === cid);
-    }
-    return all;
-  });
+  readonly allActivities = computed(() => this.activities());
 
   readonly totalExpense = computed(() => {
     return this.allActivities().reduce((sum, a) => sum + (a.cost || 0), 0);
@@ -107,19 +93,6 @@ export class ActivitiesSummaryComponent {
   });
 
   readonly chartCanvas = viewChild<ElementRef<HTMLCanvasElement>>('chartCanvas');
-
-  readonly activityTypes: { type: ActivityType; icon: string; color: string }[] = [
-    { type: 'Sowing', icon: 'bi-seedling', color: '#38a169' },
-    { type: 'Irrigation', icon: 'bi-droplet-half', color: '#3182ce' },
-    { type: 'Fertilizer Application', icon: 'bi-box-seam', color: '#805ad5' },
-    { type: 'Spray Application', icon: 'bi-wind', color: '#e53e3e' },
-    { type: 'Weeding', icon: 'bi-scissors', color: '#dd6b20' },
-    { type: 'Field Inspection', icon: 'bi-eye-fill', color: '#319795' },
-    { type: 'Labour Activity', icon: 'bi-people-fill', color: '#4a5568' },
-    { type: 'Harvest', icon: 'bi-flower3', color: '#d69e2e' },
-    { type: 'Sale', icon: 'bi-cash-coin', color: '#38a169' },
-    { type: 'Weather Incident', icon: 'bi-lightning-charge-fill', color: '#e53e3e' },
-  ];
 
   constructor() {
     effect((onCleanup) => {
@@ -305,73 +278,17 @@ export class ActivitiesSummaryComponent {
         chart.destroy();
       });
     });
-
-    // Mark activity phase complete when first activity is created
-    effect(() => {
-      const count = this.activitiesCount();
-      if (count === 1) {
-        this.workflowService.markPhaseComplete('activity');
-      }
-    });
   }
 
-  getActivityTotalCost(activityId: string): number {
-    return this.activityService.getTotalExpenseForActivity(activityId);
-  }
-
-  getActivityIcon(type: ActivityType): string {
-    const item = this.activityTypes.find((a) => a.type === type);
-    return item ? item.icon : 'bi-calendar-event';
-  }
-
-  getActivityEmoji(type: ActivityType): string {
-    switch (type) {
-      case 'Sowing':
-        return '🌱';
-      case 'Irrigation':
-        return '💧';
-      case 'Fertilizer Application':
-        return '🌿';
-      case 'Spray Application':
-        return '🐛';
-      case 'Weeding':
-        return '✂️';
-      case 'Field Inspection':
-        return '📷';
-      case 'Labour Activity':
-        return '👥';
-      case 'Harvest':
-        return '🌾';
-      case 'Sale':
-        return '💰';
-      case 'Weather Incident':
-        return '⚡';
-      default:
-        return '📅';
-    }
-  }
-
-  getActivityColor(type: ActivityType): string {
-    const item = this.activityTypes.find((a) => a.type === type);
-    return item ? item.color : '#4a5568';
-  }
+  readonly getActivityIcon = activityTypeIcon;
+  readonly getActivityEmoji = activityTypeEmoji;
+  readonly getActivityColor = activityTypeColor;
 
   onEditActivityClicked(act: CropActivity): void {
-    if (this.isTimeline()) {
-      this.editActivity.emit(act);
-    } else {
-      this.router.navigate(['/activities/create'], { queryParams: { activityId: act.id } });
-    }
+    this.editActivity.emit(act);
   }
 
   onMarkActivityCompletedClicked(id: string): void {
-    if (this.isTimeline()) {
-      this.markActivityCompleted.emit(id);
-    } else {
-      this.timelineService.updateActivity(id, {
-        status: 'Completed',
-        date: Date.now(),
-      });
-    }
+    this.markActivityCompleted.emit(id);
   }
 }

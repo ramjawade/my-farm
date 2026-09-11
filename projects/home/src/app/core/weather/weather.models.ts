@@ -68,6 +68,8 @@ export interface WeatherError {
   timestamp: number;
 }
 
+export type WeatherDataSource = 'live' | 'cache' | 'demo';
+
 // OpenWeatherMap API response types (internal)
 export interface OpenWeatherResponse {
   main: {

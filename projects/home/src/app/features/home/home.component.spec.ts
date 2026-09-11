@@ -250,35 +250,6 @@ describe('HomeComponent', () => {
     expect(compiled.querySelector('app-onboarding-checklist')).toBeTruthy();
   });
 
-  it('should complete activity task when completeActivityTask is called', async () => {
-    authService.login(baseUser);
-    fixture.detectChanges();
-
-    // Create a mock pending activity
-    const mockActivity = activityService.addActivity({
-      date: Date.now(),
-      season: 'Zaid',
-      type: 'Maintenance',
-      status: 'In Progress',
-    });
-
-    fixture.detectChanges();
-
-    // Verify task is in progress
-    const activities = activityService.activities();
-    const target = activities.find((a) => a.id === mockActivity.id);
-    expect(target?.status).toBe('In Progress');
-
-    // Complete task
-    component.completeActivityTask(mockActivity.id);
-    fixture.detectChanges();
-
-    // Verify status has updated to Completed
-    const updatedActivities = activityService.activities();
-    const updatedTarget = updatedActivities.find((a) => a.id === mockActivity.id);
-    expect(updatedTarget?.status).toBe('Completed');
-  });
-
   it('should show farm setup prompt for user who has not completed setup', () => {
     const mockUser: FarmerRegistrationData = {
       id: 'f-test',
