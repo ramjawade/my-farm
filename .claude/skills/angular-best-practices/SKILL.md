@@ -78,3 +78,4 @@ In practice for this repo: a routed page component (e.g. `MapComponent`) owns it
 - Single responsibility per service
 - Use `providedIn: 'root'` for singletons
 - Use `inject()` instead of constructor injection
+- Avoid `effect()` for triggering API calls — a `providedIn: 'root'` service's constructor `effect()` runs on every app boot regardless of route or login state, and has caused real backend-flooding bugs in this repo (root-provided services firing HTTP calls unconditionally on every navigation). Prefer explicit, page-scoped loading instead (see Data loading above). If an effect-driven reload is genuinely unavoidable, use at most **one** effect per service/component, and still gate it on the real precondition (e.g. `if (user)`) — stacking multiple effects on the same data compounds into a flood even when each one looks individually gated.
