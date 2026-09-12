@@ -97,27 +97,16 @@ describe('CropTimelineDetailComponent', () => {
     expect(stageActs.every((a) => a.cropId === crop.id && a.fieldId === 7)).toBeTrue();
   });
 
-  it('should not update stage immediately when onUpdateStageClicked is called, but should set parentActivityIdForModal', async () => {
+  it('does not advance crop stage when a stage sub-activity is completed (unlinked, #167)', async () => {
     const crop = await timelineService.addCrop(mockCrop);
     paramMap$.next(convertToParamMap({ id: String(crop.id) }));
     fixture.detectChanges();
 
-    const initialStage = crop.currentStage;
-    expect(initialStage).toBe('Flowering');
+    expect(crop.currentStage).toBe('Flowering');
 
-    // Click stage node 'Maturity' (index 6, which is Planned)
-    await component.onUpdateStageClicked('Maturity');
-    fixture.detectChanges();
-
-    // Verify crop stage is NOT advanced immediately
-    const currentCrop = timelineService.crops().find((c) => c.id === crop.id)!;
-    expect(currentCrop.currentStage).toBe('Flowering');
-
-    // Verify parentActivityIdForModal is set to the pre-created Maturity stage activity
     const maturityAct = timelineService.findMainActivityForStage(crop.id, 'Maturity')!;
     expect(maturityAct).toBeTruthy();
     expect(maturityAct.status).toBe('Scheduled');
-    expect(component.parentActivityIdForModal()).toBe(maturityAct.id);
 
     // Simulate submitting a subactivity under this parent activity
     await timelineService.addActivity({
@@ -130,12 +119,22 @@ describe('CropTimelineDetailComponent', () => {
       parentActivityId: maturityAct.id,
     });
 
-    // Now verify parent activity is marked Completed and crop stage is advanced
+    // Parent activity and crop stage are both unaffected — sync is disconnected
     const updatedMaturityAct = timelineService.activities().find((a) => a.id === maturityAct.id)!;
-    expect(updatedMaturityAct.status).toBe('Completed');
+    expect(updatedMaturityAct.status).toBe('Scheduled');
 
     const updatedCrop = timelineService.crops().find((c) => c.id === crop.id)!;
-    expect(updatedCrop.currentStage).toBe('Maturity');
+    expect(updatedCrop.currentStage).toBe('Flowering');
+  });
+
+  it('does not advance crop stage when completeActivity is called directly (unlinked, #167)', async () => {
+    const crop = await timelineService.addCrop(mockCrop);
+    const maturityAct = timelineService.findMainActivityForStage(crop.id, 'Maturity')!;
+
+    timelineService.completeActivity(maturityAct.id);
+
+    const updatedCrop = timelineService.crops().find((c) => c.id === crop.id)!;
+    expect(updatedCrop.currentStage).toBe('Flowering');
   });
 
   it('should set modal state when onEditActivityClicked is called', () => {

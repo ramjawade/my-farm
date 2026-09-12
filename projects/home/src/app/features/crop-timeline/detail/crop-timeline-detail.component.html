@@ -58,14 +58,11 @@
   <div class="lifecycle-stepper-container">
     <div class="lifecycle-track">
       @for (stg of stages; track stg; let idx = $index) {
+        <!-- Static display only — activity completion no longer drives stage (#167) -->
         <div
           class="lifecycle-step"
-          role="button"
-          tabindex="0"
           [class.completed]="getStageIndex(crop()?.currentStage || 'Land Preparation') >= idx"
           [class.active]="crop()?.currentStage === stg"
-          (click)="onUpdateStageClicked(stg)"
-          (keydown.enter)="onUpdateStageClicked(stg)"
         >
           <!-- Top Label Row (visible only for odd steps, keeps DOM space for even steps) -->
           <div

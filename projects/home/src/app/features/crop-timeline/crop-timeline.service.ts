@@ -209,7 +209,9 @@ export class CropTimelineService {
       });
     }
 
-    this.syncStageFromActivity(created.id);
+    // Lifecycle progress is unlinked from activity completion for now (#167)
+    // — the stepper is a static display of crop.currentStage. Revisit later.
+    // this.syncStageFromActivity(created.id);
     this.updateCropUpcomingActivity(input.cropId);
     return this.getCropActivity(created.id)!;
   }
@@ -268,7 +270,7 @@ export class CropTimelineService {
     }
   }
 
-  /** Shorthand: update activity to Completed and sync stage. */
+  /** Shorthand: update activity to Completed. Stage sync is disconnected — see #167. */
   completeActivity(id: number): void {
     const existing = this.activityService.getActivityById(id);
     if (!existing) return;
@@ -276,9 +278,10 @@ export class CropTimelineService {
       status: 'Completed',
       date: Date.now(),
     });
-    if (existing.cropId) {
-      this.syncStageFromActivity(id);
-    }
+    // Lifecycle progress is unlinked from activity completion for now (#167).
+    // if (existing.cropId) {
+    //   this.syncStageFromActivity(id);
+    // }
   }
 
   /** Manually advance to the next stage. */
