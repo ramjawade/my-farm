@@ -65,17 +65,20 @@ export class ProfileEditDialogComponent {
   readonly latitude = signal<number | null>(null);
   readonly longitude = signal<number | null>(null);
 
-  // Constant arrays matching old farmer-registration component
+  // Short ISO-ish codes, matching the account's stored `preferredLanguage`
+  // format (backend default "en", see FarmerBase.preferred_language) and the
+  // toolbar's language list -- full words here never matched the stored
+  // code, so the select always opened blank.
   readonly languages = [
-    { value: 'English', label: 'English (English)' },
-    { value: 'Hindi', label: 'Hindi (हिन्दी)' },
-    { value: 'Marathi', label: 'Marathi (मराठी)' },
-    { value: 'Punjabi', label: 'Punjabi (ਪੰਜਾਬੀ)' },
-    { value: 'Telugu', label: 'Telugu (తెలుగు)' },
-    { value: 'Tamil', label: 'Tamil (தமிழ்)' },
-    { value: 'Kannada', label: 'Kannada (ಕನ್ನಡ)' },
-    { value: 'Bengali', label: 'Bengali (বাংলা)' },
-    { value: 'Spanish', label: 'Spanish (Español)' },
+    { value: 'en', label: 'English (English)' },
+    { value: 'hi', label: 'Hindi (हिन्दी)' },
+    { value: 'mr', label: 'Marathi (मराठी)' },
+    { value: 'pa', label: 'Punjabi (ਪੰਜਾਬੀ)' },
+    { value: 'te', label: 'Telugu (తెలుగు)' },
+    { value: 'ta', label: 'Tamil (தமிழ்)' },
+    { value: 'kn', label: 'Kannada (ಕನ್ನಡ)' },
+    { value: 'bn', label: 'Bengali (বাংলা)' },
+    { value: 'es', label: 'Spanish (Español)' },
   ];
 
   readonly cropOptions = [
@@ -135,7 +138,8 @@ export class ProfileEditDialogComponent {
   // Validation Computeds
   readonly isNamePatternValid = computed(() => {
     const name = this.editFullName();
-    return !name || name.trim().length >= 3;
+    // 255 matches the backend's full_name column limit (FarmerBase.full_name).
+    return !name || (name.trim().length >= 3 && name.length <= 255);
   });
 
   readonly isPhonePatternValid = computed(() => {

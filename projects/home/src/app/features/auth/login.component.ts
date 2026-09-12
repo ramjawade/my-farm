@@ -44,6 +44,10 @@ export class LoginComponent {
     }
   }
 
+  onPhoneInput(value: string): void {
+    this.phone.set(value.replace(/\D/g, '').slice(0, 10));
+  }
+
   onSubmitPhone(): void {
     const digitsOnly = this.phone().trim().replace(/\D/g, '');
     const phoneVal = digitsOnly.length > 10 ? digitsOnly.slice(-10) : digitsOnly;

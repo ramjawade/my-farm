@@ -28,40 +28,20 @@
 
       <!-- Right side: Language Dropdown and User Avatar -->
       <div class="d-flex align-items-center gap-2 gap-sm-3 flex-shrink-0">
-        <!-- Language Dropdown -->
+        <!-- Language switcher: not wired to any real translation yet (#141)
+             -- disabled and labelled honestly rather than presented as a
+             working picker. -->
         <div class="position-relative">
           <button
             type="button"
-            class="btn btn-sm bg-white border border-light-subtle rounded-pill px-2 px-sm-3 py-1 text-xs fw-semibold text-secondary d-flex align-items-center gap-1 gap-sm-1.5 hover-lift shadow-xs"
-            style="height: 32px"
-            (click)="toggleLangDropdown(); $event.stopPropagation()"
+            class="btn btn-sm bg-white border border-light-subtle rounded-pill px-2 px-sm-3 py-1 text-xs fw-semibold text-secondary d-flex align-items-center gap-1 gap-sm-1.5 shadow-xs"
+            style="height: 32px; opacity: 0.6; cursor: not-allowed"
+            disabled
+            title="Language switching is coming soon"
           >
             <i class="bi bi-translate text-success"></i>
-            <span class="d-none d-sm-inline">{{ activeLangName() }}</span>
-            <i
-              class="bi bi-chevron-down text-xs transition ms-1"
-              [style.transform]="langDropdownOpen() ? 'rotate(180deg)' : 'rotate(0)'"
-            ></i>
+            <span class="d-none d-sm-inline">Coming soon</span>
           </button>
-
-          @if (langDropdownOpen()) {
-            <div
-              class="position-absolute end-0 mt-2 bg-white rounded-3 shadow-lg border border-light-subtle py-1 overflow-hidden animate-fade-in"
-              style="min-width: 120px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important"
-            >
-              @for (lang of languages; track lang.code) {
-                <button
-                  type="button"
-                  class="dropdown-item w-100 text-start px-3 py-2 fw-semibold text-xs border-0 bg-transparent transition hover-bg-light"
-                  [class.text-success]="activeLang() === lang.code"
-                  [class.bg-success-subtle]="activeLang() === lang.code"
-                  (click)="selectLang(lang.code); $event.stopPropagation()"
-                >
-                  {{ lang.name }}
-                </button>
-              }
-            </div>
-          }
         </div>
 
         <!-- User Avatar Dropdown -->
