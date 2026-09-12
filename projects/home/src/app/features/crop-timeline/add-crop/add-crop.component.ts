@@ -20,18 +20,6 @@ import { ToastService, ComboboxComponent } from 'shared';
 import { SEASONS, seasonForDate } from '../../../core/models/season';
 import { convertArea, AreaUnit } from '../../../core/pipes/area.pipe';
 
-const CROP_NAME_OPTIONS = [
-  'Soybeans',
-  'Wheat',
-  'Rice',
-  'Corn',
-  'Cotton',
-  'Sugarcane',
-  'Mustard',
-  'Vegetables',
-  'Fruits',
-];
-
 @Component({
   standalone: true,
   selector: 'app-add-crop',

@@ -130,10 +130,13 @@ export class ReferenceDataService {
   async cropCatalogIdForName(name: string): Promise<number> {
     await this.ensureLoaded();
     const id = this.cropsByName.get(name);
-    if (!id) {
-      throw new Error(`Unknown crop "${name}" — run /api/v1/admin/seed-reference-data`);
+    if (id !== undefined) {
+      return id;
     }
-    return id;
+    // Not a seeded catalog name — the backend's POST /reference/crops is a
+    // create-or-get, so any farmer-typed crop name becomes a real catalog
+    // entry instead of failing.
+    return this.createCrop(name);
   }
 
   async cropNameForId(id: number): Promise<string> {
