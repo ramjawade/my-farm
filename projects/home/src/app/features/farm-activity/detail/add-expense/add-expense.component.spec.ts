@@ -21,12 +21,10 @@ describe('AddExpenseComponent', () => {
 
   beforeEach(async () => {
     addExpenseSpy = jasmine.createSpy('addExpense').and.resolveTo(mockExpense);
-    listExpenseCategoriesSpy = jasmine
-      .createSpy('listExpenseCategories')
-      .and.resolveTo([
-        { id: 2, name: 'Labour' },
-        { id: 3, name: 'Seeds' },
-      ]);
+    listExpenseCategoriesSpy = jasmine.createSpy('listExpenseCategories').and.resolveTo([
+      { id: 2, name: 'Labour' },
+      { id: 3, name: 'Seeds' },
+    ]);
 
     await TestBed.configureTestingModule({
       imports: [AddExpenseComponent],
