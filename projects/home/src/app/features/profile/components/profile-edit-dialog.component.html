@@ -38,6 +38,7 @@
                   type="text"
                   id="fullName"
                   class="form-control"
+                  maxlength="255"
                   [ngModel]="editFullName()"
                   (ngModelChange)="editFullName.set($event)"
                   placeholder="e.g. Rajesh Kumar"
@@ -45,7 +46,7 @@
               </div>
               @if (!isNamePatternValid()) {
                 <div class="text-danger small mt-1">
-                  Please enter a valid farmer name (minimum 3 characters).
+                  Please enter a valid farmer name (3-255 characters).
                 </div>
               }
             </div>

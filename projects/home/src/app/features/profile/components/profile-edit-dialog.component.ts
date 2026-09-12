@@ -138,7 +138,8 @@ export class ProfileEditDialogComponent {
   // Validation Computeds
   readonly isNamePatternValid = computed(() => {
     const name = this.editFullName();
-    return !name || name.trim().length >= 3;
+    // 255 matches the backend's full_name column limit (FarmerBase.full_name).
+    return !name || (name.trim().length >= 3 && name.length <= 255);
   });
 
   readonly isPhonePatternValid = computed(() => {
