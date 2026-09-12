@@ -100,3 +100,11 @@ export interface ActivityExpense {
 }
 
 export type NewActivityExpense = Omit<ActivityExpense, 'id' | 'createdAt'>;
+
+/** KPI counts + total expense from `GET /api/v1/activities/summary`. */
+export interface ActivityKpiSummary {
+  total: number;
+  completed: number;
+  inProgress: number;
+  totalExpense: number;
+}

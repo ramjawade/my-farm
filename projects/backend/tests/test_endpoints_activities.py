@@ -142,3 +142,104 @@ async def test_update_and_delete_activity(
             headers={"Authorization": "Bearer test"},
         )
         assert get_resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_list_activities_filters_status_sort_and_limit(
+    client: AsyncClient, reference_ids: dict[str, str]
+) -> None:
+    """status/sort/limit narrow the list; omitting them keeps the old behavior."""
+    uid = f"farmer_{uuid4()}"
+    activity_type_id = reference_ids["activity_type_id"]
+
+    with patch.object(
+        firebase_auth,
+        "verify_id_token",
+        return_value={"uid": uid, "phone_number": None},
+    ):
+        headers = {"Authorization": "Bearer test"}
+
+        async def make(date: str, status: str) -> None:
+            resp = await client.post(
+                "/api/v1/activities",
+                headers=headers,
+                json={"activity_type_id": activity_type_id, "date": date, "status": status},
+            )
+            assert resp.status_code == 201
+
+        await make("2026-01-01", "Completed")
+        await make("2026-02-01", "Completed")
+        await make("2026-03-01", "Scheduled")
+        await make("2026-04-01", "Draft")
+
+        # No params — unchanged, everything comes back
+        all_resp = await client.get("/api/v1/activities", headers=headers)
+        assert len(all_resp.json()["items"]) == 4
+
+        # status filter (repeatable) narrows to the matching statuses
+        pending_resp = await client.get(
+            "/api/v1/activities?status=Scheduled&status=Draft", headers=headers
+        )
+        pending_items = pending_resp.json()["items"]
+        assert len(pending_items) == 2
+        assert {a["status"] for a in pending_items} == {"Scheduled", "Draft"}
+
+        # sort + limit: most recent Completed activity, one row
+        recent_resp = await client.get(
+            "/api/v1/activities?status=Completed&sort=date_desc&limit=1", headers=headers
+        )
+        recent_items = recent_resp.json()["items"]
+        assert len(recent_items) == 1
+        assert recent_items[0]["date"] == "2026-02-01"
+
+        # sort ascending, no limit
+        asc_resp = await client.get(
+            "/api/v1/activities?status=Completed&sort=date_asc", headers=headers
+        )
+        asc_items = asc_resp.json()["items"]
+        assert [a["date"] for a in asc_items] == ["2026-01-01", "2026-02-01"]
+
+
+@pytest.mark.asyncio
+async def test_activities_summary_counts_and_expense(
+    client: AsyncClient, reference_ids: dict[str, str]
+) -> None:
+    """GET /activities/summary aggregates counts and total expense server-side."""
+    uid = f"farmer_{uuid4()}"
+    activity_type_id = reference_ids["activity_type_id"]
+    expense_category_id = reference_ids["expense_category_id"]
+
+    with patch.object(
+        firebase_auth,
+        "verify_id_token",
+        return_value={"uid": uid, "phone_number": None},
+    ):
+        headers = {"Authorization": "Bearer test"}
+
+        completed = await client.post(
+            "/api/v1/activities",
+            headers=headers,
+            json={"activity_type_id": activity_type_id, "status": "Completed"},
+        )
+        completed_id = completed.json()["id"]
+
+        await client.post(
+            "/api/v1/activities",
+            headers=headers,
+            json={"activity_type_id": activity_type_id, "status": "Scheduled"},
+        )
+
+        expense_resp = await client.post(
+            f"/api/v1/activities/{completed_id}/expenses",
+            headers=headers,
+            json={"expense_category_id": expense_category_id, "amount": "250.00"},
+        )
+        assert expense_resp.status_code == 201
+
+        summary_resp = await client.get("/api/v1/activities/summary", headers=headers)
+        assert summary_resp.status_code == 200
+        summary = summary_resp.json()
+        assert summary["total"] == 2
+        assert summary["completed"] == 1
+        assert summary["in_progress"] == 1
+        assert summary["total_expense"] == 250.0

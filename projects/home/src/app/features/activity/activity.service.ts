@@ -1,7 +1,15 @@
 import { Injectable, signal, computed, inject, effect } from '@angular/core';
-import { Activity, ActivityExpense, NewActivity, NewActivityExpense } from './activity.models';
+import {
+  Activity,
+  ActivityExpense,
+  ActivityKpiSummary,
+  NewActivity,
+  NewActivityExpense,
+} from './activity.models';
 import { IStorageService } from '../../core/storage/storage.interface';
 import { AuthService } from '../../core/auth/auth.service';
+import { HttpService } from '../../core/http/http.service';
+import { ActivityMapperService } from './activity-mapper.service';
 
 @Injectable({
   providedIn: 'root',
@@ -9,6 +17,8 @@ import { AuthService } from '../../core/auth/auth.service';
 export class ActivityService {
   private readonly storage = inject(IStorageService);
   private readonly auth = inject(AuthService);
+  private readonly http = inject(HttpService);
+  private readonly activityMapper = inject(ActivityMapperService);
 
   private readonly activitiesSignal = signal<Activity[]>([]);
   private readonly expensesSignal = signal<ActivityExpense[]>([]);
@@ -220,5 +230,61 @@ export class ActivityService {
       },
       {} as Record<string, number>,
     );
+  }
+
+  // --- Dashboard: targeted queries against /api/v1/activities ---
+  // These call the backend directly (not the activities/expenses signal
+  // cache above) so the dashboard can ask for exactly what it needs
+  // instead of loading and filtering the full list client-side.
+
+  /** KPI counts + total expense, optionally scoped to a crop. */
+  async getKpiSummary(cropId?: number): Promise<ActivityKpiSummary> {
+    const query = cropId !== undefined ? `?crop_id=${cropId}` : '';
+    const resp = await this.http.get<{
+      total: number;
+      completed: number;
+      in_progress: number;
+      total_expense: number;
+    }>(`/activities/summary${query}`);
+    return {
+      total: resp.total,
+      completed: resp.completed,
+      inProgress: resp.in_progress,
+      totalExpense: resp.total_expense,
+    };
+  }
+
+  /** Top `limit` not-yet-completed activities, soonest first, optionally scoped to a crop. */
+  async getUpcomingActivities(cropId?: number, limit = 5): Promise<Activity[]> {
+    return this.fetchActivities({
+      status: ['Scheduled', 'Draft', 'In Progress'],
+      sort: 'date_asc',
+      limit,
+      cropId,
+    });
+  }
+
+  /** Top `limit` completed activities, most recent first, optionally scoped to a crop. */
+  async getRecentActivities(cropId?: number, limit = 5): Promise<Activity[]> {
+    return this.fetchActivities({
+      status: ['Completed'],
+      sort: 'date_desc',
+      limit,
+      cropId,
+    });
+  }
+
+  private async fetchActivities(opts: {
+    status: string[];
+    sort: 'date_asc' | 'date_desc';
+    limit: number;
+    cropId?: number;
+  }): Promise<Activity[]> {
+    const params: string[] = opts.status.map((s) => `status=${encodeURIComponent(s)}`);
+    params.push(`sort=${opts.sort}`, `limit=${opts.limit}`);
+    if (opts.cropId !== undefined) params.push(`crop_id=${opts.cropId}`);
+
+    const response = await this.http.get<{ items: unknown[] }>(`/activities?${params.join('&')}`);
+    return Promise.all(response.items.map((item) => this.activityMapper.fromBackend(item)));
   }
 }
