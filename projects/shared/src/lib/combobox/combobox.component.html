@@ -10,6 +10,7 @@
     (focus)="onInputFocus()"
     (input)="onInputChange($event)"
     (keydown)="onInputKeydown($event)"
+    (blur)="onInputBlur()"
     [value]="value() || ''"
     placeholder="Select or type..."
   />
