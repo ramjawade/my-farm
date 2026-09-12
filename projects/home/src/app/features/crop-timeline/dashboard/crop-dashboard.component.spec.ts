@@ -67,4 +67,33 @@ describe('CropDashboardComponent', () => {
     component.onCropSelected(mockCrop);
     expect(router.navigate).toHaveBeenCalledWith(['/crops', mockCrop.id]);
   });
+
+  it('treats a brand-new account (zero crops) as the true empty state, not a search miss', () => {
+    expect(component.hasNoCropsAtAll()).toBeTrue();
+    fixture.detectChanges();
+    const html = fixture.nativeElement.textContent as string;
+    expect(html).toContain("You haven't added any crops yet");
+    expect(html).not.toContain('match your search');
+  });
+
+  it('still shows the search-specific empty state when crops exist but none match', async () => {
+    const storage = TestBed.inject(IStorageService);
+    const timelineService = TestBed.inject(CropTimelineService);
+    await storage.saveCrop(0, {
+      name: mockCrop.name,
+      cropType: mockCrop.cropType,
+      fieldId: mockCrop.fieldId,
+      area: mockCrop.area,
+      areaUnit: mockCrop.areaUnit,
+      currentStage: mockCrop.currentStage,
+      status: mockCrop.status,
+    });
+    await timelineService.reload();
+    component.onSearchTermChange('no-such-crop');
+    fixture.detectChanges();
+
+    expect(component.hasNoCropsAtAll()).toBeFalse();
+    const html = fixture.nativeElement.textContent as string;
+    expect(html).toContain('No crop profiles match your search');
+  });
 });
