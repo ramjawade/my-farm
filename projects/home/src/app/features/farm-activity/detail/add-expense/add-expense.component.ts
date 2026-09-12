@@ -1,8 +1,9 @@
-import { Component, ChangeDetectionStrategy, inject, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastService } from 'shared';
 import { ActivityExpensesService } from '../activity-expenses.service';
 import { ActivityExpense } from '../../../activity/activity.models';
+import { ReferenceDataService } from '../../../../core/api/reference-data.service';
 
 @Component({
   selector: 'app-add-expense',
@@ -11,28 +12,21 @@ import { ActivityExpense } from '../../../activity/activity.models';
   templateUrl: './add-expense.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AddExpenseComponent {
+export class AddExpenseComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly expensesService = inject(ActivityExpensesService);
+  private readonly referenceDataService = inject(ReferenceDataService);
   private readonly toast = inject(ToastService);
 
   readonly activityId = input.required<number>();
   readonly added = output<ActivityExpense>();
   readonly cancelled = output<void>();
 
-  readonly categoriesList = [
-    'Workers',
-    'Machine Rent',
-    'Transport',
-    'Seeds',
-    'Fertilizer',
-    'Pesticides',
-    'Irrigation Fuel',
-    'Other',
-  ];
+  /** Real seeded category names — loaded on init, never hardcoded (must match the backend's expense_category table exactly). */
+  readonly categoriesList = signal<string[]>([]);
 
   readonly expenseForm: FormGroup = this.fb.group({
-    category: ['Workers', Validators.required],
+    category: ['', Validators.required],
     itemId: [''],
     resourceId: [''],
     quantity: [null as number | null],
@@ -41,6 +35,16 @@ export class AddExpenseComponent {
     amount: [null as number | null, [Validators.required, Validators.min(0)]],
     remarks: [''],
   });
+
+  ngOnInit(): void {
+    void this.referenceDataService.listExpenseCategories().then((categories) => {
+      const names = categories.map((c) => c.name);
+      this.categoriesList.set(names);
+      if (!this.expenseForm.get('category')?.value && names.length > 0) {
+        this.expenseForm.patchValue({ category: names[0] });
+      }
+    });
+  }
 
   constructor() {
     // Automatically calculate Amount = Quantity * Rate
@@ -88,7 +92,7 @@ export class AddExpenseComponent {
 
   private resetForm(): void {
     this.expenseForm.reset({
-      category: 'Workers',
+      category: this.categoriesList()[0] ?? '',
       itemId: '',
       resourceId: '',
       quantity: null,

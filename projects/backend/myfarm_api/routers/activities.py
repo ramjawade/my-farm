@@ -172,7 +172,7 @@ async def get_activities_summary(
                 select(func.coalesce(func.sum(ActivityExpense.amount), 0))
                 .select_from(ActivityExpense)
                 .join(Activity)
-                .where(and_(*conditions))
+                .where(and_(*conditions, ActivityExpense.deleted_at.is_(None)))
             )
         ).scalar_one()
 

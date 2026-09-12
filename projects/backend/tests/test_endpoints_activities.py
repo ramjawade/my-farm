@@ -244,6 +244,16 @@ async def test_activities_summary_counts_and_expense(
         assert summary["in_progress"] == 1
         assert summary["total_expense"] == 250.0
 
+        # A soft-deleted expense must drop out of the farm-wide total too.
+        expense_id = expense_resp.json()["id"]
+        delete_resp = await client.delete(
+            f"/api/v1/activities/{completed_id}/expenses/{expense_id}", headers=headers
+        )
+        assert delete_resp.status_code == 204
+
+        after_delete_resp = await client.get("/api/v1/activities/summary", headers=headers)
+        assert after_delete_resp.json()["total_expense"] == 0.0
+
 
 @pytest.mark.asyncio
 async def test_activity_history_accumulates(
