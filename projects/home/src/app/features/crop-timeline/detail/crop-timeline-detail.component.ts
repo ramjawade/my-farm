@@ -87,20 +87,23 @@ export class CropTimelineDetailComponent implements OnInit {
     this.router.navigate(['/crops']);
   }
 
-  async onUpdateStageClicked(stage: CropStage): Promise<void> {
-    const c = this.crop();
-    if (!c) return;
-    let mainAct: CropActivity;
-    try {
-      mainAct = await this.timelineService.ensureScheduledActivityForStage(c.id, stage);
-    } catch {
-      this.toast.error('Could not create the stage activity. Please try again.');
-      return;
-    }
-    this.parentActivityIdForModal.set(mainAct.id);
-    this.editingActivityIdForModal.set(null);
-    this.showActivityModal.set(true);
-  }
+  // Lifecycle stepper is a static display for now — activity completion no
+  // longer drives crop stage (#167). Click-to-log-a-stage-activity disabled;
+  // ensureScheduledActivityForStage() stays defined on the service for later.
+  // async onUpdateStageClicked(stage: CropStage): Promise<void> {
+  //   const c = this.crop();
+  //   if (!c) return;
+  //   let mainAct: CropActivity;
+  //   try {
+  //     mainAct = await this.timelineService.ensureScheduledActivityForStage(c.id, stage);
+  //   } catch {
+  //     this.toast.error('Could not create the stage activity. Please try again.');
+  //     return;
+  //   }
+  //   this.parentActivityIdForModal.set(mainAct.id);
+  //   this.editingActivityIdForModal.set(null);
+  //   this.showActivityModal.set(true);
+  // }
 
   onAddActivityClicked(): void {
     this.parentActivityIdForModal.set(null);

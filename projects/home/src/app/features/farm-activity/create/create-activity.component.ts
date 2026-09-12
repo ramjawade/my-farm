@@ -247,10 +247,10 @@ export class CreateActivityComponent implements OnInit {
       }
       updates['fieldId'] = val.fieldId || undefined;
       this.activityService.updateActivity(this.activityId, updates);
-      // Sync stage if crop-linked
-      if (val.cropId) {
-        this.cropService.syncStageFromActivity(this.activityId);
-      }
+      // Lifecycle progress is unlinked from activity completion for now (#167).
+      // if (val.cropId) {
+      //   this.cropService.syncStageFromActivity(this.activityId);
+      // }
       this.toast.success('Activity updated.');
     } else {
       // Create activity
@@ -275,10 +275,10 @@ export class CreateActivityComponent implements OnInit {
         this.saving.set(false);
       }
 
-      // Sync stage if crop-linked
-      if (val.cropId) {
-        this.cropService.syncStageFromActivity(newAct.id);
-      }
+      // Lifecycle progress is unlinked from activity completion for now (#167).
+      // if (val.cropId) {
+      //   this.cropService.syncStageFromActivity(newAct.id);
+      // }
 
       this.toast.success(`${newAct.type === 'Custom' ? 'Activity' : newAct.type} logged.`);
 
