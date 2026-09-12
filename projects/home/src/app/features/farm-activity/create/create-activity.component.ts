@@ -6,11 +6,8 @@ import {
   effect,
   ChangeDetectionStrategy,
   OnInit,
-  Input,
-  Output,
-  EventEmitter,
 } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -30,7 +27,7 @@ import { ComboboxComponent, ToastService } from 'shared';
 @Component({
   selector: 'app-create-activity',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, ComboboxComponent],
+  imports: [CommonModule, ReactiveFormsModule, ComboboxComponent],
   templateUrl: './create-activity.component.html',
   styleUrl: './create-activity.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -55,13 +52,8 @@ export class CreateActivityComponent implements OnInit {
   /** True when reached via a crop-scoped route (`crops/:cropId/create`), not just `?cropId=`. */
   readonly isCropScoped = computed(() => this.cropIdPathParam() !== null);
 
-  @Input() cropId?: number;
-  @Input() parentActivityId?: number;
-  @Input() activityId?: number;
-  @Input() isModal = false;
-
-  @Output() readonly activitySaved = new EventEmitter<void>();
-  @Output() readonly cancelled = new EventEmitter<void>();
+  /** Set when editing an existing activity, read from the `activityId` query param. */
+  activityId?: number;
 
   // Form group definition
   readonly form: FormGroup = this.fb.group({
@@ -129,36 +121,25 @@ export class CreateActivityComponent implements OnInit {
       .listActivityTypes()
       .then((types) => this.referenceActivityTypes.set(types));
 
-    // 1. If we are running in modal mode, inputs might be passed directly
-    if (this.cropId) {
-      this.form.patchValue({ cropId: this.cropId });
-      this.selectedCropId.set(this.cropId);
-    }
-    if (this.parentActivityId) {
-      this.form.patchValue({ parentActivityId: this.parentActivityId });
-    }
+    // Read cropId from the route path param first (crops/:cropId/create),
+    // falling back to the query param — parentActivityId/activityId stay
+    // query-param only.
+    this.route.queryParams.subscribe((params) => {
+      const routeCropId = this.cropIdPathParam() ?? parseId(params['cropId']);
+      const routeParentId = parseId(params['parentActivityId']);
+      const routeActivityId = parseId(params['activityId']);
 
-    // 2. If we are running in route mode, read cropId from the route path
-    // param first (crops/:cropId/create), falling back to query params —
-    // parentActivityId/activityId stay query-param only.
-    if (!this.isModal) {
-      this.route.queryParams.subscribe((params) => {
-        const routeCropId = this.cropIdPathParam() ?? parseId(params['cropId']);
-        const routeParentId = parseId(params['parentActivityId']);
-        const routeActivityId = parseId(params['activityId']);
-
-        if (routeCropId) {
-          this.form.patchValue({ cropId: routeCropId });
-          this.selectedCropId.set(routeCropId);
-        }
-        if (routeParentId) {
-          this.form.patchValue({ parentActivityId: routeParentId });
-        }
-        if (routeActivityId) {
-          this.activityId = routeActivityId;
-        }
-      });
-    }
+      if (routeCropId) {
+        this.form.patchValue({ cropId: routeCropId });
+        this.selectedCropId.set(routeCropId);
+      }
+      if (routeParentId) {
+        this.form.patchValue({ parentActivityId: routeParentId });
+      }
+      if (routeActivityId) {
+        this.activityId = routeActivityId;
+      }
+    });
 
     // 3. Load existing activity for editing if activityId is present
     if (this.activityId) {
@@ -306,19 +287,15 @@ export class CreateActivityComponent implements OnInit {
         this.workflowService.markPhaseComplete('activity');
       }
 
-      if (!this.isModal) {
-        if (this.isCropScoped()) {
-          this.router.navigate(['..'], { relativeTo: this.route });
-        } else {
-          this.router.navigate(['/activities', newAct.id]);
-        }
-        return;
+      if (this.isCropScoped()) {
+        this.router.navigate(['..'], { relativeTo: this.route });
+      } else {
+        this.router.navigate(['/activities', newAct.id]);
       }
+      return;
     }
 
-    if (this.isModal) {
-      this.activitySaved.emit();
-    } else if (this.isCropScoped()) {
+    if (this.isCropScoped()) {
       this.router.navigate(['..'], { relativeTo: this.route });
     } else {
       this.router.navigate(['/activities']);
@@ -326,9 +303,7 @@ export class CreateActivityComponent implements OnInit {
   }
 
   onCancel(): void {
-    if (this.isModal) {
-      this.cancelled.emit();
-    } else if (this.isCropScoped()) {
+    if (this.isCropScoped()) {
       this.router.navigate(['..'], { relativeTo: this.route });
     } else {
       this.router.navigate(['/activities']);
