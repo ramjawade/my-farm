@@ -3,7 +3,9 @@
   "configurations": [
     {
       "name": "home",
-      "url": "http://localhost:4200"
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["start"],
+      "port": 4200
     }
   ]
 }
