@@ -9,7 +9,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { CropTimelineService } from '../crop-timeline.service';
+import { CropDashboardService } from './crop-dashboard.service';
+import { ActivityService } from '../../activity/activity.service';
 import { CropEntity, CropStage, CROP_STAGES } from '../crop-timeline.models';
 import { stageIndex, stageProgressPercent } from '../crop-timeline.utils';
 
@@ -22,14 +23,18 @@ import { stageIndex, stageProgressPercent } from '../crop-timeline.utils';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CropDashboardComponent implements OnInit {
-  private readonly timelineService = inject(CropTimelineService);
+  private readonly cropDashboardService = inject(CropDashboardService);
+  private readonly activityService = inject(ActivityService);
   private readonly router = inject(Router);
 
   readonly searchTerm = signal<string>('');
+  readonly crops = signal<CropEntity[]>([]);
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
 
   readonly filteredCrops = computed(() => {
     const term = this.searchTerm().trim().toLowerCase();
-    const allCrops = this.timelineService.crops();
+    const allCrops = this.crops();
     if (!term) return allCrops;
     return allCrops.filter(
       (c) => c.name.toLowerCase().includes(term) || String(c.fieldId).includes(term),
@@ -41,10 +46,22 @@ export class CropDashboardComponent implements OnInit {
   /** True when there are zero crops on the account at all -- distinct from
    * a search term simply matching nothing, so the empty state can tell the
    * two apart instead of always blaming "your search". */
-  readonly hasNoCropsAtAll = computed(() => this.timelineService.crops().length === 0);
+  readonly hasNoCropsAtAll = computed(() => this.crops().length === 0);
 
-  ngOnInit(): void {
-    void this.timelineService.reload();
+  async ngOnInit(): Promise<void> {
+    await this.load();
+  }
+
+  async load(): Promise<void> {
+    this.loading.set(true);
+    this.error.set(null);
+    try {
+      this.crops.set(await this.cropDashboardService.getCrops());
+    } catch {
+      this.error.set('Could not load your crops. Please try again.');
+    } finally {
+      this.loading.set(false);
+    }
   }
 
   onSearchTermChange(value: string): void {
@@ -67,7 +84,7 @@ export class CropDashboardComponent implements OnInit {
   }
 
   getDaysSinceLastActivity(cropId: number): string {
-    const cropActs = this.timelineService
+    const cropActs = this.activityService
       .activities()
       .filter((a) => a.cropId === cropId && a.status === 'Completed' && !a.parentActivityId)
       .sort((a, b) => (b.date || 0) - (a.date || 0));

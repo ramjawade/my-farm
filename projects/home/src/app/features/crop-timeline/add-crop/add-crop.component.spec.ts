@@ -4,7 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { provideRouter, Router } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { AddCropComponent } from './add-crop.component';
-import { CropTimelineService } from '../crop-timeline.service';
+import { AddCropService } from './add-crop.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { IStorageService } from '../../../core/storage/storage.interface';
 import { InMemoryStorageService } from '../../../testing/in-memory-storage.service';
@@ -21,7 +21,7 @@ describe('AddCropComponent', () => {
         provideZonelessChangeDetection(),
         provideRouter([]),
         provideHttpClient(),
-        CropTimelineService,
+        AddCropService,
         AuthService,
         { provide: IStorageService, useClass: InMemoryStorageService },
       ],
@@ -37,17 +37,17 @@ describe('AddCropComponent', () => {
   });
 
   it('should not submit if form is invalid', () => {
-    const cropService = TestBed.inject(CropTimelineService);
-    spyOn(cropService, 'addCrop');
+    const addCropService = TestBed.inject(AddCropService);
+    spyOn(addCropService, 'createCrop');
 
     // Invalid initially (name and fieldId empty)
     component.onSubmit();
-    expect(cropService.addCrop).not.toHaveBeenCalled();
+    expect(addCropService.createCrop).not.toHaveBeenCalled();
   });
 
-  it('should call addCrop with CROP_STAGES[0] as currentStage on submit', async () => {
-    const cropService = TestBed.inject(CropTimelineService);
-    spyOn(cropService, 'addCrop').and.resolveTo({ id: 1, name: 'Test Crop' } as any);
+  it('should call createCrop with CROP_STAGES[0] as currentStage on submit', async () => {
+    const addCropService = TestBed.inject(AddCropService);
+    spyOn(addCropService, 'createCrop').and.resolveTo({ id: 1, name: 'Test Crop' } as any);
     const navigateSpy = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
 
     // Fill form to make it valid
@@ -61,7 +61,7 @@ describe('AddCropComponent', () => {
     fixture.detectChanges();
 
     await component.onSubmit();
-    expect(cropService.addCrop).toHaveBeenCalledWith(
+    expect(addCropService.createCrop).toHaveBeenCalledWith(
       jasmine.objectContaining({
         name: 'My Soy Crop',
         currentStage: 'Land Preparation',
