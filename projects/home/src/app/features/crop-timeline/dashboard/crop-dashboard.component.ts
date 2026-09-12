@@ -38,6 +38,11 @@ export class CropDashboardComponent implements OnInit {
 
   readonly stages = CROP_STAGES;
 
+  /** True when there are zero crops on the account at all -- distinct from
+   * a search term simply matching nothing, so the empty state can tell the
+   * two apart instead of always blaming "your search". */
+  readonly hasNoCropsAtAll = computed(() => this.timelineService.crops().length === 0);
+
   ngOnInit(): void {
     void this.timelineService.reload();
   }
