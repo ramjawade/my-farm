@@ -95,6 +95,14 @@ export class ComboboxComponent implements ControlValueAccessor {
     this.isOpen.set(false);
   }
 
+  onInputBlur(): void {
+    // Marks the control touched so its "invalid" error can render — without
+    // this, typing a name and tabbing away (instead of pressing Enter or
+    // clicking "+ Add") left the field looking filled but never registered
+    // with the form, with no feedback explaining why submit stayed disabled.
+    this._onTouched();
+  }
+
   selectItem(item: string): void {
     this.value.set(item);
     this.searchText.set('');
