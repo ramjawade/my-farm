@@ -226,8 +226,23 @@ export class WeatherComponent implements OnInit {
     const days = this.weatherData()?.forecast.days ?? [];
     if (days.length === 0) return '2 May – 8 May';
     const first = new Date(days[0].date);
+    if (days.length === 1) {
+      return first.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
     const last = new Date(days[Math.min(6, days.length - 1)].date);
     return `${first.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${last.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+  });
+
+  /**
+   * The backend `/weather` proxy only returns OpenWeather's *current*
+   * conditions (see `WeatherService.fetchFromBackend`'s TODO) -- there's no
+   * real multi-day forecast endpoint yet, so `forecast` here is at most 1
+   * day. Heading text must say so honestly rather than always claiming
+   * "7 Day Forecast" for a single day.
+   */
+  readonly forecastHeading = computed(() => {
+    const count = this.forecast().length;
+    return count > 1 ? `${count} Day Forecast` : "Today's Forecast";
   });
 
   // Navigation handlers
