@@ -1,0 +1,1 @@
+var i=["Kharif","Rabi","Zaid"];function t(n=Date.now()){let r=typeof n=="number"?new Date(n):n,e=isNaN(r.getTime())?new Date().getMonth():r.getMonth();return e>=5&&e<=9?"Kharif":e===3||e===4?"Zaid":"Rabi"}export{i as a,t as b};
