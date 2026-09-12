@@ -74,7 +74,6 @@
   flex: 1 1 0; // distribute track space perfectly evenly in one line
   min-width: 0; // prevent flex blowout
   max-width: 110px; // beautiful spacing
-  cursor: pointer;
   border: none;
   background: none;
   padding: 0;
@@ -83,17 +82,6 @@
 
   @media (min-width: 768px) {
     max-width: none; // let steps fill entire width to connect step-lines perfectly
-  }
-
-  &:hover {
-    .step-circle {
-      transform: scale(1.15);
-      border-color: #2a6f47 !important;
-      box-shadow: 0 0 12px rgba(42, 111, 71, 0.22);
-    }
-    .step-name {
-      color: #2a6f47;
-    }
   }
 }
 
@@ -146,11 +134,6 @@
 
 .step-content-bottom {
   margin-top: 8px;
-}
-
-.step-content-spacer {
-  height: 50px; // matches step-content height exactly
-  width: 100%;
 }
 
 .step-label {
@@ -222,102 +205,4 @@
   .step-label {
     color: #2a6f47;
   }
-}
-
-/* Upcoming Activities Alert Cards */
-.upcoming-item-card {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(217, 119, 6, 0.18) !important;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(217, 119, 6, 0.08);
-  }
-}
-
-.btn-xs {
-  padding: 4px 8px;
-  font-size: 0.72rem;
-  border-radius: 4px;
-}
-
-/* Chronological Timeline diary styling */
-.timeline {
-  position: relative;
-  margin-top: 20px;
-
-  &::before {
-    content: '';
-    position: absolute;
-    left: 24px;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: #d9e4d3;
-  }
-}
-
-.timeline-item {
-  position: relative;
-  padding-left: 65px;
-  margin-bottom: 25px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &:hover {
-    .timeline-icon {
-      transform: scale(1.1);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-    }
-  }
-}
-
-.timeline-icon {
-  position: absolute;
-  left: 5px;
-  top: 4px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  box-shadow: 0 2px 8 rgba(0, 0, 0, 0.08);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.event-card {
-  border: 1px solid rgba(42, 111, 71, 0.1) !important;
-  border-radius: 15px !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &:hover {
-    border-color: rgba(42, 111, 71, 0.28) !important;
-    box-shadow: 0 6px 18px rgba(42, 111, 71, 0.05) !important;
-  }
-}
-
-.event-date {
-  font-size: 13px;
-  color: #777;
-}
-
-/* Attachments preview grid styling */
-.attachment-preview {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: zoom-in;
-
-  &:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-}
-
-.cursor-pointer {
-  cursor: pointer;
-}
-
-.border-dashed {
-  border-style: dashed !important;
 }

@@ -50,11 +50,34 @@ export const routes: Routes = [
           ),
       },
       {
-        path: ':id',
+        path: ':cropId',
         loadComponent: () =>
-          import('./features/crop-timeline/detail/crop-timeline-detail.component').then(
-            (m) => m.CropTimelineDetailComponent,
+          import('./features/crop-timeline/crop-activity/crop-activity.component').then(
+            (m) => m.CropActivityComponent,
           ),
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/farm-activity/dashboard/activity-dashboard.component').then(
+                (m) => m.ActivityDashboardComponent,
+              ),
+          },
+          {
+            path: 'list',
+            loadComponent: () =>
+              import('./features/farm-activity/list/activity-list.component').then(
+                (m) => m.ActivityListComponent,
+              ),
+          },
+          {
+            path: 'create',
+            loadComponent: () =>
+              import('./features/farm-activity/create/create-activity.component').then(
+                (m) => m.CreateActivityComponent,
+              ),
+          },
+        ],
       },
     ],
   },

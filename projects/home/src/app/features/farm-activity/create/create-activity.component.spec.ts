@@ -136,17 +136,14 @@ describe('CreateActivityComponent', () => {
     expect(router.navigate).toHaveBeenCalledWith(['..'], { relativeTo: component['route'] });
   });
 
-  it('does not navigate and instead emits when in modal mode', async () => {
+  it('navigates to the global activities list on cancel when not crop-scoped', async () => {
     setup();
-    component.isModal = true;
     fixture.detectChanges();
     await fixture.whenStable();
 
-    spyOn(component.cancelled, 'emit');
     component.onCancel();
 
-    expect(component.cancelled.emit).toHaveBeenCalled();
-    expect(router.navigate).not.toHaveBeenCalled();
+    expect(router.navigate).toHaveBeenCalledWith(['/activities']);
   });
 
   it('persists a newly typed activity type and patches the form to the canonical name', async () => {
