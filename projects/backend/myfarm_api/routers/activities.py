@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import and_, select
+from sqlalchemy import and_, func, select
 
 from myfarm_api.core.db import get_session_factory
 from myfarm_api.core.r2 import get_r2_service
@@ -13,7 +13,12 @@ from myfarm_api.models import Activity, ActivityAttachment, ActivityExpense, Far
 from myfarm_api.repositories.crud import ConflictError
 from myfarm_api.repositories.entities import activity_repo
 from myfarm_api.repositories.farmer import FarmerRepository
-from myfarm_api.schemas.activity import ActivityCreate, ActivityRead, ActivityUpdate
+from myfarm_api.schemas.activity import (
+    ActivityCreate,
+    ActivityRead,
+    ActivitySummaryRead,
+    ActivityUpdate,
+)
 from myfarm_api.schemas.activity_attachment import (
     ActivityAttachmentCreate,
     ActivityAttachmentRead,
@@ -50,13 +55,99 @@ async def _get_owned_activity(current_farmer: Farmer, activity_id: int) -> Activ
 
 @router.get("", response_model=dict)
 async def list_activities(
+    status: list[str] | None = Query(None),
+    crop_id: int | None = Query(None),
+    sort: str | None = Query(None, pattern="^(date_asc|date_desc)$"),
+    limit: int | None = Query(None, ge=1, le=100),
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> dict[str, Any]:
-    """List all activities for the current farmer."""
-    activities = await activity_repo.list_all(current_farmer.id)
+    """List activities for the current farmer.
+
+    With no query params, behaves exactly as before (everything, newest
+    updated first) via `activity_repo.list_all`. `status` (repeatable),
+    `crop_id`, `sort` and `limit` are additive filters for callers that
+    need a targeted slice (e.g. the activity dashboard's upcoming/recent
+    lists) instead of the full list.
+    """
+    if status is None and crop_id is None and sort is None and limit is None:
+        activities = await activity_repo.list_all(current_farmer.id)
+        return {
+            "items": [ActivityRead.model_validate(a) for a in activities],
+        }
+
+    conditions = [
+        Activity.farmer_id == current_farmer.id,
+        Activity.deleted_at.is_(None),
+    ]
+    if status:
+        conditions.append(Activity.status.in_(status))
+    if crop_id is not None:
+        conditions.append(Activity.crop_id == crop_id)
+
+    stmt = select(Activity).where(and_(*conditions))
+    if sort == "date_asc":
+        stmt = stmt.order_by(Activity.date.asc().nulls_last())
+    elif sort == "date_desc":
+        stmt = stmt.order_by(Activity.date.desc().nulls_last())
+    else:
+        stmt = stmt.order_by(Activity.updated_at.desc(), Activity.id.desc())
+    if limit:
+        stmt = stmt.limit(limit)
+
+    session_factory = get_session_factory()
+    async with session_factory() as session:
+        result = await session.execute(stmt)
+        activities = list(result.scalars().all())
+
     return {
         "items": [ActivityRead.model_validate(a) for a in activities],
     }
+
+
+@router.get("/summary", response_model=ActivitySummaryRead)
+async def get_activities_summary(
+    crop_id: int | None = Query(None),
+    current_farmer: Farmer = Depends(get_current_farmer),
+) -> ActivitySummaryRead:
+    """KPI counts + total expense for the current farmer, optionally scoped to a crop.
+
+    Computed server-side (aggregate queries) rather than shipping the full
+    activity list just to count/sum it client-side.
+    """
+    conditions = [
+        Activity.farmer_id == current_farmer.id,
+        Activity.deleted_at.is_(None),
+    ]
+    if crop_id is not None:
+        conditions.append(Activity.crop_id == crop_id)
+
+    pending_statuses = ["Scheduled", "Draft", "In Progress"]
+
+    session_factory = get_session_factory()
+    async with session_factory() as session:
+
+        async def count(*extra: Any) -> int:
+            stmt = select(func.count()).select_from(Activity).where(and_(*conditions, *extra))
+            return (await session.execute(stmt)).scalar_one()
+
+        total = await count()
+        completed = await count(Activity.status == "Completed")
+        in_progress = await count(Activity.status.in_(pending_statuses))
+        total_expense = (
+            await session.execute(
+                select(func.coalesce(func.sum(ActivityExpense.amount), 0))
+                .select_from(ActivityExpense)
+                .join(Activity)
+                .where(and_(*conditions))
+            )
+        ).scalar_one()
+
+    return ActivitySummaryRead(
+        total=total,
+        completed=completed,
+        in_progress=in_progress,
+        total_expense=float(total_expense or 0),
+    )
 
 
 @router.get("/expenses", response_model=dict)
