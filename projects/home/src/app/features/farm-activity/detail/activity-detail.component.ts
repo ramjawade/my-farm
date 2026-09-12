@@ -4,78 +4,66 @@ import {
   computed,
   ChangeDetectionStrategy,
   signal,
+  viewChild,
   OnInit,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { CommonModule, DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { map } from 'rxjs/operators';
-import { ActivityService } from '../../activity/activity.service';
+import { ActivityDetailService } from './activity-detail.service';
+import { ExpenseListComponent } from './expense-list/expense-list.component';
+import { AddExpenseComponent } from './add-expense/add-expense.component';
 import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
 import { SavedFarm } from '../../../map/models/map.models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ConfirmDialogComponent, ToastService } from 'shared';
-import { ActivityStatus } from '../../activity/activity.models';
-import { expenseCategoryIcon } from '../../activity/activity-display';
+import { Activity, ActivityDetailSummary, ActivityHistoryEntry, ActivityStatus } from '../../activity/activity.models';
 import { parseId } from '../../../core/models/entity-id';
 
 @Component({
   selector: 'app-activity-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, DatePipe, ConfirmDialogComponent],
+  imports: [
+    RouterLink,
+    DatePipe,
+    DecimalPipe,
+    ConfirmDialogComponent,
+    ExpenseListComponent,
+    AddExpenseComponent,
+  ],
   templateUrl: './activity-detail.component.html',
   styleUrl: './activity-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ActivityDetailComponent implements OnInit {
-  private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
-  readonly activityService = inject(ActivityService);
+  private readonly detailService = inject(ActivityDetailService);
   private readonly toast = inject(ToastService);
   private readonly cropService = inject(CropTimelineService);
   private readonly farmDrawService = inject(FarmDrawService);
   private readonly authService = inject(AuthService);
 
+  private readonly expenseList = viewChild(ExpenseListComponent);
+
   readonly showExpenseModal = signal(false);
   readonly showDeleteActivityConfirm = signal(false);
-  readonly showDeleteExpenseConfirm = signal(false);
-  readonly selectedExpenseId = signal<number | null>(null);
   readonly savedFarms = signal<SavedFarm[]>([]);
 
-  async ngOnInit(): Promise<void> {
-    const user = this.authService.currentUser();
-    if (user) {
-      this.savedFarms.set(await this.farmDrawService.loadFarms(user.id));
-    }
-  }
+  readonly activity = signal<Activity | null>(null);
+  readonly summary = signal<ActivityDetailSummary | null>(null);
+  readonly history = signal<ActivityHistoryEntry[]>([]);
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
 
-  // Extract ID from routing params reactive signal
   private readonly routeParams$ = this.route.paramMap.pipe(
     map((params) => parseId(params.get('id'))),
   );
   readonly activityId = toSignal(this.routeParams$, { initialValue: null });
 
-  // Get current activity
-  readonly activity = computed(() => {
-    const id = this.activityId();
-    return this.activityService.activities().find((a) => a.id === id);
-  });
-
-  // Get current activity expenses
-  readonly expenses = computed(() => {
-    const id = this.activityId();
-    return this.activityService.expenses().filter((e) => e.activityId === id);
-  });
-
-  readonly totalCost = computed(() => {
-    return this.expenses().reduce((sum, e) => sum + e.amount, 0);
-  });
-
-  // Resolve Linked crop
   readonly cropName = computed(() => {
     const act = this.activity();
     if (!act || !act.cropId) return '';
@@ -83,7 +71,6 @@ export class ActivityDetailComponent implements OnInit {
     return crop ? crop.name : 'Unknown Crop';
   });
 
-  // Resolve Linked field
   readonly fieldName = computed(() => {
     const act = this.activity();
     if (!act || !act.fieldId) return '';
@@ -91,100 +78,74 @@ export class ActivityDetailComponent implements OnInit {
     return farm ? farm.name : String(act.fieldId);
   });
 
-  getCategoryIcon(category: string): string {
-    return expenseCategoryIcon(category as any);
-  }
-
-  // Dynamic chronological timeline of events
-  readonly timelineEvents = computed(() => {
-    const act = this.activity();
-    if (!act) return [];
-
-    const events: Array<{
-      title: string;
-      detail?: string;
-      timestamp: number;
-      isSuccess?: boolean;
-    }> = [];
-
-    // 1. Created Event
-    events.push({
-      title: 'Activity Created',
-      timestamp: act.createdAt,
-    });
-
-    // 2. Expenses Events
-    const expensesList = this.expenses();
-    expensesList.forEach((exp) => {
-      events.push({
-        title: 'Expense Added',
-        detail: `${exp.itemId || exp.category} - ₹${exp.amount.toLocaleString()}`,
-        timestamp: exp.createdAt,
-      });
-    });
-
-    // 3. Completed Event
-    if (act.status === 'Completed') {
-      events.push({
-        title: 'Activity Completed',
-        timestamp: act.updatedAt,
-        isSuccess: true,
-      });
+  async ngOnInit(): Promise<void> {
+    const user = this.authService.currentUser();
+    if (user) {
+      this.savedFarms.set(await this.farmDrawService.loadFarms(user.id));
     }
 
-    // Sort chronologically (oldest to newest)
-    return events.sort((a, b) => a.timestamp - b.timestamp);
-  });
-
-  // Expense form
-  readonly expenseForm: FormGroup = this.fb.group({
-    category: ['Workers', Validators.required],
-    itemId: [''],
-    resourceId: [''],
-    quantity: [null as number | null],
-    unit: [''],
-    rate: [null as number | null],
-    amount: [null as number | null, [Validators.required, Validators.min(0)]],
-    remarks: [''],
-  });
-
-  // Pre-configured category list
-  readonly categoriesList = [
-    'Workers',
-    'Machine Rent',
-    'Transport',
-    'Seeds',
-    'Fertilizer',
-    'Pesticides',
-    'Irrigation Fuel',
-    'Other',
-  ];
-
-  constructor() {
-    // Automatically calculate Amount = Quantity * Rate
-    this.expenseForm.valueChanges.subscribe((val) => {
-      const qty = val.quantity;
-      const rate = val.rate;
-      if (qty != null && rate != null && qty >= 0 && rate >= 0) {
-        const calculated = qty * rate;
-        if (this.expenseForm.get('amount')?.value !== calculated) {
-          this.expenseForm.patchValue({ amount: calculated }, { emitEvent: false });
-        }
-      }
-    });
-  }
-
-  updateStatus(newStatus: ActivityStatus): void {
-    const act = this.activity();
-    if (act) {
-      this.activityService.updateActivity(act.id, { status: newStatus });
+    const id = this.activityId();
+    if (id) {
+      await this.reload(id);
+    } else {
+      this.loading.set(false);
     }
   }
 
-  updateNotes(newNotes: string): void {
-    const act = this.activity();
-    if (act) {
-      this.activityService.updateActivity(act.id, { notes: newNotes.trim() || undefined });
+  private async reload(id: number): Promise<void> {
+    this.loading.set(true);
+    this.error.set(null);
+    try {
+      const [activity, summary, history] = await Promise.all([
+        this.detailService.getActivity(id),
+        this.detailService.getSummary(id),
+        this.detailService.getHistory(id),
+      ]);
+      this.activity.set(activity);
+      this.summary.set(summary);
+      this.history.set(history);
+    } catch {
+      this.error.set('Could not load this activity. Please try again.');
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  /** Expense changes affect totals/history but not the activity record itself. */
+  private async refreshSummary(): Promise<void> {
+    const id = this.activityId();
+    if (!id) return;
+    try {
+      const [summary, history] = await Promise.all([
+        this.detailService.getSummary(id),
+        this.detailService.getHistory(id),
+      ]);
+      this.summary.set(summary);
+      this.history.set(history);
+    } catch {
+      this.toast.error('Could not refresh the activity summary.');
+    }
+  }
+
+  onExpenseChanged(): void {
+    void this.refreshSummary();
+  }
+
+  onExpenseAdded(): void {
+    this.closeExpenseModal();
+    this.expenseList()?.reload();
+    void this.refreshSummary();
+  }
+
+  async updateStatus(newStatus: ActivityStatus): Promise<void> {
+    const id = this.activityId();
+    if (!id) return;
+    try {
+      const updated = await this.detailService.updateStatus(id, newStatus);
+      this.activity.set(updated);
+      void this.refreshSummary();
+    } catch {
+      this.toast.error('Could not update the status. Please try again.');
     }
   }
 
@@ -192,40 +153,15 @@ export class ActivityDetailComponent implements OnInit {
     this.showDeleteActivityConfirm.set(true);
   }
 
-  confirmDeleteActivity(): void {
-    const act = this.activity();
-    if (act) {
-      this.activityService.deleteActivity(act.id);
-      this.toast.success('Activity deleted.');
-      this.router.navigate(['/activities']);
-    }
-  }
-
-  async addExpense(): Promise<void> {
-    if (this.expenseForm.invalid) {
-      this.expenseForm.markAllAsTouched();
-      return;
-    }
-
+  async confirmDeleteActivity(): Promise<void> {
     const id = this.activityId();
     if (!id) return;
-
-    const val = this.expenseForm.value;
     try {
-      await this.activityService.addExpense({
-        activityId: id,
-        category: val.category,
-        itemId: val.itemId?.trim() || undefined,
-        resourceId: val.resourceId?.trim() || undefined,
-        quantity: val.quantity ?? undefined,
-        unit: val.unit?.trim() || undefined,
-        rate: val.rate ?? undefined,
-        amount: val.amount,
-        remarks: val.remarks?.trim() || undefined,
-      });
-      this.closeExpenseModal();
+      await this.detailService.deleteActivity(id);
+      this.toast.success('Activity deleted.');
+      this.router.navigate(['/activities']);
     } catch {
-      this.toast.error('Could not save the expense. Please try again.');
+      this.toast.error('Could not delete the activity. Please try again.');
     }
   }
 
@@ -235,29 +171,5 @@ export class ActivityDetailComponent implements OnInit {
 
   closeExpenseModal(): void {
     this.showExpenseModal.set(false);
-    this.expenseForm.reset({
-      category: 'Workers',
-      itemId: '',
-      resourceId: '',
-      quantity: null,
-      unit: '',
-      rate: null,
-      amount: null,
-      remarks: '',
-    });
-  }
-
-  deleteExpense(expenseId: number): void {
-    this.selectedExpenseId.set(expenseId);
-    this.showDeleteExpenseConfirm.set(true);
-  }
-
-  confirmDeleteExpense(): void {
-    const expenseId = this.selectedExpenseId();
-    if (expenseId) {
-      this.activityService.deleteExpense(expenseId);
-      this.toast.success('Expense removed.');
-      this.selectedExpenseId.set(null);
-    }
   }
 }
