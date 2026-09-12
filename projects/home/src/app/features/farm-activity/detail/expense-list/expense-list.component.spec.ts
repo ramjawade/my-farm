@@ -42,7 +42,7 @@ describe('ExpenseListComponent', () => {
 
   it('loads expenses for the given activity on init', () => {
     expect(getExpensesSpy).toHaveBeenCalledWith(5);
-    expect(component.expenses()).toEqual([mockExpense]);
+    expect(component.expenses).toEqual([mockExpense]);
   });
 
   it('deletes an expense after confirmation and emits changed', async () => {
@@ -50,12 +50,12 @@ describe('ExpenseListComponent', () => {
     component.changed.subscribe(changedSpy);
 
     component.deleteExpense(1);
-    expect(component.showDeleteConfirm()).toBeTrue();
+    expect(component.showDeleteConfirm).toBeTrue();
 
     await component.confirmDeleteExpense();
 
     expect(deleteExpenseSpy).toHaveBeenCalledWith(5, 1);
-    expect(component.expenses()).toEqual([]);
+    expect(component.expenses).toEqual([]);
     expect(changedSpy).toHaveBeenCalled();
   });
 
@@ -63,6 +63,6 @@ describe('ExpenseListComponent', () => {
     getExpensesSpy.and.rejectWith(new Error('network down'));
     await component.reload(5);
 
-    expect(component.error()).toBe('Could not load expenses. Please try again.');
+    expect(component.error).toBe('Could not load expenses. Please try again.');
   });
 });

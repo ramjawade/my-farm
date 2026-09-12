@@ -1,13 +1,13 @@
 <div class="d-flex flex-column gap-3">
-  @if (loading()) {
+  @if (loading) {
     <div class="text-center text-muted py-4">
       <div class="spinner-border spinner-border-sm me-2" role="status"></div>
       Loading expenses…
     </div>
-  } @else if (error()) {
-    <div class="alert alert-danger mb-0">{{ error() }}</div>
+  } @else if (error) {
+    <div class="alert alert-danger mb-0">{{ error }}</div>
   } @else {
-    @for (exp of expenses(); track exp.id) {
+    @for (exp of expenses; track exp.id) {
       <div class="card card-interactive shadow-sm border-0 mb-2">
         <div class="card-body">
           <div
