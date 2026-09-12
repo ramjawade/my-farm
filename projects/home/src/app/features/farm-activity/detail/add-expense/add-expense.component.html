@@ -10,7 +10,7 @@
         <div class="col-12 col-md-6">
           <label class="form-label required-label">Category</label>
           <select class="form-select form-select-sm" formControlName="category">
-            @for (cat of categoriesList; track cat) {
+            @for (cat of categoriesList(); track cat) {
               <option [value]="cat">{{ cat }}</option>
             }
           </select>
