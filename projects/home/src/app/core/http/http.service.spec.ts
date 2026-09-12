@@ -2,11 +2,13 @@ import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { ToastService } from 'shared';
 import { HttpService } from './http.service';
 
 describe('HttpService', () => {
   let service: HttpService;
   let httpMock: HttpTestingController;
+  let toast: ToastService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -19,6 +21,7 @@ describe('HttpService', () => {
     });
     service = TestBed.inject(HttpService);
     httpMock = TestBed.inject(HttpTestingController);
+    toast = TestBed.inject(ToastService);
   });
 
   afterEach(() => {
@@ -79,5 +82,35 @@ describe('HttpService', () => {
     expect(deleteReq.request.method).toBe('DELETE');
     deleteReq.flush({});
     await deletePromise;
+  });
+
+  it('shows an error toast and rethrows on a 5xx response', async () => {
+    spyOn(toast, 'error');
+    const promise = service.get('/lands');
+    const req = httpMock.expectOne('/api/v1/lands');
+    req.flush('timeout', { status: 504, statusText: 'Gateway Timeout' });
+
+    await expectAsync(promise).toBeRejected();
+    expect(toast.error).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows an error toast and rethrows on a network error', async () => {
+    spyOn(toast, 'error');
+    const promise = service.get('/lands');
+    const req = httpMock.expectOne('/api/v1/lands');
+    req.error(new ProgressEvent('error'));
+
+    await expectAsync(promise).toBeRejected();
+    expect(toast.error).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not toast on an ordinary 404/401 -- callers already handle those', async () => {
+    spyOn(toast, 'error');
+    const promise = service.get('/lands');
+    const req = httpMock.expectOne('/api/v1/lands');
+    req.flush('not found', { status: 404, statusText: 'Not Found' });
+
+    await expectAsync(promise).toBeRejected();
+    expect(toast.error).not.toHaveBeenCalled();
   });
 });
