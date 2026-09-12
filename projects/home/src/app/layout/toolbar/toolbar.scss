@@ -3,7 +3,11 @@
 .app-toolbar {
   grid-area: toolbar;
   position: relative;
-  z-index: 1030; // Above main content (e.g. maps, cards) but below offcanvas sidebar (1045)
+  // Above the offcanvas sidebar so the toolbar's own dropdowns (user menu,
+  // language switcher) aren't stuck behind it when both are open on mobile
+  // -- a child's z-index can never outrank a sibling stacking context, only
+  // things inside its own.
+  z-index: $zindex-offcanvas + 10;
 }
 
 .hover-lift {
