@@ -31,8 +31,10 @@
                 id="phoneInput"
                 class="form-control border-start-0 ps-0"
                 placeholder="e.g. 9876543210"
+                inputmode="numeric"
+                maxlength="10"
                 [value]="phone()"
-                (input)="phone.set($any($event.target).value)"
+                (input)="onPhoneInput($any($event.target).value)"
                 [class.is-invalid]="errorMessage()"
               />
             </div>

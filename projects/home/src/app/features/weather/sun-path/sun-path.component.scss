@@ -1,3 +1,5 @@
+@import '../../../../styles/bootstrap-config';
+
 :host {
   display: block;
 }
@@ -22,6 +24,18 @@
   width: 360px;
   height: 145px; // Shrunk to perfectly align with the new cut-to-cut height
   margin: 0 auto;
+
+  // The wrapper's 360px width, and every child's absolute px position within
+  // it (sunrise/sunset labels included), is fixed. On viewports narrower
+  // than that, `.sun-chart`'s `overflow: hidden` clipped both edges of the
+  // wrapper -- cutting the sunrise/sunset labels mid-word. Scale the whole
+  // wrapper as one unit instead of re-deriving every child's layout: every
+  // absolutely-positioned descendant scales together, so nothing shifts out
+  // of alignment with the arc.
+  @include media-breakpoint-down(sm) {
+    transform: scale(0.85);
+    transform-origin: top center;
+  }
 }
 
 .sun-svg {

@@ -71,6 +71,14 @@ describe('ProfileEditDialogComponent', () => {
     expect(component.editPreferredLanguage()).toBe('English');
   });
 
+  it('rejects a name longer than the backend column limit (255 chars)', () => {
+    component.editFullName.set('a'.repeat(255));
+    expect(component.isNamePatternValid()).toBeTrue();
+
+    component.editFullName.set('a'.repeat(256));
+    expect(component.isNamePatternValid()).toBeFalse();
+  });
+
   it('should initialize and populate agronomic section fields on show', async () => {
     fixture.componentRef.setInput('section', 'agronomic');
     component.show.set(true);
