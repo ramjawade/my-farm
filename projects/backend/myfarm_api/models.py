@@ -347,6 +347,22 @@ class ActivityExpense(Base):
     )
 
 
+class ActivityHistory(Base):
+    """An audit-trail entry for an activity (created/status changed/expense changes)."""
+
+    __tablename__ = "activity_history"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    activity_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("activity.id"), nullable=False
+    )
+    event_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    detail: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
 class ActivityAttachment(Base):
     """An attachment (photo, document) linked to an activity."""
 

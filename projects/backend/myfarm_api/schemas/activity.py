@@ -51,3 +51,12 @@ class ActivityRead(ActivityBase):
 
     class Config:
         from_attributes = True
+
+
+class ActivityDetailSummaryRead(BaseModel):
+    """KPI summary for a single activity — GET /activities/{id}/summary."""
+
+    total_expense: float
+    expense_count: int
+    days_since_created: int
+    status: str

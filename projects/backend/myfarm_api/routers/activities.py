@@ -4,16 +4,28 @@ from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import and_, select
+from sqlalchemy import and_, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from myfarm_api.core.db import get_session_factory
 from myfarm_api.core.r2 import get_r2_service
 from myfarm_api.core.security import FirebaseIdentity, get_firebase_identity
-from myfarm_api.models import Activity, ActivityAttachment, ActivityExpense, Farmer
+from myfarm_api.models import (
+    Activity,
+    ActivityAttachment,
+    ActivityExpense,
+    ActivityHistory,
+    Farmer,
+)
 from myfarm_api.repositories.crud import ConflictError
 from myfarm_api.repositories.entities import activity_repo
 from myfarm_api.repositories.farmer import FarmerRepository
-from myfarm_api.schemas.activity import ActivityCreate, ActivityRead, ActivityUpdate
+from myfarm_api.schemas.activity import (
+    ActivityCreate,
+    ActivityDetailSummaryRead,
+    ActivityRead,
+    ActivityUpdate,
+)
 from myfarm_api.schemas.activity_attachment import (
     ActivityAttachmentCreate,
     ActivityAttachmentRead,
@@ -25,6 +37,7 @@ from myfarm_api.schemas.activity_expense import (
     ActivityExpenseRead,
     ActivityExpenseUpdate,
 )
+from myfarm_api.schemas.activity_history import ActivityHistoryRead
 
 router = APIRouter(prefix="/api/v1/activities", tags=["activities"])
 
@@ -46,6 +59,31 @@ async def _get_owned_activity(current_farmer: Farmer, activity_id: int) -> Activ
     if not activity:
         raise HTTPException(status_code=404, detail="Activity not found")
     return activity
+
+
+async def _record_history(
+    activity_id: int,
+    event_type: str,
+    detail: dict[str, Any] | None = None,
+    session: AsyncSession | None = None,
+) -> None:
+    """Append an audit-trail entry for an activity.
+
+    Called with an already-open `session` from the expense handlers below so
+    the history row commits atomically with the expense change; activity-level
+    handlers (create/update/delete) pass no session since `activity_repo`
+    manages its own — the history row there is a best-effort follow-up write,
+    same looseness as the attachment R2-delete path elsewhere in this file.
+    """
+    entry = ActivityHistory(activity_id=activity_id, event_type=event_type, detail=detail)
+    if session is not None:
+        session.add(entry)
+        return
+
+    session_factory = get_session_factory()
+    async with session_factory() as own_session:
+        own_session.add(entry)
+        await own_session.commit()
 
 
 @router.get("", response_model=dict)
@@ -108,6 +146,7 @@ async def create_activity(
         raise HTTPException(
             status_code=409, detail="Activity with this ID already exists"
         ) from None
+    await _record_history(activity.id, "created")
     return ActivityRead.model_validate(activity)
 
 
@@ -118,11 +157,23 @@ async def update_activity(
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> ActivityRead:
     """Update an activity."""
-    activity = await activity_repo.update(
-        current_farmer.id, activity_id, data.model_dump(exclude_unset=True)
-    )
+    existing = await activity_repo.get(current_farmer.id, activity_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Activity not found")
+    old_status = existing.status
+
+    updates = data.model_dump(exclude_unset=True)
+    activity = await activity_repo.update(current_farmer.id, activity_id, updates)
     if not activity:
         raise HTTPException(status_code=404, detail="Activity not found")
+
+    new_status = updates.get("status")
+    if new_status is not None and new_status != old_status:
+        await _record_history(
+            activity_id, "status_changed", {"from": old_status, "to": new_status}
+        )
+    else:
+        await _record_history(activity_id, "updated", updates)
     return ActivityRead.model_validate(activity)
 
 
@@ -135,6 +186,7 @@ async def delete_activity(
     deleted = await activity_repo.soft_delete(current_farmer.id, activity_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Activity not found")
+    await _record_history(activity_id, "deleted")
 
 
 # Nested resource endpoints: activity expenses
@@ -206,6 +258,15 @@ async def create_activity_expense(
     session_factory = get_session_factory()
     async with session_factory() as session:
         session.add(expense)
+        await _record_history(
+            activity_id,
+            "expense_added",
+            {
+                "amount": float(payload["amount"]) if payload.get("amount") is not None else None,
+                "expense_category_id": payload.get("expense_category_id"),
+            },
+            session=session,
+        )
         try:
             await session.commit()
         except Exception as e:
@@ -246,9 +307,11 @@ async def update_activity_expense(
         if not expense:
             raise HTTPException(status_code=404, detail="Expense not found")
 
-        for key, value in data.model_dump(exclude_unset=True).items():
+        changes = data.model_dump(exclude_unset=True)
+        for key, value in changes.items():
             setattr(expense, key, value)
 
+        await _record_history(activity_id, "expense_updated", changes, session=session)
         await session.commit()
         await session.refresh(expense)
     return ActivityExpenseRead.model_validate(expense)
@@ -278,7 +341,66 @@ async def delete_activity_expense(
             raise HTTPException(status_code=404, detail="Expense not found")
 
         expense.deleted_at = datetime.now(UTC)
+        await _record_history(
+            activity_id,
+            "expense_deleted",
+            {"amount": float(expense.amount) if expense.amount is not None else None},
+            session=session,
+        )
         await session.commit()
+
+
+@router.get("/{activity_id}/history", response_model=dict)
+async def get_activity_history(
+    activity_id: int,
+    current_farmer: Farmer = Depends(get_current_farmer),
+    limit: int = Query(100, ge=1, le=500),
+) -> dict[str, Any]:
+    """Get the audit-trail/history entries for a single activity, newest first."""
+    await _get_owned_activity(current_farmer, activity_id)
+
+    session_factory = get_session_factory()
+    async with session_factory() as session:
+        stmt = (
+            select(ActivityHistory)
+            .where(ActivityHistory.activity_id == activity_id)
+            .order_by(ActivityHistory.created_at.desc())
+            .limit(limit)
+        )
+        result = await session.execute(stmt)
+        entries = result.scalars().all()
+    return {"items": [ActivityHistoryRead.model_validate(entry) for entry in entries]}
+
+
+@router.get("/{activity_id}/summary", response_model=ActivityDetailSummaryRead)
+async def get_activity_detail_summary(
+    activity_id: int,
+    current_farmer: Farmer = Depends(get_current_farmer),
+) -> ActivityDetailSummaryRead:
+    """Get per-activity KPI summary: total expense, expense count, age, status."""
+    activity = await _get_owned_activity(current_farmer, activity_id)
+
+    session_factory = get_session_factory()
+    async with session_factory() as session:
+        stmt = select(
+            func.coalesce(func.sum(ActivityExpense.amount), 0),
+            func.count(ActivityExpense.id),
+        ).where(
+            and_(
+                ActivityExpense.activity_id == activity_id,
+                ActivityExpense.deleted_at.is_(None),
+            )
+        )
+        result = await session.execute(stmt)
+        total_expense, expense_count = result.one()
+
+    days_since_created = (datetime.now(UTC) - activity.created_at).days
+    return ActivityDetailSummaryRead(
+        total_expense=float(total_expense),
+        expense_count=expense_count,
+        days_since_created=days_since_created,
+        status=activity.status,
+    )
 
 
 # Nested resource endpoints: activity attachments

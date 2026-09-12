@@ -1,0 +1,115 @@
+<form
+  [formGroup]="expenseForm"
+  (ngSubmit)="submit()"
+  class="d-flex flex-column flex-grow-1 min-height-0 overflow-hidden"
+>
+  <div class="expense-modal-body">
+    <div class="d-flex flex-column gap-3">
+      <div class="row g-2">
+        <!-- Category -->
+        <div class="col-12 col-md-6">
+          <label class="form-label required-label">Category</label>
+          <select class="form-select form-select-sm" formControlName="category">
+            @for (cat of categoriesList; track cat) {
+              <option [value]="cat">{{ cat }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Item Name -->
+        <div class="col-12 col-md-6">
+          <label class="form-label">Item / Service Name</label>
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            formControlName="itemId"
+            placeholder="e.g. Urea bag, tractor lease"
+          />
+        </div>
+      </div>
+
+      <div class="row g-2">
+        <!-- Resource / Name -->
+        <div class="col-12 col-md-6">
+          <label class="form-label">Vendor / Laborer (Optional)</label>
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            formControlName="resourceId"
+            placeholder="e.g. John Doe, Cooperative"
+          />
+        </div>
+
+        <!-- Remarks -->
+        <div class="col-12 col-md-6">
+          <label class="form-label">Remarks / Notes</label>
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            formControlName="remarks"
+            placeholder="e.g. Batch #4, cash paid"
+          />
+        </div>
+      </div>
+
+      <div class="row g-2 align-items-end">
+        <!-- Quantity -->
+        <div class="col-4 col-md-2">
+          <label class="form-label">Qty</label>
+          <input
+            type="number"
+            class="form-control form-control-sm"
+            formControlName="quantity"
+            placeholder="1"
+          />
+        </div>
+
+        <!-- Unit -->
+        <div class="col-4 col-md-3">
+          <label class="form-label">Unit</label>
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            formControlName="unit"
+            placeholder="bags, hours"
+          />
+        </div>
+
+        <!-- Rate -->
+        <div class="col-4 col-md-3">
+          <label class="form-label">Rate (₹)</label>
+          <input
+            type="number"
+            class="form-control form-control-sm"
+            formControlName="rate"
+            placeholder="500"
+          />
+        </div>
+
+        <!-- Total Amount (Auto Calculated) -->
+        <div class="col-12 col-md-4">
+          <label class="form-label required-label">Amount (₹)</label>
+          <input
+            type="number"
+            class="form-control form-control-sm font-monospace fw-bold"
+            formControlName="amount"
+            placeholder="Total amount"
+            [class.is-invalid]="
+              expenseForm.get('amount')?.invalid && expenseForm.get('amount')?.touched
+            "
+          />
+          @if (expenseForm.get('amount')?.invalid && expenseForm.get('amount')?.touched) {
+            <div class="invalid-feedback">Valid cost is required.</div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-end gap-2 mt-4 pt-2 border-top">
+    <button type="button" class="btn btn-secondary btn-sm" (click)="cancel()">Cancel</button>
+    <button type="submit" class="btn btn-primary btn-sm">
+      <i class="bi bi-check2-circle me-1"></i> Add Expense Item
+    </button>
+  </div>
+</form>
