@@ -96,3 +96,90 @@ async def test_get_crops_list(client: AsyncClient) -> None:
     data = resp.json()
     assert "items" in data
     assert isinstance(data["items"], list)
+
+
+@pytest.mark.asyncio
+async def test_post_activity_types_requires_auth(client: AsyncClient) -> None:
+    """POST /activity-types without auth returns 401."""
+    resp = await client.post(
+        "/api/v1/reference/activity-types",
+        json={"name": "Mulching"},
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_post_activity_types_creates_new_type(client: AsyncClient) -> None:
+    """POST /activity-types with auth creates a new activity type."""
+    uid = f"farmer_{uuid4()}"
+    activity_type_name = f"Mulching-{uuid4()}"
+    with patch.object(
+        firebase_auth,
+        "verify_id_token",
+        return_value={"uid": uid, "phone_number": None},
+    ):
+        resp = await client.post(
+            "/api/v1/reference/activity-types",
+            headers={"Authorization": "Bearer test"},
+            json={"name": activity_type_name},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["name"] == activity_type_name
+        assert data["id"]
+
+
+@pytest.mark.asyncio
+async def test_post_activity_types_case_insensitive_duplicate(client: AsyncClient) -> None:
+    """POST /activity-types with case-insensitive duplicate returns existing type."""
+    uid = f"farmer_{uuid4()}"
+    type_name = f"pruning-{uuid4()}"
+    with patch.object(
+        firebase_auth,
+        "verify_id_token",
+        return_value={"uid": uid, "phone_number": None},
+    ):
+        resp1 = await client.post(
+            "/api/v1/reference/activity-types",
+            headers={"Authorization": "Bearer test"},
+            json={"name": type_name},
+        )
+        assert resp1.status_code == 200
+        id1 = resp1.json()["id"]
+
+        resp2 = await client.post(
+            "/api/v1/reference/activity-types",
+            headers={"Authorization": "Bearer test"},
+            json={"name": type_name.upper()},
+        )
+        assert resp2.status_code == 200
+        data2 = resp2.json()
+        assert data2["id"] == id1
+        assert data2["name"] == type_name
+
+
+@pytest.mark.asyncio
+async def test_post_activity_types_empty_name_returns_422(client: AsyncClient) -> None:
+    """POST /activity-types with empty name returns 422."""
+    uid = f"farmer_{uuid4()}"
+    with patch.object(
+        firebase_auth,
+        "verify_id_token",
+        return_value={"uid": uid, "phone_number": None},
+    ):
+        resp = await client.post(
+            "/api/v1/reference/activity-types",
+            headers={"Authorization": "Bearer test"},
+            json={"name": ""},
+        )
+        assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_get_activity_types_list(client: AsyncClient) -> None:
+    """GET /activity-types returns the activity type catalog."""
+    resp = await client.get("/api/v1/reference/activity-types")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "items" in data
+    assert isinstance(data["items"], list)

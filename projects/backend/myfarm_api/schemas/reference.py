@@ -30,6 +30,12 @@ class ExpenseCategoryRead(BaseModel):
         from_attributes = True
 
 
+class ActivityTypeCreate(BaseModel):
+    """Create a new activity type."""
+
+    name: str = Field(..., min_length=1)
+
+
 class ActivityTypeRead(BaseModel):
     """Read an activity type record."""
 

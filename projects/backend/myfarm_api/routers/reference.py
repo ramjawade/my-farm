@@ -9,6 +9,7 @@ from myfarm_api.core.db import get_session_factory
 from myfarm_api.core.security import FirebaseIdentity, get_firebase_identity
 from myfarm_api.models import ActivityType, CropCatalog, CropStage, ExpenseCategory, Season
 from myfarm_api.schemas.reference import (
+    ActivityTypeCreate,
     ActivityTypeRead,
     CropCatalogCreate,
     CropCatalogRead,
@@ -81,6 +82,30 @@ async def list_activity_types() -> dict[str, Any]:
         return {
             "items": [ActivityTypeRead.model_validate(a) for a in types],
         }
+
+
+@router.post("/activity-types", response_model=ActivityTypeRead)
+async def create_or_get_activity_type(
+    payload: ActivityTypeCreate,
+    identity: FirebaseIdentity = Depends(get_firebase_identity),
+) -> ActivityType:
+    """Create a new activity type or return the existing one (case-insensitive)."""
+    type_name = payload.name.strip()
+
+    session_factory = get_session_factory()
+    async with session_factory() as session:
+        stmt = select(ActivityType).where(func.lower(ActivityType.name) == type_name.lower())
+        result = await session.execute(stmt)
+        existing_type = result.scalar_one_or_none()
+
+        if existing_type:
+            return existing_type
+
+        new_type = ActivityType(name=type_name)
+        session.add(new_type)
+        await session.commit()
+        await session.refresh(new_type)
+        return new_type
 
 
 @router.get("/seasons", response_model=dict)
