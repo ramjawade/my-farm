@@ -33,6 +33,7 @@ export class CropMapperService {
       id: item.id,
       fieldId: item.land_id,
       name: item.label ?? '',
+      // TODO: use crop_catalog_id directly instead of resolving to cropType name.
       cropType: await this.referenceData.cropNameForId(item.crop_catalog_id),
       area: item.area !== null && item.area !== undefined ? Number(item.area) : 0,
       areaUnit: item.area_unit === 'hectares' ? 'hectares' : 'acres',
