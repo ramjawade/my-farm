@@ -1,0 +1,71 @@
+<div class="d-flex flex-column gap-3">
+  @if (loading) {
+    <div class="text-center text-muted py-4">
+      <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+      Loading expenses…
+    </div>
+  } @else if (error) {
+    <div class="alert alert-danger mb-0">{{ error }}</div>
+  } @else {
+    @for (exp of expenses; track exp.id) {
+      <div class="card card-interactive shadow-sm border-0 mb-2">
+        <div class="card-body">
+          <div
+            class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3"
+          >
+            <div class="d-flex align-items-center">
+              <div class="icon-box d-flex align-items-center justify-content-center">
+                <i class="bi {{ getCategoryIcon(exp.category) }}"></i>
+              </div>
+              <div class="ms-3">
+                <h6 class="mb-1 font-sans fw-bold text-soil text-wrap-break">
+                  {{ exp.itemId || exp.category }}
+                </h6>
+                <div class="text-secondary small font-sans text-wrap-break">
+                  @if (exp.quantity && exp.rate) {
+                    Qty: {{ exp.quantity }} {{ exp.unit || 'units' }} @ ₹{{ exp.rate | number }}/{{
+                      exp.unit || 'unit'
+                    }}
+                  } @else {
+                    Category: {{ exp.category }}
+                  }
+                  @if (exp.remarks) {
+                    • {{ exp.remarks }}
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="d-flex align-items-center justify-content-between justify-content-sm-end gap-3 w-100 w-sm-auto border-top-mobile pt-2 pt-sm-0"
+            >
+              <div class="amount font-monospace text-success-dark">₹{{ exp.amount | number }}</div>
+              <button
+                class="btn btn-link text-danger p-0"
+                (click)="deleteExpense(exp.id)"
+                title="Delete entry"
+              >
+                <i class="bi bi-trash fs-5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    } @empty {
+      <div class="card border-0 shadow-sm p-5 text-center text-muted font-sans rounded">
+        <i class="bi bi-card-checklist display-6 text-muted"></i>
+        <p class="mb-0 mt-2">No expenses logged for this activity yet.</p>
+      </div>
+    }
+  }
+</div>
+
+<lib-confirm-dialog
+  [title]="'Remove Expense Entry'"
+  [message]="'Are you sure you want to remove this expense entry?'"
+  [confirmText]="'Remove'"
+  [cancelText]="'Cancel'"
+  [isDestructive]="true"
+  [(isOpen)]="showDeleteConfirm"
+  (confirm)="confirmDeleteExpense()"
+></lib-confirm-dialog>

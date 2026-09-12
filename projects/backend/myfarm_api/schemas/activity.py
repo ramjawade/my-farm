@@ -60,3 +60,12 @@ class ActivitySummaryRead(BaseModel):
     completed: int
     in_progress: int
     total_expense: float
+
+
+class ActivityDetailSummaryRead(BaseModel):
+    """KPI summary for a single activity — GET /activities/{id}/summary."""
+
+    total_expense: float
+    expense_count: int
+    days_since_created: int
+    status: str

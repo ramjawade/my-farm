@@ -108,3 +108,20 @@ export interface ActivityKpiSummary {
   inProgress: number;
   totalExpense: number;
 }
+
+/** A single audit-trail entry for one activity — GET /activities/{id}/history. */
+export interface ActivityHistoryEntry {
+  id: number;
+  activityId: number;
+  eventType: string;
+  detail?: Record<string, unknown>;
+  createdAt: number;
+}
+
+/** Per-activity KPI summary — GET /activities/{id}/summary. */
+export interface ActivityDetailSummary {
+  totalExpense: number;
+  expenseCount: number;
+  daysSinceCreated: number;
+  status: ActivityStatus;
+}

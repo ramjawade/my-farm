@@ -243,3 +243,102 @@ async def test_activities_summary_counts_and_expense(
         assert summary["completed"] == 1
         assert summary["in_progress"] == 1
         assert summary["total_expense"] == 250.0
+
+
+@pytest.mark.asyncio
+async def test_activity_history_accumulates(
+    client: AsyncClient, reference_ids: dict[str, str]
+) -> None:
+    """History records created/expense_added/status_changed in order, newest first."""
+    uid = f"farmer_{uuid4()}"
+    activity_type_id = reference_ids["activity_type_id"]
+    expense_category_id = reference_ids["expense_category_id"]
+
+    with patch.object(
+        firebase_auth,
+        "verify_id_token",
+        return_value={"uid": uid, "phone_number": None},
+    ):
+        create_resp = await client.post(
+            "/api/v1/activities",
+            headers={"Authorization": "Bearer test"},
+            json={"activity_type_id": activity_type_id, "status": "pending"},
+        )
+        activity_id = create_resp.json()["id"]
+
+        expense_resp = await client.post(
+            f"/api/v1/activities/{activity_id}/expenses",
+            headers={"Authorization": "Bearer test"},
+            json={"expense_category_id": expense_category_id, "amount": "500.00"},
+        )
+        assert expense_resp.status_code == 201
+
+        update_resp = await client.patch(
+            f"/api/v1/activities/{activity_id}",
+            headers={"Authorization": "Bearer test"},
+            json={"status": "completed"},
+        )
+        assert update_resp.status_code == 200
+
+        history_resp = await client.get(
+            f"/api/v1/activities/{activity_id}/history",
+            headers={"Authorization": "Bearer test"},
+        )
+        assert history_resp.status_code == 200
+        items = history_resp.json()["items"]
+        assert len(items) == 3
+        event_types = [item["event_type"] for item in items]
+        assert event_types == ["status_changed", "expense_added", "created"]
+        assert items[0]["detail"] == {"from": "pending", "to": "completed"}
+
+
+@pytest.mark.asyncio
+async def test_activity_summary_reflects_expenses(
+    client: AsyncClient, reference_ids: dict[str, str]
+) -> None:
+    """Summary KPI totals reflect the activity's real, non-deleted expenses."""
+    uid = f"farmer_{uuid4()}"
+    activity_type_id = reference_ids["activity_type_id"]
+    expense_category_id = reference_ids["expense_category_id"]
+
+    with patch.object(
+        firebase_auth,
+        "verify_id_token",
+        return_value={"uid": uid, "phone_number": None},
+    ):
+        create_resp = await client.post(
+            "/api/v1/activities",
+            headers={"Authorization": "Bearer test"},
+            json={"activity_type_id": activity_type_id, "status": "pending"},
+        )
+        activity_id = create_resp.json()["id"]
+
+        await client.post(
+            f"/api/v1/activities/{activity_id}/expenses",
+            headers={"Authorization": "Bearer test"},
+            json={"expense_category_id": expense_category_id, "amount": "500.00"},
+        )
+        expense2_resp = await client.post(
+            f"/api/v1/activities/{activity_id}/expenses",
+            headers={"Authorization": "Bearer test"},
+            json={"expense_category_id": expense_category_id, "amount": "250.00"},
+        )
+        expense2_id = expense2_resp.json()["id"]
+
+        # Delete one expense — it should drop out of the summary total.
+        delete_resp = await client.delete(
+            f"/api/v1/activities/{activity_id}/expenses/{expense2_id}",
+            headers={"Authorization": "Bearer test"},
+        )
+        assert delete_resp.status_code == 204
+
+        summary_resp = await client.get(
+            f"/api/v1/activities/{activity_id}/summary",
+            headers={"Authorization": "Bearer test"},
+        )
+        assert summary_resp.status_code == 200
+        summary = summary_resp.json()
+        assert summary["total_expense"] == 500.0
+        assert summary["expense_count"] == 1
+        assert summary["status"] == "pending"
+        assert summary["days_since_created"] == 0
