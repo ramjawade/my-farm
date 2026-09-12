@@ -2,8 +2,8 @@ name: CI
 
 on:
   pull_request:
-    branches:
-      - main
+    # No branches filter — parent-epic sub-issue PRs target a parent
+    # feature branch, not main, and still need this pipeline to run.
   workflow_dispatch:
 
 jobs:
