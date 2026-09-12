@@ -19,7 +19,12 @@ import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
 import { SavedFarm } from '../../../map/models/map.models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ConfirmDialogComponent, ToastService } from 'shared';
-import { Activity, ActivityDetailSummary, ActivityHistoryEntry, ActivityStatus } from '../../activity/activity.models';
+import {
+  Activity,
+  ActivityDetailSummary,
+  ActivityHistoryEntry,
+  ActivityStatus,
+} from '../../activity/activity.models';
 import { parseId } from '../../../core/models/entity-id';
 
 @Component({

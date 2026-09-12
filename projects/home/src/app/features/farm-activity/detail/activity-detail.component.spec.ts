@@ -8,7 +8,11 @@ import { ActivityDetailService } from './activity-detail.service';
 import { ActivityExpensesService } from './activity-expenses.service';
 import { IStorageService } from '../../../core/storage/storage.interface';
 import { InMemoryStorageService } from '../../../testing/in-memory-storage.service';
-import { Activity, ActivityDetailSummary, ActivityHistoryEntry } from '../../activity/activity.models';
+import {
+  Activity,
+  ActivityDetailSummary,
+  ActivityHistoryEntry,
+} from '../../activity/activity.models';
 
 describe('ActivityDetailComponent', () => {
   let component: ActivityDetailComponent;

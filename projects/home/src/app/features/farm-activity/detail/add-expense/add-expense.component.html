@@ -1,4 +1,8 @@
-<form [formGroup]="expenseForm" (ngSubmit)="submit()" class="d-flex flex-column flex-grow-1 min-height-0 overflow-hidden">
+<form
+  [formGroup]="expenseForm"
+  (ngSubmit)="submit()"
+  class="d-flex flex-column flex-grow-1 min-height-0 overflow-hidden"
+>
   <div class="expense-modal-body">
     <div class="d-flex flex-column gap-3">
       <div class="row g-2">
@@ -52,19 +56,34 @@
         <!-- Quantity -->
         <div class="col-4 col-md-2">
           <label class="form-label">Qty</label>
-          <input type="number" class="form-control form-control-sm" formControlName="quantity" placeholder="1" />
+          <input
+            type="number"
+            class="form-control form-control-sm"
+            formControlName="quantity"
+            placeholder="1"
+          />
         </div>
 
         <!-- Unit -->
         <div class="col-4 col-md-3">
           <label class="form-label">Unit</label>
-          <input type="text" class="form-control form-control-sm" formControlName="unit" placeholder="bags, hours" />
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            formControlName="unit"
+            placeholder="bags, hours"
+          />
         </div>
 
         <!-- Rate -->
         <div class="col-4 col-md-3">
           <label class="form-label">Rate (₹)</label>
-          <input type="number" class="form-control form-control-sm" formControlName="rate" placeholder="500" />
+          <input
+            type="number"
+            class="form-control form-control-sm"
+            formControlName="rate"
+            placeholder="500"
+          />
         </div>
 
         <!-- Total Amount (Auto Calculated) -->
@@ -75,7 +94,9 @@
             class="form-control form-control-sm font-monospace fw-bold"
             formControlName="amount"
             placeholder="Total amount"
-            [class.is-invalid]="expenseForm.get('amount')?.invalid && expenseForm.get('amount')?.touched"
+            [class.is-invalid]="
+              expenseForm.get('amount')?.invalid && expenseForm.get('amount')?.touched
+            "
           />
           @if (expenseForm.get('amount')?.invalid && expenseForm.get('amount')?.touched) {
             <div class="invalid-feedback">Valid cost is required.</div>

@@ -75,8 +75,20 @@ describe('ActivityDetailService', () => {
     const req = httpMock.expectOne(`${apiUrl}/activities/5/history`);
     req.flush({
       items: [
-        { id: 2, activity_id: 5, event_type: 'status_changed', detail: null, created_at: '2026-09-08T02:00:00Z' },
-        { id: 1, activity_id: 5, event_type: 'created', detail: null, created_at: '2026-09-08T00:00:00Z' },
+        {
+          id: 2,
+          activity_id: 5,
+          event_type: 'status_changed',
+          detail: null,
+          created_at: '2026-09-08T02:00:00Z',
+        },
+        {
+          id: 1,
+          activity_id: 5,
+          event_type: 'created',
+          detail: null,
+          created_at: '2026-09-08T00:00:00Z',
+        },
       ],
     });
 

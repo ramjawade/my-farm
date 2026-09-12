@@ -1,7 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpService } from '../../../core/http/http.service';
 import { ActivityMapperService } from './activity-mapper.service';
-import { Activity, ActivityDetailSummary, ActivityHistoryEntry, ActivityStatus } from '../../activity/activity.models';
+import {
+  Activity,
+  ActivityDetailSummary,
+  ActivityHistoryEntry,
+  ActivityStatus,
+} from '../../activity/activity.models';
 
 /**
  * Targeted fetches for a single activity's own record — the KPI summary,

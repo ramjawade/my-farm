@@ -23,9 +23,9 @@
                 </h6>
                 <div class="text-secondary small font-sans text-wrap-break">
                   @if (exp.quantity && exp.rate) {
-                    Qty: {{ exp.quantity }} {{ exp.unit || 'units' }} @ ₹{{
-                      exp.rate | number
-                    }}/{{ exp.unit || 'unit' }}
+                    Qty: {{ exp.quantity }} {{ exp.unit || 'units' }} @ ₹{{ exp.rate | number }}/{{
+                      exp.unit || 'unit'
+                    }}
                   } @else {
                     Category: {{ exp.category }}
                   }
