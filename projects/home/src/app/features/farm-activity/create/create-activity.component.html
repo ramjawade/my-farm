@@ -1,77 +1,54 @@
-<div class="mf-page-container" [class.p-0]="isModal">
-  @if (!isModal) {
-    <header
-      class="create-header mf-header-pacing sticky-header d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 mb-4 border-bottom pb-3"
-    >
-      <!-- Title on the Left -->
-      <div class="text-start">
-        <h2 class="mf-page-title">
-          @if (activityId) {
-            Edit Farm Activity
-          } @else {
-            Record Farm Activity
-          }
-        </h2>
-        <p class="text-muted mb-0">
-          @if (activityId) {
-            Modify the details of this recorded operation.
-          } @else {
-            Fill in details to log a new operation performed on your fields.
-          }
-        </p>
-      </div>
+<div class="mf-page-container">
+  <header
+    class="create-header mf-header-pacing sticky-header d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 mb-4 border-bottom pb-3"
+  >
+    <!-- Title on the Left -->
+    <div class="text-start">
+      <h2 class="mf-page-title">
+        @if (activityId) {
+          Edit Farm Activity
+        } @else {
+          Record Farm Activity
+        }
+      </h2>
+      <p class="text-muted mb-0">
+        @if (activityId) {
+          Modify the details of this recorded operation.
+        } @else {
+          Fill in details to log a new operation performed on your fields.
+        }
+      </p>
+    </div>
 
-      <!-- Buttons on the Right -->
-      <div class="d-none d-md-flex gap-2 text-end">
-        <a
-          routerLink="/activities"
-          class="btn btn-secondary d-inline-flex align-items-center gap-2 px-3 py-2 ms-auto"
-          style="white-space: nowrap"
-        >
-          <i class="bi bi-arrow-left"></i> Back to Dashboard
-        </a>
-      </div>
-    </header>
-  }
+    <!-- Buttons on the Right -->
+    <div class="d-none d-md-flex gap-2 text-end">
+      <button
+        type="button"
+        class="btn btn-secondary d-inline-flex align-items-center gap-2 px-3 py-2 ms-auto"
+        style="white-space: nowrap"
+        (click)="onCancel()"
+      >
+        <i class="bi bi-arrow-left"></i> Back
+      </button>
+    </div>
+  </header>
 
   <main class="row justify-content-center">
-    <div class="col-12" [class.col-lg-8]="!isModal">
-      <div
-        [class.card]="!isModal"
-        [class.card-glass]="!isModal"
-        [class.p-4]="!isModal"
-        [class.p-md-5]="!isModal"
-      >
+    <div class="col-12 col-lg-8">
+      <div class="card card-glass p-4 p-md-5">
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="d-flex flex-column gap-4">
           <!-- Activity Title / Name -->
           <div>
-            <label class="form-label required-label">Activity Name / Type</label>
-            <input
-              type="text"
-              class="form-control"
+            <label class="form-label required-label" for="type">Activity Name / Type</label>
+            <lib-combobox
+              id="type"
               formControlName="type"
-              placeholder="e.g. Sowing, Fertilizer Spreading, Bore Drill..."
-              [class.is-invalid]="form.get('type')?.invalid && form.get('type')?.touched"
+              [options]="activityTypeNames()"
+              (itemAdded)="onTypeAdded($event)"
             />
             @if (form.get('type')?.invalid && form.get('type')?.touched) {
-              <div class="invalid-feedback">Activity name is required.</div>
+              <div class="invalid-feedback d-block">Activity name is required.</div>
             }
-
-            <!-- Quick Suggestions Grid -->
-            <div class="suggestions-section mt-3">
-              <span class="suggestions-title">Common Suggestions:</span>
-              <div class="d-flex flex-wrap gap-2 mt-2">
-                @for (sugg of commonActivitySuggestions; track sugg) {
-                  <button
-                    type="button"
-                    class="btn-outline-suggestion btn-sm"
-                    (click)="selectSuggestion(sugg)"
-                  >
-                    + {{ sugg }}
-                  </button>
-                }
-              </div>
-            </div>
           </div>
 
           <div class="row g-3">
@@ -267,13 +244,12 @@
   </main>
 
   <!-- Floating Back FAB (User Request) -->
-  @if (!isModal) {
-    <a
-      routerLink="/activities"
-      class="btn btn-secondary fab fab-back shadow d-flex d-md-none align-items-center justify-content-center"
-      title="Back to Dashboard"
-    >
-      <i class="bi bi-arrow-left"></i>
-    </a>
-  }
+  <button
+    type="button"
+    class="btn btn-secondary fab fab-back shadow d-flex d-md-none align-items-center justify-content-center"
+    title="Back to Dashboard"
+    (click)="onCancel()"
+  >
+    <i class="bi bi-arrow-left"></i>
+  </button>
 </div>

@@ -58,14 +58,11 @@
   <div class="lifecycle-stepper-container">
     <div class="lifecycle-track">
       @for (stg of stages; track stg; let idx = $index) {
+        <!-- Static display only — activity completion no longer drives stage (#167) -->
         <div
           class="lifecycle-step"
-          role="button"
-          tabindex="0"
           [class.completed]="getStageIndex(crop()?.currentStage || 'Land Preparation') >= idx"
           [class.active]="crop()?.currentStage === stg"
-          (click)="onUpdateStageClicked(stg)"
-          (keydown.enter)="onUpdateStageClicked(stg)"
         >
           <!-- Top Label Row (visible only for odd steps, keeps DOM space for even steps) -->
           <div
@@ -109,12 +106,7 @@
   </div>
 </div>
 
-<app-activities-summary
-  [activities]="activities()"
-  [isTimeline]="true"
-  (editActivity)="onEditActivityClicked($event)"
-  (markActivityCompleted)="onMarkActivityCompletedClicked($event)"
-></app-activities-summary>
+<router-outlet></router-outlet>
 
 <!-- Back to Dashboard FAB - MOBILE ONLY -->
 <button
@@ -148,34 +140,12 @@
   <i class="bi bi-plus-lg fs-3"></i>
 </button>
 
-<!-- ======================================================== -->
-<!-- 4. ADD/EDIT ACTIVITY OVERLAY DIALOG MODAL (REUSABLE)     -->
-<!-- ======================================================== -->
-@if (showActivityModal()) {
-  <div
-    class="activity-modal-backdrop position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center px-3"
-    style="z-index: 2000"
-  >
-    <div
-      class="activity-modal-card card shadow-lg border rounded bg-white p-4 w-100 text-start"
-      style="max-width: 620px; max-height: 90vh; overflow-y: auto"
-    >
-      <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
-        <h5 class="text-success font-semibold m-0">
-          <i class="bi bi-journal-plus me-2"></i>
-          Record Farm Activity
-        </h5>
-        <button type="button" class="btn-close" (click)="onCloseActivityModal()"></button>
-      </div>
-
-      <app-create-activity
-        [cropId]="crop()?.id"
-        [parentActivityId]="parentActivityIdForModal() || undefined"
-        [activityId]="editingActivityIdForModal() || undefined"
-        [isModal]="true"
-        (activitySaved)="onCloseActivityModal()"
-        (cancelled)="onCloseActivityModal()"
-      ></app-create-activity>
-    </div>
-  </div>
-}
+<lib-confirm-dialog
+  [title]="'Delete Crop'"
+  [message]="'Are you sure you want to delete this crop and all of its logged activities? This action is irreversible.'"
+  [confirmText]="'Delete'"
+  [cancelText]="'Cancel'"
+  [isDestructive]="true"
+  [(isOpen)]="showDeleteCropConfirm"
+  (confirm)="confirmDeleteCrop()"
+></lib-confirm-dialog>
