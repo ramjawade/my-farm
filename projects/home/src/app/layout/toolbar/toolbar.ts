@@ -24,40 +24,16 @@ export class Toolbar {
     this.authService.logout();
   }
 
-  readonly langDropdownOpen = signal(false);
   readonly userDropdownOpen = signal(false);
-  readonly activeLang = signal('en');
-
-  readonly languages = [
-    { code: 'en', name: 'English' },
-    { code: 'mr', name: 'मराठी (Marathi)' },
-    { code: 'hi', name: 'हिंदी (Hindi)' },
-  ];
-
-  readonly activeLangName = computed(() => {
-    const code = this.activeLang();
-    return this.languages.find((l) => l.code === code)?.name || 'English';
-  });
 
   onMenuClick(): void {
     this.menuToggle.emit();
-  }
-
-  toggleLangDropdown(): void {
-    const current = this.langDropdownOpen();
-    this.closeDropdowns();
-    this.langDropdownOpen.set(!current);
   }
 
   toggleUserDropdown(): void {
     const current = this.userDropdownOpen();
     this.closeDropdowns();
     this.userDropdownOpen.set(!current);
-  }
-
-  selectLang(code: string): void {
-    this.activeLang.set(code);
-    this.langDropdownOpen.set(false);
   }
 
   fallbackAvatar(event: Event): void {
@@ -67,7 +43,6 @@ export class Toolbar {
 
   @HostListener('document:click')
   closeDropdowns(): void {
-    this.langDropdownOpen.set(false);
     this.userDropdownOpen.set(false);
   }
 }
