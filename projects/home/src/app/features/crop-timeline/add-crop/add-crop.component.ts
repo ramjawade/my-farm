@@ -10,8 +10,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CROP_STAGES } from '../crop-timeline.models';
-import { CropTimelineService } from '../crop-timeline.service';
+import { CROP_STAGES, CropEntity } from '../crop-timeline.models';
+import { AddCropService } from './add-crop.service';
 import { FarmLookupService } from '../../../core/farms/farm-lookup.service';
 import { SavedFarm } from '../../../map/models/map.models';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -30,13 +30,14 @@ import { convertArea, AreaUnit } from '../../../core/pipes/area.pipe';
 export class AddCropComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
-  private readonly cropService = inject(CropTimelineService);
+  private readonly addCropService = inject(AddCropService);
   private readonly farmLookup = inject(FarmLookupService);
   private readonly authService = inject(AuthService);
   private readonly toast = inject(ToastService);
   private readonly workflowService = inject(WorkflowStateService);
 
   readonly savedFarms = signal<SavedFarm[]>([]);
+  readonly crops = signal<CropEntity[]>([]);
   readonly creatingName = signal(false);
   readonly saving = signal(false);
   readonly areaIsAutoFilled = signal(true);
@@ -52,8 +53,7 @@ export class AddCropComponent implements OnInit {
 
   readonly seasons = SEASONS;
   readonly cropNames = computed(() => {
-    const crops = this.cropService.crops();
-    const names = crops.map((c) => c.name);
+    const names = this.crops().map((c) => c.name);
     return [...new Set(names)].sort();
   });
 
@@ -103,7 +103,12 @@ export class AddCropComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     const user = this.authService.currentUser();
     if (user) {
-      this.savedFarms.set(await this.farmLookup.loadForCurrentUser());
+      const [farms, crops] = await Promise.all([
+        this.farmLookup.loadForCurrentUser(),
+        this.addCropService.getCrops(),
+      ]);
+      this.savedFarms.set(farms);
+      this.crops.set(crops);
       // Auto-select field if only one farm exists
       if (this.savedFarms().length === 1) {
         this.cropForm.patchValue({ fieldId: this.savedFarms()[0].id });
@@ -129,7 +134,7 @@ export class AddCropComponent implements OnInit {
 
     this.saving.set(true);
     try {
-      const newCrop = await this.cropService.addCrop({
+      const newCrop = await this.addCropService.createCrop({
         name: values.name,
         cropType: values.name,
         fieldId: values.fieldId,
