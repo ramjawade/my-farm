@@ -45,33 +45,16 @@
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="d-flex flex-column gap-4">
           <!-- Activity Title / Name -->
           <div>
-            <label class="form-label required-label">Activity Name / Type</label>
-            <input
-              type="text"
-              class="form-control"
+            <label class="form-label required-label" for="type">Activity Name / Type</label>
+            <lib-combobox
+              id="type"
               formControlName="type"
-              placeholder="e.g. Sowing, Fertilizer Spreading, Bore Drill..."
-              [class.is-invalid]="form.get('type')?.invalid && form.get('type')?.touched"
+              [options]="activityTypeNames()"
+              (itemAdded)="onTypeAdded($event)"
             />
             @if (form.get('type')?.invalid && form.get('type')?.touched) {
-              <div class="invalid-feedback">Activity name is required.</div>
+              <div class="invalid-feedback d-block">Activity name is required.</div>
             }
-
-            <!-- Quick Suggestions Grid -->
-            <div class="suggestions-section mt-3">
-              <span class="suggestions-title">Common Suggestions:</span>
-              <div class="d-flex flex-wrap gap-2 mt-2">
-                @for (sugg of commonActivitySuggestions; track sugg) {
-                  <button
-                    type="button"
-                    class="btn-outline-suggestion btn-sm"
-                    (click)="selectSuggestion(sugg)"
-                  >
-                    + {{ sugg }}
-                  </button>
-                }
-              </div>
-            </div>
           </div>
 
           <div class="row g-3">

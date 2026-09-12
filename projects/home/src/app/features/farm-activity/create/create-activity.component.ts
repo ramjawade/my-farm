@@ -11,6 +11,8 @@ import {
   EventEmitter,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs/operators';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivityService } from '../../activity/activity.service';
@@ -19,14 +21,16 @@ import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
 import { SavedFarm } from '../../../map/models/map.models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { WorkflowStateService } from '../../../core/workflow/workflow-state.service';
+import { ReferenceDataService } from '../../../core/api/reference-data.service';
+import { ReferenceItem } from '../../../core/api/contracts';
 import { parseId } from '../../../core/models/entity-id';
 import { Activity } from '../../activity/activity.models';
-import { ToastService } from 'shared';
+import { ComboboxComponent, ToastService } from 'shared';
 
 @Component({
   selector: 'app-create-activity',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, ComboboxComponent],
   templateUrl: './create-activity.component.html',
   styleUrl: './create-activity.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,7 +44,16 @@ export class CreateActivityComponent implements OnInit {
   private readonly farmDrawService = inject(FarmDrawService);
   private readonly authService = inject(AuthService);
   private readonly workflowService = inject(WorkflowStateService);
+  private readonly referenceDataService = inject(ReferenceDataService);
   private readonly toast = inject(ToastService);
+
+  private readonly cropIdPathParam = toSignal(
+    this.route.paramMap.pipe(map((params) => parseId(params.get('cropId')))),
+    { initialValue: null },
+  );
+
+  /** True when reached via a crop-scoped route (`crops/:cropId/create`), not just `?cropId=`. */
+  readonly isCropScoped = computed(() => this.cropIdPathParam() !== null);
 
   @Input() cropId?: number;
   @Input() parentActivityId?: number;
@@ -94,19 +107,9 @@ export class CreateActivityComponent implements OnInit {
   readonly selectedCropId = signal<number | null>(null);
   readonly saving = signal(false);
 
-  // Pre-defined common suggestions
-  readonly commonActivitySuggestions = [
-    'Bore Installation',
-    'Sowing',
-    'Sowing Support',
-    'Weeding',
-    'Fertilizing',
-    'Pest Spraying',
-    'Harvesting',
-    'Irrigation',
-    'Field Inspection',
-    'Tillage',
-  ];
+  // Real activity-type reference data, backing the "Activity Name / Type" combobox.
+  readonly referenceActivityTypes = signal<ReferenceItem[]>([]);
+  readonly activityTypeNames = computed(() => this.referenceActivityTypes().map((t) => t.name));
 
   readonly uploadedImages = signal<string[]>([]);
 
@@ -122,6 +125,10 @@ export class CreateActivityComponent implements OnInit {
       void this.farmDrawService.loadFarms(user.id).then((farms) => this.savedFarms.set(farms));
     }
 
+    void this.referenceDataService
+      .listActivityTypes()
+      .then((types) => this.referenceActivityTypes.set(types));
+
     // 1. If we are running in modal mode, inputs might be passed directly
     if (this.cropId) {
       this.form.patchValue({ cropId: this.cropId });
@@ -131,10 +138,12 @@ export class CreateActivityComponent implements OnInit {
       this.form.patchValue({ parentActivityId: this.parentActivityId });
     }
 
-    // 2. If we are running in route mode, read from query parameters
+    // 2. If we are running in route mode, read cropId from the route path
+    // param first (crops/:cropId/create), falling back to query params —
+    // parentActivityId/activityId stay query-param only.
     if (!this.isModal) {
       this.route.queryParams.subscribe((params) => {
-        const routeCropId = parseId(params['cropId']);
+        const routeCropId = this.cropIdPathParam() ?? parseId(params['cropId']);
         const routeParentId = parseId(params['parentActivityId']);
         const routeActivityId = parseId(params['activityId']);
 
@@ -197,8 +206,17 @@ export class CreateActivityComponent implements OnInit {
     if (fieldControl.enabled) fieldControl.disable({ emitEvent: false });
   }
 
-  selectSuggestion(val: string): void {
-    this.form.patchValue({ type: val });
+  /** New activity type typed into the combobox — persist it and reload the dropdown. */
+  async onTypeAdded(name: string): Promise<void> {
+    try {
+      const created = await this.referenceDataService.createActivityType(name);
+      this.referenceActivityTypes.update((list) =>
+        list.some((t) => t.id === created.id) ? list : [...list, created],
+      );
+      this.form.patchValue({ type: created.name });
+    } catch {
+      this.toast.error('Could not save the new activity type.');
+    }
   }
 
   onImageSelected(event: Event): void {
@@ -289,13 +307,19 @@ export class CreateActivityComponent implements OnInit {
       }
 
       if (!this.isModal) {
-        this.router.navigate(['/activities', newAct.id]);
+        if (this.isCropScoped()) {
+          this.router.navigate(['..'], { relativeTo: this.route });
+        } else {
+          this.router.navigate(['/activities', newAct.id]);
+        }
         return;
       }
     }
 
     if (this.isModal) {
       this.activitySaved.emit();
+    } else if (this.isCropScoped()) {
+      this.router.navigate(['..'], { relativeTo: this.route });
     } else {
       this.router.navigate(['/activities']);
     }
@@ -304,6 +328,8 @@ export class CreateActivityComponent implements OnInit {
   onCancel(): void {
     if (this.isModal) {
       this.cancelled.emit();
+    } else if (this.isCropScoped()) {
+      this.router.navigate(['..'], { relativeTo: this.route });
     } else {
       this.router.navigate(['/activities']);
     }
