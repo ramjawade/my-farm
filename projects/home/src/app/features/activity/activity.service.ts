@@ -256,7 +256,7 @@ export class ActivityService {
 
   /** Top `limit` not-yet-completed activities, soonest first, optionally scoped to a crop. */
   async getUpcomingActivities(cropId?: number, limit = 5): Promise<Activity[]> {
-    return this.fetchActivities({
+    return this.queryActivities({
       status: ['Scheduled', 'Draft', 'In Progress'],
       sort: 'date_asc',
       limit,
@@ -266,7 +266,7 @@ export class ActivityService {
 
   /** Top `limit` completed activities, most recent first, optionally scoped to a crop. */
   async getRecentActivities(cropId?: number, limit = 5): Promise<Activity[]> {
-    return this.fetchActivities({
+    return this.queryActivities({
       status: ['Completed'],
       sort: 'date_desc',
       limit,
@@ -274,17 +274,25 @@ export class ActivityService {
     });
   }
 
-  private async fetchActivities(opts: {
-    status: string[];
-    sort: 'date_asc' | 'date_desc';
-    limit: number;
+  /**
+   * Targeted `/api/v1/activities` query — every option is optional, so an
+   * empty call hits plain `GET /activities` (backend's unfiltered `list_all`
+   * path). Used by the dashboard's KPI/upcoming/recent methods above and by
+   * `ActivityListService` for the full activity-list view.
+   */
+  async queryActivities(opts: {
+    status?: string[];
+    sort?: 'date_asc' | 'date_desc';
+    limit?: number;
     cropId?: number;
   }): Promise<Activity[]> {
-    const params: string[] = opts.status.map((s) => `status=${encodeURIComponent(s)}`);
-    params.push(`sort=${opts.sort}`, `limit=${opts.limit}`);
+    const params: string[] = (opts.status ?? []).map((s) => `status=${encodeURIComponent(s)}`);
+    if (opts.sort) params.push(`sort=${opts.sort}`);
+    if (opts.limit !== undefined) params.push(`limit=${opts.limit}`);
     if (opts.cropId !== undefined) params.push(`crop_id=${opts.cropId}`);
 
-    const response = await this.http.get<{ items: unknown[] }>(`/activities?${params.join('&')}`);
+    const query = params.length ? `?${params.join('&')}` : '';
+    const response = await this.http.get<{ items: unknown[] }>(`/activities${query}`);
     return Promise.all(response.items.map((item) => this.activityMapper.fromBackend(item)));
   }
 }

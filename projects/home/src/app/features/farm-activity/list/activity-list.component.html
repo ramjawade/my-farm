@@ -9,8 +9,7 @@
       <div>
         <h2 class="mf-page-title">Activity Logs</h2>
         <p class="text-muted mb-0">
-          Showing {{ filteredActivities().length }} of
-          {{ activityService.activities().length }} recorded operations
+          Showing {{ filteredActivities().length }} of {{ activities().length }} recorded operations
         </p>
       </div>
 
@@ -99,20 +98,22 @@
         </select>
       </div>
 
-      <!-- Crop Filter -->
-      <div class="col-6 col-sm-4 col-md-2">
-        <label class="form-label">Linked Crop</label>
-        <select
-          class="form-select"
-          [value]="cropFilter()"
-          (change)="setCrop($any($event.target).value)"
-        >
-          <option value="All">All Crops</option>
-          @for (c of cropsList(); track c.id) {
-            <option [value]="c.id">{{ c.name }}</option>
-          }
-        </select>
-      </div>
+      <!-- Crop Filter — hidden when the route already scopes the list to a crop -->
+      @if (!isCropScoped()) {
+        <div class="col-6 col-sm-4 col-md-2">
+          <label class="form-label">Linked Crop</label>
+          <select
+            class="form-select"
+            [value]="cropFilter()"
+            (change)="setCrop($any($event.target).value)"
+          >
+            <option value="All">All Crops</option>
+            @for (c of cropsList(); track c.id) {
+              <option [value]="c.id">{{ c.name }}</option>
+            }
+          </select>
+        </div>
+      }
 
       <!-- Field Filter -->
       <div class="col-6 col-sm-4 col-md-2">
@@ -153,6 +154,8 @@
           (change)="setStatus($any($event.target).value)"
         >
           <option value="All">All Statuses</option>
+          <option value="Upcoming">Upcoming (Scheduled/Draft/In Progress)</option>
+          <option value="Scheduled">Scheduled</option>
           <option value="Draft">Draft</option>
           <option value="In Progress">In Progress</option>
           <option value="Completed">Completed</option>
@@ -211,7 +214,22 @@
   </section>
 
   <!-- Grid or List of Cards -->
-  @if (filteredActivities().length > 0) {
+  @if (loading()) {
+    <div class="d-flex flex-column align-items-center justify-content-center py-5 text-muted">
+      <div class="spinner-border text-success mb-3" role="status">
+        <span class="visually-hidden">Loading activities…</span>
+      </div>
+      <p class="mb-0">Loading activities…</p>
+    </div>
+  } @else if (error()) {
+    <div class="card shadow-sm border rounded bg-white p-5 text-center">
+      <i class="bi bi-exclamation-triangle text-danger fs-1 d-block mb-3"></i>
+      <h5 class="text-dark font-semibold">{{ error() }}</h5>
+      <button class="btn btn-outline-success mx-auto mt-2" (click)="reload()">
+        <i class="bi bi-arrow-clockwise me-2"></i>Try again
+      </button>
+    </div>
+  } @else if (filteredActivities().length > 0) {
     @if (viewMode() === 'grid') {
       <!-- Grid View -->
       <div class="row g-3">

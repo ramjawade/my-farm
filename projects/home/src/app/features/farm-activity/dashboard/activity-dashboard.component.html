@@ -98,7 +98,7 @@
           </h5>
           <a
             routerLink="/activities/list"
-            [queryParams]="{ status: 'Scheduled' }"
+            [queryParams]="{ status: 'Upcoming', sort: 'oldest' }"
             class="text-success small text-decoration-none fw-semibold link-hover"
           >
             View All
@@ -164,6 +164,7 @@
           </h5>
           <a
             routerLink="/activities/list"
+            [queryParams]="{ status: 'Completed', sort: 'latest' }"
             class="text-success small text-decoration-none fw-semibold link-hover"
           >
             View All
