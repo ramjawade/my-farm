@@ -145,12 +145,14 @@ export class AuthService {
       const activeId = Number(storedId);
 
       if (Number.isInteger(activeId) && activeId > 0 && expiry && Date.now() <= Number(expiry)) {
+        // Restore the API session token *before* the lookup below — it goes
+        // out as an authenticated `/me` request, so the token must already
+        // be set on HttpService or it 401s and this whole restore is read as
+        // "no session".
+        this.restoreSessionToken();
         const found = await this.registrationService.findById(activeId);
         if (found) {
           this.currentUserSignal.set(found);
-          // Restore the API session token so authenticated requests work
-          // across a page reload.
-          this.restoreSessionToken();
           return;
         }
       }
