@@ -46,14 +46,14 @@
     <!-- Buttons on the Right -->
     <div class="d-none d-md-flex gap-2 text-end">
       <a
-        routerLink="/activities"
+        [routerLink]="backLink()"
         class="btn btn-secondary d-inline-flex align-items-center gap-2 px-3 py-2 ms-auto"
         style="white-space: nowrap"
       >
         <i class="bi bi-arrow-left"></i> Back to Dashboard
       </a>
       <a
-        routerLink="/activities/create"
+        [routerLink]="createLink()"
         class="btn btn-success d-inline-flex align-items-center gap-2 px-3 py-2 ms-auto"
         style="white-space: nowrap"
       >
@@ -467,14 +467,14 @@
 
   <!-- Floating Action Buttons (FAB) for Mobile -->
   <a
-    routerLink="/activities/create"
+    [routerLink]="createLink()"
     class="btn btn-success fab shadow d-flex d-md-none align-items-center justify-content-center"
     title="Record New Activity"
   >
     <i class="bi bi-plus-lg"></i>
   </a>
   <a
-    routerLink="/activities"
+    [routerLink]="backLink()"
     class="btn btn-secondary fab fab-back shadow d-flex d-md-none align-items-center justify-content-center"
     title="Back to Dashboard"
   >
