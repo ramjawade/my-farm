@@ -2,11 +2,13 @@
  * Shared shapes used across every MyFarm API contract module.
  *
  * These interfaces are **hand-written and owned by the frontend** (issue
- * #49). They describe the wire shape the frontend expects from each
- * endpoint — field names are the backend's (snake_case), on purpose, so a
- * mapper reads as a 1:1 translation. Nothing here is generated from or
- * checked against the backend's OpenAPI spec; drift is caught by the
- * Playwright golden-path E2E (#44) and staging.
+ * #49) — field names are the backend's (snake_case), on purpose, so a
+ * mapper reads as a 1:1 translation. Unlike the other `*.contract.ts` files
+ * (generated from `projects/backend/openapi.json`, see #196), this one
+ * stays hand-written on purpose: `CursorPage`/`ReferencePage` describe a
+ * response envelope the list routers hand-build (`response_model=dict`),
+ * which has no schema for openapi-typescript to read. Drift here is caught
+ * by the Playwright golden-path E2E (#44) and staging, not build-time.
  */
 
 /** ISO-8601 timestamp string, e.g. `2026-09-09T08:00:00Z`. */

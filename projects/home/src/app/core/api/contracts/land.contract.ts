@@ -7,31 +7,19 @@
  *   DELETE /api/v1/lands/{id}   -> 204
  *
  * The polygon itself (`points` / `geoJson` on the client) has no backend
- * column yet — only `area_sq_m` round-trips. Hand-written, frontend-owned
- * (issue #49).
+ * column yet — only `area_sq_m` round-trips (see #193).
  */
 
-import { AuditFields } from './common.contract';
+/**
+ * GENERATED — do not edit by hand.
+ *
+ * Run `npm run generate:contracts` to update, after regenerating
+ * `projects/backend/openapi.json` (see projects/backend/scripts/export_openapi.py).
+ * Source schemas: LandRead, LandCreate, LandUpdate.
+ */
 
-export interface LandResponse extends AuditFields {
-  id: number;
-  farmer_id: number;
-  farm_id: number;
-  name: string;
-  area_sq_m: number | null;
-  notes: string | null;
-}
+import type { components } from './generated/openapi-schema';
 
-/** `LandCreate` — `farm_id` is the default farm resolved by `ApiStorageService`. */
-export interface LandCreateRequest {
-  name: string;
-  farm_id: number;
-  area_sq_m?: number | null;
-  notes?: string | null;
-}
-
-export interface LandUpdateRequest {
-  name?: string;
-  area_sq_m?: number | null;
-  notes?: string | null;
-}
+export type LandResponse = components['schemas']['LandRead'];
+export type LandCreateRequest = components['schemas']['LandCreate'];
+export type LandUpdateRequest = components['schemas']['LandUpdate'];

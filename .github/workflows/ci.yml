@@ -35,3 +35,11 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Verify generated API contracts are up to date (#196)
+        run: |
+          npm run generate:contracts
+          git diff --exit-code -- projects/home/src/app/core/api/contracts || {
+            echo "::error::core/api/contracts is stale relative to projects/backend/openapi.json. Run 'npm run generate:contracts' and commit the result."
+            exit 1
+          }
