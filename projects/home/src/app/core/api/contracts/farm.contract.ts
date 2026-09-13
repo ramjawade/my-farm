@@ -8,46 +8,19 @@
  *   DELETE /api/v1/farms/{id}    -> 204
  *
  * The Angular app has no multi-farm UI — `ApiStorageService` only
- * get-or-creates one default farm to satisfy `Land.farm_id`. Hand-written,
- * frontend-owned (issue #49).
+ * get-or-creates one default farm to satisfy `Land.farm_id`.
  */
 
-import { AuditFields } from './common.contract';
+/**
+ * GENERATED — do not edit by hand.
+ *
+ * Run `npm run generate:contracts` to update, after regenerating
+ * `projects/backend/openapi.json` (see projects/backend/scripts/export_openapi.py).
+ * Source schemas: FarmRead, FarmCreate, FarmUpdate.
+ */
 
-export interface FarmResponse extends AuditFields {
-  id: number;
-  farmer_id: number;
-  name: string;
-  area: number | null;
-  area_unit: string;
-  water_source: string | null;
-  irrigation_type: string | null;
-  farming_method: string | null;
-  location_type: string | null;
-  state: string | null;
-  district: string | null;
-  village: string | null;
-  pincode: string | null;
-  lat: number | null;
-  lng: number | null;
-  setup_completed: boolean;
-}
+import type { components } from './generated/openapi-schema';
 
-/** `FarmCreate` — `name` is the only field the app ever sends. */
-export interface FarmCreateRequest {
-  name: string;
-  area?: number | null;
-  area_unit?: string;
-  water_source?: string | null;
-  irrigation_type?: string | null;
-  farming_method?: string | null;
-  location_type?: string | null;
-  state?: string | null;
-  district?: string | null;
-  village?: string | null;
-  pincode?: string | null;
-  lat?: number | null;
-  lng?: number | null;
-}
-
-export type FarmUpdateRequest = Partial<FarmCreateRequest>;
+export type FarmResponse = components['schemas']['FarmRead'];
+export type FarmCreateRequest = components['schemas']['FarmCreate'];
+export type FarmUpdateRequest = components['schemas']['FarmUpdate'];

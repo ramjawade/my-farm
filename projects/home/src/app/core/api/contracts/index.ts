@@ -1,14 +1,14 @@
 /**
- * MyFarm API contracts — hand-written, frontend-owned request/response
- * shapes for every backend endpoint the app calls (issue #49).
+ * MyFarm API contracts — the frontend's request/response shapes for every
+ * backend endpoint the app calls.
  *
- * These are the frontend's statement of what it expects from each endpoint.
- * They are not generated from, nor checked against, the backend's OpenAPI
- * spec — a contract regression surfaces in the Playwright golden-path E2E
- * (#44) and on staging, not at build time.
- *
- * Wiring `ApiStorageService` / `SessionAuthService` / `ReferenceDataService`
- * onto these types is #50 (Phase 4).
+ * Most of these are GENERATED from the backend's OpenAPI schema
+ * (projects/backend/openapi.json) via `npm run generate:contracts` (issue
+ * #196). CI regenerates and diffs them on every push, so a backend schema
+ * change that isn't reflected here fails the build instead of drifting
+ * silently. `common.contract.ts` and `reference.contract.ts` are
+ * exceptions — hand-written, since their endpoints hand-build a response
+ * shape openapi-typescript can't see (see their own header comments).
  */
 
 export * from './common.contract';

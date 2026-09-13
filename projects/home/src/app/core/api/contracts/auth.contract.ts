@@ -7,27 +7,18 @@
  *   POST /api/v1/auth/register   -> SessionResponse   (409 if phone already taken)
  *
  * Auth is online-only — there is no offline path and no local fallback.
- * Hand-written, frontend-owned (issue #49).
  */
 
-import { FarmerResponse } from './farmer.contract';
+/**
+ * GENERATED — do not edit by hand.
+ *
+ * Run `npm run generate:contracts` to update, after regenerating
+ * `projects/backend/openapi.json` (see projects/backend/scripts/export_openapi.py).
+ * Source schemas: SessionRequest, RegisterRequest, SessionResponse.
+ */
 
-/** `SessionRequest` — body of `POST /auth/session`. */
-export interface SessionRequest {
-  phone: string;
-  pin: string;
-}
+import type { components } from './generated/openapi-schema';
 
-/** `RegisterRequest` — body of `POST /auth/register`. */
-export interface RegisterRequest {
-  phone: string;
-  pin: string;
-  full_name: string;
-  preferred_language?: string;
-}
-
-/** `SessionResponse` — a freshly issued session JWT plus its farmer. */
-export interface SessionResponse {
-  token: string;
-  farmer: FarmerResponse;
-}
+export type SessionRequest = components['schemas']['SessionRequest'];
+export type RegisterRequest = components['schemas']['RegisterRequest'];
+export type SessionResponse = components['schemas']['SessionResponse'];

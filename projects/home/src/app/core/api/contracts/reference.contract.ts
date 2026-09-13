@@ -8,7 +8,9 @@
  *
  * All three share the `{ id, name }` item shape. `ReferenceDataService`
  * resolves names <-> ids in both directions. Hand-written, frontend-owned
- * (issue #49).
+ * (issue #49) — like `common.contract.ts`, kept out of the #196 generator
+ * because these endpoints hand-build their `{ items, cursor, has_more }`
+ * envelope rather than returning a schema-backed `response_model`.
  */
 
 export interface ReferenceItem {

@@ -8,46 +8,19 @@
  *
  * `crop_catalog_id` is an FK into the seeded reference table —
  * `ReferenceDataService` resolves it to/from the client's free-text
- * `cropType`. Hand-written, frontend-owned (issue #49).
+ * `cropType`.
  */
 
-import { AuditFields, IsoDate } from './common.contract';
+/**
+ * GENERATED — do not edit by hand.
+ *
+ * Run `npm run generate:contracts` to update, after regenerating
+ * `projects/backend/openapi.json` (see projects/backend/scripts/export_openapi.py).
+ * Source schemas: CropRead, CropCreate, CropUpdate.
+ */
 
-export interface CropResponse extends AuditFields {
-  id: number;
-  farmer_id: number;
-  land_id: number;
-  crop_catalog_id: number;
-  label: string | null;
-  area: number | null;
-  area_unit: string;
-  season: string | null;
-  sowing_date: IsoDate | null;
-  current_stage: string | null;
-  status: string;
-  expected_harvest_date: IsoDate | null;
-}
+import type { components } from './generated/openapi-schema';
 
-export interface CropCreateRequest {
-  land_id: number;
-  crop_catalog_id: number;
-  label?: string | null;
-  area?: number | null;
-  area_unit?: string;
-  season?: string | null;
-  sowing_date?: IsoDate | null;
-  current_stage?: string | null;
-  status?: string;
-  expected_harvest_date?: IsoDate | null;
-}
-
-export interface CropUpdateRequest {
-  label?: string | null;
-  area?: number | null;
-  area_unit?: string;
-  season?: string | null;
-  sowing_date?: IsoDate | null;
-  current_stage?: string | null;
-  status?: string;
-  expected_harvest_date?: IsoDate | null;
-}
+export type CropResponse = components['schemas']['CropRead'];
+export type CropCreateRequest = components['schemas']['CropCreate'];
+export type CropUpdateRequest = components['schemas']['CropUpdate'];

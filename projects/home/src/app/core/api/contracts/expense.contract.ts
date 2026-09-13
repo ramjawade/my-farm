@@ -8,44 +8,18 @@
  *
  * The owning `activity_id` is always taken from the URL path; the create
  * body doesn't carry it. `expense_category_id` is a reference-table FK.
- * Numeric fields are `Decimal` on the backend, serialised as JSON numbers.
- * Hand-written, frontend-owned (issue #49).
  */
 
-import { AuditFields } from './common.contract';
+/**
+ * GENERATED — do not edit by hand.
+ *
+ * Run `npm run generate:contracts` to update, after regenerating
+ * `projects/backend/openapi.json` (see projects/backend/scripts/export_openapi.py).
+ * Source schemas: ActivityExpenseRead, ActivityExpenseCreate, ActivityExpenseUpdate.
+ */
 
-export interface ExpenseResponse extends AuditFields {
-  id: number;
-  activity_id: number;
-  expense_category_id: number;
-  item_id: string | null;
-  resource_id: string | null;
-  quantity: number | null;
-  unit: string | null;
-  rate: number | null;
-  amount: number | null;
-  remarks: string | null;
-}
+import type { components } from './generated/openapi-schema';
 
-/** `ActivityExpenseCreate` — no `activity_id` (it's in the path). */
-export interface ExpenseCreateRequest {
-  expense_category_id: number;
-  item_id?: string | null;
-  resource_id?: string | null;
-  quantity?: number | null;
-  unit?: string | null;
-  rate?: number | null;
-  amount?: number | null;
-  remarks?: string | null;
-}
-
-export interface ExpenseUpdateRequest {
-  expense_category_id?: number;
-  item_id?: string | null;
-  resource_id?: string | null;
-  quantity?: number | null;
-  unit?: string | null;
-  rate?: number | null;
-  amount?: number | null;
-  remarks?: string | null;
-}
+export type ExpenseResponse = components['schemas']['ActivityExpenseRead'];
+export type ExpenseCreateRequest = components['schemas']['ActivityExpenseCreate'];
+export type ExpenseUpdateRequest = components['schemas']['ActivityExpenseUpdate'];

@@ -4,25 +4,23 @@
  *   GET    /api/v1/activities/{aid}/attachments         -> CursorPage<AttachmentResponse>
  *   POST   /api/v1/activities/{aid}/attachments         -> AttachmentResponse   (201)
  *   DELETE /api/v1/activities/{aid}/attachments/{id}    -> 204
+ *   POST   /api/v1/activities/{aid}/attachments/upload-url -> AttachmentUploadResponse
  *
  * Not called by the frontend yet — the R2 upload flow is Stage 7 / a later
  * phase. Included here so that work starts from a written contract.
- * Hand-written, frontend-owned (issue #49).
  */
 
-import { AuditFields } from './common.contract';
+/**
+ * GENERATED — do not edit by hand.
+ *
+ * Run `npm run generate:contracts` to update, after regenerating
+ * `projects/backend/openapi.json` (see projects/backend/scripts/export_openapi.py).
+ * Source schemas: ActivityAttachmentRead, ActivityAttachmentCreate, ActivityAttachmentUploadRequest, ActivityAttachmentUploadResponse.
+ */
 
-export interface AttachmentResponse extends AuditFields {
-  id: number;
-  activity_id: number;
-  storage_key: string;
-  content_type: string | null;
-  size_bytes: number | null;
-}
+import type { components } from './generated/openapi-schema';
 
-/** `ActivityAttachmentCreate` — no `activity_id` (it's in the path). */
-export interface AttachmentCreateRequest {
-  storage_key: string;
-  content_type?: string | null;
-  size_bytes?: number | null;
-}
+export type AttachmentResponse = components['schemas']['ActivityAttachmentRead'];
+export type AttachmentCreateRequest = components['schemas']['ActivityAttachmentCreate'];
+export type AttachmentUploadRequest = components['schemas']['ActivityAttachmentUploadRequest'];
+export type AttachmentUploadResponse = components['schemas']['ActivityAttachmentUploadResponse'];

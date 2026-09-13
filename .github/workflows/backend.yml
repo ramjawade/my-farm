@@ -61,10 +61,18 @@ jobs:
         run: ruff check .
 
       - name: mypy (strict)
-        run: mypy myfarm_api tests
+        run: mypy myfarm_api tests scripts
 
       - name: pytest
         run: pytest -q
+
+      - name: Verify OpenAPI contract is up to date (#196)
+        run: |
+          python scripts/export_openapi.py
+          git diff --exit-code openapi.json || {
+            echo "::error::openapi.json is stale — a Pydantic schema changed without regenerating it. Run 'python scripts/export_openapi.py' from projects/backend/ and commit the result, then run 'npm run generate:contracts' from the repo root."
+            exit 1
+          }
 
   build-image:
     runs-on: ubuntu-latest
