@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { ActivityMapperService } from './activity-mapper.service';
-import { ReferenceDataService } from '../../../core/api/reference-data.service';
+import { ReferenceDataService } from './reference-data.service';
 
 describe('ActivityMapperService', () => {
   let service: ActivityMapperService;

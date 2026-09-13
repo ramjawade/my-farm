@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpService } from '../../../core/http/http.service';
-import { ActivityMapperService } from './activity-mapper.service';
+import { ActivityMapperService } from '../../../core/api/activity-mapper.service';
 import {
   Activity,
   ActivityDetailSummary,

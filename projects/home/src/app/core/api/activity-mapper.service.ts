@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { ReferenceDataService } from '../../../core/api/reference-data.service';
-import { Activity, ActivityExpense } from '../../activity/activity.models';
+import { ReferenceDataService } from './reference-data.service';
+import { Activity, ActivityExpense } from '../../features/activity/activity.models';
 
 function dateStringToTimestamp(value: string | null | undefined): number | undefined {
   if (!value) return undefined;
@@ -14,9 +14,13 @@ function timestampToDateString(value: number | undefined): string | undefined {
 }
 
 /**
- * Wire-format mapping shared by `ActivityDetailService` and
- * `ActivityExpensesService` — kept in one place so both services resolve
- * `activity_type_id`/`expense_category_id` the same way, via `ReferenceDataService`.
+ * Canonical Activity/ActivityExpense wire-format mapping — `activity_type_id`
+ * (backend FK) versus `type`, and `expense_category_id` versus `category`,
+ * both need `ReferenceDataService`, so this can't be a plain pure function.
+ * Every activity/expense read or write in the app goes through this one
+ * mapper (ApiStorageService's signal-cache load, ActivityService's targeted
+ * dashboard queries, and ActivityDetailService/ActivityExpensesService's
+ * per-activity detail queries) instead of each maintaining its own copy.
  */
 @Injectable({ providedIn: 'root' })
 export class ActivityMapperService {

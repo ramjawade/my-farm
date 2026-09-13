@@ -9,7 +9,7 @@ import {
 import { IStorageService } from '../../core/storage/storage.interface';
 import { AuthService } from '../../core/auth/auth.service';
 import { HttpService } from '../../core/http/http.service';
-import { ActivityMapperService } from './activity-mapper.service';
+import { ActivityMapperService } from '../../core/api/activity-mapper.service';
 
 @Injectable({
   providedIn: 'root',
