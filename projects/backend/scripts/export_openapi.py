@@ -21,7 +21,14 @@ OUTPUT_PATH = Path(__file__).resolve().parent.parent / "openapi.json"
 
 def main() -> None:
     schema = app.openapi()
-    OUTPUT_PATH.write_text(json.dumps(schema, indent=2, sort_keys=True) + "\n")
+    # ensure_ascii=False: keep literal UTF-8 (the docstrings use real em
+    # dashes/arrows) instead of \uXXXX escapes, so the diff this produces
+    # against the committed file is a real content change, not an encoding
+    # artifact.
+    OUTPUT_PATH.write_text(
+        json.dumps(schema, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
     print(f"Wrote {OUTPUT_PATH}")
 
 
