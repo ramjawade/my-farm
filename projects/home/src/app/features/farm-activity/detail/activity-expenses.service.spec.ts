@@ -3,7 +3,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivityExpensesService } from './activity-expenses.service';
-import { ActivityMapperService } from './activity-mapper.service';
+import { ActivityMapperService } from '../../../core/api/activity-mapper.service';
 import { EnvironmentService } from '../../../core/services/environment.service';
 import { ActivityExpense } from '../../activity/activity.models';
 

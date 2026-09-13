@@ -7,32 +7,17 @@ import {
   NewActivity,
   NewActivityExpense,
 } from '../../features/activity/activity.models';
-import {
-  CropEntity,
-  CropStage,
-  CropStatus,
-  NewCrop,
-} from '../../features/crop-timeline/crop-timeline.models';
+import { CropEntity, NewCrop } from '../../features/crop-timeline/crop-timeline.models';
+import { CropMapperService } from '../../features/crop-timeline/crop-mapper.service';
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
 import { SavedFarm, FarmAreaResult, NewSavedFarm } from '../../map/models/map.models';
 import { WeatherData } from '../weather/weather.models';
-import { ReferenceDataService } from './reference-data.service';
+import { ActivityMapperService } from './activity-mapper.service';
 import { FarmerResponse, FarmerUpdateRequest } from './contracts';
 
 const SQ_M_PER_HECTARE = 10_000;
 const SQ_M_PER_ACRE = 4_046.8564224;
 const EMPTY_AREA: FarmAreaResult = { squareMeters: 0, hectares: 0, acres: 0 };
-
-function dateStringToTimestamp(value: string | null | undefined): number | undefined {
-  if (!value) return undefined;
-  const ts = new Date(value).getTime();
-  return Number.isNaN(ts) ? undefined : ts;
-}
-
-function timestampToDateString(value: number | undefined): string | undefined {
-  if (value === undefined) return undefined;
-  return new Date(value).toISOString().slice(0, 10);
-}
 
 /**
  * Remote API implementation of IStorageService.
@@ -41,16 +26,19 @@ function timestampToDateString(value: number | undefined): string | undefined {
  *
  * Every method transforms between the Angular model (SavedFarm, Activity,
  * CropEntity, ActivityExpense) and the backend schema (Land, Activity,
- * Crop, ActivityExpense) — see the mappers below. Three deliberate gaps,
- * all documented at their mapper:
- *  - `SavedFarm.points` / `.geoJson` (the drawn polygon) are now persisted
- *    to the backend on update.
+ * Crop, ActivityExpense). Activity/ActivityExpense mapping delegates to
+ * `ActivityMapperService` and Crop mapping to `CropMapperService` — the
+ * canonical, shared copies also used by the targeted-fetch services
+ * (ActivityService, ActivityDetailService, crop-timeline) so the
+ * `crop_catalog_id`/`activity_type_id`/`expense_category_id` <->
+ * name resolution (via ReferenceDataService) lives in one place. Only Land
+ * and Farmer mapping stay local here — neither is duplicated elsewhere.
+ * Two deliberate gaps:
  *  - `Activity.attachments` (base64 photos) aren't sent — that's Stage 7's
  *    R2 upload job.
- *  - `Activity.type` / `CropEntity.cropType` / `ActivityExpense.category`
- *    are free-text unions on the client but FK ids on the backend;
- *    ReferenceDataService resolves between the two by exact name match
- *    against the seeded reference tables.
+ *  - `SavedFarm.points`/`.geoJson` (the drawn polygon) round-trip through
+ *    `saveFarm`'s in-memory merge only, not through a `GET /lands` re-fetch
+ *    (see #193).
  */
 @Injectable({ providedIn: 'root' })
 export class ApiStorageService extends IStorageService {
@@ -59,7 +47,8 @@ export class ApiStorageService extends IStorageService {
 
   constructor(
     private httpService: HttpService,
-    private referenceData: ReferenceDataService,
+    private activityMapper: ActivityMapperService,
+    private cropMapper: CropMapperService,
   ) {
     super();
   }
@@ -106,7 +95,7 @@ export class ApiStorageService extends IStorageService {
   async getActivities(userId: number): Promise<Activity[]> {
     try {
       const items = await this.fetchList<unknown>('/activities');
-      return await Promise.all(items.map((item) => this.mapFromBackendActivity(item)));
+      return await Promise.all(items.map((item) => this.activityMapper.fromBackend(item)));
     } catch (error) {
       console.error('Failed to get activities:', error);
       return [];
@@ -115,10 +104,10 @@ export class ApiStorageService extends IStorageService {
 
   async saveActivity(userId: number, activity: NewActivity): Promise<Activity> {
     return this.enqueueWrite(async () => {
-      const payload = await this.mapToBackendActivity(activity);
+      const payload = await this.activityMapper.toBackend(activity);
       try {
         const response = await this.httpService.post<unknown>('/activities', payload);
-        return await this.mapFromBackendActivity(response);
+        return await this.activityMapper.fromBackend(response);
       } catch (error) {
         console.error('Failed to save activity:', error);
         throw error;
@@ -128,7 +117,7 @@ export class ApiStorageService extends IStorageService {
 
   async updateActivity(userId: number, id: number, updates: Partial<Activity>): Promise<void> {
     return this.enqueueWrite(async () => {
-      const payload = await this.mapToBackendActivity(updates);
+      const payload = await this.activityMapper.toBackend(updates);
       try {
         await this.httpService.patch(`/activities/${id}`, payload);
       } catch (error) {
@@ -162,7 +151,7 @@ export class ApiStorageService extends IStorageService {
   async syncExpensesForActivity(userId: number, activityId: number): Promise<ActivityExpense[]> {
     try {
       const items = await this.fetchList<unknown>(`/activities/${activityId}/expenses`);
-      return await Promise.all(items.map((item) => this.mapFromBackendExpense(item)));
+      return await Promise.all(items.map((item) => this.activityMapper.expenseFromBackend(item)));
     } catch (error) {
       console.error('Failed to sync expenses for activity:', error);
       return [];
@@ -176,7 +165,7 @@ export class ApiStorageService extends IStorageService {
   async getExpenses(userId: number): Promise<ActivityExpense[]> {
     try {
       const items = await this.fetchList<unknown>('/activities/expenses');
-      return await Promise.all(items.map((item) => this.mapFromBackendExpense(item)));
+      return await Promise.all(items.map((item) => this.activityMapper.expenseFromBackend(item)));
     } catch (error) {
       console.error('Failed to get expenses:', error);
       return [];
@@ -185,13 +174,13 @@ export class ApiStorageService extends IStorageService {
 
   async saveExpense(userId: number, expense: NewActivityExpense): Promise<ActivityExpense> {
     return this.enqueueWrite(async () => {
-      const payload = await this.mapToBackendExpense(expense);
+      const payload = await this.activityMapper.expenseToBackend(expense);
       try {
         const response = await this.httpService.post<unknown>(
           `/activities/${expense.activityId}/expenses`,
           payload,
         );
-        return await this.mapFromBackendExpense(response);
+        return await this.activityMapper.expenseFromBackend(response);
       } catch (error) {
         console.error('Failed to save expense:', error);
         throw error;
@@ -209,7 +198,7 @@ export class ApiStorageService extends IStorageService {
       if (!activityId) {
         throw new Error(`updateExpense: could not resolve the owning activity for expense ${id}`);
       }
-      const payload = await this.mapToBackendExpense(updates);
+      const payload = await this.activityMapper.expenseToBackend(updates);
       try {
         await this.httpService.patch(`/activities/${activityId}/expenses/${id}`, payload);
       } catch (error) {
@@ -252,7 +241,7 @@ export class ApiStorageService extends IStorageService {
   async getCrops(userId: number): Promise<CropEntity[]> {
     try {
       const items = await this.fetchList<unknown>('/crops');
-      return await Promise.all(items.map((item) => this.mapFromBackendCrop(item)));
+      return await Promise.all(items.map((item) => this.cropMapper.fromBackend(item)));
     } catch (error) {
       console.error('Failed to get crops:', error);
       return [];
@@ -261,10 +250,10 @@ export class ApiStorageService extends IStorageService {
 
   async saveCrop(userId: number, crop: NewCrop): Promise<CropEntity> {
     return this.enqueueWrite(async () => {
-      const payload = await this.mapToBackendCrop(crop);
+      const payload = await this.cropMapper.toBackend(crop);
       try {
         const response = await this.httpService.post<unknown>('/crops', payload);
-        return await this.mapFromBackendCrop(response);
+        return await this.cropMapper.fromBackend(response);
       } catch (error) {
         console.error('Failed to save crop:', error);
         throw error;
@@ -274,7 +263,7 @@ export class ApiStorageService extends IStorageService {
 
   async updateCrop(userId: number, id: number, updates: Partial<CropEntity>): Promise<void> {
     return this.enqueueWrite(async () => {
-      const payload = await this.mapToBackendCrop(updates);
+      const payload = await this.cropMapper.toBackend(updates);
       try {
         await this.httpService.patch(`/crops/${id}`, payload);
       } catch (error) {
@@ -407,118 +396,12 @@ export class ApiStorageService extends IStorageService {
 
   // ============================================================================
   // Mappers: Angular models <-> backend schema
+  //
+  // Activity/ActivityExpense delegate to ActivityMapperService and Crop to
+  // CropMapperService (both `providedIn: 'root'`, shared with the targeted-
+  // fetch services) — only Land and Farmer mapping live here, since neither
+  // is duplicated elsewhere.
   // ============================================================================
-
-  async mapFromBackendActivity(item: any): Promise<Activity> {
-    return {
-      id: item.id,
-      parentActivityId: item.parent_activity_id ?? undefined,
-      date: dateStringToTimestamp(item.date),
-      season: item.season ?? undefined,
-      cropId: item.crop_id ?? undefined,
-      fieldId: item.land_id ?? undefined,
-      type: (await this.referenceData.activityTypeNameForId(
-        item.activity_type_id,
-      )) as Activity['type'],
-      customActivityName: item.custom_activity_name ?? undefined,
-      status: item.status,
-      notes: item.notes ?? undefined,
-      metadata: item.activity_meta ?? undefined,
-      createdAt: new Date(item.created_at).getTime(),
-      updatedAt: new Date(item.updated_at).getTime(),
-    };
-  }
-
-  async mapToBackendActivity(activity: Partial<Activity>): Promise<Record<string, unknown>> {
-    return {
-      activity_type_id:
-        activity.type !== undefined
-          ? await this.referenceData.activityTypeIdForName(activity.type)
-          : undefined,
-      crop_id: activity.cropId,
-      land_id: activity.fieldId,
-      // mapFromBackendActivity has always read this back; not sending it
-      // meant a sub-activity's parent link was silently dropped on write.
-      parent_activity_id: activity.parentActivityId,
-      custom_activity_name: activity.customActivityName,
-      date: timestampToDateString(activity.date),
-      season: activity.season,
-      status: activity.status,
-      notes: activity.notes,
-      activity_meta: activity.metadata,
-    };
-  }
-
-  async mapFromBackendExpense(item: any): Promise<ActivityExpense> {
-    return {
-      id: item.id,
-      activityId: item.activity_id,
-      category: await this.referenceData.expenseCategoryNameForId(item.expense_category_id),
-      itemId: item.item_id ?? undefined,
-      resourceId: item.resource_id ?? undefined,
-      quantity:
-        item.quantity !== null && item.quantity !== undefined ? Number(item.quantity) : undefined,
-      unit: item.unit ?? undefined,
-      rate: item.rate !== null && item.rate !== undefined ? Number(item.rate) : undefined,
-      amount: Number(item.amount ?? 0),
-      remarks: item.remarks ?? undefined,
-      createdAt: new Date(item.created_at).getTime(),
-    };
-  }
-
-  async mapToBackendExpense(expense: Partial<ActivityExpense>): Promise<Record<string, unknown>> {
-    return {
-      expense_category_id:
-        expense.category !== undefined
-          ? await this.referenceData.expenseCategoryIdForName(expense.category)
-          : undefined,
-      item_id: expense.itemId,
-      resource_id: expense.resourceId,
-      quantity: expense.quantity,
-      unit: expense.unit,
-      rate: expense.rate,
-      amount: expense.amount,
-      remarks: expense.remarks,
-    };
-  }
-
-  async mapFromBackendCrop(item: any): Promise<CropEntity> {
-    return {
-      id: item.id,
-      fieldId: item.land_id,
-      name: item.label ?? '',
-      cropType: await this.referenceData.cropNameForId(item.crop_catalog_id),
-      area: item.area !== null && item.area !== undefined ? Number(item.area) : 0,
-      areaUnit: item.area_unit === 'hectares' ? 'hectares' : 'acres',
-      season: item.season ?? undefined,
-      sowingDate: dateStringToTimestamp(item.sowing_date),
-      currentStage: (item.current_stage ?? 'Land Preparation') as CropStage,
-      status: this.normalizeCropStatus(item.status),
-      expectedHarvestDate: dateStringToTimestamp(item.expected_harvest_date),
-    };
-  }
-
-  private normalizeCropStatus(status: unknown): CropStatus {
-    return status === 'Completed' || status === 'Archived' ? status : 'Active';
-  }
-
-  async mapToBackendCrop(crop: Partial<CropEntity>): Promise<Record<string, unknown>> {
-    return {
-      land_id: crop.fieldId,
-      crop_catalog_id:
-        crop.cropType !== undefined
-          ? await this.referenceData.cropCatalogIdForName(crop.cropType)
-          : undefined,
-      label: crop.name,
-      area: crop.area,
-      area_unit: crop.areaUnit,
-      season: crop.season,
-      sowing_date: timestampToDateString(crop.sowingDate),
-      current_stage: crop.currentStage,
-      status: crop.status,
-      expected_harvest_date: timestampToDateString(crop.expectedHarvestDate),
-    };
-  }
 
   mapFromBackendLand(item: any): SavedFarm {
     const squareMeters =
