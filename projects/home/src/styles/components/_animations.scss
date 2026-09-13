@@ -1,5 +1,10 @@
 // 1. Shared Entrance Keyframe Animations
 
+// The `to` state intentionally uses `transform: none` rather than an
+// identity translate/scale: with `animation: ... forwards`, any non-`none`
+// transform left on an ancestor creates a new containing block for
+// descendant `position: fixed` elements (e.g. .fab), stranding them off the
+// viewport. `none` reaches the same visual end state without that side effect.
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -7,7 +12,7 @@
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 }
 
@@ -18,7 +23,7 @@
   }
   to {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: none;
   }
 }
 

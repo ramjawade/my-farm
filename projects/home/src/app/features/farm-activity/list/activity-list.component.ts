@@ -75,6 +75,18 @@ export class ActivityListComponent implements OnInit {
 
   readonly isCropScoped = computed(() => this.cropIdParam() !== null);
 
+  // Keep "Back"/"Record New Activity" scoped to the crop when the list is
+  // rendered under /crops/:cropId/list, instead of always dropping to the
+  // farm-wide routes and losing the crop/field context.
+  readonly backLink = computed<(string | number)[]>(() => {
+    const cropId = this.cropIdParam();
+    return cropId !== null ? ['/crops', cropId] : ['/activities'];
+  });
+  readonly createLink = computed<(string | number)[]>(() => {
+    const cropId = this.cropIdParam();
+    return cropId !== null ? ['/crops', cropId, 'create'] : ['/activities/create'];
+  });
+
   readonly hasActiveFilters = computed(() => {
     return (
       this.seasonFilter() !== 'All' ||

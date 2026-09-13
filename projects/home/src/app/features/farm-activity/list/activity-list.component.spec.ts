@@ -124,6 +124,25 @@ describe('ActivityListComponent', () => {
     expect(component.isCropScoped()).toBeTrue();
   });
 
+  it('keeps Back/Record New Activity links scoped to the crop when crop-scoped', async () => {
+    paramMap = new BehaviorSubject(convertToParamMap({ cropId: '7' }));
+    setup();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(component.backLink()).toEqual(['/crops', 7]);
+    expect(component.createLink()).toEqual(['/crops', 7, 'create']);
+  });
+
+  it('points Back/Record New Activity links at the farm-wide routes when not crop-scoped', async () => {
+    setup();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(component.backLink()).toEqual(['/activities']);
+    expect(component.createLink()).toEqual(['/activities/create']);
+  });
+
   it('shows an error state with retry when the load fails', async () => {
     setup();
     fixture.detectChanges();
