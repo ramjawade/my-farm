@@ -469,7 +469,17 @@
     "toggleMenu": "Toggle navigation menu",
     "myProfile": "My Profile",
     "settings": "Settings",
-    "logout": "Logout"
+    "logout": "Logout",
+    "comingSoon": "Coming soon"
+  },
+  "sidebar": {
+    "home": "Home",
+    "lands": "Lands",
+    "crops": "Crops",
+    "activities": "Activities",
+    "weather": "Weather",
+    "reports": "Reports",
+    "profile": "Profile"
   },
   "onboardingChecklist": {
     "title": "Set up your farm",

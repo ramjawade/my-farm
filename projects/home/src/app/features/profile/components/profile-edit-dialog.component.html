@@ -102,7 +102,9 @@
                   (ngModelChange)="editPreferredLanguage.set($event)"
                 >
                   @for (lang of languages; track lang.value) {
-                    <option [value]="lang.value">{{ lang.label }}</option>
+                    <option [value]="lang.value" [disabled]="!lang.supported">
+                      {{ lang.label }}{{ lang.supported ? '' : ' (Coming soon)' }}
+                    </option>
                   }
                 </select>
               </div>
