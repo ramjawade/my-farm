@@ -1,11 +1,12 @@
 import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 import { WorkflowStateService } from '../../../core/workflow/workflow-state.service';
 
 @Component({
   selector: 'app-workflow-progress-bar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   template: `
     <div class="workflow-progress-container">
       @if (workflowService.isFirstTime()) {
@@ -13,7 +14,7 @@ import { WorkflowStateService } from '../../../core/workflow/workflow-state.serv
           <div class="progress-header">
             <span class="progress-label">
               <i class="bi bi-rocket-fill me-2 text-success"></i>
-              Getting Started: Step {{ currentStepNumber() }} of 6
+              {{ 'workflowProgressBar.stepLabel' | translate: { step: currentStepNumber() } }}
             </span>
             <span class="progress-percent">{{ workflowService.progressPercent() }}%</span>
           </div>

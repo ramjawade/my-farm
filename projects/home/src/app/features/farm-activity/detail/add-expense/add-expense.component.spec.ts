@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { AddExpenseComponent } from './add-expense.component';
 import { ActivityExpensesService } from '../activity-expenses.service';
 import { ReferenceDataService } from '../../../../core/api/reference-data.service';
@@ -30,6 +31,7 @@ describe('AddExpenseComponent', () => {
       imports: [AddExpenseComponent],
       providers: [
         provideZonelessChangeDetection(),
+        provideTranslateService(),
         { provide: ActivityExpensesService, useValue: { addExpense: addExpenseSpy } },
         {
           provide: ReferenceDataService,

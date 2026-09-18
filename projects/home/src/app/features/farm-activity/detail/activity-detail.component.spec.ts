@@ -3,6 +3,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
+import { provideTranslateService } from '@ngx-translate/core';
 import { ActivityDetailComponent } from './activity-detail.component';
 import { ActivityDetailService } from './activity-detail.service';
 import { ActivityExpensesService } from './activity-expenses.service';
@@ -56,6 +57,7 @@ describe('ActivityDetailComponent', () => {
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideRouter([]),
+        provideTranslateService(),
         { provide: IStorageService, useClass: InMemoryStorageService },
         {
           provide: ActivityDetailService,

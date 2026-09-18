@@ -9,6 +9,7 @@ import {
   catchError,
   takeUntil,
 } from 'rxjs/operators';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { MapSearchService } from './map-search.service';
 import { MapSearchResult } from '../../models/map.models';
 
@@ -18,11 +19,13 @@ const SEARCH_DEBOUNCE_MS = 400;
 @Component({
   standalone: true,
   selector: 'app-map-search',
+  imports: [TranslatePipe],
   templateUrl: './map-search.component.html',
   styleUrl: './map-search.component.scss',
 })
 export class MapSearchComponent implements OnDestroy {
   private readonly geocoding = inject(MapSearchService);
+  private readonly translate = inject(TranslateService);
   private readonly searchInput$ = new Subject<string>();
   private readonly destroy$ = new Subject<void>();
 
@@ -60,7 +63,7 @@ export class MapSearchComponent implements OnDestroy {
         switchMap((query) =>
           this.geocoding.search(query.trim()).pipe(
             catchError(() => {
-              this.searchError.set('Search failed. Try again.');
+              this.searchError.set(this.translate.instant('mapSearch.searchFailed'));
               return of([] as MapSearchResult[]);
             }),
           ),
@@ -71,7 +74,7 @@ export class MapSearchComponent implements OnDestroy {
         this.searchResults.set(results);
         this.searchLoading.set(false);
         if (results.length === 0) {
-          this.searchError.set('No matching locations. Try a more specific address.');
+          this.searchError.set(this.translate.instant('mapSearch.noMatchingLocations'));
         } else {
           this.searchError.set(null);
         }
@@ -114,7 +117,9 @@ export class MapSearchComponent implements OnDestroy {
   searchNow(): void {
     const query = this.searchQuery().trim();
     if (query.length < MIN_SEARCH_LENGTH) {
-      this.searchError.set(`Enter at least ${MIN_SEARCH_LENGTH} characters.`);
+      this.searchError.set(
+        this.translate.instant('mapSearch.minChars', { count: MIN_SEARCH_LENGTH }),
+      );
       this.showResults.set(true);
       return;
     }
@@ -128,7 +133,7 @@ export class MapSearchComponent implements OnDestroy {
       error: () => {
         this.searchLoading.set(false);
         this.searchResults.set([]);
-        this.searchError.set('Search failed. Try again.');
+        this.searchError.set(this.translate.instant('mapSearch.searchFailed'));
       },
     });
   }
@@ -156,7 +161,7 @@ export class MapSearchComponent implements OnDestroy {
     this.searchResults.set(results);
     this.searchLoading.set(false);
     if (results.length === 0) {
-      this.searchError.set('No matching locations. Try a more specific address.');
+      this.searchError.set(this.translate.instant('mapSearch.noMatchingLocations'));
     } else {
       this.searchError.set(null);
     }

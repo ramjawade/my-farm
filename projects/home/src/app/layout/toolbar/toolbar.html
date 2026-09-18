@@ -10,7 +10,7 @@
           [class.text-success]="menuExpanded()"
           [class.text-secondary]="!menuExpanded()"
           style="width: 38px; height: 38px; font-size: 1.2rem"
-          aria-label="Toggle navigation menu"
+          [attr.aria-label]="'toolbar.toggleMenu' | translate"
           [attr.aria-expanded]="menuExpanded()"
           (click)="onMenuClick()"
         >
@@ -28,20 +28,47 @@
 
       <!-- Right side: Language Dropdown and User Avatar -->
       <div class="d-flex align-items-center gap-2 gap-sm-3 flex-shrink-0">
-        <!-- Language switcher: not wired to any real translation yet (#141)
-             -- disabled and labelled honestly rather than presented as a
-             working picker. -->
+        <!-- Language switcher: writes to the same preferredLanguage field
+             the profile edit dialog uses, so both stay in sync (#208). -->
         <div class="position-relative">
           <button
             type="button"
             class="btn btn-sm bg-white border border-light-subtle rounded-pill px-2 px-sm-3 py-1 text-xs fw-semibold text-secondary d-flex align-items-center gap-1 gap-sm-1.5 shadow-xs"
-            style="height: 32px; opacity: 0.6; cursor: not-allowed"
-            disabled
-            title="Language switching is coming soon"
+            style="height: 32px"
+            (click)="toggleLanguageDropdown(); $event.stopPropagation()"
           >
             <i class="bi bi-translate text-success"></i>
-            <span class="d-none d-sm-inline">Coming soon</span>
+            <span class="d-none d-sm-inline">{{ currentLanguageLabel() }}</span>
           </button>
+
+          @if (languageDropdownOpen()) {
+            <div
+              class="position-absolute end-0 mt-2 bg-white rounded-3 shadow-lg border border-light-subtle py-2 overflow-hidden animate-fade-in"
+              style="
+                min-width: 200px;
+                max-height: 320px;
+                overflow-y: auto;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+                z-index: 1060;
+              "
+            >
+              @for (lang of languages; track lang.value) {
+                <button
+                  type="button"
+                  class="dropdown-item w-100 text-start px-3 py-2 fw-semibold text-xs border-0 bg-transparent transition hover-bg-light d-flex align-items-center gap-2"
+                  [class.text-success]="currentUser()?.preferredLanguage === lang.value"
+                  (click)="selectLanguage(lang.value)"
+                >
+                  @if (currentUser()?.preferredLanguage === lang.value) {
+                    <i class="bi bi-check-lg text-success"></i>
+                  } @else {
+                    <i class="bi" style="width: 1em"></i>
+                  }
+                  <span>{{ lang.label }}</span>
+                </button>
+              }
+            </div>
+          }
         </div>
 
         <!-- User Avatar Dropdown -->
@@ -82,14 +109,14 @@
                 class="dropdown-item w-100 text-start px-3 py-2 fw-semibold text-xs border-0 bg-transparent transition hover-bg-light d-flex align-items-center gap-2 text-decoration-none text-dark"
               >
                 <i class="bi bi-person-fill text-success"></i>
-                <span>My Profile</span>
+                <span>{{ 'toolbar.myProfile' | translate }}</span>
               </a>
               <button
                 type="button"
                 class="dropdown-item w-100 text-start px-3 py-2 fw-semibold text-xs border-0 bg-transparent transition hover-bg-light d-flex align-items-center gap-2"
               >
                 <i class="bi bi-gear-fill text-success"></i>
-                <span>Settings</span>
+                <span>{{ 'toolbar.settings' | translate }}</span>
               </button>
               <div class="border-top my-1"></div>
               <button
@@ -98,7 +125,7 @@
                 (click)="logout()"
               >
                 <i class="bi bi-box-arrow-right"></i>
-                <span>Logout</span>
+                <span>{{ 'toolbar.logout' | translate }}</span>
               </button>
             </div>
           }

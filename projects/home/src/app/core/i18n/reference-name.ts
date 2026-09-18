@@ -9,7 +9,8 @@ import { TranslateService } from '@ngx-translate/core';
  * falls back to the raw stored name rather than a blank or a missing-key
  * placeholder.
  */
-export type ReferenceNameCategory = 'crop' | 'activity' | 'expense';
+export type ReferenceNameCategory =
+  'crop' | 'activity' | 'expense' | 'stage' | 'season' | 'status' | 'historyEvent';
 
 /** `"Land Preparation"` -> `"land_preparation"`. */
 export function slugifyReferenceName(name: string): string {

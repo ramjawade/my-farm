@@ -12,6 +12,7 @@ import {
   output,
 } from '@angular/core';
 import * as L from 'leaflet';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { FarmDrawLayer } from './farm-draw/farm-draw-layer';
 import { MapMyFarmComponent } from './component/map-my-farm/map-my-farm.component';
@@ -29,7 +30,7 @@ const SEARCH_ZOOM = 15;
 @Component({
   standalone: true,
   selector: 'app-map',
-  imports: [MapMyFarmComponent, MapSearchComponent, SavedFarmsComponent],
+  imports: [MapMyFarmComponent, MapSearchComponent, SavedFarmsComponent, TranslatePipe],
   templateUrl: './map.html',
   styleUrl: './map.scss',
 })

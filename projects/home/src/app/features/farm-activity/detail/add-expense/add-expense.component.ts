@@ -9,14 +9,16 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastService } from 'shared';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ActivityExpensesService } from '../activity-expenses.service';
 import { ActivityExpense } from '../../../activity/activity.models';
 import { ReferenceDataService } from '../../../../core/api/reference-data.service';
+import { ReferenceNamePipe } from '../../../../core/i18n/reference-name.pipe';
 
 @Component({
   selector: 'app-add-expense',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, TranslatePipe, ReferenceNamePipe],
   templateUrl: './add-expense.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -25,6 +27,7 @@ export class AddExpenseComponent implements OnInit {
   private readonly expensesService = inject(ActivityExpensesService);
   private readonly referenceDataService = inject(ReferenceDataService);
   private readonly toast = inject(ToastService);
+  private readonly translate = inject(TranslateService);
 
   readonly activityId = input.required<number>();
   readonly added = output<ActivityExpense>();
@@ -89,7 +92,7 @@ export class AddExpenseComponent implements OnInit {
       this.resetForm();
       this.added.emit(expense);
     } catch {
-      this.toast.error('Could not save the expense. Please try again.');
+      this.toast.error(this.translate.instant('addExpense.saveError'));
     }
   }
 

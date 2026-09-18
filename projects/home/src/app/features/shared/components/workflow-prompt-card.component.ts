@@ -1,10 +1,11 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-workflow-prompt-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   template: `
     <div
       class="workflow-prompt-card animate-fade-in mb-4 p-4 border-0 rounded-3 shadow-sm"
@@ -27,7 +28,7 @@ import { CommonModule } from '@angular/common';
             {{ actionLabel }}
           </button>
           <button type="button" class="btn btn-sm btn-outline-secondary" (click)="onDismiss()">
-            Later
+            {{ 'common.later' | translate }}
           </button>
         </div>
       </div>

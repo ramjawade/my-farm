@@ -2,15 +2,17 @@ import { Component, inject, input, output, computed, signal } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { SavedFarm } from '../../models/map.models';
 import { CropTimelineService } from '../../../features/crop-timeline/crop-timeline.service';
+import { ReferenceNamePipe } from '../../../core/i18n/reference-name.pipe';
 
 type LandStatus = 'planted' | 'fallow' | 'multiple';
 
 @Component({
   selector: 'app-land-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe, ReferenceNamePipe],
   templateUrl: './land-detail.component.html',
   styleUrl: './land-detail.component.scss',
 })
@@ -20,6 +22,7 @@ export class LandDetailComponent {
   readonly notesUpdated = output<{ id: number; notes: string }>();
 
   private readonly cropService = inject(CropTimelineService);
+  private readonly translate = inject(TranslateService);
 
   readonly cropCosts = new Map<number, number>();
   readonly editingNotes = signal(false);
@@ -66,11 +69,11 @@ export class LandDetailComponent {
     const status = this.getLandStatus();
     switch (status) {
       case 'planted':
-        return 'Planted';
+        return this.translate.instant('savedFarms.planted');
       case 'multiple':
-        return 'Multiple crops';
+        return this.translate.instant('savedFarms.multipleCrops');
       case 'fallow':
-        return 'Fallow';
+        return this.translate.instant('savedFarms.fallow');
     }
   }
 

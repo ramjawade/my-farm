@@ -9,15 +9,17 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CropDashboardService } from './crop-dashboard.service';
 import { ActivityService } from '../../activity/activity.service';
 import { CropEntity, CropStage, CROP_STAGES } from '../crop-timeline.models';
 import { stageIndex, stageProgressPercent } from '../crop-timeline.utils';
+import { ReferenceNamePipe } from '../../../core/i18n/reference-name.pipe';
 
 @Component({
   standalone: true,
   selector: 'app-crop-dashboard',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe, ReferenceNamePipe],
   templateUrl: './crop-dashboard.component.html',
   styleUrl: './crop-dashboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -26,6 +28,7 @@ export class CropDashboardComponent implements OnInit {
   private readonly cropDashboardService = inject(CropDashboardService);
   private readonly activityService = inject(ActivityService);
   private readonly router = inject(Router);
+  private readonly translate = inject(TranslateService);
 
   readonly searchTerm = signal<string>('');
   readonly crops = signal<CropEntity[]>([]);
@@ -58,7 +61,7 @@ export class CropDashboardComponent implements OnInit {
     try {
       this.crops.set(await this.cropDashboardService.getCrops());
     } catch {
-      this.error.set('Could not load your crops. Please try again.');
+      this.error.set(this.translate.instant('cropDashboard.loadError'));
     } finally {
       this.loading.set(false);
     }
@@ -90,24 +93,23 @@ export class CropDashboardComponent implements OnInit {
       .sort((a, b) => (b.date || 0) - (a.date || 0));
 
     if (cropActs.length === 0) {
-      return 'No activity logged';
+      return this.translate.instant('cropDashboard.noActivityLogged');
     }
 
     const lastDate = cropActs[0].date;
-    if (!lastDate) return 'No activity logged';
+    if (!lastDate) return this.translate.instant('cropDashboard.noActivityLogged');
     const diff = Date.now() - lastDate;
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-    if (days < 0) return 'Today';
-    if (days === 0) return 'Today';
-    if (days === 1) return '1 Day';
-    return `${days} Days`;
+    if (days <= 0) return this.translate.instant('cropDashboard.today');
+    if (days === 1) return this.translate.instant('cropDashboard.oneDay');
+    return this.translate.instant('cropDashboard.daysCount', { days });
   }
 
   getNextStage(currentStage: CropStage): string {
     const idx = stageIndex(currentStage);
     if (idx === -1 || idx === this.stages.length - 1) {
-      return 'Fully Mature';
+      return this.translate.instant('cropDashboard.fullyMature');
     }
     return this.stages[idx + 1];
   }

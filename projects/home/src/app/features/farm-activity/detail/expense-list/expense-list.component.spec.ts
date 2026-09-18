@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { ExpenseListComponent } from './expense-list.component';
 import { ActivityExpensesService } from '../activity-expenses.service';
 import { ActivityExpense } from '../../../activity/activity.models';
@@ -26,6 +27,7 @@ describe('ExpenseListComponent', () => {
       imports: [ExpenseListComponent],
       providers: [
         provideZonelessChangeDetection(),
+        provideTranslateService(),
         {
           provide: ActivityExpensesService,
           useValue: { getExpenses: getExpensesSpy, deleteExpense: deleteExpenseSpy },
@@ -63,6 +65,6 @@ describe('ExpenseListComponent', () => {
     getExpensesSpy.and.rejectWith(new Error('network down'));
     await component.reload(5);
 
-    expect(component.error).toBe('Could not load expenses. Please try again.');
+    expect(component.error).toBe('expenseList.loadError');
   });
 });

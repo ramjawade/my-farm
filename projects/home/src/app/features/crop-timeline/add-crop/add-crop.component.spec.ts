@@ -3,6 +3,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { provideRouter, Router } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
+import { provideTranslateService } from '@ngx-translate/core';
 import { AddCropComponent } from './add-crop.component';
 import { AddCropService } from './add-crop.service';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -21,6 +22,7 @@ describe('AddCropComponent', () => {
         provideZonelessChangeDetection(),
         provideRouter([]),
         provideHttpClient(),
+        provideTranslateService(),
         AddCropService,
         AuthService,
         { provide: IStorageService, useClass: InMemoryStorageService },

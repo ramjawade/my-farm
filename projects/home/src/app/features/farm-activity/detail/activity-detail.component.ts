@@ -19,6 +19,8 @@ import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
 import { SavedFarm } from '../../../map/models/map.models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ConfirmDialogComponent, ToastService } from 'shared';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { ReferenceNamePipe } from '../../../core/i18n/reference-name.pipe';
 import {
   Activity,
   ActivityDetailSummary,
@@ -37,6 +39,8 @@ import { parseId } from '../../../core/models/entity-id';
     ConfirmDialogComponent,
     ExpenseListComponent,
     AddExpenseComponent,
+    TranslatePipe,
+    ReferenceNamePipe,
   ],
   templateUrl: './activity-detail.component.html',
   styleUrl: './activity-detail.component.scss',
@@ -48,6 +52,7 @@ export class ActivityDetailComponent implements OnInit {
 
   private readonly detailService = inject(ActivityDetailService);
   private readonly toast = inject(ToastService);
+  private readonly translate = inject(TranslateService);
   private readonly cropService = inject(CropTimelineService);
   private readonly farmDrawService = inject(FarmDrawService);
   private readonly authService = inject(AuthService);
@@ -128,7 +133,7 @@ export class ActivityDetailComponent implements OnInit {
       this.summary.set(summary);
       this.history.set(history);
     } catch {
-      this.toast.error('Could not refresh the activity summary.');
+      this.toast.error(this.translate.instant('activityDetail.refreshError'));
     }
   }
 
@@ -150,7 +155,7 @@ export class ActivityDetailComponent implements OnInit {
       this.activity.set(updated);
       void this.refreshSummary();
     } catch {
-      this.toast.error('Could not update the status. Please try again.');
+      this.toast.error(this.translate.instant('activityDetail.statusUpdateError'));
     }
   }
 
@@ -163,10 +168,10 @@ export class ActivityDetailComponent implements OnInit {
     if (!id) return;
     try {
       await this.detailService.deleteActivity(id);
-      this.toast.success('Activity deleted.');
+      this.toast.success(this.translate.instant('activityList.deletedToast'));
       this.router.navigate(['/activities']);
     } catch {
-      this.toast.error('Could not delete the activity. Please try again.');
+      this.toast.error(this.translate.instant('activityDetail.deleteError'));
     }
   }
 

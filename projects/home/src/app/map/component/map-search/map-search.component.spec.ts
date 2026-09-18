@@ -1,6 +1,7 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
+import { provideTranslateService } from '@ngx-translate/core';
 import { MapSearchService } from './map-search.service';
 import { MapSearchResult } from '../../models/map.models';
 import { MapSearchComponent } from './map-search.component';
@@ -26,6 +27,7 @@ describe('MapSearchComponent', () => {
       imports: [MapSearchComponent],
       providers: [
         provideZonelessChangeDetection(),
+        provideTranslateService(),
         { provide: MapSearchService, useValue: mockGeocoding },
       ],
     }).compileComponents();
@@ -79,7 +81,7 @@ describe('MapSearchComponent', () => {
 
     expect(mockGeocoding.search).toHaveBeenCalledWith('error');
     expect(component.searchResults()).toEqual([]);
-    expect(component.searchError()).toBe('Search failed. Try again.');
+    expect(component.searchError()).toBe('mapSearch.searchFailed');
   });
 
   it('should emit resultSelected and close results when selecting a result', () => {

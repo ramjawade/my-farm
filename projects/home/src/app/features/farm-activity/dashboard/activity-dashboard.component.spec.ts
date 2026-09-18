@@ -3,6 +3,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, Router } from '@angular/router';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
+import { provideTranslateService } from '@ngx-translate/core';
 import { ActivityDashboardComponent } from './activity-dashboard.component';
 import { ActivityService } from '../../activity/activity.service';
 import { Activity, ActivityKpiSummary } from '../../activity/activity.models';
@@ -40,6 +41,7 @@ describe('ActivityDashboardComponent', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideRouter([]),
+        provideTranslateService(),
         {
           provide: ActivatedRoute,
           useValue: { paramMap: new BehaviorSubject(convertToParamMap({})) },
@@ -82,7 +84,7 @@ describe('ActivityDashboardComponent', () => {
     await component.load();
     fixture.detectChanges();
 
-    expect(component.error()).toBe('Could not load your activities. Please try again.');
+    expect(component.error()).toBe('activityDashboard.loadError');
 
     getKpiSummarySpy.and.resolveTo(mockKpi);
     await component.load();

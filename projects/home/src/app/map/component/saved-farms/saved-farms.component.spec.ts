@@ -1,6 +1,7 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
+import { provideTranslateService } from '@ngx-translate/core';
 import { SavedFarmsComponent } from './saved-farms.component';
 import { FarmAreaResult, SavedFarm } from '../../models/map.models';
 import { IStorageService } from '../../../core/storage/storage.interface';
@@ -28,6 +29,7 @@ describe('SavedFarmsComponent', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideHttpClient(),
+        provideTranslateService(),
         { provide: IStorageService, useClass: InMemoryStorageService },
       ],
     }).compileComponents();

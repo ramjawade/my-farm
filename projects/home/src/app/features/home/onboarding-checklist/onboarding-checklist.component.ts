@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 
 export interface OnboardingStep {
   id: string;
@@ -16,7 +17,7 @@ export interface OnboardingStep {
 @Component({
   selector: 'app-onboarding-checklist',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, TranslatePipe],
   templateUrl: './onboarding-checklist.component.html',
   styleUrl: './onboarding-checklist.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
