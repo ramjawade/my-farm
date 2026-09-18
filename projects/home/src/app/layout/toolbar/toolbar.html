@@ -57,14 +57,22 @@
                   type="button"
                   class="dropdown-item w-100 text-start px-3 py-2 fw-semibold text-xs border-0 bg-transparent transition hover-bg-light d-flex align-items-center gap-2"
                   [class.text-success]="currentUser()?.preferredLanguage === lang.value"
-                  (click)="selectLanguage(lang.value)"
+                  [class.text-muted]="!lang.supported"
+                  [disabled]="!lang.supported"
+                  [attr.aria-disabled]="!lang.supported"
+                  (click)="selectLanguage(lang)"
                 >
                   @if (currentUser()?.preferredLanguage === lang.value) {
                     <i class="bi bi-check-lg text-success"></i>
                   } @else {
                     <i class="bi" style="width: 1em"></i>
                   }
-                  <span>{{ lang.label }}</span>
+                  <span class="flex-grow-1">{{ lang.label }}</span>
+                  @if (!lang.supported) {
+                    <span class="badge bg-secondary-subtle text-secondary fw-normal">{{
+                      'toolbar.comingSoon' | translate
+                    }}</span>
+                  }
                 </button>
               }
             </div>

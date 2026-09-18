@@ -2,7 +2,7 @@ import { Component, input, output, signal, computed, HostListener, inject } from
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth.service';
-import { SUPPORTED_LANGUAGES } from '../../core/i18n/supported-languages';
+import { SUPPORTED_LANGUAGES, SupportedLanguage } from '../../core/i18n/supported-languages';
 
 @Component({
   standalone: true,
@@ -51,8 +51,11 @@ export class Toolbar {
     this.languageDropdownOpen.set(!current);
   }
 
-  selectLanguage(code: string): void {
-    this.authService.updateProfile({ preferredLanguage: code });
+  selectLanguage(lang: SupportedLanguage): void {
+    if (!lang.supported) {
+      return;
+    }
+    this.authService.updateProfile({ preferredLanguage: lang.value });
     this.languageDropdownOpen.set(false);
   }
 

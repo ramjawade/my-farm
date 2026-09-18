@@ -469,7 +469,17 @@
     "toggleMenu": "नेविगेशन मेनू टॉगल करें",
     "myProfile": "मेरी प्रोफाइल",
     "settings": "सेटिंग्स",
-    "logout": "लॉगआउट"
+    "logout": "लॉगआउट",
+    "comingSoon": "जल्द आ रहा है"
+  },
+  "sidebar": {
+    "home": "होम",
+    "lands": "भूमियां",
+    "crops": "फसलें",
+    "activities": "गतिविधियां",
+    "weather": "मौसम",
+    "reports": "रिपोर्ट",
+    "profile": "प्रोफाइल"
   },
   "onboardingChecklist": {
     "title": "अपना खेत सेट करें",

@@ -469,7 +469,17 @@
     "toggleMenu": "नेव्हिगेशन मेनू टॉगल करा",
     "myProfile": "माझे प्रोफाइल",
     "settings": "सेटिंग्ज",
-    "logout": "लॉगआउट"
+    "logout": "लॉगआउट",
+    "comingSoon": "लवकरच येत आहे"
+  },
+  "sidebar": {
+    "home": "मुख्यपृष्ठ",
+    "lands": "जमिनी",
+    "crops": "पिके",
+    "activities": "क्रियाकलाप",
+    "weather": "हवामान",
+    "reports": "अहवाल",
+    "profile": "प्रोफाइल"
   },
   "onboardingChecklist": {
     "title": "तुमचे शेत सेट करा",
