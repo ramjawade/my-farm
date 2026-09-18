@@ -6,6 +6,8 @@ import {
   isDevMode,
 } from '@angular/core';
 import { provideRouter, withRouterConfig } from '@angular/router';
+import { provideTranslateService } from '@ngx-translate/core';
+import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 
 import { routes } from './app.routes';
 import { IStorageService } from './core/storage/storage.interface';
@@ -13,6 +15,7 @@ import { ApiStorageService } from './core/api/api-storage.service';
 import { IWeatherService } from './core/weather/weather.interface';
 import { WeatherService } from './core/weather/weather.service';
 import { provideEnvironmentInitializer } from './core/services/environment.initializer';
+import { provideLanguageInitializer } from './core/i18n/language.initializer';
 import { provideServiceWorker } from '@angular/service-worker';
 
 export const appConfig: ApplicationConfig = {
@@ -22,6 +25,15 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     provideRouter(routes, withRouterConfig({ paramsInheritanceStrategy: 'always' })),
     provideEnvironmentInitializer(),
+    // Relative prefix (no leading slash) so it resolves against `<base href>`
+    // rather than the origin root — this app deploys under a subpath
+    // (`--base-href /my-farm/` in `build:prod`), same as favicon.ico/manifest.webmanifest.
+    provideTranslateService({
+      loader: provideTranslateHttpLoader({ prefix: 'i18n/', suffix: '.json' }),
+      lang: 'en',
+      fallbackLang: 'en',
+    }),
+    provideLanguageInitializer(),
     { provide: IStorageService, useClass: ApiStorageService }, // Online-only
     { provide: IWeatherService, useClass: WeatherService },
     provideServiceWorker('ngsw-worker.js', {
