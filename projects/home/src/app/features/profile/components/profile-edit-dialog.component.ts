@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../../core/auth/auth.service';
 import { FarmerRegistrationData } from '../../farmer-registration/farmer-registration.models';
 import { LatLngPoint } from '../../../map/models/map.models';
@@ -24,7 +25,7 @@ import { ToastService } from 'shared';
 @Component({
   standalone: true,
   selector: 'app-profile-edit-dialog',
-  imports: [CommonModule, FormsModule, MapComponent],
+  imports: [CommonModule, FormsModule, MapComponent, TranslatePipe],
   templateUrl: './profile-edit-dialog.component.html',
   styleUrl: './profile-edit-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -143,13 +143,15 @@
                 >
               } @else {
                 <span class="badge bg-warning-subtle text-warning rounded-pill fw-semibold"
-                  ><i class="bi bi-geo-alt me-1"></i>Location Not Set</span
+                  ><i class="bi bi-geo-alt me-1"></i>{{ 'home.locationNotSet' | translate }}</span
                 >
               }
               <span class="text-secondary font-medium">|</span>
               <span class="text-secondary"
-                ><i class="bi bi-calendar3 me-1"></i>{{ todayActivities().length }} scheduled tasks
-                today</span
+                ><i class="bi bi-calendar3 me-1"></i
+                >{{
+                  'home.scheduledTasksToday' | translate: { count: todayActivities().length }
+                }}</span
               >
             </p>
           </div>
@@ -160,13 +162,13 @@
               routerLink="/crops/add"
               class="btn btn-success btn-sm px-3 py-2 fw-semibold hover-lift"
             >
-              <i class="bi bi-plus-circle me-1.5"></i>Add Crop
+              <i class="bi bi-plus-circle me-1.5"></i>{{ 'home.addCrop' | translate }}
             </a>
             <a
               routerLink="/activities/create"
               class="btn btn-outline-success btn-sm px-3 py-2 fw-semibold hover-lift bg-white"
             >
-              <i class="bi bi-pencil-square me-1.5"></i>Log Activity
+              <i class="bi bi-pencil-square me-1.5"></i>{{ 'home.logActivity' | translate }}
             </a>
           </div>
         </div>
@@ -182,7 +184,9 @@
             style="cursor: pointer"
           >
             <div class="d-flex align-items-center justify-content-between mb-2">
-              <span class="text-muted text-xs fw-semibold uppercase tracking-wider">Farm Area</span>
+              <span class="text-muted text-xs fw-semibold uppercase tracking-wider">{{
+                'home.farmArea' | translate
+              }}</span>
               <div class="metric-icon bg-success-subtle text-success">
                 <i class="bi bi-tree-fill"></i>
               </div>
@@ -193,11 +197,14 @@
             </div>
             <div class="text-xxs text-muted mt-1">
               @if (metrics().landsCount > 0) {
-                Based on {{ metrics().landsCount }} saved land{{
-                  metrics().landsCount > 1 ? 's' : ''
+                {{
+                  (metrics().landsCount > 1
+                    ? 'home.basedOnSavedLandsPlural'
+                    : 'home.basedOnSavedLand'
+                  ) | translate: { count: metrics().landsCount }
                 }}
               } @else {
-                Based on saved field boundary
+                {{ 'home.basedOnSavedBoundary' | translate }}
               }
             </div>
           </div>
@@ -211,15 +218,15 @@
             style="cursor: pointer"
           >
             <div class="d-flex align-items-center justify-content-between mb-2">
-              <span class="text-muted text-xs fw-semibold uppercase tracking-wider"
-                >Active Crops</span
-              >
+              <span class="text-muted text-xs fw-semibold uppercase tracking-wider">{{
+                'home.activeCrops' | translate
+              }}</span>
               <div class="metric-icon bg-warning-subtle text-warning">
                 <i class="bi bi-grid-3x3-gap-fill"></i>
               </div>
             </div>
             <div class="h3 fw-bold text-warning-dark mb-0">{{ metrics().cropsCount }}</div>
-            <div class="text-xxs text-muted mt-1">Currently growing in plots</div>
+            <div class="text-xxs text-muted mt-1">{{ 'home.currentlyGrowing' | translate }}</div>
           </div>
         </div>
 
@@ -227,15 +234,17 @@
         <div class="col-6 col-lg-3">
           <div class="card border-0 shadow-sm p-3 p-sm-3.5 h-100 bg-white">
             <div class="d-flex align-items-center justify-content-between mb-2">
-              <span class="text-muted text-xs fw-semibold uppercase tracking-wider"
-                >Pending Tasks</span
-              >
+              <span class="text-muted text-xs fw-semibold uppercase tracking-wider">{{
+                'home.pendingTasks' | translate
+              }}</span>
               <div class="metric-icon bg-info-subtle text-info">
                 <i class="bi bi-check-circle-fill"></i>
               </div>
             </div>
             <div class="h3 fw-bold text-info-dark mb-0">{{ metrics().todayTasks }}</div>
-            <div class="text-xxs text-muted mt-1">Scheduled activities remaining</div>
+            <div class="text-xxs text-muted mt-1">
+              {{ 'home.scheduledActivitiesRemaining' | translate }}
+            </div>
           </div>
         </div>
 
@@ -243,9 +252,9 @@
         <div class="col-6 col-lg-3">
           <div class="card border-0 shadow-sm p-3 p-sm-3.5 h-100 bg-white">
             <div class="d-flex align-items-center justify-content-between mb-2">
-              <span class="text-muted text-xs fw-semibold uppercase tracking-wider"
-                >Month Expenses</span
-              >
+              <span class="text-muted text-xs fw-semibold uppercase tracking-wider">{{
+                'home.monthExpenses' | translate
+              }}</span>
               <div class="metric-icon bg-danger-subtle text-danger">
                 <i class="bi bi-cash-coin"></i>
               </div>
@@ -254,7 +263,7 @@
               ₹{{ metrics().totalExpenses | number }}
             </div>
             <div class="text-xxs text-muted mt-1">
-              Production costs logged in {{ metrics().monthName }}
+              {{ 'home.productionCostsLogged' | translate: { month: metrics().monthName } }}
             </div>
           </div>
         </div>
@@ -268,13 +277,14 @@
           <div class="card border-0 shadow-sm p-3 p-sm-4 bg-white flex-grow-1">
             <div class="d-flex justify-content-between align-items-center mb-3">
               <h3 class="h5 fw-bold text-success-dark mb-0">
-                <i class="bi bi-cloud-sun-fill me-2 text-info"></i>Weather Monitor
+                <i class="bi bi-cloud-sun-fill me-2 text-info"></i
+                >{{ 'home.weatherMonitor' | translate }}
               </h3>
               <a
                 routerLink="/weather"
                 class="text-success fw-semibold text-xs text-decoration-none hover-underline"
               >
-                Full Forecast <i class="bi bi-arrow-right ms-0.5"></i>
+                {{ 'home.fullForecast' | translate }} <i class="bi bi-arrow-right ms-0.5"></i>
               </a>
             </div>
 
@@ -283,17 +293,23 @@
                 <i class="bi bi-cloud-sun text-info fs-1"></i>
                 <div>
                   <div class="h1 fw-bold mb-0">28°C</div>
-                  <div class="text-xs text-muted">Partly Cloudy | Feels 31°C</div>
+                  <div class="text-xs text-muted">{{ 'home.weatherSummary' | translate }}</div>
                 </div>
               </div>
               <div class="border-start-sm ps-sm-4 flex-grow-1 mt-3 mt-sm-0">
                 <div class="row g-2">
                   <div class="col-6">
-                    <div class="text-xxs text-muted text-nowrap">SOIL MOISTURE</div>
-                    <div class="fw-bold text-sm text-secondary text-nowrap">42% (Optimal)</div>
+                    <div class="text-xxs text-muted text-nowrap">
+                      {{ 'home.soilMoisture' | translate }}
+                    </div>
+                    <div class="fw-bold text-sm text-secondary text-nowrap">
+                      {{ 'home.soilMoistureValue' | translate }}
+                    </div>
                   </div>
                   <div class="col-6">
-                    <div class="text-xxs text-muted text-nowrap">HUMIDITY</div>
+                    <div class="text-xxs text-muted text-nowrap">
+                      {{ 'home.humidity' | translate }}
+                    </div>
                     <div class="fw-bold text-sm text-secondary">68%</div>
                   </div>
                 </div>
@@ -306,13 +322,10 @@
             >
               <i class="bi bi-lightbulb-fill text-warning mt-0.5"></i>
               <div>
-                <span class="fw-bold text-xs text-success-dark d-block"
-                  >Drip Irrigation Advisory</span
-                >
-                <span class="text-xxs text-muted"
-                  >Maintain standard 30-minute drip cycles today. Soil moisture is adequate. Next
-                  precipitation expected on Tuesday.</span
-                >
+                <span class="fw-bold text-xs text-success-dark d-block">{{
+                  'home.dripAdvisoryTitle' | translate
+                }}</span>
+                <span class="text-xxs text-muted">{{ 'home.dripAdvisoryBody' | translate }}</span>
               </div>
             </div>
           </div>
@@ -324,13 +337,14 @@
           <div class="card border-0 shadow-sm p-3 p-sm-4 bg-white flex-grow-1">
             <div class="d-flex justify-content-between align-items-center mb-3">
               <h3 class="h5 fw-bold text-success-dark mb-0">
-                <i class="bi bi-grid-3x3-gap-fill me-2 text-success"></i>Crops Monitor
+                <i class="bi bi-grid-3x3-gap-fill me-2 text-success"></i
+                >{{ 'home.cropsMonitor' | translate }}
               </h3>
               <a
                 routerLink="/crops"
                 class="text-success fw-semibold text-xs text-decoration-none hover-underline"
               >
-                View Timeline <i class="bi bi-arrow-right ms-0.5"></i>
+                {{ 'home.viewTimeline' | translate }} <i class="bi bi-arrow-right ms-0.5"></i>
               </a>
             </div>
 
@@ -346,12 +360,12 @@
                         [routerLink]="['/crops', crop.id]"
                         class="fw-bold text-sm text-dark hover-underline text-decoration-none"
                       >
-                        {{ crop.name }}
+                        {{ crop.name | referenceName: 'crop' }}
                       </a>
                       @if (crop.daysAfterSowing !== null) {
-                        <span class="text-xxs text-muted ms-2 text-nowrap"
-                          >sown {{ crop.daysAfterSowing }} days ago</span
-                        >
+                        <span class="text-xxs text-muted ms-2 text-nowrap">{{
+                          'home.sownDaysAgo' | translate: { days: crop.daysAfterSowing }
+                        }}</span>
                       }
                     </div>
                     <div>
@@ -362,7 +376,7 @@
                       @if (crop.noRecentActivity) {
                         <span
                           class="badge bg-warning-subtle text-warning text-xxs fw-bold ms-1"
-                          title="No activity logged recently"
+                          [title]="'home.noRecentActivity' | translate"
                         >
                           <i class="bi bi-exclamation-triangle"></i>
                         </span>
@@ -385,15 +399,17 @@
                 <!-- Empty state crops -->
                 <div class="text-center py-4 bg-light rounded-3 border border-dashed">
                   <i class="bi bi-flower1 text-muted fs-2 mb-2 d-block"></i>
-                  <span class="fw-bold text-xs text-dark d-block">No Active Crops Yet</span>
-                  <span class="text-xxs text-muted d-block mb-3"
-                    >Start tracking your fields from land prep to harvest.</span
-                  >
+                  <span class="fw-bold text-xs text-dark d-block">{{
+                    'home.noActiveCrops' | translate
+                  }}</span>
+                  <span class="text-xxs text-muted d-block mb-3">{{
+                    'home.startTrackingFields' | translate
+                  }}</span>
                   <a
                     routerLink="/crops/add"
                     class="btn btn-success btn-xs px-3 py-1.5 fw-bold text-xs rounded-pill"
                   >
-                    Add Your First Crop
+                    {{ 'home.addFirstCrop' | translate }}
                   </a>
                 </div>
               }
@@ -404,13 +420,14 @@
           <div class="card border-0 shadow-sm p-3 p-sm-4 bg-white flex-grow-1">
             <div class="d-flex justify-content-between align-items-center mb-3">
               <h3 class="h5 fw-bold text-success-dark mb-0">
-                <i class="bi bi-check-circle-fill me-2 text-info"></i>Planned Operations
+                <i class="bi bi-check-circle-fill me-2 text-info"></i
+                >{{ 'home.plannedOperations' | translate }}
               </h3>
               <a
                 routerLink="/activities"
                 class="text-success fw-semibold text-xs text-decoration-none hover-underline"
               >
-                Activity Log <i class="bi bi-arrow-right ms-0.5"></i>
+                {{ 'home.activityLog' | translate }} <i class="bi bi-arrow-right ms-0.5"></i>
               </a>
             </div>
 
@@ -423,20 +440,24 @@
                 >
                   <div class="d-flex align-items-center gap-3">
                     <div>
-                      <span class="fw-bold text-xs text-dark d-block">{{ act.type }}</span>
+                      <span class="fw-bold text-xs text-dark d-block">{{
+                        act.type | referenceName: 'activity'
+                      }}</span>
                       <span class="text-xxs text-muted d-block">
-                        {{ act.cropName }} |
+                        {{ act.cropName | referenceName: 'crop' }} |
                         <span class="fw-semibold text-secondary">{{ act.dateLabel }}</span>
                       </span>
                     </div>
                   </div>
                   <div>
                     @if (act.isToday) {
-                      <span class="badge bg-danger-subtle text-danger text-xxs fw-bold">TODAY</span>
+                      <span class="badge bg-danger-subtle text-danger text-xxs fw-bold">{{
+                        'home.today' | translate
+                      }}</span>
                     } @else {
-                      <span class="badge bg-secondary-subtle text-secondary text-xxs fw-bold"
-                        >PLANNED</span
-                      >
+                      <span class="badge bg-secondary-subtle text-secondary text-xxs fw-bold">{{
+                        'home.planned' | translate
+                      }}</span>
                     }
                   </div>
                 </div>
@@ -444,15 +465,17 @@
                 <!-- Empty state activities -->
                 <div class="text-center py-4.5 bg-light rounded-3 border border-dashed">
                   <i class="bi bi-check2-all text-success fs-2 mb-2 d-block"></i>
-                  <span class="fw-bold text-xs text-dark d-block">All Tasks Completed!</span>
-                  <span class="text-xxs text-muted d-block mb-3"
-                    >No upcoming planned activities left for this week.</span
-                  >
+                  <span class="fw-bold text-xs text-dark d-block">{{
+                    'home.allTasksCompleted' | translate
+                  }}</span>
+                  <span class="text-xxs text-muted d-block mb-3">{{
+                    'home.noUpcomingActivities' | translate
+                  }}</span>
                   <a
                     routerLink="/activities/create"
                     class="btn btn-outline-success btn-xs px-3 py-1.5 fw-bold text-xs rounded-pill bg-white"
                   >
-                    Schedule New Task
+                    {{ 'home.scheduleNewTask' | translate }}
                   </a>
                 </div>
               }

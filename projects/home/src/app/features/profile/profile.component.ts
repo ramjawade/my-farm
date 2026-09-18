@@ -7,16 +7,19 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth.service';
 import { FarmLookupService } from '../../core/farms/farm-lookup.service';
 import { SavedFarm } from '../../map/models/map.models';
 import { ProfileEditDialogComponent } from './components/profile-edit-dialog.component';
+import { ReferenceNamePipe } from '../../core/i18n/reference-name.pipe';
+import { SUPPORTED_LANGUAGES } from '../../core/i18n/supported-languages';
 import { ToastService } from 'shared';
 
 @Component({
   standalone: true,
   selector: 'app-profile',
-  imports: [CommonModule, ProfileEditDialogComponent],
+  imports: [CommonModule, ProfileEditDialogComponent, TranslatePipe, ReferenceNamePipe],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -25,6 +28,7 @@ export class ProfileComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly farmLookup = inject(FarmLookupService);
   private readonly toast = inject(ToastService);
+  private readonly translate = inject(TranslateService);
 
   // Read-only state
   readonly currentUser = this.authService.currentUser;
@@ -51,14 +55,17 @@ export class ProfileComponent implements OnInit {
         0,
       );
       return {
-        name: farms.length === 1 ? farms[0].name : `${farms.length} lands`,
+        name:
+          farms.length === 1
+            ? farms[0].name
+            : this.translate.instant('profile.landsCount', { count: farms.length }),
         area: Math.round(totalArea * 100) / 100,
         unit,
       };
     }
 
     return {
-      name: user?.farmName || 'Unnamed Farm',
+      name: user?.farmName || this.translate.instant('profile.unnamedFarm'),
       area: user?.farmArea ?? 0,
       unit,
     };
@@ -93,13 +100,23 @@ export class ProfileComponent implements OnInit {
     }
   });
 
+  /**
+   * Resolves the human-readable, bilingual language label (e.g. "Marathi
+   * (मराठी)") from the stored short code — fixes #190/#202: the summary
+   * used to print the raw `preferredLanguage` code.
+   */
+  readonly preferredLanguageLabel = computed(() => {
+    const code = this.currentUser()?.preferredLanguage;
+    return SUPPORTED_LANGUAGES.find((lang) => lang.value === code)?.label || code || '';
+  });
+
   openEditDialog(section: 'account' | 'agronomic' | 'land' | 'operations'): void {
     this.activeSection.set(section);
     this.showEditDialog.set(true);
   }
 
   deleteAgronomic(): void {
-    if (confirm('Are you sure you want to delete and reset your Agronomic Settings?')) {
+    if (confirm(this.translate.instant('profile.confirmDeleteAgronomic'))) {
       this.authService.updateProfile({
         userRole: 'Farmer',
         farmingMethod: '',
@@ -109,7 +126,7 @@ export class ProfileComponent implements OnInit {
   }
 
   deleteLandLocation(): void {
-    if (confirm('Are you sure you want to delete and reset your Land & Location settings?')) {
+    if (confirm(this.translate.instant('profile.confirmDeleteLand'))) {
       this.authService.updateProfile({
         farmName: '',
         farmArea: 0,
@@ -126,7 +143,7 @@ export class ProfileComponent implements OnInit {
   }
 
   deleteOperations(): void {
-    if (confirm('Are you sure you want to delete and reset your Operational Settings?')) {
+    if (confirm(this.translate.instant('profile.confirmDeleteOperations'))) {
       this.authService.updateProfile({
         waterSource: '',
         irrigationType: '',

@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
+import { provideTranslateService } from '@ngx-translate/core';
 import { ProfileEditDialogComponent } from './profile-edit-dialog.component';
 import { AuthService } from '../../../core/auth/auth.service';
 import { FarmerRegistrationData } from '../../farmer-registration/farmer-registration.models';
@@ -44,6 +45,7 @@ describe('ProfileEditDialogComponent', () => {
         { provide: IStorageService, useClass: InMemoryStorageService },
         provideZonelessChangeDetection(),
         provideHttpClient(),
+        provideTranslateService(),
         AuthService,
       ],
     }).compileComponents();

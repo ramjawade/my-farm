@@ -15,7 +15,7 @@
           <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
             <h2 class="h3 fw-bold text-success-dark mb-0">{{ currentUser()?.fullName }}</h2>
             <span class="badge bg-success-subtle text-success rounded-pill fw-semibold text-xxs">
-              {{ currentUser()?.userRole || 'Farmer' }}
+              {{ currentUser()?.userRole || ('profile.farmerRole' | translate) }}
             </span>
           </div>
           <p class="text-xs text-muted mb-0 d-flex align-items-center gap-1.5 flex-wrap">
@@ -24,7 +24,8 @@
             >
             <span class="text-secondary">|</span>
             <span class="text-secondary"
-              ><i class="bi bi-calendar3 me-1"></i>Member since {{ memberSince() }}</span
+              ><i class="bi bi-calendar3 me-1"></i>{{ 'profile.memberSince' | translate }}
+              {{ memberSince() }}</span
             >
           </p>
         </div>
@@ -32,7 +33,7 @@
           <span
             class="badge bg-success text-white px-3 py-2 text-xxs rounded-pill fw-semibold shadow-xs"
           >
-            <i class="bi bi-check-circle-fill me-1"></i>Profile Complete
+            <i class="bi bi-check-circle-fill me-1"></i>{{ 'profile.complete' | translate }}
           </span>
         </div>
       </div>
@@ -45,43 +46,44 @@
         <div class="card border-0 shadow-sm p-3 p-sm-4 bg-white h-100">
           <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
             <h3 class="h5 fw-bold text-success-dark mb-0">
-              <i class="bi bi-person-fill text-success me-2"></i>Account Information
+              <i class="bi bi-person-fill text-success me-2"></i
+              >{{ 'profile.accountInformation' | translate }}
             </h3>
             <button
               (click)="openEditDialog('account')"
               class="btn btn-outline-success btn-xs px-2.5 py-1 fw-bold text-xxs rounded-pill bg-white hover-lift"
             >
-              <i class="bi bi-pencil-square me-1"></i>Edit
+              <i class="bi bi-pencil-square me-1"></i>{{ 'common.edit' | translate }}
             </button>
           </div>
 
           <div class="d-flex flex-column gap-3">
             <div class="row">
               <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">
-                Full Name
+                {{ 'profile.fullName' | translate }}
               </div>
               <div class="col-8 text-sm fw-bold text-dark">{{ currentUser()?.fullName }}</div>
             </div>
             <div class="row">
               <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">
-                Phone Number
+                {{ 'profile.phoneNumber' | translate }}
               </div>
               <div class="col-8 text-sm fw-bold text-dark">{{ currentUser()?.phone }}</div>
             </div>
             <div class="row">
               <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">
-                Email Address
+                {{ 'profile.emailAddress' | translate }}
               </div>
               <div class="col-8 text-sm fw-medium text-secondary">
-                {{ currentUser()?.email || 'Not Configured' }}
+                {{ currentUser()?.email || ('common.notConfigured' | translate) }}
               </div>
             </div>
             <div class="row">
               <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">
-                Language
+                {{ 'profile.language' | translate }}
               </div>
               <div class="col-8 text-sm fw-semibold text-secondary">
-                {{ currentUser()?.preferredLanguage }}
+                {{ preferredLanguageLabel() }}
               </div>
             </div>
           </div>
@@ -93,21 +95,22 @@
         <div class="card border-0 shadow-sm p-3 p-sm-4 bg-white h-100">
           <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
             <h3 class="h5 fw-bold text-success-dark mb-0">
-              <i class="bi bi-focus-fill text-success me-2"></i>Agronomic Settings
+              <i class="bi bi-focus-fill text-success me-2"></i
+              >{{ 'profile.agronomicSettings' | translate }}
             </h3>
             <div class="d-flex gap-2">
               <button
                 (click)="openEditDialog('agronomic')"
                 class="btn btn-outline-success btn-xs px-2.5 py-1 fw-bold text-xxs rounded-pill bg-white hover-lift"
               >
-                <i class="bi bi-pencil-square me-1"></i>Edit
+                <i class="bi bi-pencil-square me-1"></i>{{ 'common.edit' | translate }}
               </button>
               <button
                 (click)="deleteAgronomic()"
                 class="btn btn-outline-danger btn-xs px-2.5 py-1 fw-bold text-xxs rounded-pill bg-white hover-lift"
-                title="Reset Agronomic Settings"
+                [title]="'profile.resetAgronomic' | translate"
               >
-                <i class="bi bi-trash me-1"></i>Delete
+                <i class="bi bi-trash me-1"></i>{{ 'common.delete' | translate }}
               </button>
             </div>
           </div>
@@ -115,21 +118,21 @@
           <div class="d-flex flex-column gap-3">
             <div class="row">
               <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">
-                User Role
+                {{ 'profile.userRole' | translate }}
               </div>
               <div class="col-8 text-sm fw-bold text-dark">
                 <span class="badge bg-success-subtle text-success px-2.5 py-1 rounded-pill">{{
-                  currentUser()?.userRole || 'Farmer'
+                  currentUser()?.userRole || ('profile.farmerRole' | translate)
                 }}</span>
               </div>
             </div>
             <div class="row">
               <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">
-                Farming Method
+                {{ 'profile.farmingMethod' | translate }}
               </div>
               <div class="col-8 text-sm fw-bold text-dark">
                 <span class="badge bg-success-subtle text-success px-2.5 py-1 rounded-pill">{{
-                  currentUser()?.farmingMethod || 'Not Configured'
+                  currentUser()?.farmingMethod || ('common.notConfigured' | translate)
                 }}</span>
               </div>
             </div>
@@ -142,21 +145,22 @@
         <div class="card border-0 shadow-sm p-3 p-sm-4 bg-white h-100">
           <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
             <h3 class="h5 fw-bold text-success-dark mb-0">
-              <i class="bi bi-geo-alt-fill text-success me-2"></i>Land & Location
+              <i class="bi bi-geo-alt-fill text-success me-2"></i
+              >{{ 'profile.landAndLocation' | translate }}
             </h3>
             <div class="d-flex gap-2">
               <button
                 (click)="openEditDialog('land')"
                 class="btn btn-outline-success btn-xs px-2.5 py-1 fw-bold text-xxs rounded-pill bg-white hover-lift"
               >
-                <i class="bi bi-pencil-square me-1"></i>Edit
+                <i class="bi bi-pencil-square me-1"></i>{{ 'common.edit' | translate }}
               </button>
               <button
                 (click)="deleteLandLocation()"
                 class="btn btn-outline-danger btn-xs px-2.5 py-1 fw-bold text-xxs rounded-pill bg-white hover-lift"
-                title="Reset Land & Location"
+                [title]="'profile.resetLand' | translate"
               >
-                <i class="bi bi-trash me-1"></i>Delete
+                <i class="bi bi-trash me-1"></i>{{ 'common.delete' | translate }}
               </button>
             </div>
           </div>
@@ -164,7 +168,7 @@
           <div class="d-flex flex-column gap-3">
             <div class="row">
               <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">
-                Farm Name
+                {{ 'profile.farmName' | translate }}
               </div>
               <div class="col-8 text-sm fw-bold text-dark">
                 {{ landSummary().name }}
@@ -172,7 +176,7 @@
             </div>
             <div class="row">
               <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">
-                Cultivated Area
+                {{ 'profile.cultivatedArea' | translate }}
               </div>
               <div class="col-8 text-sm fw-bold text-dark">
                 {{ landSummary().area }} {{ landSummary().unit }}
@@ -180,18 +184,18 @@
             </div>
             <div class="row">
               <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">
-                Village / Address
+                {{ 'profile.villageAddress' | translate }}
               </div>
               <div class="col-8 text-sm fw-bold text-dark">
-                {{ currentUser()?.village || 'Not Configured' }}
+                {{ currentUser()?.village || ('common.notConfigured' | translate) }}
               </div>
             </div>
             <div class="row">
               <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">
-                District & State
+                {{ 'profile.districtState' | translate }}
               </div>
               <div class="col-8 text-sm fw-semibold text-secondary">
-                {{ currentUser()?.district || 'Not Configured' }}
+                {{ currentUser()?.district || ('common.notConfigured' | translate) }}
                 @if (currentUser()?.district && currentUser()?.state) {
                   ,
                 }
@@ -200,22 +204,24 @@
             </div>
             <div class="row">
               <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">
-                Pincode
+                {{ 'profile.pincode' | translate }}
               </div>
               <div class="col-8 text-sm fw-semibold text-secondary">
-                {{ currentUser()?.pincode || 'Not Configured' }}
+                {{ currentUser()?.pincode || ('common.notConfigured' | translate) }}
               </div>
             </div>
             <div class="row">
               <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">
-                GPS Coordinates
+                {{ 'profile.gpsCoordinates' | translate }}
               </div>
               <div class="col-8 text-xs font-monospace text-secondary">
                 @if (currentUser()?.location) {
-                  Lat: {{ currentUser()?.location?.lat | number: '1.4-4' }}, Lng:
+                  {{ 'profile.lat' | translate }}:
+                  {{ currentUser()?.location?.lat | number: '1.4-4' }},
+                  {{ 'profile.lng' | translate }}:
                   {{ currentUser()?.location?.lng | number: '1.4-4' }}
                 } @else {
-                  No boundary mapped yet
+                  {{ 'profile.noBoundaryMapped' | translate }}
                 }
               </div>
             </div>
@@ -228,21 +234,22 @@
         <div class="card border-0 shadow-sm p-3 p-sm-4 bg-white h-100">
           <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
             <h3 class="h5 fw-bold text-success-dark mb-0">
-              <i class="bi bi-gear-fill text-success me-2"></i>Operational Settings
+              <i class="bi bi-gear-fill text-success me-2"></i
+              >{{ 'profile.operationalSettings' | translate }}
             </h3>
             <div class="d-flex gap-2">
               <button
                 (click)="openEditDialog('operations')"
                 class="btn btn-outline-success btn-xs px-2.5 py-1 fw-bold text-xxs rounded-pill bg-white hover-lift"
               >
-                <i class="bi bi-pencil-square me-1"></i>Edit
+                <i class="bi bi-pencil-square me-1"></i>{{ 'common.edit' | translate }}
               </button>
               <button
                 (click)="deleteOperations()"
                 class="btn btn-outline-danger btn-xs px-2.5 py-1 fw-bold text-xxs rounded-pill bg-white hover-lift"
-                title="Reset Operational Settings"
+                [title]="'profile.resetOperations' | translate"
               >
-                <i class="bi bi-trash me-1"></i>Delete
+                <i class="bi bi-trash me-1"></i>{{ 'common.delete' | translate }}
               </button>
             </div>
           </div>
@@ -250,23 +257,23 @@
           <div class="d-flex flex-column gap-3">
             <div class="row">
               <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">
-                Water Source
+                {{ 'profile.waterSource' | translate }}
               </div>
               <div class="col-8 text-sm fw-bold text-dark">
-                {{ currentUser()?.waterSource || 'Not Configured' }}
+                {{ currentUser()?.waterSource || ('common.notConfigured' | translate) }}
               </div>
             </div>
             <div class="row">
               <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">
-                Irrigation Type
+                {{ 'profile.irrigationType' | translate }}
               </div>
               <div class="col-8 text-sm fw-bold text-dark">
-                {{ currentUser()?.irrigationType || 'Not Configured' }}
+                {{ currentUser()?.irrigationType || ('common.notConfigured' | translate) }}
               </div>
             </div>
             <div class="row">
               <div class="col-4 text-xs text-muted uppercase tracking-wider font-semibold">
-                Primary Crops
+                {{ 'profile.primaryCrops' | translate }}
               </div>
               <div class="col-8 text-sm fw-semibold text-secondary">
                 <div class="d-flex flex-wrap gap-1.5 mt-1">
@@ -274,10 +281,12 @@
                     <span
                       class="badge bg-light text-secondary border border-light-subtle rounded-pill font-medium px-2.5 py-1"
                     >
-                      {{ crop }}
+                      {{ crop | referenceName: 'crop' }}
                     </span>
                   } @empty {
-                    <span class="text-xs text-muted">No primary crops listed</span>
+                    <span class="text-xs text-muted">{{
+                      'profile.noPrimaryCrops' | translate
+                    }}</span>
                   }
                 </div>
               </div>
@@ -292,9 +301,9 @@
   } @else {
     <div class="text-center py-5">
       <div class="spinner-border text-success mb-3" role="status">
-        <span class="visually-hidden">Loading profile...</span>
+        <span class="visually-hidden">{{ 'profile.loadingProfile' | translate }}</span>
       </div>
-      <p class="text-muted">Loading profile settings...</p>
+      <p class="text-muted">{{ 'profile.loadingProfileSettings' | translate }}</p>
     </div>
   }
 </div>
