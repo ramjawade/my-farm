@@ -17,6 +17,7 @@ import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
 import { getPolygonCentroid } from '../../../map/farm-draw/farm-area.utils';
 import { MapComponent } from '../../../map/map';
 import { WorkflowStateService } from '../../../core/workflow/workflow-state.service';
+import { SUPPORTED_LANGUAGES } from '../../../core/i18n/supported-languages';
 import * as L from 'leaflet';
 import { ToastService } from 'shared';
 
@@ -65,21 +66,7 @@ export class ProfileEditDialogComponent {
   readonly latitude = signal<number | null>(null);
   readonly longitude = signal<number | null>(null);
 
-  // Short ISO-ish codes, matching the account's stored `preferredLanguage`
-  // format (backend default "en", see FarmerBase.preferred_language) and the
-  // toolbar's language list -- full words here never matched the stored
-  // code, so the select always opened blank.
-  readonly languages = [
-    { value: 'en', label: 'English (English)' },
-    { value: 'hi', label: 'Hindi (हिन्दी)' },
-    { value: 'mr', label: 'Marathi (मराठी)' },
-    { value: 'pa', label: 'Punjabi (ਪੰਜਾਬੀ)' },
-    { value: 'te', label: 'Telugu (తెలుగు)' },
-    { value: 'ta', label: 'Tamil (தமிழ்)' },
-    { value: 'kn', label: 'Kannada (ಕನ್ನಡ)' },
-    { value: 'bn', label: 'Bengali (বাংলা)' },
-    { value: 'es', label: 'Spanish (Español)' },
-  ];
+  readonly languages = SUPPORTED_LANGUAGES;
 
   readonly cropOptions = [
     { value: 'Wheat', label: 'Wheat', icon: 'bi-flower2', color: '#d69e2e' },
