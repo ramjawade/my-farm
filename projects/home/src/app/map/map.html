@@ -30,6 +30,11 @@
       />
     }
 
-    <div #mapContainer class="map-page__container" role="region" aria-label="Map"></div>
+    <div
+      #mapContainer
+      class="map-page__container"
+      role="region"
+      [attr.aria-label]="'mapMyFarm.mapAriaLabel' | translate"
+    ></div>
   </div>
 </div>

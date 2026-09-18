@@ -7,7 +7,8 @@
     "back": "मागे",
     "close": "बंद करा",
     "activity": "क्रियाकलाप",
-    "cancel": "रद्द करा"
+    "cancel": "रद्द करा",
+    "later": "नंतर"
   },
   "profile": {
     "farmerRole": "शेतकरी",
@@ -235,6 +236,7 @@
     "hectaresLong": "हेक्टर (ha)",
     "acresLong": "एकर (ac)",
     "areaInvalid": "0 पेक्षा मोठी वैध क्षेत्रफळ संख्या द्या.",
+    "areaPlaceholder": "उदा. 2.50",
     "sowingDate": "पेरणीची तारीख",
     "createProfile": "प्रोफाइल तयार करा",
     "savedToast": "{{name}} त्याच्या वाढीच्या टाइमलाइनसह जोडले गेले.",
@@ -373,11 +375,16 @@
   "addExpense": {
     "category": "श्रेणी",
     "itemServiceName": "वस्तू / सेवेचे नाव",
+    "itemPlaceholder": "उदा. युरिया बॅग, ट्रॅक्टर भाडे",
     "vendorLaborer": "विक्रेता / मजूर (पर्यायी)",
+    "vendorPlaceholder": "उदा. जॉन डो, सहकारी संस्था",
     "remarksNotes": "शेरा / टिपा",
+    "remarksPlaceholder": "उदा. बॅच #4, रोख पेमेंट",
     "qty": "प्रमाण",
+    "unitPlaceholder": "पोती, तास",
     "rate": "दर (₹)",
     "amount": "रक्कम (₹)",
+    "amountPlaceholder": "एकूण रक्कम",
     "amountRequired": "वैध खर्च आवश्यक आहे.",
     "addExpenseItem": "खर्चाची वस्तू जोडा",
     "saveError": "खर्च जतन करता आला नाही. कृपया पुन्हा प्रयत्न करा."
@@ -398,6 +405,7 @@
     "removeError": "खर्च काढता आला नाही. कृपया पुन्हा प्रयत्न करा."
   },
   "mapMyFarm": {
+    "mapAriaLabel": "नकाशा",
     "drawBoundaryTitle": "तुमच्या शेताची सीमा काढा",
     "drawBoundaryMessage": "नेमके क्षेत्रफळ मिळवण्यासाठी आणि उच्च-रिझोल्यूशन उपग्रह दृश्ये अनलॉक करण्यासाठी नकाशावर भूखंडाची रूपरेषा काढा.",
     "startDrawing": "काढणे सुरू करा",
@@ -456,5 +464,19 @@
     "totalCost": "एकूण खर्च",
     "totalLandCost": "एकूण जमीन खर्च",
     "noCropsPlanted": "या जमिनीवर अद्याप कोणतेही पीक लावलेले नाही."
+  },
+  "toolbar": {
+    "toggleMenu": "नेव्हिगेशन मेनू टॉगल करा",
+    "myProfile": "माझे प्रोफाइल",
+    "settings": "सेटिंग्ज",
+    "logout": "लॉगआउट"
+  },
+  "onboardingChecklist": {
+    "title": "तुमचे शेत सेट करा",
+    "stepsDone": "{{total}} पैकी {{done}} टप्पे पूर्ण",
+    "next": "पुढील"
+  },
+  "workflowProgressBar": {
+    "stepLabel": "सुरुवात: टप्पा {{step}} / 6"
   }
 }

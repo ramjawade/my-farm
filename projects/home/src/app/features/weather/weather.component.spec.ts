@@ -2,6 +2,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
+import { provideTranslateService } from '@ngx-translate/core';
 import { WeatherComponent } from './weather.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { WeatherService } from '../../core/weather/weather.service';
@@ -25,6 +26,7 @@ describe('WeatherComponent', () => {
         provideZonelessChangeDetection(),
         provideRouter([]),
         provideHttpClient(),
+        provideTranslateService(),
         AuthService,
         WeatherService,
         { provide: IWeatherService, useClass: WeatherService },

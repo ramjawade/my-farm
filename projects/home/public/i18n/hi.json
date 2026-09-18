@@ -7,7 +7,8 @@
     "back": "वापस",
     "close": "बंद करें",
     "activity": "गतिविधि",
-    "cancel": "रद्द करें"
+    "cancel": "रद्द करें",
+    "later": "बाद में"
   },
   "profile": {
     "farmerRole": "किसान",
@@ -235,6 +236,7 @@
     "hectaresLong": "हेक्टेयर (ha)",
     "acresLong": "एकड़ (ac)",
     "areaInvalid": "0 से बड़ी मान्य क्षेत्रफल संख्या दें।",
+    "areaPlaceholder": "जैसे 2.50",
     "sowingDate": "बुवाई की तारीख",
     "createProfile": "प्रोफाइल बनाएं",
     "savedToast": "{{name}} इसकी वृद्धि-चरण टाइमलाइन के साथ जोड़ा गया।",
@@ -373,11 +375,16 @@
   "addExpense": {
     "category": "श्रेणी",
     "itemServiceName": "वस्तु / सेवा का नाम",
+    "itemPlaceholder": "जैसे यूरिया बैग, ट्रैक्टर किराया",
     "vendorLaborer": "विक्रेता / मजदूर (वैकल्पिक)",
+    "vendorPlaceholder": "जैसे जॉन डो, सहकारी समिति",
     "remarksNotes": "टिप्पणी / नोट्स",
+    "remarksPlaceholder": "जैसे बैच #4, नकद भुगतान",
     "qty": "मात्रा",
+    "unitPlaceholder": "बोरी, घंटे",
     "rate": "दर (₹)",
     "amount": "राशि (₹)",
+    "amountPlaceholder": "कुल राशि",
     "amountRequired": "मान्य लागत आवश्यक है।",
     "addExpenseItem": "खर्च की वस्तु जोड़ें",
     "saveError": "खर्च सहेजा नहीं जा सका। कृपया पुनः प्रयास करें।"
@@ -398,6 +405,7 @@
     "removeError": "खर्च हटाया नहीं जा सका। कृपया पुनः प्रयास करें।"
   },
   "mapMyFarm": {
+    "mapAriaLabel": "नक्शा",
     "drawBoundaryTitle": "अपने खेत की सीमा बनाएं",
     "drawBoundaryMessage": "सटीक क्षेत्रफल पाने और उच्च-रिज़ॉल्यूशन उपग्रह दृश्य अनलॉक करने के लिए नक्शे पर एक भूखंड की रूपरेखा बनाएं।",
     "startDrawing": "बनाना शुरू करें",
@@ -456,5 +464,19 @@
     "totalCost": "कुल लागत",
     "totalLandCost": "कुल भूमि लागत",
     "noCropsPlanted": "इस भूमि पर अभी तक कोई फसल नहीं लगाई गई।"
+  },
+  "toolbar": {
+    "toggleMenu": "नेविगेशन मेनू टॉगल करें",
+    "myProfile": "मेरी प्रोफाइल",
+    "settings": "सेटिंग्स",
+    "logout": "लॉगआउट"
+  },
+  "onboardingChecklist": {
+    "title": "अपना खेत सेट करें",
+    "stepsDone": "{{total}} में से {{done}} चरण पूर्ण",
+    "next": "अगला"
+  },
+  "workflowProgressBar": {
+    "stepLabel": "शुरुआत: चरण {{step}} / 6"
   }
 }

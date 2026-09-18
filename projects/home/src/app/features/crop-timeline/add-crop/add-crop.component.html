@@ -70,7 +70,7 @@
               id="area"
               class="form-control"
               formControlName="area"
-              placeholder="e.g. 2.50"
+              [placeholder]="'addCrop.areaPlaceholder' | translate"
               [class.is-invalid]="cropForm.get('area')?.touched && cropForm.get('area')?.invalid"
             />
             <select

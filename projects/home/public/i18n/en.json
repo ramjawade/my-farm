@@ -7,7 +7,8 @@
     "back": "Back",
     "close": "Close",
     "activity": "Activity",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "later": "Later"
   },
   "profile": {
     "farmerRole": "Farmer",
@@ -235,6 +236,7 @@
     "hectaresLong": "Hectares (ha)",
     "acresLong": "Acres (ac)",
     "areaInvalid": "Provide a valid area number greater than 0.",
+    "areaPlaceholder": "e.g. 2.50",
     "sowingDate": "Sowing Date",
     "createProfile": "Create Profile",
     "savedToast": "{{name}} added with its growth-stage timeline.",
@@ -373,11 +375,16 @@
   "addExpense": {
     "category": "Category",
     "itemServiceName": "Item / Service Name",
+    "itemPlaceholder": "e.g. Urea bag, tractor lease",
     "vendorLaborer": "Vendor / Laborer (Optional)",
+    "vendorPlaceholder": "e.g. John Doe, Cooperative",
     "remarksNotes": "Remarks / Notes",
+    "remarksPlaceholder": "e.g. Batch #4, cash paid",
     "qty": "Qty",
+    "unitPlaceholder": "bags, hours",
     "rate": "Rate (₹)",
     "amount": "Amount (₹)",
+    "amountPlaceholder": "Total amount",
     "amountRequired": "Valid cost is required.",
     "addExpenseItem": "Add Expense Item",
     "saveError": "Could not save the expense. Please try again."
@@ -398,6 +405,7 @@
     "removeError": "Could not remove the expense. Please try again."
   },
   "mapMyFarm": {
+    "mapAriaLabel": "Map",
     "drawBoundaryTitle": "Draw Your Farm Boundary",
     "drawBoundaryMessage": "Outline a plot on the map to get its exact area and unlock high-resolution satellite views.",
     "startDrawing": "Start Drawing",
@@ -456,5 +464,19 @@
     "totalCost": "total cost",
     "totalLandCost": "Total Land Cost",
     "noCropsPlanted": "No crops planted on this land yet."
+  },
+  "toolbar": {
+    "toggleMenu": "Toggle navigation menu",
+    "myProfile": "My Profile",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "onboardingChecklist": {
+    "title": "Set up your farm",
+    "stepsDone": "{{done}} of {{total}} steps done",
+    "next": "next"
+  },
+  "workflowProgressBar": {
+    "stepLabel": "Getting Started: Step {{step}} of 6"
   }
 }

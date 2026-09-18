@@ -23,7 +23,7 @@
             type="text"
             class="form-control form-control-sm"
             formControlName="itemId"
-            placeholder="e.g. Urea bag, tractor lease"
+            [placeholder]="'addExpense.itemPlaceholder' | translate"
           />
         </div>
       </div>
@@ -36,7 +36,7 @@
             type="text"
             class="form-control form-control-sm"
             formControlName="resourceId"
-            placeholder="e.g. John Doe, Cooperative"
+            [placeholder]="'addExpense.vendorPlaceholder' | translate"
           />
         </div>
 
@@ -47,7 +47,7 @@
             type="text"
             class="form-control form-control-sm"
             formControlName="remarks"
-            placeholder="e.g. Batch #4, cash paid"
+            [placeholder]="'addExpense.remarksPlaceholder' | translate"
           />
         </div>
       </div>
@@ -71,7 +71,7 @@
             type="text"
             class="form-control form-control-sm"
             formControlName="unit"
-            placeholder="bags, hours"
+            [placeholder]="'addExpense.unitPlaceholder' | translate"
           />
         </div>
 
@@ -93,7 +93,7 @@
             type="number"
             class="form-control form-control-sm font-monospace fw-bold"
             formControlName="amount"
-            placeholder="Total amount"
+            [placeholder]="'addExpense.amountPlaceholder' | translate"
             [class.is-invalid]="
               expenseForm.get('amount')?.invalid && expenseForm.get('amount')?.touched
             "
