@@ -8,17 +8,17 @@
       <div class="row g-2">
         <!-- Category -->
         <div class="col-12 col-md-6">
-          <label class="form-label required-label">Category</label>
+          <label class="form-label required-label">{{ 'addExpense.category' | translate }}</label>
           <select class="form-select form-select-sm" formControlName="category">
             @for (cat of categoriesList(); track cat) {
-              <option [value]="cat">{{ cat }}</option>
+              <option [value]="cat">{{ cat | referenceName: 'expense' }}</option>
             }
           </select>
         </div>
 
         <!-- Item Name -->
         <div class="col-12 col-md-6">
-          <label class="form-label">Item / Service Name</label>
+          <label class="form-label">{{ 'addExpense.itemServiceName' | translate }}</label>
           <input
             type="text"
             class="form-control form-control-sm"
@@ -31,7 +31,7 @@
       <div class="row g-2">
         <!-- Resource / Name -->
         <div class="col-12 col-md-6">
-          <label class="form-label">Vendor / Laborer (Optional)</label>
+          <label class="form-label">{{ 'addExpense.vendorLaborer' | translate }}</label>
           <input
             type="text"
             class="form-control form-control-sm"
@@ -42,7 +42,7 @@
 
         <!-- Remarks -->
         <div class="col-12 col-md-6">
-          <label class="form-label">Remarks / Notes</label>
+          <label class="form-label">{{ 'addExpense.remarksNotes' | translate }}</label>
           <input
             type="text"
             class="form-control form-control-sm"
@@ -55,7 +55,7 @@
       <div class="row g-2 align-items-end">
         <!-- Quantity -->
         <div class="col-4 col-md-2">
-          <label class="form-label">Qty</label>
+          <label class="form-label">{{ 'addExpense.qty' | translate }}</label>
           <input
             type="number"
             class="form-control form-control-sm"
@@ -66,7 +66,7 @@
 
         <!-- Unit -->
         <div class="col-4 col-md-3">
-          <label class="form-label">Unit</label>
+          <label class="form-label">{{ 'landEdit.unit' | translate }}</label>
           <input
             type="text"
             class="form-control form-control-sm"
@@ -77,7 +77,7 @@
 
         <!-- Rate -->
         <div class="col-4 col-md-3">
-          <label class="form-label">Rate (₹)</label>
+          <label class="form-label">{{ 'addExpense.rate' | translate }}</label>
           <input
             type="number"
             class="form-control form-control-sm"
@@ -88,7 +88,7 @@
 
         <!-- Total Amount (Auto Calculated) -->
         <div class="col-12 col-md-4">
-          <label class="form-label required-label">Amount (₹)</label>
+          <label class="form-label required-label">{{ 'addExpense.amount' | translate }}</label>
           <input
             type="number"
             class="form-control form-control-sm font-monospace fw-bold"
@@ -99,7 +99,7 @@
             "
           />
           @if (expenseForm.get('amount')?.invalid && expenseForm.get('amount')?.touched) {
-            <div class="invalid-feedback">Valid cost is required.</div>
+            <div class="invalid-feedback">{{ 'addExpense.amountRequired' | translate }}</div>
           }
         </div>
       </div>
@@ -107,9 +107,11 @@
   </div>
 
   <div class="d-flex justify-content-end gap-2 mt-4 pt-2 border-top">
-    <button type="button" class="btn btn-secondary btn-sm" (click)="cancel()">Cancel</button>
+    <button type="button" class="btn btn-secondary btn-sm" (click)="cancel()">
+      {{ 'common.cancel' | translate }}
+    </button>
     <button type="submit" class="btn btn-primary btn-sm">
-      <i class="bi bi-check2-circle me-1"></i> Add Expense Item
+      <i class="bi bi-check2-circle me-1"></i> {{ 'addExpense.addExpenseItem' | translate }}
     </button>
   </div>
 </form>

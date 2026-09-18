@@ -23,11 +23,14 @@ import { ReferenceItem } from '../../../core/api/contracts';
 import { parseId } from '../../../core/models/entity-id';
 import { Activity } from '../../activity/activity.models';
 import { ComboboxComponent, ToastService } from 'shared';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { ReferenceNamePipe } from '../../../core/i18n/reference-name.pipe';
+import { resolveReferenceName } from '../../../core/i18n/reference-name';
 
 @Component({
   selector: 'app-create-activity',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ComboboxComponent],
+  imports: [CommonModule, ReactiveFormsModule, ComboboxComponent, TranslatePipe, ReferenceNamePipe],
   templateUrl: './create-activity.component.html',
   styleUrl: './create-activity.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -43,6 +46,7 @@ export class CreateActivityComponent implements OnInit {
   private readonly workflowService = inject(WorkflowStateService);
   private readonly referenceDataService = inject(ReferenceDataService);
   private readonly toast = inject(ToastService);
+  private readonly translate = inject(TranslateService);
 
   private readonly cropIdPathParam = toSignal(
     this.route.paramMap.pipe(map((params) => parseId(params.get('cropId')))),
@@ -196,7 +200,7 @@ export class CreateActivityComponent implements OnInit {
       );
       this.form.patchValue({ type: created.name });
     } catch {
-      this.toast.error('Could not save the new activity type.');
+      this.toast.error(this.translate.instant('createActivity.saveTypeError'));
     }
   }
 
@@ -250,7 +254,7 @@ export class CreateActivityComponent implements OnInit {
       // if (val.cropId) {
       //   this.cropService.syncStageFromActivity(this.activityId);
       // }
-      this.toast.success('Activity updated.');
+      this.toast.success(this.translate.instant('createActivity.updatedToast'));
     } else {
       // Create activity
       let newAct: Activity;
@@ -268,7 +272,7 @@ export class CreateActivityComponent implements OnInit {
           attachments: this.uploadedImages(),
         });
       } catch {
-        this.toast.error('Could not save the activity. Please try again.');
+        this.toast.error(this.translate.instant('createActivity.saveError'));
         return;
       } finally {
         this.saving.set(false);
@@ -279,7 +283,13 @@ export class CreateActivityComponent implements OnInit {
       //   this.cropService.syncStageFromActivity(newAct.id);
       // }
 
-      this.toast.success(`${newAct.type === 'Custom' ? 'Activity' : newAct.type} logged.`);
+      const loggedTypeLabel =
+        newAct.type === 'Custom'
+          ? this.translate.instant('common.activity')
+          : resolveReferenceName(this.translate, 'activity', newAct.type);
+      this.toast.success(
+        this.translate.instant('createActivity.loggedToast', { type: loggedTypeLabel }),
+      );
 
       // Mark activity phase complete on first activity created
       const actCount = this.activityService.activities().filter((a) => a.status !== 'Draft').length;

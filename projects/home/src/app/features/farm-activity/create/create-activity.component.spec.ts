@@ -3,6 +3,7 @@ import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { provideRouter, Router } from '@angular/router';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
+import { provideTranslateService } from '@ngx-translate/core';
 import { CreateActivityComponent } from './create-activity.component';
 import { ActivityService } from '../../activity/activity.service';
 import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
@@ -37,6 +38,7 @@ describe('CreateActivityComponent', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideRouter([]),
+        provideTranslateService(),
         { provide: ActivatedRoute, useValue: { queryParams, paramMap } },
         {
           provide: ActivityService,

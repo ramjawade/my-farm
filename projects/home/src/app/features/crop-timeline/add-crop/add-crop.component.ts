@@ -19,11 +19,13 @@ import { WorkflowStateService } from '../../../core/workflow/workflow-state.serv
 import { ToastService, ComboboxComponent } from 'shared';
 import { SEASONS, seasonForDate } from '../../../core/models/season';
 import { convertArea, AreaUnit } from '../../../core/pipes/area.pipe';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { ReferenceNamePipe } from '../../../core/i18n/reference-name.pipe';
 
 @Component({
   standalone: true,
   selector: 'app-add-crop',
-  imports: [CommonModule, ReactiveFormsModule, ComboboxComponent],
+  imports: [CommonModule, ReactiveFormsModule, ComboboxComponent, TranslatePipe, ReferenceNamePipe],
   templateUrl: './add-crop.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -34,6 +36,7 @@ export class AddCropComponent implements OnInit {
   private readonly farmLookup = inject(FarmLookupService);
   private readonly authService = inject(AuthService);
   private readonly toast = inject(ToastService);
+  private readonly translate = inject(TranslateService);
   private readonly workflowService = inject(WorkflowStateService);
 
   readonly savedFarms = signal<SavedFarm[]>([]);
@@ -147,7 +150,7 @@ export class AddCropComponent implements OnInit {
       });
 
       this.workflowService.markPhaseComplete('crop');
-      this.toast.success(`${newCrop.name} added with its growth-stage timeline.`);
+      this.toast.success(this.translate.instant('addCrop.savedToast', { name: newCrop.name }));
 
       this.cropForm.reset({
         season: seasonForDate(),
@@ -160,7 +163,7 @@ export class AddCropComponent implements OnInit {
 
       this.router.navigate(['/crops']);
     } catch {
-      this.toast.error('Could not save the crop. Please try again.');
+      this.toast.error(this.translate.instant('addCrop.saveError'));
     } finally {
       this.saving.set(false);
     }

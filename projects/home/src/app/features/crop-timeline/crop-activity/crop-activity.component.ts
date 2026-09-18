@@ -10,16 +10,18 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CropTimelineService } from '../crop-timeline.service';
 import { CropStage, CROP_STAGES } from '../crop-timeline.models';
 import { stageIndex } from '../crop-timeline.utils';
 import { ConfirmDialogComponent, ToastService } from 'shared';
 import { parseId } from '../../../core/models/entity-id';
+import { ReferenceNamePipe } from '../../../core/i18n/reference-name.pipe';
 
 @Component({
   standalone: true,
   selector: 'app-crop-activity',
-  imports: [CommonModule, RouterOutlet, ConfirmDialogComponent],
+  imports: [CommonModule, RouterOutlet, ConfirmDialogComponent, TranslatePipe, ReferenceNamePipe],
   templateUrl: './crop-activity.component.html',
   styleUrl: './crop-activity.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,6 +31,7 @@ export class CropActivityComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly timelineService = inject(CropTimelineService);
   private readonly toast = inject(ToastService);
+  private readonly translate = inject(TranslateService);
 
   private readonly cropId = toSignal(
     this.route.paramMap.pipe(map((params) => parseId(params.get('cropId')))),
@@ -69,7 +72,7 @@ export class CropActivityComponent implements OnInit {
     const c = this.crop();
     if (c) {
       this.timelineService.deleteCrop(c.id);
-      this.toast.success('Crop and its activities deleted.');
+      this.toast.success(this.translate.instant('cropActivity.deletedToast'));
       this.showDeleteCropConfirm.set(false);
       this.router.navigate(['/crops']);
     }

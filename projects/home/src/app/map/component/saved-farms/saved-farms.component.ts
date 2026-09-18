@@ -2,6 +2,7 @@ import { Component, inject, input, output, signal, computed } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ConfirmDialogComponent, ToastService } from 'shared';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { FarmAreaResult, SavedFarm } from '../../models/map.models';
 import { CropTimelineService } from '../../../features/crop-timeline/crop-timeline.service';
 import { LandDetailComponent } from '../land-detail/land-detail.component';
@@ -11,7 +12,7 @@ type LandStatus = 'planted' | 'fallow' | 'multiple';
 @Component({
   standalone: true,
   selector: 'app-saved-farms',
-  imports: [CommonModule, FormsModule, ConfirmDialogComponent, LandDetailComponent],
+  imports: [CommonModule, FormsModule, ConfirmDialogComponent, LandDetailComponent, TranslatePipe],
   templateUrl: './saved-farms.component.html',
   styleUrl: './saved-farms.component.scss',
 })
@@ -26,6 +27,7 @@ export class SavedFarmsComponent {
 
   private readonly crops = inject(CropTimelineService);
   private readonly toast = inject(ToastService);
+  private readonly translate = inject(TranslateService);
 
   readonly savedFarmsCollapsed = signal(false);
   readonly showDeleteConfirm = signal(false);
@@ -81,11 +83,11 @@ export class SavedFarmsComponent {
   getStatusLabel(status: LandStatus): string {
     switch (status) {
       case 'planted':
-        return 'Planted';
+        return this.translate.instant('savedFarms.planted');
       case 'multiple':
-        return 'Multiple crops';
+        return this.translate.instant('savedFarms.multipleCrops');
       case 'fallow':
-        return 'Fallow';
+        return this.translate.instant('savedFarms.fallow');
     }
   }
 
@@ -104,7 +106,7 @@ export class SavedFarmsComponent {
     const newName = this.renamingValue().trim();
     if (newName) {
       this.renameFarm.emit({ id, newName });
-      this.toast.success('Land renamed.');
+      this.toast.success(this.translate.instant('savedFarms.renamedToast'));
     }
     this.renamingId.set(null);
     this.renamingValue.set('');
@@ -114,9 +116,8 @@ export class SavedFarmsComponent {
     event.stopPropagation();
     const count = this.cropCount(id);
     if (count > 0) {
-      this.toast.warning(
-        `This land has ${count} crop${count > 1 ? 's' : ''} on it. Remove or move them first.`,
-      );
+      const key = count > 1 ? 'savedFarms.hasCropsPlural' : 'savedFarms.hasCrop';
+      this.toast.warning(this.translate.instant(key, { count }));
       return;
     }
     this.pendingDeleteId.set(id);
@@ -128,7 +129,7 @@ export class SavedFarmsComponent {
     if (!id) return;
     this.deleteFarm.emit(id);
     this.pendingDeleteId.set(null);
-    this.toast.success('Land deleted.');
+    this.toast.success(this.translate.instant('savedFarms.deletedToast'));
   }
 
   onLandNotesUpdated(event: { id: number; notes: string }): void {

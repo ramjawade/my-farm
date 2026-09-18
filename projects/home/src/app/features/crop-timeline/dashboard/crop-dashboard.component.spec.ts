@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideRouter, Router } from '@angular/router';
+import { provideTranslateService } from '@ngx-translate/core';
 import { CropDashboardComponent } from './crop-dashboard.component';
 import { CropDashboardService } from './crop-dashboard.service';
 import { CropEntity } from '../crop-timeline.models';
@@ -35,6 +36,7 @@ describe('CropDashboardComponent', () => {
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideRouter([]),
+        provideTranslateService(),
         // ActivityService (injected by the component directly) still goes
         // through IStorageService — only CropDashboardService is mocked here.
         { provide: IStorageService, useClass: InMemoryStorageService },
@@ -65,7 +67,7 @@ describe('CropDashboardComponent', () => {
 
   it('should resolve next stage correctly', () => {
     expect(component.getNextStage('Sowing')).toBe('Germination');
-    expect(component.getNextStage('Harvest')).toBe('Fully Mature');
+    expect(component.getNextStage('Harvest')).toBe('cropDashboard.fullyMature');
   });
 
   it('should navigate to crop detail on card click', () => {
@@ -78,8 +80,8 @@ describe('CropDashboardComponent', () => {
     expect(component.hasNoCropsAtAll()).toBeTrue();
     fixture.detectChanges();
     const html = fixture.nativeElement.textContent as string;
-    expect(html).toContain("You haven't added any crops yet");
-    expect(html).not.toContain('match your search');
+    expect(html).toContain('cropDashboard.noCropsYet');
+    expect(html).not.toContain('cropDashboard.noMatchTitle');
   });
 
   it('still shows the search-specific empty state when crops exist but none match', async () => {
@@ -90,7 +92,7 @@ describe('CropDashboardComponent', () => {
 
     expect(component.hasNoCropsAtAll()).toBeFalse();
     const html = fixture.nativeElement.textContent as string;
-    expect(html).toContain('No crop profiles match your search');
+    expect(html).toContain('cropDashboard.noMatchTitle');
   });
 
   it('shows an error state with a retry when loading crops fails', async () => {
@@ -98,9 +100,9 @@ describe('CropDashboardComponent', () => {
     await component.load();
     fixture.detectChanges();
 
-    expect(component.error()).toBe('Could not load your crops. Please try again.');
+    expect(component.error()).toBe('cropDashboard.loadError');
     const html = fixture.nativeElement.textContent as string;
-    expect(html).toContain('Try again');
+    expect(html).toContain('cropDashboard.tryAgain');
 
     getCropsSpy.and.resolveTo([mockCrop]);
     await component.load();

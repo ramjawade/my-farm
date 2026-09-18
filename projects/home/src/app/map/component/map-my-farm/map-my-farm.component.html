@@ -2,9 +2,9 @@
   <!-- Workflow Prompt: Land Setup -->
   @if (shouldShowLandPrompt()) {
     <app-workflow-prompt-card
-      title="Draw Your Farm Boundary"
-      message="Outline a plot on the map to get its exact area and unlock high-resolution satellite views."
-      actionLabel="Start Drawing"
+      [title]="'mapMyFarm.drawBoundaryTitle' | translate"
+      [message]="'mapMyFarm.drawBoundaryMessage' | translate"
+      [actionLabel]="'mapMyFarm.startDrawing' | translate"
       icon="bi-pin-map-fill"
       color="#2a6f47"
       buttonStyle="btn-success"
@@ -24,10 +24,10 @@
       "
     >
       <div class="fw-bold mb-0.5">
-        <i class="bi bi-pin-map-fill text-danger me-1"></i>Map Your Farm Boundary
+        <i class="bi bi-pin-map-fill text-danger me-1"></i
+        >{{ 'mapMyFarm.mapBoundaryTitle' | translate }}
       </div>
-      Draw your farm boundaries to resolve cultivation area and unlock high-resolution satellite
-      views.
+      {{ 'mapMyFarm.mapBoundaryHint' | translate }}
     </div>
   }
 
@@ -38,12 +38,12 @@
     [class.btn-outline-success]="!draw.isDrawing()"
     (click)="toggleMapMyFarm()"
   >
-    Map my farm
+    {{ 'mapMyFarm.mapMyFarm' | translate }}
   </button>
 
   @if (draw.isDrawing()) {
     <p class="map-my-farm__hint mb-2">
-      Click the map to add points ({{ draw.pointCount() }}). Click the first point to complete.
+      {{ 'mapMyFarm.clickToAddPoints' | translate: { count: draw.pointCount() } }}
     </p>
     <div class="map-my-farm__locate-btn mb-2">
       <button
@@ -65,7 +65,9 @@
           />
           <circle cx="8" cy="8" r="2" fill="currentColor" />
         </svg>
-        {{ geolocating() ? 'Locating...' : 'Locate me' }}
+        {{
+          geolocating() ? ('mapMyFarm.locating' | translate) : ('mapMyFarm.locateMe' | translate)
+        }}
       </button>
     </div>
     <div class="map-my-farm__actions btn-group btn-group-sm w-100">
@@ -75,26 +77,30 @@
         (click)="undo()"
         [disabled]="draw.pointCount() === 0"
       >
-        Undo
+        {{ 'landEdit.undo' | translate }}
       </button>
-      <button type="button" class="btn btn-outline-danger" (click)="cancel()">Cancel</button>
+      <button type="button" class="btn btn-outline-danger" (click)="cancel()">
+        {{ 'landEdit.cancel' | translate }}
+      </button>
     </div>
   }
 
   @if (draw.isCompleted() && formattedArea(); as area) {
     <div class="map-my-farm__area mt-2">
-      <span class="map-my-farm__area-title">Farm area</span>
-      <span class="map-my-farm__area-value">{{ area.hectares }} ha</span>
-      <span class="map-my-farm__area-sub">{{ area.acres }} acres</span>
+      <span class="map-my-farm__area-title">{{ 'mapMyFarm.farmArea' | translate }}</span>
+      <span class="map-my-farm__area-value"
+        >{{ area.hectares }} {{ 'mapMyFarm.ha' | translate }}</span
+      >
+      <span class="map-my-farm__area-sub">{{ area.acres }} {{ 'landEdit.acres' | translate }}</span>
     </div>
     <div class="map-my-farm__note mt-1">
-      Note: Calculated area is approximate and should not be considered actual acreage.
+      {{ 'mapMyFarm.areaApproximateNote' | translate }}
     </div>
     <div class="mt-2">
       <input
         type="text"
         class="form-control form-control-sm mb-1"
-        placeholder="Enter farm name..."
+        [placeholder]="'mapMyFarm.enterFarmName' | translate"
         [value]="farmName()"
         (input)="onNameInput($event)"
       />
@@ -105,10 +111,10 @@
           (click)="save()"
           [disabled]="!farmName().trim()"
         >
-          Save
+          {{ 'mapMyFarm.save' | translate }}
         </button>
         <button type="button" class="btn btn-outline-secondary" (click)="draw.startDrawing()">
-          Draw again
+          {{ 'mapMyFarm.drawAgain' | translate }}
         </button>
       </div>
     </div>

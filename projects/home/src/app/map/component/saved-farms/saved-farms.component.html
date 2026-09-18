@@ -17,7 +17,7 @@
           d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.5.5 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103M10 1.91l-4-.8v12.98l4 .8zm1 12.98 4-.8V1.11l-4 .8zm-6-.8V1.11l-4 .8v12.98z"
         />
       </svg>
-      <strong style="font-size: 0.85rem">My Saved Farms</strong>
+      <strong style="font-size: 0.85rem">{{ 'savedFarms.title' | translate }}</strong>
       <span class="badge rounded-pill bg-success text-white" style="font-size: 0.7rem">{{
         farms().length
       }}</span>
@@ -61,7 +61,7 @@
           <input
             type="text"
             class="form-control form-control-sm"
-            placeholder="Search lands..."
+            [placeholder]="'savedFarms.searchLands' | translate"
             [value]="searchFilter()"
             (input)="searchFilter.set($any($event.target).value)"
             style="font-size: 0.75rem"
@@ -71,10 +71,13 @@
 
       @if (farms().length === 0) {
         <div class="map-page__saved-farms-empty text-muted">
-          No saved farms yet. Draw on map and click <strong>Save</strong>.
+          {{ 'savedFarms.noSavedFarms' | translate }}
+          <strong>{{ 'mapMyFarm.save' | translate }}</strong>
         </div>
       } @else if (filteredFarms().length === 0) {
-        <div class="map-page__saved-farms-empty text-muted">No lands match your search.</div>
+        <div class="map-page__saved-farms-empty text-muted">
+          {{ 'savedFarms.noLandsMatch' | translate }}
+        </div>
       } @else {
         <div class="list-group list-group-flush map-page__saved-farms-list">
           @for (farm of filteredFarms(); track farm.id) {
@@ -107,7 +110,7 @@
                     type="button"
                     class="icon-btn icon-btn--save"
                     (click)="saveRename(farm.id)"
-                    title="Save name"
+                    [title]="'savedFarms.saveName' | translate"
                   >
                     <svg
                       width="13"
@@ -126,7 +129,7 @@
                     type="button"
                     class="icon-btn icon-btn--cancel"
                     (click)="cancelRename()"
-                    title="Cancel"
+                    [title]="'common.cancel' | translate"
                   >
                     <svg
                       width="13"
@@ -176,7 +179,7 @@
                     type="button"
                     class="icon-btn"
                     (click)="startRename($event, farm)"
-                    title="Rename land"
+                    [title]="'savedFarms.renameLand' | translate"
                   >
                     <svg
                       width="13"
@@ -195,7 +198,7 @@
                     type="button"
                     class="icon-btn"
                     (click)="selectFarm.emit(farm); showLandDetail(farm); $event.stopPropagation()"
-                    title="View land details"
+                    [title]="'savedFarms.viewLandDetails' | translate"
                   >
                     <svg
                       width="13"
@@ -215,7 +218,7 @@
                     type="button"
                     class="icon-btn icon-btn--danger"
                     (click)="onDeleteSavedFarm($event, farm.id)"
-                    title="Delete land"
+                    [title]="'savedFarms.deleteLand' | translate"
                   >
                     <svg
                       width="13"
@@ -254,9 +257,9 @@
 
 <lib-confirm-dialog
   [(isOpen)]="showDeleteConfirm"
-  [title]="'Delete land'"
-  [message]="'Remove this land outline? Activities logged directly on it keep their records.'"
-  [confirmText]="'Delete'"
+  [title]="'savedFarms.deleteLand' | translate"
+  [message]="'savedFarms.deleteLandConfirm' | translate"
+  [confirmText]="'common.delete' | translate"
   [isDestructive]="true"
   (confirm)="confirmDelete()"
 />

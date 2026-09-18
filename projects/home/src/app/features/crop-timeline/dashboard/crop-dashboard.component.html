@@ -3,7 +3,7 @@
 >
   <!-- Title on the Left -->
   <div class="text-start">
-    <h2 class="mf-crop-dashboard__page-title">Crop Dashboard</h2>
+    <h2 class="mf-crop-dashboard__page-title">{{ 'cropDashboard.title' | translate }}</h2>
   </div>
 
   <!-- Search Bar in the Center -->
@@ -15,7 +15,7 @@
       <input
         type="text"
         class="form-control ps-5 w-100"
-        placeholder="Search crops or fields..."
+        [placeholder]="'cropDashboard.searchPlaceholder' | translate"
         [ngModel]="searchTerm()"
         (ngModelChange)="onSearchTermChange($event)"
       />
@@ -29,7 +29,7 @@
       style="white-space: nowrap"
       (click)="onAddCropClicked()"
     >
-      <i class="bi bi-plus-lg me-2"></i>Add Crop
+      <i class="bi bi-plus-lg me-2"></i>{{ 'cropDashboard.addCrop' | translate }}
     </button>
   </div>
 </div>
@@ -37,16 +37,16 @@
 @if (loading()) {
   <div class="d-flex flex-column align-items-center justify-content-center py-5 text-muted">
     <div class="spinner-border text-success mb-3" role="status">
-      <span class="visually-hidden">Loading crops…</span>
+      <span class="visually-hidden">{{ 'cropDashboard.loadingCrops' | translate }}</span>
     </div>
-    <p class="mb-0">Loading your crops…</p>
+    <p class="mb-0">{{ 'cropDashboard.loadingCrops' | translate }}</p>
   </div>
 } @else if (error()) {
   <div class="card card-glass p-5 text-center">
     <i class="bi bi-exclamation-triangle text-danger fs-1 d-block mb-3"></i>
     <h5 class="text-dark font-semibold">{{ error() }}</h5>
     <button class="btn btn-outline-success mx-auto mt-2" (click)="load()">
-      <i class="bi bi-arrow-clockwise me-2"></i>Try again
+      <i class="bi bi-arrow-clockwise me-2"></i>{{ 'cropDashboard.tryAgain' | translate }}
     </button>
   </div>
 } @else {
@@ -61,7 +61,7 @@
           <div>
             <div class="d-flex justify-content-between align-items-start mb-3">
               <div>
-                <h4 class="mf-card-title m-0">{{ crop.name }}</h4>
+                <h4 class="mf-card-title m-0">{{ crop.name | referenceName: 'crop' }}</h4>
                 <span class="badge bg-success mt-1.5">
                   <i class="bi bi-pin-map-fill me-1"></i>{{ crop.fieldId }}
                 </span>
@@ -77,7 +77,9 @@
                   <span class="font-monospace fw-bold text-success" style="font-size: 0.8rem">
                     {{ getStageIndex(crop.currentStage) + 1 }}/8
                   </span>
-                  <span class="text-muted" style="font-size: 0.6rem; font-weight: 500">Stage</span>
+                  <span class="text-muted" style="font-size: 0.6rem; font-weight: 500">{{
+                    'cropDashboard.stageLabel' | translate
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -86,25 +88,32 @@
             <div class="py-3 border-top my-3 px-2 bg-light-green rounded flex-grow-1">
               <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
                 <li class="d-flex justify-content-between align-items-center">
-                  <span class="mf-meta-label">Age</span>
-                  <strong class="mf-meta-value font-monospace" style="font-size: 0.95rem"
-                    >{{ getDaysAfterSowing(crop.sowingDate) }} Days</strong
-                  >
+                  <span class="mf-meta-label">{{ 'cropDashboard.age' | translate }}</span>
+                  <strong class="mf-meta-value font-monospace" style="font-size: 0.95rem">{{
+                    'cropDashboard.daysCount'
+                      | translate: { days: getDaysAfterSowing(crop.sowingDate) }
+                  }}</strong>
                 </li>
                 <li class="d-flex justify-content-between align-items-center">
-                  <span class="mf-meta-label">Plot</span>
+                  <span class="mf-meta-label">{{ 'cropDashboard.plot' | translate }}</span>
                   <strong class="mf-meta-value" style="font-size: 0.9rem"
-                    >{{ crop.area }} {{ crop.areaUnit === 'hectares' ? 'hec' : 'ac' }}</strong
+                    >{{ crop.area }}
+                    {{
+                      (crop.areaUnit === 'hectares'
+                        ? 'cropDashboard.hectaresShort'
+                        : 'cropDashboard.acresShort'
+                      ) | translate
+                    }}</strong
                   >
                 </li>
                 <li class="d-flex justify-content-between align-items-center">
-                  <span class="mf-meta-label">Last Activity</span>
+                  <span class="mf-meta-label">{{ 'cropDashboard.lastActivity' | translate }}</span>
                   <strong class="mf-meta-value" style="font-size: 0.9rem">{{
                     getDaysSinceLastActivity(crop.id)
                   }}</strong>
                 </li>
                 <li class="d-flex justify-content-between align-items-center">
-                  <span class="mf-meta-label">Next Activity</span>
+                  <span class="mf-meta-label">{{ 'cropDashboard.nextActivity' | translate }}</span>
                   <strong
                     class="mf-meta-value text-success"
                     style="
@@ -114,9 +123,15 @@
                       overflow: hidden;
                       text-overflow: ellipsis;
                     "
-                    [title]="crop.upcomingActivity || 'None scheduled'"
+                    [title]="
+                      (crop.upcomingActivity | referenceName: 'activity') ||
+                      ('cropDashboard.noneScheduled' | translate)
+                    "
                   >
-                    {{ crop.upcomingActivity || 'None scheduled' }}
+                    {{
+                      (crop.upcomingActivity | referenceName: 'activity') ||
+                        ('cropDashboard.noneScheduled' | translate)
+                    }}
                   </strong>
                 </li>
               </ul>
@@ -130,17 +145,17 @@
         <div class="card card-glass p-5 text-center">
           <i class="bi bi-folder-x text-muted fs-1 d-block mb-3"></i>
           @if (hasNoCropsAtAll()) {
-            <h5 class="text-dark font-semibold">You haven't added any crops yet</h5>
+            <h5 class="text-dark font-semibold">{{ 'cropDashboard.noCropsYet' | translate }}</h5>
             <p class="text-muted mb-3">
-              Add your first crop to start tracking its growth-stage timeline.
+              {{ 'cropDashboard.addFirstCropHint' | translate }}
             </p>
             <button class="btn btn-success mx-auto" (click)="onAddCropClicked()">
-              <i class="bi bi-plus-lg me-2"></i>Add Crop
+              <i class="bi bi-plus-lg me-2"></i>{{ 'cropDashboard.addCrop' | translate }}
             </button>
           } @else {
-            <h5 class="text-dark font-semibold">No crop profiles match your search</h5>
+            <h5 class="text-dark font-semibold">{{ 'cropDashboard.noMatchTitle' | translate }}</h5>
             <p class="text-muted mb-0">
-              Try typing a different crop name, field, or add a new crop to get started.
+              {{ 'cropDashboard.noMatchHint' | translate }}
             </p>
           }
         </div>
@@ -154,7 +169,7 @@
   type="button"
   class="btn btn-success fab fab-button d-flex d-md-none align-items-center justify-content-center"
   (click)="onAddCropClicked()"
-  title="Add Crop"
+  [title]="'cropDashboard.addCrop' | translate"
 >
   <i class="bi bi-plus-lg"></i>
 </button>

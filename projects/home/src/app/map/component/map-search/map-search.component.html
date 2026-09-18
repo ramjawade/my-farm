@@ -3,8 +3,8 @@
     id="mapSearchInput"
     type="search"
     class="form-control form-control-sm"
-    placeholder="Street, city, postcode, place..."
-    aria-label="Search address"
+    [placeholder]="'mapSearch.placeholder' | translate"
+    [attr.aria-label]="'mapSearch.ariaLabel' | translate"
     autocomplete="off"
     [value]="searchQuery()"
     (input)="onSearchInput($event)"
@@ -26,11 +26,11 @@
   <div class="map-page__search-results shadow-sm">
     <div class="map-page__search-results-header">
       @if (searchLoading()) {
-        <span>Searching…</span>
+        <span>{{ 'mapSearch.searching' | translate }}</span>
       } @else if (searchResults().length > 0) {
-        <span>Top {{ searchResults().length }} matches</span>
+        <span>{{ 'mapSearch.topMatches' | translate: { count: searchResults().length } }}</span>
       } @else {
-        <span>Results</span>
+        <span>{{ 'mapSearch.results' | translate }}</span>
       }
     </div>
 

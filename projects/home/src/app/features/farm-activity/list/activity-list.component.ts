@@ -10,7 +10,9 @@ import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
 import { DatePipe, CommonModule } from '@angular/common';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ActivityService } from '../../activity/activity.service';
+import { ReferenceNamePipe } from '../../../core/i18n/reference-name.pipe';
 import { ActivityListService } from './activity-list.service';
 import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
@@ -26,7 +28,14 @@ import { parseId } from '../../../core/models/entity-id';
 @Component({
   selector: 'app-activity-list',
   standalone: true,
-  imports: [RouterLink, DatePipe, CommonModule, ConfirmDialogComponent],
+  imports: [
+    RouterLink,
+    DatePipe,
+    CommonModule,
+    ConfirmDialogComponent,
+    TranslatePipe,
+    ReferenceNamePipe,
+  ],
   templateUrl: './activity-list.component.html',
   styleUrl: './activity-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,6 +44,7 @@ export class ActivityListComponent implements OnInit {
   readonly activityService = inject(ActivityService);
   private readonly activityListService = inject(ActivityListService);
   private readonly toast = inject(ToastService);
+  private readonly translate = inject(TranslateService);
   private readonly cropService = inject(CropTimelineService);
   private readonly farmDrawService = inject(FarmDrawService);
   private readonly authService = inject(AuthService);
@@ -187,7 +197,7 @@ export class ActivityListComponent implements OnInit {
       });
       this.activities.set(activities);
     } catch {
-      this.error.set('Could not load activities. Please try again.');
+      this.error.set(this.translate.instant('activityList.loadError'));
     } finally {
       this.loading.set(false);
     }
@@ -200,7 +210,7 @@ export class ActivityListComponent implements OnInit {
   getCropName(cropId?: number): string {
     if (!cropId) return '';
     const crop = this.cropsList().find((c) => c.id === cropId);
-    return crop ? crop.name : 'Unknown Crop';
+    return crop ? crop.name : this.translate.instant('activityList.unknownCrop');
   }
 
   getFieldName(fieldId?: number): string {
@@ -270,7 +280,7 @@ export class ActivityListComponent implements OnInit {
     if (id) {
       this.activityService.deleteActivity(id);
       this.activities.update((acts) => acts.filter((a) => a.id !== id));
-      this.toast.success('Activity deleted.');
+      this.toast.success(this.translate.instant('activityList.deletedToast'));
       this.selectedActivityId.set(null);
     }
   }

@@ -1,6 +1,7 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
+import { provideTranslateService } from '@ngx-translate/core';
 import { MapMyFarmComponent } from './map-my-farm.component';
 import { FarmDrawService } from '../../farm-draw/farm-draw.service';
 import { FarmAreaResult } from '../../models/map.models';
@@ -32,6 +33,7 @@ describe('MapMyFarmComponent', () => {
         { provide: IStorageService, useClass: InMemoryStorageService },
         provideZonelessChangeDetection(),
         provideHttpClient(),
+        provideTranslateService(),
         { provide: FarmDrawService, useValue: mockFarmDraw },
       ],
     }).compileComponents();

@@ -1,4 +1,5 @@
 import { Component, inject, input, signal, computed, output, effect } from '@angular/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { formatArea, getPolygonCentroid } from '../../farm-draw/farm-area.utils';
 import { FarmDrawService } from '../../farm-draw/farm-draw.service';
@@ -10,7 +11,7 @@ import { WorkflowPromptCardComponent } from '../../../features/shared/components
 
 @Component({
   standalone: true,
-  imports: [WorkflowPromptCardComponent],
+  imports: [WorkflowPromptCardComponent, TranslatePipe],
   selector: 'app-map-my-farm',
   templateUrl: './map-my-farm.component.html',
   styleUrl: './map-my-farm.component.scss',
@@ -21,6 +22,7 @@ export class MapMyFarmComponent {
   private readonly authService = inject(AuthService);
   private readonly workflowService = inject(WorkflowStateService);
   private readonly onboardingService = inject(OnboardingGuideService);
+  private readonly translate = inject(TranslateService);
   readonly hasFarms = input(false);
 
   readonly farmName = signal('');
@@ -69,7 +71,7 @@ export class MapMyFarmComponent {
 
   locateMe(): void {
     if (!navigator.geolocation) {
-      this.toast.warning('Geolocation is not supported by your browser.');
+      this.toast.warning(this.translate.instant('mapMyFarm.geolocationUnsupported'));
       return;
     }
 
@@ -83,8 +85,8 @@ export class MapMyFarmComponent {
         this.geolocating.set(false);
         const message =
           error.code === 1
-            ? 'Please enable location access in your browser settings.'
-            : 'Unable to get your location. Please try again.';
+            ? this.translate.instant('mapMyFarm.enableLocation')
+            : this.translate.instant('mapMyFarm.locationUnavailable');
         this.toast.warning(message);
       },
       { timeout: 10000, enableHighAccuracy: true },
@@ -98,7 +100,8 @@ export class MapMyFarmComponent {
   save(): void {
     const nameVal = this.farmName();
     this.farmSaved.emit(nameVal);
-    this.toast.success(`Land "${nameVal.trim() || 'Farm'}" saved.`);
+    const savedName = nameVal.trim() || this.translate.instant('mapMyFarm.farmFallbackName');
+    this.toast.success(this.translate.instant('mapMyFarm.landSavedToast', { name: savedName }));
 
     // Mark land workflow phase complete
     this.workflowService.markPhaseComplete('land');

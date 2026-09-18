@@ -3,6 +3,7 @@ import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { provideRouter, Router } from '@angular/router';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
+import { provideTranslateService } from '@ngx-translate/core';
 import { ActivityListComponent } from './activity-list.component';
 import { ActivityListService } from './activity-list.service';
 import { ActivityService } from '../../activity/activity.service';
@@ -34,6 +35,7 @@ describe('ActivityListComponent', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideRouter([]),
+        provideTranslateService(),
         { provide: ActivatedRoute, useValue: { queryParams, paramMap } },
         { provide: ActivityListService, useValue: { load: loadSpy } },
         {
@@ -151,7 +153,7 @@ describe('ActivityListComponent', () => {
     loadSpy.and.rejectWith(new Error('network down'));
     await component.reload();
 
-    expect(component.error()).toBe('Could not load activities. Please try again.');
+    expect(component.error()).toBe('activityList.loadError');
 
     loadSpy.and.resolveTo([mockActivity]);
     await component.reload();

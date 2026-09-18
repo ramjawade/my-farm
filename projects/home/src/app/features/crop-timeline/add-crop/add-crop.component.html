@@ -2,26 +2,30 @@
   <div class="card shadow-sm border rounded bg-white p-4 text-start">
     <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
       <h4 class="text-success font-semibold m-0">
-        <i class="bi bi-plus-circle-fill me-2"></i>Add New Crop Profile
+        <i class="bi bi-plus-circle-fill me-2"></i>{{ 'addCrop.title' | translate }}
       </h4>
       <button class="btn btn-outline-secondary btn-sm px-3" (click)="onCancel()">
-        <i class="bi bi-arrow-left me-1"></i>Cancel
+        <i class="bi bi-arrow-left me-1"></i>{{ 'common.cancel' | translate }}
       </button>
     </div>
 
     <form [formGroup]="cropForm" (ngSubmit)="onSubmit()">
       <div class="row g-3">
         <div class="col-md-6">
-          <label for="season" class="field-label required-label">Season</label>
+          <label for="season" class="field-label required-label">{{
+            'addCrop.season' | translate
+          }}</label>
           <select id="season" class="form-select" formControlName="season">
             @for (s of seasons; track s) {
-              <option [value]="s">{{ s }}</option>
+              <option [value]="s">{{ s | referenceName: 'season' }}</option>
             }
           </select>
         </div>
 
         <div class="col-md-6">
-          <label for="name" class="field-label required-label">Crop Name</label>
+          <label for="name" class="field-label required-label">{{
+            'addCrop.cropName' | translate
+          }}</label>
           <lib-combobox
             id="name"
             formControlName="name"
@@ -29,12 +33,14 @@
             (itemAdded)="onNameAdded($event)"
           />
           @if (cropForm.get('name')?.touched && cropForm.get('name')?.invalid) {
-            <div class="text-danger small mt-1">Provide a valid name (at least 2 characters).</div>
+            <div class="text-danger small mt-1">{{ 'addCrop.nameInvalid' | translate }}</div>
           }
         </div>
 
         <div class="col-md-6">
-          <label for="fieldId" class="field-label required-label">Link Land / Field Plot</label>
+          <label for="fieldId" class="field-label required-label">{{
+            'addCrop.linkLand' | translate
+          }}</label>
           <select
             id="fieldId"
             class="form-select"
@@ -43,18 +49,20 @@
               cropForm.get('fieldId')?.touched && cropForm.get('fieldId')?.invalid
             "
           >
-            <option [ngValue]="null">-- Select Saved Land --</option>
+            <option [ngValue]="null">{{ 'addCrop.selectSavedLand' | translate }}</option>
             @for (f of savedFarms(); track f.id) {
               <option [ngValue]="f.id">{{ f.name }}</option>
             }
           </select>
           @if (cropForm.get('fieldId')?.touched && cropForm.get('fieldId')?.invalid) {
-            <div class="text-danger small mt-1">Linking a land/field plot is required.</div>
+            <div class="text-danger small mt-1">{{ 'addCrop.linkLandRequired' | translate }}</div>
           }
         </div>
 
         <div class="col-md-6">
-          <label class="field-label required-label">Total Surface Area</label>
+          <label class="field-label required-label">{{
+            'addCrop.totalSurfaceArea' | translate
+          }}</label>
           <div class="input-group">
             <input
               type="number"
@@ -71,17 +79,19 @@
               formControlName="areaUnit"
               style="max-width: 120px"
             >
-              <option value="hectares">Hectares (ha)</option>
-              <option value="acres">Acres (ac)</option>
+              <option value="hectares">{{ 'addCrop.hectaresLong' | translate }}</option>
+              <option value="acres">{{ 'addCrop.acresLong' | translate }}</option>
             </select>
           </div>
           @if (cropForm.get('area')?.touched && cropForm.get('area')?.invalid) {
-            <div class="text-danger small mt-1">Provide a valid area number greater than 0.</div>
+            <div class="text-danger small mt-1">{{ 'addCrop.areaInvalid' | translate }}</div>
           }
         </div>
 
         <div class="col-md-6">
-          <label for="sowingDate" class="field-label required-label">Sowing Date</label>
+          <label for="sowingDate" class="field-label required-label">{{
+            'addCrop.sowingDate' | translate
+          }}</label>
           <input type="date" id="sowingDate" class="form-control" formControlName="sowingDate" />
         </div>
 
@@ -91,7 +101,7 @@
             class="btn btn-success px-4"
             [disabled]="cropForm.invalid || creatingName()"
           >
-            <i class="bi bi-check-lg me-1"></i>Create Profile
+            <i class="bi bi-check-lg me-1"></i>{{ 'addCrop.createProfile' | translate }}
           </button>
         </div>
       </div>
