@@ -9,6 +9,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth.service';
 import { CropTimelineService } from '../crop-timeline/crop-timeline.service';
 import { ActivityService } from '../activity/activity.service';
@@ -18,6 +19,7 @@ import { Activity } from '../activity/activity.models';
 import { daysAfterSowing, stageProgressPercent } from '../crop-timeline/crop-timeline.utils';
 
 import { ProfileEditDialogComponent } from '../profile/components/profile-edit-dialog.component';
+import { ReferenceNamePipe } from '../../core/i18n/reference-name.pipe';
 import { ToastService } from 'shared';
 import {
   OnboardingChecklistComponent,
@@ -35,6 +37,8 @@ import { WorkflowProgressBarComponent } from '../shared/components/workflow-prog
     ProfileEditDialogComponent,
     OnboardingChecklistComponent,
     WorkflowProgressBarComponent,
+    TranslatePipe,
+    ReferenceNamePipe,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
@@ -47,6 +51,7 @@ export class HomeComponent implements OnInit {
   private readonly farmDrawService = inject(FarmDrawService);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
+  private readonly translate = inject(TranslateService);
 
   readonly farms = signal<SavedFarm[]>([]);
 
@@ -81,38 +86,38 @@ export class HomeComponent implements OnInit {
     return [
       {
         id: 'profile',
-        title: 'Complete your farm profile',
-        description: 'Village, water source and farming method personalise weather and advice.',
+        title: this.translate.instant('home.onboarding.profile.title'),
+        description: this.translate.instant('home.onboarding.profile.description'),
         icon: 'bi-person-gear',
         done: !!(user?.farmSetupCompleted && this.hasLocation()),
-        actionLabel: 'Set up',
+        actionLabel: this.translate.instant('home.onboarding.profile.action'),
       },
       {
         id: 'land',
-        title: 'Draw your first land',
-        description: 'Outline a plot on the map to get its exact area.',
+        title: this.translate.instant('home.onboarding.land.title'),
+        description: this.translate.instant('home.onboarding.land.description'),
         icon: 'bi-map',
         done: this.hasBoundary(),
         route: '/map',
-        actionLabel: 'Open map',
+        actionLabel: this.translate.instant('home.onboarding.land.action'),
       },
       {
         id: 'crop',
-        title: 'Add a crop on that land',
-        description: 'Track it from land preparation to harvest.',
+        title: this.translate.instant('home.onboarding.crop.title'),
+        description: this.translate.instant('home.onboarding.crop.description'),
         icon: 'bi-flower1',
         done: this.cropService.crops().length > 0,
         route: '/crops/add',
-        actionLabel: 'Add crop',
+        actionLabel: this.translate.instant('home.onboarding.crop.action'),
       },
       {
         id: 'activity',
-        title: 'Log your first activity',
-        description: 'Record work and expenses so costs roll up per crop.',
+        title: this.translate.instant('home.onboarding.activity.title'),
+        description: this.translate.instant('home.onboarding.activity.description'),
         icon: 'bi-journal-plus',
         done: hasActivity,
         route: '/activities/create',
-        actionLabel: 'Log activity',
+        actionLabel: this.translate.instant('home.onboarding.activity.action'),
       },
     ];
   });
@@ -138,26 +143,27 @@ export class HomeComponent implements OnInit {
   // Time-of-day Greeting Signal
   readonly greetingInfo = computed(() => {
     const hour = new Date().getHours();
-    let text = 'Welcome back';
+    let greetingKey = 'home.greeting.welcomeBack';
     let icon = 'bi-sun-fill text-warning';
 
     if (hour >= 5 && hour < 12) {
-      text = 'Good morning';
+      greetingKey = 'home.greeting.goodMorning';
       icon = 'bi-sunrise-fill text-warning';
     } else if (hour >= 12 && hour < 17) {
-      text = 'Good afternoon';
+      greetingKey = 'home.greeting.goodAfternoon';
       icon = 'bi-sun-fill text-warning';
     } else if (hour >= 17 && hour < 22) {
-      text = 'Good evening';
+      greetingKey = 'home.greeting.goodEvening';
       icon = 'bi-sunset-fill text-danger';
     } else {
-      text = 'Good night';
+      greetingKey = 'home.greeting.goodNight';
       icon = 'bi-moon-stars-fill text-primary';
     }
 
     const user = this.currentUser();
-    const name = user ? user.fullName.split(' ')[0] : 'Farmer';
-    return { text: `${text}, ${name}!`, icon };
+    const name = user ? user.fullName.split(' ')[0] : this.translate.instant('common.farmer');
+    const text = this.translate.instant(greetingKey, { name });
+    return { text, icon };
   });
 
   // Profile completeness check
@@ -253,7 +259,7 @@ export class HomeComponent implements OnInit {
         const crop = this.cropService.crops().find((c) => c.id === act.cropId);
         return {
           ...act,
-          cropName: crop ? crop.name : 'General Farm',
+          cropName: crop ? crop.name : this.translate.instant('home.generalFarm'),
           isToday: act.date ? new Date(act.date).toISOString().split('T')[0] === todayStr : false,
           dateLabel: this.formatDate(act.date),
         };

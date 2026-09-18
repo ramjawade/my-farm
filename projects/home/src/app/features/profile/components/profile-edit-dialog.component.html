@@ -15,7 +15,7 @@
           } @else if (section() === 'agronomic') {
             <i class="bi bi-shield-fill text-success me-2"></i>Edit Agronomic Settings
           } @else if (section() === 'land') {
-            <i class="bi bi-geo-alt-fill text-success me-2"></i>Edit Land & Location
+            <i class="bi bi-geo-alt-fill text-success me-2"></i>{{ 'landEdit.title' | translate }}
           } @else if (section() === 'operations') {
             <i class="bi bi-gear-fill text-success me-2"></i>Edit Operational Settings
           } @else if (section() === 'setup') {
@@ -178,9 +178,11 @@
           <div>
             <!-- Farm Name -->
             <div class="mb-4">
-              <label for="farmName" class="field-label required-label">Farm Name</label>
+              <label for="farmName" class="field-label required-label">{{
+                'landEdit.farmName' | translate
+              }}</label>
               <p class="field-sub-label">
-                Give a recognizable identifier to your primary agricultural site.
+                {{ 'landEdit.farmNameSubLabel' | translate }}
               </p>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-house-door-fill"></i></span>
@@ -195,7 +197,7 @@
               </div>
               @if (editFarmName() && editFarmName().trim().length < 2) {
                 <div class="text-danger small mt-1">
-                  Please enter a valid farm name (minimum 2 characters).
+                  {{ 'landEdit.farmNameInvalid' | translate }}
                 </div>
               }
             </div>
@@ -203,9 +205,9 @@
             <!-- Cultivated Area -->
             <div class="row g-3 mb-4">
               <div class="col-8">
-                <label for="farmArea" class="field-label required-label"
-                  >Total Cultivated Area</label
-                >
+                <label for="farmArea" class="field-label required-label">{{
+                  'landEdit.cultivatedArea' | translate
+                }}</label>
                 <input
                   type="number"
                   step="0.01"
@@ -217,29 +219,34 @@
                 />
               </div>
               <div class="col-4">
-                <label for="farmAreaUnit" class="field-label required-label">Unit</label>
+                <label for="farmAreaUnit" class="field-label required-label">{{
+                  'landEdit.unit' | translate
+                }}</label>
                 <select
                   id="farmAreaUnit"
                   class="form-select"
                   [ngModel]="editFarmAreaUnit()"
                   (ngModelChange)="editFarmAreaUnit.set($event)"
                 >
-                  <option value="hectares">Hectares</option>
-                  <option value="acres">Acres</option>
+                  <option value="hectares">{{ 'landEdit.hectares' | translate }}</option>
+                  <option value="acres">{{ 'landEdit.acres' | translate }}</option>
                 </select>
               </div>
               @if (editFarmArea() !== null && editFarmArea() <= 0) {
-                <div class="text-danger small mt-1">Area must be a number greater than 0.</div>
+                <div class="text-danger small mt-1">
+                  {{ 'landEdit.areaInvalid' | translate }}
+                </div>
               }
             </div>
 
             <!-- Where is your farm? Toggle -->
             <div class="mb-4 mt-3 pt-3 border-top">
               <label class="field-label required-label"
-                ><i class="bi bi-geo-alt-fill me-1"></i>Where is your farm?</label
+                ><i class="bi bi-geo-alt-fill me-1"></i
+                >{{ 'landEdit.whereIsYourFarm' | translate }}</label
               >
               <p class="field-sub-label">
-                This helps us provide accurate local weather alerts and crop suggestions.
+                {{ 'landEdit.whereIsYourFarmSubLabel' | translate }}
               </p>
 
               <div class="row g-3 justify-content-center mb-3">
@@ -251,7 +258,9 @@
                     (click)="setLocationMethod('map')"
                   >
                     <i class="bi bi-pin-map-fill fs-4 text-success"></i>
-                    <span class="fw-semibold location-label-text ms-3">Use Map Location</span>
+                    <span class="fw-semibold location-label-text ms-3">{{
+                      'landEdit.useMapLocation' | translate
+                    }}</span>
                   </button>
                 </div>
 
@@ -263,9 +272,9 @@
                     (click)="setLocationMethod('manual')"
                   >
                     <i class="bi bi-pencil-square fs-4 text-success"></i>
-                    <span class="fw-semibold location-label-text ms-3"
-                      >Select Village Manually</span
-                    >
+                    <span class="fw-semibold location-label-text ms-3">{{
+                      'landEdit.selectVillageManually' | translate
+                    }}</span>
                   </button>
                 </div>
               </div>
@@ -278,7 +287,8 @@
                   class="map-card-header p-3 bg-dark-green text-white d-flex align-items-center justify-content-between gap-3"
                 >
                   <span class="fw-semibold"
-                    ><i class="bi bi-pin-map-fill me-2"></i>Locate Farm Bounds</span
+                    ><i class="bi bi-pin-map-fill me-2"></i
+                    >{{ 'landEdit.locateFarmBounds' | translate }}</span
                   >
 
                   <div class="btn-group btn-group-sm" role="group">
@@ -288,7 +298,7 @@
                       [class.active]="mapMode() === 'pin'"
                       (click)="setMapMode('pin')"
                     >
-                      <i class="bi bi-geo-fill me-1"></i>Pin the Farm
+                      <i class="bi bi-geo-fill me-1"></i>{{ 'landEdit.pinTheFarm' | translate }}
                     </button>
                     <button
                       type="button"
@@ -296,7 +306,7 @@
                       [class.active]="mapMode() === 'draw'"
                       (click)="setMapMode('draw')"
                     >
-                      <i class="bi bi-pentagon-half me-1"></i>Map My Farm
+                      <i class="bi bi-pentagon-half me-1"></i>{{ 'landEdit.mapMyFarm' | translate }}
                     </button>
                   </div>
                 </div>
@@ -331,18 +341,24 @@
                       <div class="drawing-status-text">
                         @if (drawService.status() === 'idle') {
                           <span class="text-muted small"
-                            ><i class="bi bi-info-circle me-1"></i>Click on the map to start drawing
-                            your farm polygon.</span
+                            ><i class="bi bi-info-circle me-1"></i
+                            >{{ 'landEdit.clickToStartDrawing' | translate }}</span
                           >
                         } @else if (drawService.status() === 'drawing') {
                           <span class="text-primary small font-semibold">
-                            <i class="bi bi-pencil-fill me-1"></i>Drawing:
-                            {{ drawService.pointCount() }} points added.
+                            <i class="bi bi-pencil-fill me-1"></i>
+                            {{
+                              'landEdit.drawingPointsAdded'
+                                | translate: { count: drawService.pointCount() }
+                            }}
                           </span>
                         } @else {
                           <span class="text-success small font-semibold">
-                            <i class="bi bi-check-circle-fill me-1"></i>Completed:
-                            {{ drawService.pointCount() }} vertices.
+                            <i class="bi bi-check-circle-fill me-1"></i>
+                            {{
+                              'landEdit.completedVertices'
+                                | translate: { count: drawService.pointCount() }
+                            }}
                           </span>
                         }
                       </div>
@@ -354,14 +370,15 @@
                             (click)="drawService.undoLastPoint()"
                             [disabled]="drawService.pointCount() === 0"
                           >
-                            <i class="bi bi-arrow-counterclockwise me-1"></i>Undo
+                            <i class="bi bi-arrow-counterclockwise me-1"></i
+                            >{{ 'landEdit.undo' | translate }}
                           </button>
                           <button
                             type="button"
                             class="btn btn-sm btn-outline-danger"
                             (click)="drawService.cancelDrawing()"
                           >
-                            <i class="bi bi-x-circle me-1"></i>Cancel
+                            <i class="bi bi-x-circle me-1"></i>{{ 'landEdit.cancel' | translate }}
                           </button>
                           <button
                             type="button"
@@ -369,7 +386,7 @@
                             (click)="drawService.finishDrawing()"
                             [disabled]="!drawService.canFinish()"
                           >
-                            <i class="bi bi-check-lg me-1"></i>Finish
+                            <i class="bi bi-check-lg me-1"></i>{{ 'landEdit.finish' | translate }}
                           </button>
                         } @else if (drawService.status() === 'completed') {
                           <button
@@ -377,7 +394,8 @@
                             class="btn btn-sm btn-outline-warning"
                             (click)="drawService.startDrawing()"
                           >
-                            <i class="bi bi-arrow-repeat me-1"></i>Redraw
+                            <i class="bi bi-arrow-repeat me-1"></i
+                            >{{ 'landEdit.redraw' | translate }}
                           </button>
                         }
                       </div>
@@ -386,23 +404,27 @@
                     @if (latitude() !== null && longitude() !== null) {
                       <div class="coord-readouts d-flex gap-4">
                         <div>
-                          <span class="text-muted small d-block">Latitude</span>
+                          <span class="text-muted small d-block">{{
+                            'landEdit.latitude' | translate
+                          }}</span>
                           <strong class="font-monospace text-success">{{ latitude() }}</strong>
                         </div>
                         <div>
-                          <span class="text-muted small d-block">Longitude</span>
+                          <span class="text-muted small d-block">{{
+                            'landEdit.longitude' | translate
+                          }}</span>
                           <strong class="font-monospace text-success">{{ longitude() }}</strong>
                         </div>
                       </div>
                       <span
                         class="badge bg-success-light text-success-dark px-3 py-2 rounded-pill font-semibold"
                       >
-                        <i class="bi bi-geo-fill me-1"></i>Pinned
+                        <i class="bi bi-geo-fill me-1"></i>{{ 'landEdit.pinned' | translate }}
                       </span>
                     } @else {
                       <div class="text-danger small flex-fill">
-                        <i class="bi bi-exclamation-octagon-fill me-1"></i>Please click anywhere on
-                        the satellite map to drop your farm pin.
+                        <i class="bi bi-exclamation-octagon-fill me-1"></i
+                        >{{ 'landEdit.clickToDropPin' | translate }}
                       </div>
                     }
                   }
@@ -414,14 +436,18 @@
             <div class="manual-location-card p-4 border rounded bg-white shadow-sm mb-3 text-start">
               <h5 class="text-success mb-3 font-semibold">
                 @if (locationMethod() === 'map') {
-                  <i class="bi bi-geo-alt-fill me-2"></i>Resolved Address Details
+                  <i class="bi bi-geo-alt-fill me-2"></i
+                  >{{ 'landEdit.resolvedAddressDetails' | translate }}
                 } @else {
-                  <i class="bi bi-card-list me-2"></i>Enter Village Details
+                  <i class="bi bi-card-list me-2"></i
+                  >{{ 'landEdit.enterVillageDetails' | translate }}
                 }
               </h5>
               <div class="row g-3">
                 <div class="col-6">
-                  <label for="state" class="field-label required-label">State</label>
+                  <label for="state" class="field-label required-label">{{
+                    'landEdit.state' | translate
+                  }}</label>
                   <input
                     type="text"
                     id="state"
@@ -433,12 +459,16 @@
                   @if (
                     locationMethod() === 'manual' && editState() && editState().trim().length < 2
                   ) {
-                    <div class="text-danger small mt-1">State is required.</div>
+                    <div class="text-danger small mt-1">
+                      {{ 'landEdit.stateRequired' | translate }}
+                    </div>
                   }
                 </div>
 
                 <div class="col-6">
-                  <label for="district" class="field-label required-label">District</label>
+                  <label for="district" class="field-label required-label">{{
+                    'landEdit.district' | translate
+                  }}</label>
                   <input
                     type="text"
                     id="district"
@@ -452,12 +482,16 @@
                     editDistrict() &&
                     editDistrict().trim().length < 2
                   ) {
-                    <div class="text-danger small mt-1">District is required.</div>
+                    <div class="text-danger small mt-1">
+                      {{ 'landEdit.districtRequired' | translate }}
+                    </div>
                   }
                 </div>
 
                 <div class="col-6">
-                  <label for="village" class="field-label required-label">Village Name</label>
+                  <label for="village" class="field-label required-label">{{
+                    'landEdit.villageName' | translate
+                  }}</label>
                   <input
                     type="text"
                     id="village"
@@ -471,12 +505,16 @@
                     editVillage() &&
                     editVillage().trim().length < 2
                   ) {
-                    <div class="text-danger small mt-1">Village Name is required.</div>
+                    <div class="text-danger small mt-1">
+                      {{ 'landEdit.villageNameRequired' | translate }}
+                    </div>
                   }
                 </div>
 
                 <div class="col-6">
-                  <label for="pincode" class="field-label required-label">Pin Code</label>
+                  <label for="pincode" class="field-label required-label">{{
+                    'landEdit.pinCode' | translate
+                  }}</label>
                   <input
                     type="text"
                     id="pincode"
@@ -490,7 +528,9 @@
                     editPincode() &&
                     editPincode().trim().length < 5
                   ) {
-                    <div class="text-danger small mt-1">Pin Code must be 5+ digits.</div>
+                    <div class="text-danger small mt-1">
+                      {{ 'landEdit.pinCodeInvalid' | translate }}
+                    </div>
                   }
                 </div>
               </div>

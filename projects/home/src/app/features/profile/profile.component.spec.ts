@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
+import { provideTranslateService } from '@ngx-translate/core';
 import { ProfileComponent } from './profile.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { FarmerRegistrationData } from '../farmer-registration/farmer-registration.models';
@@ -46,6 +47,7 @@ describe('ProfileComponent', () => {
         provideZonelessChangeDetection(),
         provideRouter([]),
         provideHttpClient(),
+        provideTranslateService(),
         AuthService,
       ],
     }).compileComponents();
