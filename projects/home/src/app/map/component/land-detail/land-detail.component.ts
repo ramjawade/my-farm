@@ -1,18 +1,16 @@
 import { Component, inject, input, output, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { SavedFarm } from '../../models/map.models';
 import { CropTimelineService } from '../../../features/crop-timeline/crop-timeline.service';
-import { ReferenceNamePipe } from '../../../core/i18n/reference-name.pipe';
 
 type LandStatus = 'planted' | 'fallow' | 'multiple';
 
 @Component({
   selector: 'app-land-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe, ReferenceNamePipe],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: './land-detail.component.html',
   styleUrl: './land-detail.component.scss',
 })
@@ -24,25 +22,13 @@ export class LandDetailComponent {
   private readonly cropService = inject(CropTimelineService);
   private readonly translate = inject(TranslateService);
 
-  readonly cropCosts = new Map<number, number>();
   readonly editingNotes = signal(false);
   readonly notesValue = signal('');
 
   readonly cropsOnLand = computed(() => {
     const land = this.land();
     if (!land) return [];
-    const crops = this.cropService.cropsForField(land.id);
-    crops.forEach((c) => {
-      this.cropCosts.set(c.id, this.cropService.costForCrop(c.id));
-    });
-    return crops;
-  });
-
-  readonly totalLandCost = computed(() => {
-    return this.cropsOnLand().reduce(
-      (sum, c) => sum + (this.cropService.costForCrop(c.id) || 0),
-      0,
-    );
+    return this.cropService.cropsForField(land.id);
   });
 
   getLandStatus(): LandStatus {
