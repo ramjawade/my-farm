@@ -10,7 +10,8 @@ import {
 import { CropEntity, NewCrop } from '../../features/crop-timeline/crop-timeline.models';
 import { CropMapperService } from '../../features/crop-timeline/crop-mapper.service';
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
-import { SavedFarm, FarmAreaResult, NewSavedFarm } from '../../map/models/map.models';
+import { SavedFarm, FarmAreaResult, NewSavedFarm, LatLngPoint } from '../../map/models/map.models';
+import { toGeoJsonPolygon } from '../../map/farm-draw/farm-area.utils';
 import { WeatherData } from '../weather/weather.models';
 import { ActivityMapperService } from './activity-mapper.service';
 import { FarmerResponse, FarmerUpdateRequest } from './contracts';
@@ -33,12 +34,8 @@ const EMPTY_AREA: FarmAreaResult = { squareMeters: 0, hectares: 0, acres: 0 };
  * `crop_catalog_id`/`activity_type_id`/`expense_category_id` <->
  * name resolution (via ReferenceDataService) lives in one place. Only Land
  * and Farmer mapping stay local here — neither is duplicated elsewhere.
- * Two deliberate gaps:
- *  - `Activity.attachments` (base64 photos) aren't sent — that's Stage 7's
- *    R2 upload job.
- *  - `SavedFarm.points`/`.geoJson` (the drawn polygon) round-trip through
- *    `saveFarm`'s in-memory merge only, not through a `GET /lands` re-fetch
- *    (see #193).
+ * One deliberate gap: `Activity.attachments` (base64 photos) aren't sent —
+ * that's Stage 7's R2 upload job.
  */
 @Injectable({ providedIn: 'root' })
 export class ApiStorageService extends IStorageService {
@@ -304,8 +301,7 @@ export class ApiStorageService extends IStorageService {
       const payload = this.mapToBackendLand(farm, farmId);
       try {
         const response = await this.httpService.post<unknown>('/lands', payload);
-        const mapped = this.mapFromBackendLand(response);
-        return { ...mapped, points: farm.points, geoJson: farm.geoJson };
+        return this.mapFromBackendLand(response);
       } catch (error) {
         console.error('Failed to save farm:', error);
         throw error;
@@ -406,10 +402,16 @@ export class ApiStorageService extends IStorageService {
   mapFromBackendLand(item: any): SavedFarm {
     const squareMeters =
       item.area_sq_m !== null && item.area_sq_m !== undefined ? Number(item.area_sq_m) : undefined;
+    const points: LatLngPoint[] = Array.isArray(item.points)
+      ? item.points.map((p: { lat: number | string; lng: number | string }) => ({
+          lat: Number(p.lat),
+          lng: Number(p.lng),
+        }))
+      : [];
     return {
       id: item.id,
       name: item.name,
-      points: [],
+      points,
       area:
         squareMeters !== undefined
           ? {
@@ -418,7 +420,7 @@ export class ApiStorageService extends IStorageService {
               acres: squareMeters / SQ_M_PER_ACRE,
             }
           : EMPTY_AREA,
-      geoJson: null,
+      geoJson: points.length >= 3 ? toGeoJsonPolygon(points) : null,
       createdAt: new Date(item.created_at).getTime(),
       notes: item.notes ?? undefined,
     };
@@ -430,6 +432,7 @@ export class ApiStorageService extends IStorageService {
       farm_id: farmId,
       area_sq_m: farm.area?.squareMeters,
       notes: farm.notes,
+      points: farm.points?.map((p) => ({ lat: p.lat, lng: p.lng })),
     };
   }
 

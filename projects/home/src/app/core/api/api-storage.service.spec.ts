@@ -110,6 +110,79 @@ describe('ApiStorageService', () => {
       const saved = await promise;
       expect(saved.id).toBe(42);
     });
+
+    it('saveFarm sends the drawn points to the backend', async () => {
+      const promise = service.saveFarm(1, {
+        name: 'Plot 1',
+        points: [
+          { lat: 1, lng: 2 },
+          { lat: 3, lng: 4 },
+          { lat: 5, lng: 6 },
+        ],
+        area: { squareMeters: 100, hectares: 0.01, acres: 0.0247 },
+        geoJson: null,
+      });
+
+      await flushPromises();
+      httpMock
+        .expectOne((r) => r.method === 'GET' && r.url === '/api/v1/farms')
+        .flush({ items: [{ id: 5 }] });
+      await flushPromises();
+
+      const req = httpMock.expectOne((r) => r.method === 'POST' && r.url === '/api/v1/lands');
+      expect(req.request.body.points).toEqual([
+        { lat: 1, lng: 2 },
+        { lat: 3, lng: 4 },
+        { lat: 5, lng: 6 },
+      ]);
+      req.flush({ id: 42, name: 'Plot 1', area_sq_m: 100, created_at: '2026-01-01T00:00:00Z' });
+
+      await promise;
+    });
+  });
+
+  describe('reload round-trip (#193)', () => {
+    it('getFarms reconstructs points and geoJson from the backend response', async () => {
+      const promise = service.getFarms(1);
+
+      const reqs = httpMock.match((r) => r.url === '/api/v1/lands');
+      reqs[0].flush({
+        items: [
+          {
+            id: 11,
+            name: 'Plot 1',
+            created_at: '2024-01-01T00:00:00Z',
+            points: [
+              { lat: '1', lng: '2' },
+              { lat: '3', lng: '4' },
+              { lat: '5', lng: '6' },
+            ],
+          },
+        ],
+      });
+
+      const [farm] = await promise;
+      expect(farm.points).toEqual([
+        { lat: 1, lng: 2 },
+        { lat: 3, lng: 4 },
+        { lat: 5, lng: 6 },
+      ]);
+      expect(farm.geoJson).not.toBeNull();
+      expect(farm.geoJson.geometry.type).toBe('Polygon');
+    });
+
+    it('getFarms returns empty points/null geoJson when the backend has none', async () => {
+      const promise = service.getFarms(1);
+
+      const reqs = httpMock.match((r) => r.url === '/api/v1/lands');
+      reqs[0].flush({
+        items: [{ id: 11, name: 'Plot 1', created_at: '2024-01-01T00:00:00Z', points: null }],
+      });
+
+      const [farm] = await promise;
+      expect(farm.points).toEqual([]);
+      expect(farm.geoJson).toBeNull();
+    });
   });
 
   describe('farmer profile', () => {
