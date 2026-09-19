@@ -58,6 +58,7 @@ export const routes: Routes = [
         children: [
           {
             path: '',
+            data: { embedded: true },
             loadComponent: () =>
               import('./features/farm-activity/dashboard/activity-dashboard.component').then(
                 (m) => m.ActivityDashboardComponent,

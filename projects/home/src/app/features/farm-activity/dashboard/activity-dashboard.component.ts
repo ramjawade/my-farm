@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, OnInit, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, inject, input, signal } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -28,6 +28,10 @@ export class ActivityDashboardComponent implements OnInit {
     this.route.paramMap.pipe(map((params) => parseId(params.get('cropId')))),
     { initialValue: null },
   );
+
+  /** True when routed under a crop's own timeline (`/crops/:cropId`), which
+   * already renders its own header — set via route `data`, see app.routes.ts. */
+  readonly embedded = input(false);
 
   readonly kpi = signal<ActivityKpiSummary | null>(null);
   readonly upcoming = signal<Activity[]>([]);

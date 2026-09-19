@@ -1,37 +1,39 @@
 <div class="mf-page-container">
-  <header
-    class="create-header mf-header-pacing sticky-header d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 mb-4 border-bottom pb-3"
-  >
-    <!-- Title on the Left -->
-    <div class="text-start">
-      <h2 class="mf-page-title">
-        @if (activityId) {
-          {{ 'createActivity.editTitle' | translate }}
-        } @else {
-          {{ 'createActivity.recordTitle' | translate }}
-        }
-      </h2>
-      <p class="text-muted mb-0">
-        @if (activityId) {
-          {{ 'createActivity.editSubtitle' | translate }}
-        } @else {
-          {{ 'createActivity.recordSubtitle' | translate }}
-        }
-      </p>
-    </div>
+  @if (!isCropScoped()) {
+    <header
+      class="create-header mf-header-pacing sticky-header d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 mb-4 border-bottom pb-3"
+    >
+      <!-- Title on the Left -->
+      <div class="text-start">
+        <h2 class="mf-page-title">
+          @if (activityId) {
+            {{ 'createActivity.editTitle' | translate }}
+          } @else {
+            {{ 'createActivity.recordTitle' | translate }}
+          }
+        </h2>
+        <p class="text-muted mb-0">
+          @if (activityId) {
+            {{ 'createActivity.editSubtitle' | translate }}
+          } @else {
+            {{ 'createActivity.recordSubtitle' | translate }}
+          }
+        </p>
+      </div>
 
-    <!-- Buttons on the Right -->
-    <div class="d-none d-md-flex gap-2 text-end">
-      <button
-        type="button"
-        class="btn btn-secondary d-inline-flex align-items-center gap-2 px-3 py-2 ms-auto"
-        style="white-space: nowrap"
-        (click)="onCancel()"
-      >
-        <i class="bi bi-arrow-left"></i> {{ 'common.back' | translate }}
-      </button>
-    </div>
-  </header>
+      <!-- Buttons on the Right -->
+      <div class="d-none d-md-flex gap-2 text-end">
+        <button
+          type="button"
+          class="btn btn-secondary d-inline-flex align-items-center gap-2 px-3 py-2 ms-auto"
+          style="white-space: nowrap"
+          (click)="onCancel()"
+        >
+          <i class="bi bi-arrow-left"></i> {{ 'common.back' | translate }}
+        </button>
+      </div>
+    </header>
+  }
 
   <main class="row justify-content-center">
     <div class="col-12 col-lg-8">
