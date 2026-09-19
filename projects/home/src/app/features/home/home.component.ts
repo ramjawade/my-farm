@@ -74,14 +74,8 @@ export class HomeComponent implements OnInit {
     'setup',
   );
 
-  readonly showFarmSetupPrompt = computed(() => {
-    const user = this.currentUser();
-    return user ? !user.farmSetupCompleted : false;
-  });
-
   /** Setup steps for a new farmer; the card hides once every step is done. */
   readonly onboardingSteps = computed<OnboardingStep[]>(() => {
-    const user = this.currentUser();
     const hasActivity = this.activityService.activities().length > 0;
     return [
       {
@@ -89,7 +83,7 @@ export class HomeComponent implements OnInit {
         title: this.translate.instant('home.onboarding.profile.title'),
         description: this.translate.instant('home.onboarding.profile.description'),
         icon: 'bi-person-gear',
-        done: !!(user?.farmSetupCompleted && this.hasLocation()),
+        done: this.hasLocation(),
         actionLabel: this.translate.instant('home.onboarding.profile.action'),
       },
       {

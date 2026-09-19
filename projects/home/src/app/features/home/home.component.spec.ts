@@ -252,53 +252,49 @@ describe('HomeComponent', () => {
     expect(compiled.querySelector('app-onboarding-checklist')).toBeTruthy();
   });
 
-  it('should show farm setup prompt for user who has not completed setup', () => {
-    const mockUser: FarmerRegistrationData = {
-      id: 1,
-      fullName: 'Test Farmer',
-      phone: '1234567890',
-      preferredLanguage: 'English',
-      userRole: 'Farmer',
-      farmName: 'Test Farm',
-      farmArea: 2.0,
-      farmAreaUnit: 'hectares',
-      primaryCrops: [],
-      waterSource: 'Rainfed',
-      irrigationType: 'Manual',
-      farmingMethod: 'Organic',
-      locationType: 'skipped',
-      location: null,
-      createdAt: Date.now(),
-    };
-    authService.login(mockUser);
+  it('should mark the profile onboarding step done once village and state are saved, regardless of farmSetupCompleted', () => {
+    authService.login({ ...baseUser, farmSetupCompleted: false, village: 'Wardha', state: 'MH' });
     fixture.detectChanges();
 
-    expect(component.showFarmSetupPrompt()).toBeTrue();
+    const profileStep = component.onboardingSteps().find((s) => s.id === 'profile');
+    expect(profileStep?.done).toBeTrue();
   });
 
-  it('should hide farm setup prompt for user who has completed setup', () => {
-    const mockUser: FarmerRegistrationData = {
-      id: 1,
-      fullName: 'Test Farmer',
-      phone: '1234567890',
-      preferredLanguage: 'English',
-      userRole: 'Farmer',
-      farmName: 'Test Farm',
-      farmArea: 2.0,
-      farmAreaUnit: 'hectares',
-      primaryCrops: [],
-      waterSource: 'Rainfed',
-      irrigationType: 'Manual',
-      farmingMethod: 'Organic',
-      locationType: 'skipped',
-      location: null,
-      createdAt: Date.now(),
-      farmSetupCompleted: true,
-    };
-    authService.login(mockUser);
+  it('should hide the onboarding checklist once every step is genuinely complete', async () => {
+    authService.login({ ...baseUser, village: 'Wardha', state: 'MH' });
+    component.farms.set([
+      {
+        id: 1,
+        name: 'Land 1',
+        points: [],
+        area: { squareMeters: 10000, hectares: 1.0, acres: 2.47 },
+        geoJson: {},
+        createdAt: Date.now(),
+      },
+    ]);
+    await cropService.addCrop({
+      fieldId: 1,
+      name: 'Wheat',
+      cropType: 'Wheat',
+      area: 1.0,
+      areaUnit: 'hectares',
+      season: 'Kharif',
+      sowingDate: Date.now(),
+      currentStage: 'Sowing',
+      status: 'Active',
+    });
+    await activityService.addActivity({
+      date: Date.now(),
+      season: 'Kharif',
+      type: 'Weeding',
+      status: 'Completed',
+    });
     fixture.detectChanges();
 
-    expect(component.showFarmSetupPrompt()).toBeFalse();
+    expect(component.onboardingSteps().every((s) => s.done)).toBeTrue();
+    expect(component.showOnboarding()).toBeFalse();
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('app-onboarding-checklist')).toBeFalsy();
   });
 
   it('should set activeSection to setup and show dialog when openSetupDialog is called', () => {
