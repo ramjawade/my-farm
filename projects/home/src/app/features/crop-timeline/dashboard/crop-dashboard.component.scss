@@ -1,5 +1,16 @@
 @import '../../../../styles/bootstrap-config';
 
+:host {
+  display: block;
+
+  // This page stacks two floating action buttons (Back/Add) on mobile,
+  // taller than the single-FAB clearance the shell already reserves — top
+  // up the gap so neither sits over real content.
+  @media (max-width: 767.98px) {
+    padding-bottom: 60px;
+  }
+}
+
 /* Crop specific Details Box background */
 .bg-light-green {
   background-color: rgba(240, 249, 243, 0.7);

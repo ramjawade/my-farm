@@ -291,8 +291,15 @@
 }
 
 // 8. Animations
+//
+// No `forwards`: a filled fadeIn animation would otherwise keep
+// "transform: none" as a live (matrix-resolved) animation value forever,
+// which still creates a containing block for any fixed-position
+// descendant. See the matching comment in the shared _animations.scss.
 .animate-fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
+  opacity: 1;
+  transform: none;
+  animation: fadeIn 0.4s ease-out;
 }
 
 .animate-pulse {

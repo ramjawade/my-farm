@@ -18,6 +18,15 @@ import { RouterLink } from '@angular/router';
       <a routerLink="/" class="btn btn-success px-4 fw-semibold rounded-pill hover-lift">
         <i class="bi bi-house-door-fill me-1"></i>Back to dashboard
       </a>
+
+      <!-- Back to Home FAB - MOBILE ONLY -->
+      <a
+        routerLink="/"
+        class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-tertiary fab-stack-1"
+        title="Back to Home"
+      >
+        <i class="bi bi-arrow-left"></i>
+      </a>
     </div>
   `,
   styles: `

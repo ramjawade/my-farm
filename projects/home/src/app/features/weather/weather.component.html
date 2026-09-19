@@ -365,4 +365,14 @@
   </div>
   <!-- PROFILE EDIT DIALOG -->
   <app-profile-edit-dialog [section]="'land'" [(show)]="showEditDialog" />
+
+  <!-- Back to Home FAB - MOBILE ONLY -->
+  <button
+    type="button"
+    class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-tertiary fab-stack-1"
+    (click)="onBackClicked()"
+    title="Back to Home"
+  >
+    <i class="bi bi-arrow-left"></i>
+  </button>
 </div>

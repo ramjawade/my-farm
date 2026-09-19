@@ -12,6 +12,7 @@ import {
   output,
 } from '@angular/core';
 import * as L from 'leaflet';
+import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { FarmDrawLayer } from './farm-draw/farm-draw-layer';
@@ -45,6 +46,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly mapContainer = viewChild.required<ElementRef<HTMLElement>>('mapContainer');
   readonly farmDraw = inject(FarmDrawService);
   private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
   private map?: L.Map;
   private farmDrawLayer?: FarmDrawLayer;
@@ -302,6 +304,10 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     setTimeout(() => this.map?.invalidateSize(), 0);
+  }
+
+  onBackClicked(): void {
+    this.router.navigate(['/']);
   }
 
   private fixDefaultMarkerIcon(): void {

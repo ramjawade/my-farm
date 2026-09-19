@@ -164,10 +164,20 @@
   </div>
 }
 
+<!-- Back to Home FAB - MOBILE ONLY -->
+<button
+  type="button"
+  class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-tertiary fab-stack-1"
+  (click)="onBackClicked()"
+  [title]="'cropDashboard.backToHome' | translate"
+>
+  <i class="bi bi-arrow-left"></i>
+</button>
+
 <!-- FLOATING ACTION BUTTON (FAB) FOR ADDING CROP - MOBILE ONLY -->
 <button
   type="button"
-  class="btn btn-success fab fab-button d-flex d-md-none align-items-center justify-content-center"
+  class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-success fab-stack-2"
   (click)="onAddCropClicked()"
   [title]="'cropDashboard.addCrop' | translate"
 >

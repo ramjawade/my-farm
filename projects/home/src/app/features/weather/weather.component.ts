@@ -1,4 +1,5 @@
 import { Component, computed, signal, HostListener, inject, effect, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { SunPathComponent } from './sun-path/sun-path.component';
 import { HistoryTrendComponent } from './history-trend/history-trend.component';
 import { AuthService } from '../../core/auth/auth.service';
@@ -51,6 +52,7 @@ export class WeatherComponent implements OnInit {
   private readonly farmDraw = inject(FarmDrawService);
   private readonly workflowService = inject(WorkflowStateService);
   private readonly onboardingService = inject(OnboardingGuideService);
+  private readonly router = inject(Router);
 
   readonly farms = signal<SavedFarm[]>([]);
 
@@ -59,6 +61,10 @@ export class WeatherComponent implements OnInit {
     if (user) {
       this.farms.set(await this.farmDraw.loadFarms(user.id));
     }
+  }
+
+  onBackClicked(): void {
+    this.router.navigate(['/']);
   }
 
   // Progressive location profiling signals

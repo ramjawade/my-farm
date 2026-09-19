@@ -222,7 +222,8 @@
     "noActivityLogged": "कोई गतिविधि दर्ज नहीं की गई",
     "today": "आज",
     "oneDay": "1 दिन",
-    "fullyMature": "पूर्ण परिपक्व"
+    "fullyMature": "पूर्ण परिपक्व",
+    "backToHome": "होम पर वापस जाएं"
   },
   "addCrop": {
     "title": "नई फसल प्रोफाइल जोड़ें",

@@ -25,9 +25,9 @@
       </p>
     </div>
     <div class="d-flex gap-2">
-      <!-- Delete Crop Button -->
+      <!-- Delete Crop Button on Desktop/Laptop only -->
       <button
-        class="btn btn-outline-danger d-inline-flex align-items-center px-3 py-2"
+        class="btn btn-outline-danger d-none d-md-inline-flex align-items-center px-3 py-2"
         (click)="onDeleteCropClicked()"
       >
         <i class="bi bi-trash me-1.5"></i>{{ 'cropActivity.deleteCrop' | translate }}
@@ -123,33 +123,31 @@
 <!-- Back to Dashboard FAB - MOBILE ONLY -->
 <button
   type="button"
-  class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center position-fixed"
+  class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-tertiary fab-stack-1"
   (click)="onBackClicked()"
   [title]="'cropActivity.backToDashboard' | translate"
-  style="
-    width: 50px;
-    height: 50px;
-    bottom: 95px;
-    right: 29px;
-    z-index: 1030;
-    background-color: rgba(255, 255, 255, 0.95);
-    border: 1.5px solid rgba(42, 111, 71, 0.18) !important;
-    color: #2a6f47;
-    backdrop-filter: blur(8px);
-  "
 >
-  <i class="bi bi-arrow-left fs-4"></i>
+  <i class="bi bi-arrow-left"></i>
 </button>
 
 <!-- Create (Add Activity) FAB - MOBILE ONLY -->
 <button
   type="button"
-  class="btn btn-success rounded-circle shadow-lg fab-button d-flex d-md-none align-items-center justify-content-center position-fixed"
+  class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-success fab-stack-2"
   (click)="onAddActivityClicked()"
   [title]="'cropActivity.addDailyActivity' | translate"
-  style="width: 58px; height: 58px; bottom: 25px; right: 25px; z-index: 1030"
 >
-  <i class="bi bi-plus-lg fs-3"></i>
+  <i class="bi bi-plus-lg"></i>
+</button>
+
+<!-- Delete Crop FAB - MOBILE ONLY -->
+<button
+  type="button"
+  class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-danger fab-stack-3"
+  (click)="onDeleteCropClicked()"
+  [title]="'cropActivity.deleteCrop' | translate"
+>
+  <i class="bi bi-trash"></i>
 </button>
 
 <lib-confirm-dialog

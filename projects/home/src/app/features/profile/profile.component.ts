@@ -7,6 +7,7 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth.service';
 import { FarmLookupService } from '../../core/farms/farm-lookup.service';
@@ -29,6 +30,7 @@ export class ProfileComponent implements OnInit {
   private readonly farmLookup = inject(FarmLookupService);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
+  private readonly router = inject(Router);
 
   // Read-only state
   readonly currentUser = this.authService.currentUser;
@@ -42,6 +44,10 @@ export class ProfileComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     this.savedFarms.set(await this.farmLookup.loadForCurrentUser());
+  }
+
+  onBackClicked(): void {
+    this.router.navigate(['/']);
   }
 
   readonly landSummary = computed(() => {

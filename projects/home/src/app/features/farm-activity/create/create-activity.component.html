@@ -159,7 +159,7 @@
             <label class="form-label required-label">{{
               'createActivity.currentStatus' | translate
             }}</label>
-            <div class="d-flex gap-3 mt-1">
+            <div class="d-flex flex-wrap gap-2 gap-md-3 mt-1">
               <div class="form-check-custom">
                 <input type="radio" id="statusDraft" value="Draft" formControlName="status" />
                 <label for="statusDraft" class="radio-label">
@@ -252,7 +252,7 @@
           </div>
 
           <!-- Actions -->
-          <div class="d-flex justify-content-end gap-3 mt-3 pt-3 border-top">
+          <div class="mf-action-row mt-3 pt-3 border-top">
             <button type="button" class="btn btn-secondary" (click)="onCancel()">
               {{ 'common.cancel' | translate }}
             </button>
@@ -269,10 +269,10 @@
     </div>
   </main>
 
-  <!-- Floating Back FAB (User Request) -->
+  <!-- Back FAB - MOBILE ONLY -->
   <button
     type="button"
-    class="btn btn-secondary fab fab-back shadow d-flex d-md-none align-items-center justify-content-center"
+    class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-tertiary fab-stack-1"
     [title]="'cropActivity.backToDashboard' | translate"
     (click)="onCancel()"
   >

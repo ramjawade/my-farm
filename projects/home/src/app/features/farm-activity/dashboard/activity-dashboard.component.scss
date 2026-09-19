@@ -1,5 +1,13 @@
 @import '../../../../styles/bootstrap-variables';
 
+// Only rendered standalone (not embedded), where this page stacks two FABs
+// (Back/Record New) — reserves room so neither sits over real content.
+.mobile-fab-spacer {
+  @media (max-width: 767.98px) {
+    height: 60px;
+  }
+}
+
 // 1. KPI Metric styling
 .metric {
   font-family: 'Outfit', sans-serif;

@@ -45,6 +45,10 @@ export class ActivityDashboardComponent implements OnInit {
     return this.activityService.getTotalExpenseForActivity(activityId);
   }
 
+  onBackClicked(): void {
+    this.router.navigate(['/']);
+  }
+
   async ngOnInit(): Promise<void> {
     await this.load();
   }

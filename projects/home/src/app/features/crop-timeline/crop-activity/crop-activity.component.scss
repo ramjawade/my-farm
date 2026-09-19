@@ -1,5 +1,16 @@
 @import '../../../../styles/bootstrap-config';
 
+:host {
+  display: block;
+
+  // This page stacks three floating action buttons (Delete/Add/Back) on
+  // mobile, taller than the single-FAB clearance the shell already reserves
+  // — top up the gap so none of them sit over real content.
+  @media (max-width: 767.98px) {
+    padding-bottom: 115px;
+  }
+}
+
 /* Sticky Headers with Glassmorphism */
 .sticky-header {
   position: sticky;

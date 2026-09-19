@@ -63,7 +63,7 @@
       <div class="d-flex gap-2 text-end">
         <button
           type="button"
-          class="btn btn-outline-danger d-inline-flex align-items-center gap-2 px-3 py-2 ms-auto"
+          class="btn btn-outline-danger d-none d-md-inline-flex align-items-center gap-2 px-3 py-2 ms-auto"
           style="white-space: nowrap"
           (click)="deleteActivity()"
         >
@@ -212,23 +212,34 @@
       </div>
     }
 
-    <!-- Floating Action Button (FAB) -->
+    <!-- Back to List FAB - MOBILE ONLY -->
+    <a
+      routerLink="/activities/list"
+      class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-tertiary fab-stack-1"
+      [title]="'activityDetail.backToList' | translate"
+    >
+      <i class="bi bi-arrow-left"></i>
+    </a>
+
+    <!-- Add Expense FAB - MOBILE ONLY -->
     <button
-      class="btn btn-success fab shadow d-flex d-md-none align-items-center justify-content-center"
+      type="button"
+      class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-success fab-stack-2"
       (click)="openExpenseModal()"
       [title]="'activityDetail.addExpense' | translate"
     >
       <i class="bi bi-plus-lg"></i>
     </button>
 
-    <!-- Floating Back FAB -->
-    <a
-      routerLink="/activities/list"
-      class="btn btn-secondary fab fab-back shadow d-flex d-md-none align-items-center justify-content-center"
-      [title]="'activityDetail.backToList' | translate"
+    <!-- Delete Activity FAB - MOBILE ONLY -->
+    <button
+      type="button"
+      class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-danger fab-stack-3"
+      (click)="deleteActivity()"
+      [title]="'activityList.deleteActivity' | translate"
     >
-      <i class="bi bi-arrow-left"></i>
-    </a>
+      <i class="bi bi-trash"></i>
+    </button>
 
     <!-- Confirm Delete Activity Dialog -->
     <lib-confirm-dialog

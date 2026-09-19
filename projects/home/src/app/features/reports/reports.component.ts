@@ -1,6 +1,7 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Season } from '../../core/models/season';
 import { ReportService, SeasonReport } from './report.service';
 
@@ -159,6 +160,16 @@ import { ReportService, SeasonReport } from './report.service';
           </p>
         </div>
       </ng-container>
+
+      <!-- Back to Home FAB - MOBILE ONLY -->
+      <button
+        type="button"
+        class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-tertiary fab-stack-1"
+        (click)="onBackClicked()"
+        title="Back to Home"
+      >
+        <i class="bi bi-arrow-left"></i>
+      </button>
     </div>
   `,
   styles: [
@@ -173,6 +184,7 @@ import { ReportService, SeasonReport } from './report.service';
 })
 export class ReportsComponent {
   private readonly reportService = inject(ReportService);
+  private readonly router = inject(Router);
 
   readonly selectedSeason = signal<Season>('Kharif');
   readonly selectedYear = signal<number>(new Date().getFullYear());
@@ -197,5 +209,9 @@ export class ReportsComponent {
 
   getTotalCount(report: SeasonReport): number {
     return report.byCategory.reduce((sum, c) => sum + c.count, 0);
+  }
+
+  onBackClicked(): void {
+    this.router.navigate(['/']);
   }
 }
