@@ -4,12 +4,45 @@ on:
   pull_request:
     # No branches filter — parent-epic sub-issue PRs target a parent
     # feature branch, not main, and still need this pipeline to run.
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    name: Detect changed paths
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Filter changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            frontend:
+              - 'projects/home/**'
+              - 'projects/shared/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'angular.json'
+              - 'tsconfig*.json'
+              - 'eslint.config.js'
+              - '.github/workflows/ci.yml'
+            backend:
+              - 'projects/backend/**'
+              - '.github/workflows/ci.yml'
+
   lint-test-build:
     runs-on: ubuntu-latest
     name: Lint, Format, Test, Build
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout repository
@@ -44,11 +77,97 @@ jobs:
             exit 1
           }
 
+  lint-and-test:
+    runs-on: ubuntu-latest
+    name: Ruff, mypy, pytest
+    needs: changes
+    if: needs.changes.outputs.backend == 'true' || github.event_name == 'workflow_dispatch'
+
+    defaults:
+      run:
+        working-directory: projects/backend
+
+    # A real Postgres, not SQLite — the whole point of testing the storage
+    # layer is proving it against the database it will actually run on
+    # (BACKEND_PLAN.md's "Previously-open items" table: test database).
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: myfarm_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/myfarm_test
+      FIREBASE_PROJECT_ID: myfarm-test
+      CORS_ORIGINS: https://ramjawade.github.io
+      SESSION_JWT_SECRET: test-session-secret
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Ruff
+        run: ruff check .
+
+      - name: mypy (strict)
+        run: mypy myfarm_api tests scripts
+
+      - name: pytest
+        run: pytest -q
+
+      - name: Verify OpenAPI contract is up to date (#196)
+        run: |
+          python scripts/export_openapi.py
+          git diff --exit-code openapi.json || {
+            echo "::error::openapi.json is stale — a Pydantic schema changed without regenerating it. Run 'python scripts/export_openapi.py' from projects/backend/ and commit the result, then run 'npm run generate:contracts' from the repo root."
+            exit 1
+          }
+
+  build-image:
+    runs-on: ubuntu-latest
+    name: Build container image
+    needs: lint-and-test
+
+    defaults:
+      run:
+        working-directory: projects/backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build image
+        # Build-parity check only — Render runs a native Python buildpack,
+        # not this image (BACKEND_PLAN.md §3.2). Keeps the Dockerfile honest.
+        run: docker build -t myfarm-api:ci .
+
   e2e:
     runs-on: ubuntu-latest
     name: E2E (Playwright golden path)
+    needs: changes
+    # Real integration point is a merge into main — parent-epic sub-issue
+    # PRs (base != main) skip this; it still posts "Skipped" since it's a
+    # required check. Runs regardless of which paths changed (#227).
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.base.ref == 'main'
 
-    # Same real Postgres as backend.yml — the golden path round-trips
+    # Same real Postgres as the backend job — the golden path round-trips
     # through the actual API (ApiStorageService is online-only).
     services:
       postgres:
@@ -133,3 +252,26 @@ jobs:
           name: backend-log
           path: projects/backend/backend.log
           retention-days: 7
+
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Render
+    needs: [changes, lint-and-test, build-image]
+    # CI-gated deploy (issue #41): only a green push to main deploys, and
+    # only if RENDER_DEPLOY_HOOK_URL is configured. autoDeploy is off on the
+    # Render service, so this is the single path to production. Also gated
+    # on backend actually changing (#227), matching backend.yml's original
+    # push-trigger scoping now that this workflow always runs.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.backend == 'true'
+
+    steps:
+      - name: Trigger Render deploy
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::warning::RENDER_DEPLOY_HOOK_URL is not set — skipping deploy"
+            exit 0
+          fi
+          curl -fsS -X POST "$HOOK"
+          echo "Render deploy triggered."
