@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { EnvironmentService } from '../services/environment.service';
-import { ToastService } from 'shared';
+import { LoaderService, ToastService } from 'shared';
 
 /**
  * Single entry point for backend HTTP calls. Every API-facing service
@@ -17,6 +17,7 @@ export class HttpService {
   private readonly http = inject(HttpClient);
   private readonly envService = inject(EnvironmentService);
   private readonly toast = inject(ToastService);
+  private readonly loader = inject(LoaderService);
 
   private token: string | null = null;
 
@@ -38,32 +39,50 @@ export class HttpService {
   }
 
   get<T>(path: string, params?: Record<string, string>): Promise<T> {
-    return this.withErrorToast(
-      firstValueFrom(
-        this.http.get<T>(this.url(path), {
-          headers: this.headers(),
-          params: params ? new HttpParams({ fromObject: params }) : undefined,
-        }),
+    return this.withLoader(
+      this.withErrorToast(
+        firstValueFrom(
+          this.http.get<T>(this.url(path), {
+            headers: this.headers(),
+            params: params ? new HttpParams({ fromObject: params }) : undefined,
+          }),
+        ),
       ),
     );
   }
 
   post<T>(path: string, body: unknown): Promise<T> {
-    return this.withErrorToast(
-      firstValueFrom(this.http.post<T>(this.url(path), body, { headers: this.headers() })),
+    return this.withLoader(
+      this.withErrorToast(
+        firstValueFrom(this.http.post<T>(this.url(path), body, { headers: this.headers() })),
+      ),
     );
   }
 
   patch<T>(path: string, body: unknown): Promise<T> {
-    return this.withErrorToast(
-      firstValueFrom(this.http.patch<T>(this.url(path), body, { headers: this.headers() })),
+    return this.withLoader(
+      this.withErrorToast(
+        firstValueFrom(this.http.patch<T>(this.url(path), body, { headers: this.headers() })),
+      ),
     );
   }
 
   delete<T>(path: string): Promise<T> {
-    return this.withErrorToast(
-      firstValueFrom(this.http.delete<T>(this.url(path), { headers: this.headers() })),
+    return this.withLoader(
+      this.withErrorToast(
+        firstValueFrom(this.http.delete<T>(this.url(path), { headers: this.headers() })),
+      ),
     );
+  }
+
+  /** Shows the app-wide loader for the duration of one request. */
+  private async withLoader<T>(request: Promise<T>): Promise<T> {
+    const id = this.loader.show();
+    try {
+      return await request;
+    } finally {
+      this.loader.hide(id);
+    }
   }
 
   /**

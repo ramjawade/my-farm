@@ -2,13 +2,14 @@ import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { ToastService } from 'shared';
+import { LoaderService, ToastService } from 'shared';
 import { HttpService } from './http.service';
 
 describe('HttpService', () => {
   let service: HttpService;
   let httpMock: HttpTestingController;
   let toast: ToastService;
+  let loader: LoaderService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -22,6 +23,7 @@ describe('HttpService', () => {
     service = TestBed.inject(HttpService);
     httpMock = TestBed.inject(HttpTestingController);
     toast = TestBed.inject(ToastService);
+    loader = TestBed.inject(LoaderService);
   });
 
   afterEach(() => {
@@ -112,5 +114,43 @@ describe('HttpService', () => {
 
     await expectAsync(promise).toBeRejected();
     expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it('shows the app-wide loader for the duration of a request, and hides it once settled', async () => {
+    expect(loader.isLoading()).toBeFalse();
+    const promise = service.get('/lands');
+    expect(loader.isLoading()).toBeTrue();
+
+    const req = httpMock.expectOne('/api/v1/lands');
+    req.flush({ items: [] });
+    await promise;
+
+    expect(loader.isLoading()).toBeFalse();
+  });
+
+  it('keeps the loader shown while a second overlapping request is still in flight', async () => {
+    const firstPromise = service.get('/lands');
+    const firstReq = httpMock.expectOne('/api/v1/lands');
+    const secondPromise = service.get('/crops');
+    const secondReq = httpMock.expectOne('/api/v1/crops');
+
+    firstReq.flush({ items: [] });
+    await firstPromise;
+    expect(loader.isLoading()).toBeTrue();
+
+    secondReq.flush({ items: [] });
+    await secondPromise;
+    expect(loader.isLoading()).toBeFalse();
+  });
+
+  it('hides the loader even when the request fails', async () => {
+    const promise = service.get('/lands');
+    expect(loader.isLoading()).toBeTrue();
+
+    const req = httpMock.expectOne('/api/v1/lands');
+    req.flush('not found', { status: 404, statusText: 'Not Found' });
+
+    await expectAsync(promise).toBeRejected();
+    expect(loader.isLoading()).toBeFalse();
   });
 });
