@@ -11,7 +11,8 @@
     "format:check": "prettier --check \"projects/**/*.{ts,html,scss}\"",
     "format:fix": "prettier --write \"projects/**/*.{ts,html,scss}\"",
     "generate:contracts": "node scripts/generate-contracts.mjs",
-    "build:prod": "ng build shared && ng build home --configuration production --base-href /my-farm/"
+    "build:prod": "ng build shared && ng build home --configuration production --base-href /my-farm/",
+    "e2e": "playwright test"
   },
   "prettier": {
     "printWidth": 100,
@@ -53,6 +54,7 @@
     "@angular/build": "^20.3.26",
     "@angular/cli": "^20.2.1",
     "@angular/compiler-cli": "^20.2.0",
+    "@playwright/test": "^1.63.0",
     "@types/d3": "^7.4.3",
     "@types/geojson": "^7946.0.16",
     "@types/jasmine": "~5.1.0",

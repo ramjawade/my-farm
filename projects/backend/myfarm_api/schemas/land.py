@@ -3,11 +3,13 @@
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class LandPoint(BaseModel):
     """A GPS coordinate polygon vertex."""
+
+    model_config = ConfigDict(from_attributes=True)
 
     lat: Decimal
     lng: Decimal

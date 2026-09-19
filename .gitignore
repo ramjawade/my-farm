@@ -80,3 +80,8 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 *.egg-info/
+
+# Playwright (issue #44)
+/test-results/
+/playwright-report/
+/playwright/.cache/

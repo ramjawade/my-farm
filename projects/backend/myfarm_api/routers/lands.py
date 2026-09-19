@@ -59,18 +59,23 @@ async def create_land(
 
     # Add points if provided
     if data.points:
-        land.points = [
+        points = [
             LandPoint(land_id=land.id, seq=i, lat=p.lat, lng=p.lng)
             for i, p in enumerate(data.points)
         ]
-        # Save points to the database
+        # `land` is detached (land_repo.create's session already closed), so
+        # it can't be refreshed via a second session — reload it through the
+        # repo instead, which also eager-loads `.points` (Land.points is
+        # `lazy="selectin"`).
         from myfarm_api.core.db import get_session_factory
         session_factory = get_session_factory()
         async with session_factory() as session:
-            session.add_all(land.points)
+            session.add_all(points)
             await session.commit()
-            # Refresh to get fresh data
-            await session.refresh(land)
+
+        reloaded = await land_repo.get(current_farmer.id, land.id)
+        if reloaded:
+            land = reloaded
 
     return LandRead.model_validate(land)
 
