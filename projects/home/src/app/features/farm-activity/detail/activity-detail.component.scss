@@ -1,5 +1,16 @@
 @import '../../../../styles/bootstrap-variables';
 
+:host {
+  display: block;
+
+  // This page stacks three floating action buttons (Back/Add Expense/Delete)
+  // on mobile, taller than the single-FAB clearance the shell already
+  // reserves — top up the gap so none of them sit over real content.
+  @media (max-width: 767.98px) {
+    padding-bottom: 115px;
+  }
+}
+
 // 1. Total KPI Metric
 .total {
   font-family: 'Outfit', sans-serif;

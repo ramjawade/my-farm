@@ -222,7 +222,8 @@
     "noActivityLogged": "No activity logged",
     "today": "Today",
     "oneDay": "1 Day",
-    "fullyMature": "Fully Mature"
+    "fullyMature": "Fully Mature",
+    "backToHome": "Back to Home"
   },
   "addCrop": {
     "title": "Add New Crop Profile",

@@ -111,6 +111,74 @@
   }
 }
 
+// 5b. Soft (translucent) FAB — used where several FABs stack on one screen
+// (e.g. Back/Add/Delete on crop-activity, activity-detail) and a single
+// solid-green FAB per page would be visually too heavy/ambiguous.
+.fab-soft {
+  position: fixed !important;
+  right: 29px !important;
+  width: 50px !important;
+  height: 50px !important;
+  z-index: 1030;
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 1.5rem; // matches Bootstrap's fs-4
+
+  &.fab-soft-success {
+    border: 1.5px solid rgba(42, 111, 71, 0.18) !important;
+    color: #2a6f47 !important;
+  }
+
+  &.fab-soft-tertiary {
+    border: 1.5px solid rgba($soil-primary, 0.18) !important;
+    color: $soil-primary !important;
+  }
+
+  &.fab-soft-danger {
+    border: 1.5px solid rgba(220, 53, 69, 0.18) !important;
+    color: #dc3545 !important;
+  }
+}
+
+// Stack offsets — bottom-to-top: stack-1, stack-2, stack-3
+.fab-stack-1 {
+  bottom: 25px !important;
+}
+.fab-stack-2 {
+  bottom: 85px !important;
+}
+.fab-stack-3 {
+  bottom: 145px !important;
+}
+
+// 6. Mobile Action Row convention
+//
+// App-wide rule for a form/dialog's trailing action row (Cancel next to a
+// primary Save/Submit, or a warning/destructive confirm): on phones, keep
+// them full-width and stacked instead of squeezed side by side. Markup
+// order stays [Cancel/Back, ..., primary-or-warning-action] — the same
+// left-to-right order the row already reads in on desktop — and
+// `column-reverse` puts that last (primary/warning) button visually on
+// top with Cancel/Back below it, matching native mobile action-sheet
+// conventions. Color stays on the buttons themselves via the existing
+// semantic classes (btn-success/btn-primary = primary, btn-outline-warning
+// = warning, btn-danger/btn-outline-danger = destructive, btn-secondary/
+// btn-outline-secondary = cancel or back) — this class only governs layout.
+.mf-action-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+
+  @media (max-width: 575.98px) {
+    flex-direction: column-reverse;
+
+    > .btn {
+      width: 100%;
+    }
+  }
+}
+
 // 6. Interactive Suggestion Capsule / Tag Pills
 .btn-outline-suggestion {
   font-family: 'Outfit', sans-serif;

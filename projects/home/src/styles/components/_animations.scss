@@ -1,10 +1,4 @@
 // 1. Shared Entrance Keyframe Animations
-
-// The `to` state intentionally uses `transform: none` rather than an
-// identity translate/scale: with `animation: ... forwards`, any non-`none`
-// transform left on an ancestor creates a new containing block for
-// descendant `position: fixed` elements (e.g. .fab), stranding them off the
-// viewport. `none` reaches the same visual end state without that side effect.
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -28,10 +22,25 @@
 }
 
 // 2. Helper Classes
+//
+// No `animation-fill-mode: forwards` here: a *filled* animation keeps
+// applying its last keyframe's transform as a live animation effect, and
+// browsers treat that as "transform: not none" (it computes to an identity
+// matrix, not the literal keyword `none`) for as long as the fill holds —
+// which, with `forwards`, is forever. That silently creates a new containing
+// block for any descendant `position: fixed` element (e.g. a mobile FAB),
+// making it scroll away with the page instead of staying pinned to the
+// viewport. Declaring the resting `opacity`/`transform` directly below and
+// dropping `forwards` sidesteps this: once the animation ends its effect is
+// removed and these authored values (real `none`, not an animated one) apply.
 .animate-fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
+  opacity: 1;
+  transform: none;
+  animation: fadeIn 0.4s ease-out;
 }
 
 .animate-modal-pop {
-  animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  opacity: 1;
+  transform: none;
+  animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }

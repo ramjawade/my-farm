@@ -488,18 +488,18 @@
 
   <!-- Floating Action Buttons (FAB) for Mobile -->
   <a
-    [routerLink]="createLink()"
-    class="btn btn-success fab shadow d-flex d-md-none align-items-center justify-content-center"
-    [title]="'activityList.recordNew' | translate"
-  >
-    <i class="bi bi-plus-lg"></i>
-  </a>
-  <a
     [routerLink]="backLink()"
-    class="btn btn-secondary fab fab-back shadow d-flex d-md-none align-items-center justify-content-center"
+    class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-tertiary fab-stack-1"
     [title]="'cropActivity.backToDashboard' | translate"
   >
     <i class="bi bi-arrow-left"></i>
+  </a>
+  <a
+    [routerLink]="createLink()"
+    class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-success fab-stack-2"
+    [title]="'activityList.recordNew' | translate"
+  >
+    <i class="bi bi-plus-lg"></i>
   </a>
 </div>
 

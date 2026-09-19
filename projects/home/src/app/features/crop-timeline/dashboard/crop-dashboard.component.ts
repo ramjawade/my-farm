@@ -79,6 +79,10 @@ export class CropDashboardComponent implements OnInit {
     this.router.navigate(['/crops/add']);
   }
 
+  onBackClicked(): void {
+    this.router.navigate(['/']);
+  }
+
   getDaysAfterSowing(sowingDate: number | undefined): number {
     if (!sowingDate) return 0;
     const diff = Date.now() - sowingDate;

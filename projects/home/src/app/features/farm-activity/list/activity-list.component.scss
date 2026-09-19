@@ -1,5 +1,16 @@
 @import '../../../../styles/bootstrap-variables';
 
+:host {
+  display: block;
+
+  // This page stacks two floating action buttons (Back/Record New) on
+  // mobile, taller than the single-FAB clearance the shell already
+  // reserves — top up the gap so neither sits over real content.
+  @media (max-width: 767.98px) {
+    padding-bottom: 60px;
+  }
+}
+
 // 1. Text clamp helper for activity notes preview
 .notes-preview {
   font-family: 'Outfit', sans-serif;

@@ -243,12 +243,25 @@
   </div>
 }
 
-<!-- Mobile Floating Action Button (FAB) -->
-<a
-  routerLink="create"
-  class="btn btn-success fab shadow d-flex d-md-none align-items-center justify-content-center"
-  [title]="'activityList.recordNew' | translate"
-  style="width: 58px; height: 58px; bottom: 25px; right: 25px; z-index: 1030; position: fixed"
->
-  <i class="bi bi-plus-lg fs-3"></i>
-</a>
+@if (!embedded()) {
+  <div class="mobile-fab-spacer d-md-none" aria-hidden="true"></div>
+
+  <!-- Back to Home FAB - MOBILE ONLY -->
+  <button
+    type="button"
+    class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-tertiary fab-stack-1"
+    (click)="onBackClicked()"
+    [title]="'cropDashboard.backToHome' | translate"
+  >
+    <i class="bi bi-arrow-left"></i>
+  </button>
+
+  <!-- Record New Activity FAB - MOBILE ONLY -->
+  <a
+    routerLink="create"
+    class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-success fab-stack-2"
+    [title]="'activityList.recordNew' | translate"
+  >
+    <i class="bi bi-plus-lg"></i>
+  </a>
+}

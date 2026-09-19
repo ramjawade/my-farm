@@ -3,7 +3,14 @@
 
 // 1. Core Container & Entrance
 .home-container {
-  animation: fadeIn 0.4s ease-out forwards;
+  // No `forwards`: see the comment on .animate-fade-in in
+  // _animations.scss — a filled fadeIn animation would otherwise keep
+  // "transform: none" as a live (matrix-resolved) animation value forever,
+  // which still creates a containing block for any fixed-position
+  // descendant, stranding it off the viewport.
+  opacity: 1;
+  transform: none;
+  animation: fadeIn 0.4s ease-out;
 }
 
 // 2. Public Landing Page Styles
