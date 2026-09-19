@@ -162,8 +162,13 @@ test.describe('Golden path', () => {
       // Desktop and mobile each render their own "Add Expense" trigger, only
       // one visible at a time via Bootstrap's d-none/d-md-* utilities
       // (activity-detail.component.html) — the mobile one is an icon-only
-      // FAB, so target both structurally rather than by accessible name.
-      await page.locator('button.fab:visible, button:visible:has-text("Add Expense")').click();
+      // FAB among a stack of three (Back/Add Expense/Delete), so target it
+      // by its distinguishing "success" color class rather than accessible
+      // name, and not just `.fab-soft` (shared by all three, which would be
+      // a strict-mode multi-match).
+      await page
+        .locator('button.fab-soft-success:visible, button:visible:has-text("Add Expense")')
+        .click();
 
       const categorySelect = page.locator('select[formcontrolname="category"]');
       await expect(categorySelect).not.toHaveValue('');
