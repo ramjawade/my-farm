@@ -458,12 +458,7 @@
   "landDetail": {
     "landArea": "Land Area",
     "notes": "Notes",
-    "noNotesHint": "No notes yet. Click the edit icon to add soil type, irrigation info, or lease details.",
-    "cropsOnLand": "Crops on this Land",
-    "stage": "Stage",
-    "totalCost": "total cost",
-    "totalLandCost": "Total Land Cost",
-    "noCropsPlanted": "No crops planted on this land yet."
+    "noNotesHint": "No notes yet. Click the edit icon to add soil type, irrigation info, or lease details."
   },
   "toolbar": {
     "toggleMenu": "Toggle navigation menu",
