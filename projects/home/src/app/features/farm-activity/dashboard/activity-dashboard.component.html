@@ -1,27 +1,30 @@
-<header
-  class="dashboard-header mf-header-pacing sticky-header d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 mb-4 border-bottom pb-3 text-start"
->
-  <div class="text-start">
-    <h2 class="mf-page-title">{{ 'activityDashboard.title' | translate }}</h2>
-    <p class="text-muted mb-0">{{ 'activityDashboard.subtitle' | translate }}</p>
-  </div>
-  <div class="d-flex gap-2 text-end">
-    <a
-      routerLink="list"
-      class="btn btn-secondary d-inline-flex align-items-center gap-2 px-3 py-2 ms-auto"
-      style="white-space: nowrap"
-    >
-      <i class="bi bi-list-task me-1"></i> {{ 'activityDashboard.viewAllActivities' | translate }}
-    </a>
-    <a
-      routerLink="create"
-      class="btn btn-success d-none d-md-inline-flex align-items-center gap-2 px-3 py-2 ms-auto"
-      style="white-space: nowrap"
-    >
-      <i class="bi bi-plus-lg"></i> {{ 'activityList.recordNew' | translate }}
-    </a>
-  </div>
-</header>
+@if (!embedded()) {
+  <header
+    class="dashboard-header mf-header-pacing sticky-header d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 mb-4 border-bottom pb-3 text-start"
+  >
+    <div class="text-start">
+      <h2 class="mf-page-title">{{ 'activityDashboard.title' | translate }}</h2>
+      <p class="text-muted mb-0">{{ 'activityDashboard.subtitle' | translate }}</p>
+    </div>
+    <div class="d-flex gap-2 text-end">
+      <a
+        routerLink="list"
+        class="btn btn-secondary d-inline-flex align-items-center gap-2 px-3 py-2 ms-auto"
+        style="white-space: nowrap"
+      >
+        <i class="bi bi-list-task me-1"></i>
+        {{ 'activityDashboard.viewAllActivities' | translate }}
+      </a>
+      <a
+        routerLink="create"
+        class="btn btn-success d-none d-md-inline-flex align-items-center gap-2 px-3 py-2 ms-auto"
+        style="white-space: nowrap"
+      >
+        <i class="bi bi-plus-lg"></i> {{ 'activityList.recordNew' | translate }}
+      </a>
+    </div>
+  </header>
+}
 
 @if (loading()) {
   <div class="d-flex flex-column align-items-center justify-content-center py-5 text-muted">
