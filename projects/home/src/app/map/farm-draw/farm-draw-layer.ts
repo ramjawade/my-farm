@@ -43,12 +43,18 @@ export class FarmDrawLayer {
     this.zoomSubscription.unsubscribe();
   }
 
-  private zoomToFarm(farm: any): void {
-    const latLngs = farm.points.map((p: any) => L.latLng(p.lat, p.lng));
-    if (latLngs.length >= 3) {
-      const poly = L.polygon(latLngs);
-      this.map.fitBounds(poly.getBounds(), { padding: [50, 50], maxZoom: 17 });
+  private zoomToFarm(farm: SavedFarm): void {
+    const latLngs = farm.points.map((p) => L.latLng(p.lat, p.lng));
+    if (latLngs.length < 3) {
+      return;
     }
+    // The map's cached container size can be stale by the time a saved-farm
+    // click fires (e.g. right after this page's own initial layout, or a
+    // sibling overlay panel changing size) — without this, fitBounds silently
+    // computes against the wrong size and the camera doesn't visibly move.
+    this.map.invalidateSize();
+    const poly = L.polygon(latLngs);
+    this.map.fitBounds(poly.getBounds(), { padding: [50, 50], maxZoom: 17 });
   }
 
   redraw = (): void => {
