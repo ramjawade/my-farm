@@ -55,8 +55,10 @@ export class ChatEntryComponent {
     this.created.set(null);
 
     try {
-      const { parsed } = await this.chatEntry.parse(text);
-      const activity = await this.chatEntry.create(parsed);
+      const { parsed, model } = await this.chatEntry.parse(text);
+      // The farmer's own words and the model id travel with the entry, so
+      // what was typed and what they later corrected stay recoverable (#244).
+      const activity = await this.chatEntry.create(parsed, text, model);
       this.created.set({ activity, entry: parsed });
       this.form.reset();
     } catch (err) {

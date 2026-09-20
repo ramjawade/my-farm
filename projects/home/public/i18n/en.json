@@ -504,6 +504,7 @@
     "unavailable": "Quick entry is unavailable right now. Please use the form below.",
     "droppedIntro": "We did not recognise these, so they were left out:",
     "droppedNotFound": "not found in your records",
-    "droppedAmbiguous": "matches more than one of your records"
+    "droppedAmbiguous": "matches more than one of your records",
+    "consent": "What you type here is sent to a third-party AI service to read it. On the free plan, that provider may use it to improve their products. Do not type anything you would not want shared."
   }
 }
