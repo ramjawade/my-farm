@@ -979,14 +979,14 @@
         "type": "object"
       },
       "ChatParseResponse": {
-        "description": "The parsed entry and what produced it.\n\n``model`` is recorded so #244 can store provenance on the created entry\nand so accuracy can later be compared across providers.",
+        "description": "The resolved entry and what produced it.\n\nCarries ids, not just names: the client already holds the reference data,\nand the save payload for `POST /api/v1/activities` is ids, so resolving\nhere means the UI never has to string-match. Resolution is server-side\nbecause the checks are a tenant boundary, and a client-side check is not\na boundary at all.\n\n``model`` is recorded so #244 can store provenance on the created entry\nand so accuracy can later be compared across providers.",
         "properties": {
           "model": {
             "title": "Model",
             "type": "string"
           },
           "parsed": {
-            "$ref": "#/components/schemas/ParsedEntry"
+            "$ref": "#/components/schemas/ResolvedEntry"
           }
         },
         "required": [
@@ -1371,6 +1371,34 @@
           }
         },
         "title": "CropUpdate",
+        "type": "object"
+      },
+      "DroppedField": {
+        "description": "A value the model produced that we refused to use, and why.\n\nReported rather than silently blanked so the UI can say \"we did not\nrecognise that land\" instead of showing an unexplained empty field.",
+        "properties": {
+          "field": {
+            "title": "Field",
+            "type": "string"
+          },
+          "reason": {
+            "enum": [
+              "not_found",
+              "ambiguous"
+            ],
+            "title": "Reason",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "field",
+          "value",
+          "reason"
+        ],
+        "title": "DroppedField",
         "type": "object"
       },
       "FarmCreate": {
@@ -2284,19 +2312,50 @@
         "title": "LandUpdate",
         "type": "object"
       },
-      "ParsedEntry": {
-        "description": "An activity plus its expenses, as names rather than ids.",
+      "RegisterRequest": {
+        "description": "Create a PIN account.",
+        "properties": {
+          "full_name": {
+            "maxLength": 255,
+            "minLength": 3,
+            "title": "Full Name",
+            "type": "string"
+          },
+          "phone": {
+            "maxLength": 20,
+            "minLength": 1,
+            "title": "Phone",
+            "type": "string"
+          },
+          "pin": {
+            "title": "Pin",
+            "type": "string"
+          },
+          "preferred_language": {
+            "default": "en",
+            "maxLength": 10,
+            "title": "Preferred Language",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone",
+          "pin",
+          "full_name"
+        ],
+        "title": "RegisterRequest",
+        "type": "object"
+      },
+      "ResolvedEntry": {
+        "description": "An entry carrying database ids, ready for the client to post.\n\nNames are kept alongside the ids so the UI can show what was understood,\nand so #244 can store the pair as provenance.",
         "properties": {
           "activity_type": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Activity Type"
+            "title": "Activity Type",
+            "type": "string"
+          },
+          "activity_type_id": {
+            "title": "Activity Type Id",
+            "type": "integer"
           },
           "crop": {
             "anyOf": [
@@ -2309,6 +2368,17 @@
             ],
             "title": "Crop"
           },
+          "crop_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Crop Id"
+          },
           "date": {
             "anyOf": [
               {
@@ -2320,9 +2390,16 @@
             ],
             "title": "Date"
           },
+          "dropped": {
+            "items": {
+              "$ref": "#/components/schemas/DroppedField"
+            },
+            "title": "Dropped",
+            "type": "array"
+          },
           "expenses": {
             "items": {
-              "$ref": "#/components/schemas/ParsedExpense"
+              "$ref": "#/components/schemas/ResolvedExpense"
             },
             "title": "Expenses",
             "type": "array"
@@ -2338,6 +2415,17 @@
             ],
             "title": "Land"
           },
+          "land_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Land Id"
+          },
           "notes": {
             "anyOf": [
               {
@@ -2350,19 +2438,20 @@
             "title": "Notes"
           },
           "transcript": {
-            "description": "What the model understood the input to be. Echoes the typed text today; with #232 it carries the transcription of spoken audio, which is why it is not simply the request field.",
             "title": "Transcript",
             "type": "string"
           }
         },
         "required": [
-          "transcript"
+          "transcript",
+          "activity_type_id",
+          "activity_type"
         ],
-        "title": "ParsedEntry",
+        "title": "ResolvedEntry",
         "type": "object"
       },
-      "ParsedExpense": {
-        "description": "One expense line the model found in the text.\n\nEvery field is optional. A field the model was unsure of must arrive as\n``None`` — a blank field costs the farmer one tap, a guessed one corrupts\na record they may not notice for a season.",
+      "ResolvedExpense": {
+        "description": "An expense line with its category resolved to an id.\n\n``expense_category_id`` may be null while the rest of the line is intact:\nan unrecognised category must not discard a correct amount.",
         "properties": {
           "amount": {
             "anyOf": [
@@ -2386,6 +2475,17 @@
               }
             ],
             "title": "Category"
+          },
+          "expense_category_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expense Category Id"
           },
           "quantity": {
             "anyOf": [
@@ -2434,41 +2534,7 @@
             "title": "Unit"
           }
         },
-        "title": "ParsedExpense",
-        "type": "object"
-      },
-      "RegisterRequest": {
-        "description": "Create a PIN account.",
-        "properties": {
-          "full_name": {
-            "maxLength": 255,
-            "minLength": 3,
-            "title": "Full Name",
-            "type": "string"
-          },
-          "phone": {
-            "maxLength": 20,
-            "minLength": 1,
-            "title": "Phone",
-            "type": "string"
-          },
-          "pin": {
-            "title": "Pin",
-            "type": "string"
-          },
-          "preferred_language": {
-            "default": "en",
-            "maxLength": 10,
-            "title": "Preferred Language",
-            "type": "string"
-          }
-        },
-        "required": [
-          "phone",
-          "pin",
-          "full_name"
-        ],
-        "title": "RegisterRequest",
+        "title": "ResolvedExpense",
         "type": "object"
       },
       "SessionRequest": {
