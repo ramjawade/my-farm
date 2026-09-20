@@ -506,5 +506,13 @@
     "droppedNotFound": "not found in your records",
     "droppedAmbiguous": "matches more than one of your records",
     "consent": "What you type here is sent to a third-party AI service to read it. On the free plan, that provider may use it to improve their products. Do not type anything you would not want shared."
+  },
+  "chatBot": {
+    "title": "Chat",
+    "disclaimer": "Beta · nothing is saved yet",
+    "close": "Close chat",
+    "inputLabel": "Type a message",
+    "placeholder": "Type a message…",
+    "send": "Send"
   }
 }
