@@ -7,8 +7,10 @@ import { provideTranslateService } from '@ngx-translate/core';
 import { ActivityDetailComponent } from './activity-detail.component';
 import { ActivityDetailService } from './activity-detail.service';
 import { ActivityExpensesService } from './activity-expenses.service';
-import { IStorageService } from '../../../core/storage/storage.interface';
-import { InMemoryStorageService } from '../../../testing/in-memory-storage.service';
+import { CropsApiService } from '../../../core/api/crops-api.service';
+import { FakeCropsApiService } from '../../../testing/fake-crops-api.service';
+import { LandsApiService } from '../../../core/api/lands-api.service';
+import { FakeLandsApiService } from '../../../testing/fake-lands-api.service';
 import {
   Activity,
   ActivityDetailSummary,
@@ -58,7 +60,8 @@ describe('ActivityDetailComponent', () => {
         provideHttpClient(),
         provideRouter([]),
         provideTranslateService(),
-        { provide: IStorageService, useClass: InMemoryStorageService },
+        { provide: CropsApiService, useClass: FakeCropsApiService },
+        { provide: LandsApiService, useClass: FakeLandsApiService },
         {
           provide: ActivityDetailService,
           useValue: {

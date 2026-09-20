@@ -4,8 +4,8 @@ import { TestBed } from '@angular/core/testing';
 import { provideTranslateService } from '@ngx-translate/core';
 import { SavedFarmsComponent } from './saved-farms.component';
 import { FarmAreaResult, SavedFarm } from '../../models/map.models';
-import { IStorageService } from '../../../core/storage/storage.interface';
-import { InMemoryStorageService } from '../../../testing/in-memory-storage.service';
+import { CropsApiService } from '../../../core/api/crops-api.service';
+import { FakeCropsApiService } from '../../../testing/fake-crops-api.service';
 
 describe('SavedFarmsComponent', () => {
   const mockFarms: SavedFarm[] = [
@@ -30,7 +30,7 @@ describe('SavedFarmsComponent', () => {
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideTranslateService(),
-        { provide: IStorageService, useClass: InMemoryStorageService },
+        { provide: CropsApiService, useClass: FakeCropsApiService },
       ],
     }).compileComponents();
   });

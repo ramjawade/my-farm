@@ -9,8 +9,12 @@ import { CropTimelineService } from '../crop-timeline/crop-timeline.service';
 import { ActivityService } from '../activity/activity.service';
 import { FarmerRegistrationData } from '../farmer-registration/farmer-registration.models';
 import { FarmDrawService } from '../../map/farm-draw/farm-draw.service';
-import { IStorageService } from '../../core/storage/storage.interface';
-import { InMemoryStorageService } from '../../testing/in-memory-storage.service';
+import { CropsApiService } from '../../core/api/crops-api.service';
+import { FakeCropsApiService } from '../../testing/fake-crops-api.service';
+import { ActivitiesApiService } from '../../core/api/activities-api.service';
+import { FakeActivitiesApiService } from '../../testing/fake-activities-api.service';
+import { LandsApiService } from '../../core/api/lands-api.service';
+import { FakeLandsApiService } from '../../testing/fake-lands-api.service';
 
 const baseUser: FarmerRegistrationData = {
   id: 1,
@@ -51,7 +55,9 @@ describe('HomeComponent', () => {
         AuthService,
         CropTimelineService,
         FarmDrawService,
-        { provide: IStorageService, useClass: InMemoryStorageService },
+        { provide: CropsApiService, useClass: FakeCropsApiService },
+        { provide: ActivitiesApiService, useClass: FakeActivitiesApiService },
+        { provide: LandsApiService, useClass: FakeLandsApiService },
       ],
     }).compileComponents();
 

@@ -6,8 +6,8 @@ import { provideTranslateService } from '@ngx-translate/core';
 import { CropDashboardComponent } from './crop-dashboard.component';
 import { CropDashboardService } from './crop-dashboard.service';
 import { CropEntity } from '../crop-timeline.models';
-import { IStorageService } from '../../../core/storage/storage.interface';
-import { InMemoryStorageService } from '../../../testing/in-memory-storage.service';
+import { ActivitiesApiService } from '../../../core/api/activities-api.service';
+import { FakeActivitiesApiService } from '../../../testing/fake-activities-api.service';
 
 describe('CropDashboardComponent', () => {
   let component: CropDashboardComponent;
@@ -38,8 +38,8 @@ describe('CropDashboardComponent', () => {
         provideRouter([]),
         provideTranslateService(),
         // ActivityService (injected by the component directly) still goes
-        // through IStorageService — only CropDashboardService is mocked here.
-        { provide: IStorageService, useClass: InMemoryStorageService },
+        // through ActivitiesApiService — only CropDashboardService is mocked here.
+        { provide: ActivitiesApiService, useClass: FakeActivitiesApiService },
         { provide: CropDashboardService, useValue: { getCrops: getCropsSpy } },
       ],
     }).compileComponents();

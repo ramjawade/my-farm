@@ -6,7 +6,7 @@ import { CropEntity, NewCrop } from '../crop-timeline.models';
 /**
  * Crop lookup + creation for the add-crop form. Hits `/api/v1/crops`
  * directly through `HttpService` — no cache, no shared state, and no
- * dependency on the wider `IStorageService`/`ApiStorageService` layer.
+ * dependency on `CropsApiService`.
  */
 @Injectable({
   providedIn: 'root',

@@ -5,8 +5,8 @@ import { provideTranslateService } from '@ngx-translate/core';
 import { ProfileEditDialogComponent } from './profile-edit-dialog.component';
 import { AuthService } from '../../../core/auth/auth.service';
 import { FarmerRegistrationData } from '../../farmer-registration/farmer-registration.models';
-import { IStorageService } from '../../../core/storage/storage.interface';
-import { InMemoryStorageService } from '../../../testing/in-memory-storage.service';
+import { LandsApiService } from '../../../core/api/lands-api.service';
+import { FakeLandsApiService } from '../../../testing/fake-lands-api.service';
 
 describe('ProfileEditDialogComponent', () => {
   let component: ProfileEditDialogComponent;
@@ -42,7 +42,7 @@ describe('ProfileEditDialogComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ProfileEditDialogComponent],
       providers: [
-        { provide: IStorageService, useClass: InMemoryStorageService },
+        { provide: LandsApiService, useClass: FakeLandsApiService },
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideTranslateService(),

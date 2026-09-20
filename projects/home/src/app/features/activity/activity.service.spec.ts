@@ -2,8 +2,8 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { ActivityService } from './activity.service';
-import { IStorageService } from '../../core/storage/storage.interface';
-import { InMemoryStorageService } from '../../testing/in-memory-storage.service';
+import { ActivitiesApiService } from '../../core/api/activities-api.service';
+import { FakeActivitiesApiService } from '../../testing/fake-activities-api.service';
 
 describe('ActivityService', () => {
   let service: ActivityService;
@@ -13,7 +13,7 @@ describe('ActivityService', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideHttpClient(),
-        { provide: IStorageService, useClass: InMemoryStorageService },
+        { provide: ActivitiesApiService, useClass: FakeActivitiesApiService },
       ],
     });
     localStorage.clear();
@@ -44,7 +44,7 @@ describe('ActivityService', () => {
     });
 
     it('should persist a new activity through the storage service', async () => {
-      const storage = TestBed.inject(IStorageService) as InMemoryStorageService;
+      const storage = TestBed.inject(ActivitiesApiService) as unknown as FakeActivitiesApiService;
       await service.addActivity({
         date: Date.now(),
         type: 'Irrigation',

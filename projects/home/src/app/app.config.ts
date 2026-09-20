@@ -10,8 +10,6 @@ import { provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 
 import { routes } from './app.routes';
-import { IStorageService } from './core/storage/storage.interface';
-import { ApiStorageService } from './core/api/api-storage.service';
 import { IWeatherService } from './core/weather/weather.interface';
 import { WeatherService } from './core/weather/weather.service';
 import { provideEnvironmentInitializer } from './core/services/environment.initializer';
@@ -38,7 +36,6 @@ export const appConfig: ApplicationConfig = {
       fallbackLang: 'en',
     }),
     provideLanguageInitializer(),
-    { provide: IStorageService, useClass: ApiStorageService }, // Online-only
     { provide: IWeatherService, useClass: WeatherService },
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),

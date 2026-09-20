@@ -5,8 +5,6 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { WeatherService } from './weather.service';
 import { AuthService } from '../auth/auth.service';
 import { WeatherCacheService } from './weather-cache.service';
-import { IStorageService } from '../storage/storage.interface';
-import { InMemoryStorageService } from '../../testing/in-memory-storage.service';
 import { WeatherLocation, OpenWeatherResponse } from './weather.models';
 
 describe('WeatherService', () => {
@@ -47,7 +45,6 @@ describe('WeatherService', () => {
         WeatherService,
         WeatherCacheService,
         { provide: AuthService, useValue: authServiceSpy },
-        { provide: IStorageService, useClass: InMemoryStorageService },
       ],
     });
 

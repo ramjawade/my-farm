@@ -95,7 +95,7 @@ export class ChatEntryError extends Error {
  *
  * Owns the two-step flow — parse, then create — so the component stays
  * presentation-only. Persistence goes through `ActivityService`, which is
- * backed by `IStorageService`: this service never writes directly, so chat
+ * backed by `ActivitiesApiService`: this service never writes directly, so chat
  * entry has exactly the same persistence path as the manual form.
  */
 @Injectable({ providedIn: 'root' })

@@ -3,15 +3,27 @@ import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { App } from './app';
-import { IStorageService } from './core/storage/storage.interface';
-import { InMemoryStorageService } from './testing/in-memory-storage.service';
+import { ActivitiesApiService } from './core/api/activities-api.service';
+import { FakeActivitiesApiService } from './testing/fake-activities-api.service';
+import { CropsApiService } from './core/api/crops-api.service';
+import { FakeCropsApiService } from './testing/fake-crops-api.service';
+import { LandsApiService } from './core/api/lands-api.service';
+import { FakeLandsApiService } from './testing/fake-lands-api.service';
+import { FarmerProfileApiService } from './core/api/farmer-profile-api.service';
+import { FakeFarmerProfileApiService } from './testing/fake-farmer-profile-api.service';
+import { WeatherApiService } from './core/api/weather-api.service';
+import { FakeWeatherApiService } from './testing/fake-weather-api.service';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
       providers: [
-        { provide: IStorageService, useClass: InMemoryStorageService },
+        { provide: ActivitiesApiService, useClass: FakeActivitiesApiService },
+        { provide: CropsApiService, useClass: FakeCropsApiService },
+        { provide: LandsApiService, useClass: FakeLandsApiService },
+        { provide: FarmerProfileApiService, useClass: FakeFarmerProfileApiService },
+        { provide: WeatherApiService, useClass: FakeWeatherApiService },
         provideZonelessChangeDetection(),
         provideRouter([]),
         provideHttpClient(),

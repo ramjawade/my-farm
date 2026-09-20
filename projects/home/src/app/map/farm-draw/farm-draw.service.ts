@@ -10,12 +10,12 @@ import {
   SavedFarm,
 } from '../models/map.models';
 import { AuthService } from '../../core/auth/auth.service';
-import { IStorageService } from '../../core/storage/storage.interface';
+import { LandsApiService } from '../../core/api/lands-api.service';
 
 @Injectable({ providedIn: 'root' })
 export class FarmDrawService {
   private readonly authService = inject(AuthService);
-  private readonly storage = inject(IStorageService);
+  private readonly storage = inject(LandsApiService);
 
   readonly status = signal<FarmDrawStatus>('idle');
   readonly points = signal<LatLngPoint[]>([]);

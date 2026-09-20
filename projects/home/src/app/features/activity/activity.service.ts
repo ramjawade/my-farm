@@ -6,7 +6,7 @@ import {
   NewActivity,
   NewActivityExpense,
 } from './activity.models';
-import { IStorageService } from '../../core/storage/storage.interface';
+import { ActivitiesApiService } from '../../core/api/activities-api.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { HttpService } from '../../core/http/http.service';
 import { ActivityMapperService } from '../../core/api/activity-mapper.service';
@@ -15,7 +15,7 @@ import { ActivityMapperService } from '../../core/api/activity-mapper.service';
   providedIn: 'root',
 })
 export class ActivityService {
-  private readonly storage = inject(IStorageService);
+  private readonly storage = inject(ActivitiesApiService);
   private readonly auth = inject(AuthService);
   private readonly http = inject(HttpService);
   private readonly activityMapper = inject(ActivityMapperService);

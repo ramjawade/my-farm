@@ -6,7 +6,7 @@ import { CropEntity } from '../crop-timeline.models';
 /**
  * Read-only crop lookup for the dashboard. Hits `/api/v1/crops` directly
  * through `HttpService` — no cache, no shared state, and no dependency on
- * the wider `IStorageService`/`ApiStorageService` layer.
+ * `CropsApiService`.
  */
 @Injectable({
   providedIn: 'root',

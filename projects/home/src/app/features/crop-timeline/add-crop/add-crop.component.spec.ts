@@ -7,8 +7,8 @@ import { provideTranslateService } from '@ngx-translate/core';
 import { AddCropComponent } from './add-crop.component';
 import { AddCropService } from './add-crop.service';
 import { AuthService } from '../../../core/auth/auth.service';
-import { IStorageService } from '../../../core/storage/storage.interface';
-import { InMemoryStorageService } from '../../../testing/in-memory-storage.service';
+import { LandsApiService } from '../../../core/api/lands-api.service';
+import { FakeLandsApiService } from '../../../testing/fake-lands-api.service';
 
 describe('AddCropComponent', () => {
   let component: AddCropComponent;
@@ -25,7 +25,7 @@ describe('AddCropComponent', () => {
         provideTranslateService(),
         AddCropService,
         AuthService,
-        { provide: IStorageService, useClass: InMemoryStorageService },
+        { provide: LandsApiService, useClass: FakeLandsApiService },
       ],
     }).compileComponents();
 
