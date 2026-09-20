@@ -83,7 +83,7 @@ async def test_parse_requires_auth(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_parse_returns_names_not_ids(client: AsyncClient) -> None:
+async def test_parse_returns_resolved_ids(client: AsyncClient) -> None:
     """A well-formed provider response comes back as names."""
     _use_provider(StubProvider(result=WELL_FORMED))
     with patch.object(
@@ -96,12 +96,12 @@ async def test_parse_returns_names_not_ids(client: AsyncClient) -> None:
         )
     assert resp.status_code == 200
     parsed = resp.json()["parsed"]
+    # Ids, resolved server-side, so the UI never string-matches (#242).
+    assert isinstance(parsed["activity_type_id"], int)
     assert parsed["activity_type"] == "Fertilizer Application"
+    assert isinstance(parsed["expenses"][0]["expense_category_id"], int)
     assert parsed["expenses"][0]["category"] == "Fertilizer"
     assert parsed["expenses"][0]["amount"] == "1600"
-    # Names only — resolving these to ids is #242's job, not this endpoint's.
-    assert "activity_type_id" not in parsed
-    assert "expense_category_id" not in parsed["expenses"][0]
 
 
 @pytest.mark.asyncio
@@ -268,3 +268,95 @@ def test_build_prompt_includes_today_and_vocabulary() -> None:
     assert "- Harvest" in prompt
     assert "- Seeds" in prompt
     assert "mr" in prompt
+
+
+# ------------------------------------------------- resolution (#242)
+
+
+@pytest.mark.asyncio
+async def test_unknown_activity_type_is_422_not_503(client: AsyncClient) -> None:
+    """The provider worked; we just could not extract a usable activity.
+
+    422 rather than 503 so the client asks the farmer to rephrase instead of
+    declaring the feature broken and falling back to the form.
+    """
+    _use_provider(StubProvider(result={**WELL_FORMED, "activity_type": "Interpretive Dance"}))
+    with patch.object(
+        firebase_auth, "verify_id_token", return_value={"uid": f"f_{uuid4()}", "phone_number": None}
+    ):
+        resp = await client.post(
+            "/api/v1/activities/parse",
+            headers={"Authorization": "Bearer test"},
+            json={"text": "did a dance"},
+        )
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_another_farmers_land_is_never_resolved(client: AsyncClient) -> None:
+    """The tenant boundary: a land name belonging to someone else resolves to
+    nothing, because only the caller's own rows are candidates.
+
+    Neon gives us no RLS, so this check is the boundary — not a convenience.
+    """
+    victim = f"victim_{uuid4()}"
+    land_name = f"Secret Plot {uuid4()}"
+    with patch.object(
+        firebase_auth, "verify_id_token", return_value={"uid": victim, "phone_number": None}
+    ):
+        headers = {"Authorization": "Bearer test"}
+        farm = await client.post("/api/v1/farms", headers=headers, json={"name": "victim farm"})
+        assert farm.status_code in (200, 201), farm.text
+        land = await client.post(
+            "/api/v1/lands",
+            headers=headers,
+            json={"farm_id": int(farm.json()["id"]), "name": land_name},
+        )
+        assert land.status_code in (200, 201), land.text
+
+    _use_provider(StubProvider(result={**WELL_FORMED, "land": land_name}))
+    with patch.object(
+        firebase_auth,
+        "verify_id_token",
+        return_value={"uid": f"attacker_{uuid4()}", "phone_number": None},
+    ):
+        resp = await client.post(
+            "/api/v1/activities/parse",
+            headers={"Authorization": "Bearer test"},
+            json={"text": f"worked on {land_name}"},
+        )
+    assert resp.status_code == 200
+    parsed = resp.json()["parsed"]
+    assert parsed["land_id"] is None
+    assert parsed["land"] is None
+    assert [d["field"] for d in parsed["dropped"]] == ["land"]
+    # "not_found", never "not_owned": the difference would itself disclose
+    # that another tenant has a land by that name (#246 makes the same choice).
+    assert parsed["dropped"][0]["reason"] == "not_found"
+
+
+@pytest.mark.asyncio
+async def test_own_land_resolves_to_its_id(client: AsyncClient) -> None:
+    """The boundary must not break the ordinary case."""
+    owner = f"owner_{uuid4()}"
+    land_name = f"North Plot {uuid4()}"
+    with patch.object(
+        firebase_auth, "verify_id_token", return_value={"uid": owner, "phone_number": None}
+    ):
+        headers = {"Authorization": "Bearer test"}
+        farm = await client.post("/api/v1/farms", headers=headers, json={"name": "own farm"})
+        land = await client.post(
+            "/api/v1/lands",
+            headers=headers,
+            json={"farm_id": int(farm.json()["id"]), "name": land_name},
+        )
+        land_id = int(land.json()["id"])
+
+        _use_provider(StubProvider(result={**WELL_FORMED, "land": land_name}))
+        resp = await client.post(
+            "/api/v1/activities/parse",
+            headers=headers,
+            json={"text": f"worked on {land_name}"},
+        )
+    assert resp.status_code == 200
+    assert resp.json()["parsed"]["land_id"] == land_id

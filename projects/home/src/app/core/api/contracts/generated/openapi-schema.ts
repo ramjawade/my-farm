@@ -1034,7 +1034,13 @@ export interface components {
     };
     /**
      * ChatParseResponse
-     * @description The parsed entry and what produced it.
+     * @description The resolved entry and what produced it.
+     *
+     *     Carries ids, not just names: the client already holds the reference data,
+     *     and the save payload for `POST /api/v1/activities` is ids, so resolving
+     *     here means the UI never has to string-match. Resolution is server-side
+     *     because the checks are a tenant boundary, and a client-side check is not
+     *     a boundary at all.
      *
      *     ``model`` is recorded so #244 can store provenance on the created entry
      *     and so accuracy can later be compared across providers.
@@ -1042,7 +1048,7 @@ export interface components {
     ChatParseResponse: {
       /** Model */
       model: string;
-      parsed: components['schemas']['ParsedEntry'];
+      parsed: components['schemas']['ResolvedEntry'];
     };
     /**
      * CropCatalogCreate
@@ -1165,6 +1171,24 @@ export interface components {
       sowing_date?: string | null;
       /** Status */
       status?: string | null;
+    };
+    /**
+     * DroppedField
+     * @description A value the model produced that we refused to use, and why.
+     *
+     *     Reported rather than silently blanked so the UI can say "we did not
+     *     recognise that land" instead of showing an unexplained empty field.
+     */
+    DroppedField: {
+      /** Field */
+      field: string;
+      /**
+       * Reason
+       * @enum {string}
+       */
+      reason: 'not_found' | 'ambiguous';
+      /** Value */
+      value: string;
     };
     /**
      * FarmCreate
@@ -1421,51 +1445,6 @@ export interface components {
       points?: components['schemas']['LandPoint-Input'][] | null;
     };
     /**
-     * ParsedEntry
-     * @description An activity plus its expenses, as names rather than ids.
-     */
-    ParsedEntry: {
-      /** Activity Type */
-      activity_type?: string | null;
-      /** Crop */
-      crop?: string | null;
-      /** Date */
-      date?: string | null;
-      /** Expenses */
-      expenses?: components['schemas']['ParsedExpense'][];
-      /** Land */
-      land?: string | null;
-      /** Notes */
-      notes?: string | null;
-      /**
-       * Transcript
-       * @description What the model understood the input to be. Echoes the typed text today; with #232 it carries the transcription of spoken audio, which is why it is not simply the request field.
-       */
-      transcript: string;
-    };
-    /**
-     * ParsedExpense
-     * @description One expense line the model found in the text.
-     *
-     *     Every field is optional. A field the model was unsure of must arrive as
-     *     ``None`` — a blank field costs the farmer one tap, a guessed one corrupts
-     *     a record they may not notice for a season.
-     */
-    ParsedExpense: {
-      /** Amount */
-      amount?: string | null;
-      /** Category */
-      category?: string | null;
-      /** Quantity */
-      quantity?: string | null;
-      /** Rate */
-      rate?: string | null;
-      /** Remarks */
-      remarks?: string | null;
-      /** Unit */
-      unit?: string | null;
-    };
-    /**
      * RegisterRequest
      * @description Create a PIN account.
      */
@@ -1481,6 +1460,60 @@ export interface components {
        * @default en
        */
       preferred_language: string;
+    };
+    /**
+     * ResolvedEntry
+     * @description An entry carrying database ids, ready for the client to post.
+     *
+     *     Names are kept alongside the ids so the UI can show what was understood,
+     *     and so #244 can store the pair as provenance.
+     */
+    ResolvedEntry: {
+      /** Activity Type */
+      activity_type: string;
+      /** Activity Type Id */
+      activity_type_id: number;
+      /** Crop */
+      crop?: string | null;
+      /** Crop Id */
+      crop_id?: number | null;
+      /** Date */
+      date?: string | null;
+      /** Dropped */
+      dropped?: components['schemas']['DroppedField'][];
+      /** Expenses */
+      expenses?: components['schemas']['ResolvedExpense'][];
+      /** Land */
+      land?: string | null;
+      /** Land Id */
+      land_id?: number | null;
+      /** Notes */
+      notes?: string | null;
+      /** Transcript */
+      transcript: string;
+    };
+    /**
+     * ResolvedExpense
+     * @description An expense line with its category resolved to an id.
+     *
+     *     ``expense_category_id`` may be null while the rest of the line is intact:
+     *     an unrecognised category must not discard a correct amount.
+     */
+    ResolvedExpense: {
+      /** Amount */
+      amount?: string | null;
+      /** Category */
+      category?: string | null;
+      /** Expense Category Id */
+      expense_category_id?: number | null;
+      /** Quantity */
+      quantity?: string | null;
+      /** Rate */
+      rate?: string | null;
+      /** Remarks */
+      remarks?: string | null;
+      /** Unit */
+      unit?: string | null;
     };
     /**
      * SessionRequest
