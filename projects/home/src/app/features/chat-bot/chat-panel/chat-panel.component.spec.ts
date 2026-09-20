@@ -56,8 +56,9 @@ describe('ChatPanelComponent', () => {
     const selected = jasmine.createSpy('chipSelected');
     component.chipSelected.subscribe(selected);
 
-    const chipButtons: NodeListOf<HTMLButtonElement> =
-      fixture.nativeElement.querySelectorAll('.chat-panel__bubble button');
+    const chipButtons: NodeListOf<HTMLButtonElement> = fixture.nativeElement.querySelectorAll(
+      '.chat-panel__bubble button',
+    );
     chipButtons[0].click();
     fixture.detectChanges();
 
@@ -69,7 +70,9 @@ describe('ChatPanelComponent', () => {
   });
 
   it('clears the chip echo once the orchestrator supplies a new messages array', () => {
-    setMessages([{ role: 'bot', text: 'Which land?', chips: [{ label: 'North Plot', value: '12' }] }]);
+    setMessages([
+      { role: 'bot', text: 'Which land?', chips: [{ label: 'North Plot', value: '12' }] },
+    ]);
 
     const button: HTMLButtonElement = fixture.nativeElement.querySelector(
       '.chat-panel__bubble button',
