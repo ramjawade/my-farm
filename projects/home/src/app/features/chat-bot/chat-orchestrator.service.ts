@@ -87,8 +87,12 @@ export class ChatOrchestratorService {
     this.messagesSignal.update((m) => [...m, { role: 'farmer', text }]);
   }
 
-  private appendBotMessage(text: string, chips?: ChatQuickReply[]): void {
-    this.messagesSignal.update((m) => [...m, { role: 'bot', text, chips }]);
+  private appendBotMessage(
+    text: string,
+    chips?: ChatQuickReply[],
+    showReviewAction?: boolean,
+  ): void {
+    this.messagesSignal.update((m) => [...m, { role: 'bot', text, chips, showReviewAction }]);
   }
 
   private async runParse(): Promise<void> {
@@ -112,7 +116,7 @@ export class ChatOrchestratorService {
       if (decision.kind === 'ready') {
         this.currentField = null;
         this.draftSignal.set(decision.entry);
-        this.appendBotMessage(this.translate.instant('chatBot.readyToReview'));
+        this.appendBotMessage(this.translate.instant('chatBot.readyToReview'), undefined, true);
       } else if (decision.kind === 'clarify') {
         this.currentField = decision.field;
         this.appendBotMessage(

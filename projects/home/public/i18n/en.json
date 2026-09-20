@@ -514,6 +514,7 @@
     "inputLabel": "Type a message",
     "placeholder": "Type a message…",
     "send": "Send",
+    "reviewAndSave": "Review & Save",
     "readyToReview": "Got it — everything's filled in. Tap Review & Save when you're ready.",
     "clarify": {
       "land": "Which land is this for?",
@@ -523,6 +524,19 @@
     },
     "escapeHatch": "I'm having trouble understanding that. You can fill in the rest using the manual form instead.",
     "rephrase": "I couldn't tell what activity that describes. Could you try saying it differently?",
-    "unavailable": "The chat assistant is temporarily unavailable. Please try again in a moment, or use the manual form."
+    "unavailable": "The chat assistant is temporarily unavailable. Please try again in a moment, or use the manual form.",
+    "review": {
+      "title": "Review & Save",
+      "activityType": "Activity",
+      "date": "Date",
+      "land": "Land",
+      "crop": "Crop",
+      "none": "None",
+      "expenses": "Expenses",
+      "amount": "Amount",
+      "cancel": "Cancel",
+      "save": "Save entry",
+      "saveFailed": "Couldn't save that entry. Please try again."
+    }
   }
 }

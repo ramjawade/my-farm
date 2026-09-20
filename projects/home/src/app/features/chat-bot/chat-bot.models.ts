@@ -11,4 +11,6 @@ export interface ChatMessage {
   text: string;
   /** Only bot messages carry chips. */
   chips?: ChatQuickReply[];
+  /** Set on the bot message that means "ready" — renders the Review & Save action. */
+  showReviewAction?: boolean;
 }
