@@ -50,7 +50,7 @@ class Settings(BaseSettings):
     # feature — /activities/parse then returns 503 and the client falls back
     # to the manual form, which is the intended behaviour, not an outage.
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.5-flash-lite"
+    gemini_model: str = "gemini-3.1-flash-lite"
     gemini_timeout_seconds: float = 20.0
 
     @property
