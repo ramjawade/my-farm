@@ -24,7 +24,10 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm start',
+    // `start:e2e`, not `start`: the default dev proxy points at the deployed
+    // API, which would make this suite test production instead of the backend
+    // CI just started, seeded and is about to assert against (#248).
+    command: 'npm run start:e2e',
     url: 'http://localhost:4200',
     reuseExistingServer: !process.env['CI'],
     timeout: 120_000,
