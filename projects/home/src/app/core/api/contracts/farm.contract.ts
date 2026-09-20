@@ -7,7 +7,7 @@
  *   PATCH /api/v1/farms/{id}     -> FarmResponse
  *   DELETE /api/v1/farms/{id}    -> 204
  *
- * The Angular app has no multi-farm UI — `LandsApiService` only
+ * The Angular app has no multi-farm UI — `ApiStorageService` only
  * get-or-creates one default farm to satisfy `Land.farm_id`.
  */
 
