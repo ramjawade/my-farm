@@ -104,6 +104,23 @@ describe('CreateActivityComponent', () => {
     expect(component.form.get('cropId')?.value).toBe(5);
   });
 
+  it('pre-fills type/date/fieldId/notes from query params (the chat-bot escape hatch)', async () => {
+    queryParams = new BehaviorSubject<Record<string, string>>({
+      type: 'Fertilizer Application',
+      date: '2026-09-20',
+      fieldId: '7',
+      notes: 'from the chat bot',
+    });
+    setup();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(component.form.get('type')?.value).toBe('Fertilizer Application');
+    expect(component.form.get('date')?.value).toBe('2026-09-20');
+    expect(component.form.get('fieldId')?.value).toBe(7);
+    expect(component.form.get('notes')?.value).toBe('from the chat bot');
+  });
+
   it('navigates to the global activity detail page after create when not crop-scoped', async () => {
     setup();
     fixture.detectChanges();

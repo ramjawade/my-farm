@@ -152,6 +152,28 @@
   bottom: 145px !important;
 }
 
+// 5c. Chat-bot FAB — mounted once at the app layout level, visible on every
+// authenticated page and every viewport (unlike .fab-soft, which is
+// mobile-only and per-page). Anchored bottom-LEFT, opposite every other FAB
+// above, so it never collides with a page's own bottom-right stack.
+.chat-fab {
+  position: fixed !important;
+  left: 20px !important;
+  bottom: 20px !important;
+  width: 56px !important;
+  height: 56px !important;
+  border-radius: 50% !important;
+  font-size: 1.4rem !important;
+  background: linear-gradient(135deg, $farm-green-primary, $farm-green-dark) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 8px 25px rgba($farm-green-primary, 0.35) !important;
+  z-index: 1040;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 // 6. Mobile Action Row convention
 //
 // App-wide rule for a form/dialog's trailing action row (Cancel next to a

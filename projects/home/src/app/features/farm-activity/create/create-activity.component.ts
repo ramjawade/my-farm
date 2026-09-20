@@ -127,11 +127,14 @@ export class CreateActivityComponent implements OnInit {
 
     // Read cropId from the route path param first (crops/:cropId/create),
     // falling back to the query param — parentActivityId/activityId stay
-    // query-param only.
+    // query-param only. type/date/fieldId/notes are the chat-bot's
+    // manual-form escape hatch (#256/#260): whatever the bot already
+    // resolved before giving up, carried over so the farmer isn't retyping it.
     this.route.queryParams.subscribe((params) => {
       const routeCropId = this.cropIdPathParam() ?? parseId(params['cropId']);
       const routeParentId = parseId(params['parentActivityId']);
       const routeActivityId = parseId(params['activityId']);
+      const routeFieldId = parseId(params['fieldId']);
 
       if (routeCropId) {
         this.form.patchValue({ cropId: routeCropId });
@@ -142,6 +145,18 @@ export class CreateActivityComponent implements OnInit {
       }
       if (routeActivityId) {
         this.activityId = routeActivityId;
+      }
+      if (routeFieldId) {
+        this.form.patchValue({ fieldId: routeFieldId });
+      }
+      if (params['type']) {
+        this.form.patchValue({ type: params['type'] });
+      }
+      if (params['date']) {
+        this.form.patchValue({ date: params['date'] });
+      }
+      if (params['notes']) {
+        this.form.patchValue({ notes: params['notes'] });
       }
     });
 

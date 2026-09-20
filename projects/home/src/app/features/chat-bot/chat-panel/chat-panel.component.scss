@@ -1,0 +1,33 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.chat-panel {
+  flex: 1;
+  min-height: 0;
+}
+
+.chat-panel__thread {
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.chat-panel__message--past {
+  opacity: 0.55;
+}
+
+.chat-panel__bubble {
+  max-width: 80%;
+
+  &--bot {
+    background-color: #e7f2ec;
+  }
+
+  &--farmer {
+    background-color: #2f6e4b;
+    color: #ffffff;
+  }
+}

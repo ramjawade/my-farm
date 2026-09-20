@@ -1,0 +1,106 @@
+@if (entry(); as current) {
+  <div
+    class="review-popup-backdrop position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center p-3"
+    style="z-index: 1060"
+    (click)="cancel()"
+  >
+    <div
+      class="review-popup-card card border-0 shadow-lg"
+      style="max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="card-body">
+        <h2 class="h5 mb-1">{{ 'chatBot.review.title' | translate }}</h2>
+        <p class="small text-muted mb-3">{{ 'chatBot.disclaimer' | translate }}</p>
+
+        <form [formGroup]="form">
+          <div class="mb-3">
+            <label for="reviewActivityType" class="form-label small">
+              {{ 'chatBot.review.activityType' | translate }}
+            </label>
+            <select id="reviewActivityType" class="form-select" formControlName="activityType">
+              @for (t of activityTypeOptions(); track t) {
+                <option [value]="t">{{ t }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="reviewDate" class="form-label small">{{
+              'chatBot.review.date' | translate
+            }}</label>
+            <input id="reviewDate" type="date" class="form-control" formControlName="date" />
+          </div>
+
+          <div class="mb-3">
+            <label for="reviewLand" class="form-label small">{{
+              'chatBot.review.land' | translate
+            }}</label>
+            <select id="reviewLand" class="form-select" formControlName="landId">
+              <option [ngValue]="null">{{ 'chatBot.review.none' | translate }}</option>
+              @for (l of landOptions(); track l.id) {
+                <option [ngValue]="l.id">{{ l.name }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="reviewCrop" class="form-label small">{{
+              'chatBot.review.crop' | translate
+            }}</label>
+            <select id="reviewCrop" class="form-select" formControlName="cropId">
+              <option [ngValue]="null">{{ 'chatBot.review.none' | translate }}</option>
+              @for (c of cropOptions(); track c.id) {
+                <option [ngValue]="c.id">{{ c.name }}</option>
+              }
+            </select>
+          </div>
+
+          @if (expensesArray.controls.length) {
+            <div formArrayName="expenses" class="mb-3">
+              <label class="form-label small d-block">{{
+                'chatBot.review.expenses' | translate
+              }}</label>
+              @for (line of expensesArray.controls; track $index) {
+                <div [formGroupName]="$index" class="d-flex gap-2 mb-2">
+                  <select class="form-select" formControlName="category">
+                    @for (c of expenseCategoryOptions; track c) {
+                      <option [value]="c">{{ c }}</option>
+                    }
+                  </select>
+                  <input
+                    type="number"
+                    class="form-control"
+                    formControlName="amount"
+                    [placeholder]="'chatBot.review.amount' | translate"
+                  />
+                </div>
+              }
+            </div>
+          }
+        </form>
+
+        @if (errorMessage(); as err) {
+          <div class="alert alert-danger py-2 small" role="alert">{{ err }}</div>
+        }
+
+        <div class="d-flex justify-content-end gap-2 mt-3">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            [disabled]="saving()"
+            (click)="cancel()"
+          >
+            {{ 'chatBot.review.cancel' | translate }}
+          </button>
+          <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="save()">
+            @if (saving()) {
+              <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+            }
+            {{ 'chatBot.review.save' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
