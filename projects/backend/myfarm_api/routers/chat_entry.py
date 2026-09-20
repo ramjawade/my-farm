@@ -12,6 +12,7 @@ Three outcomes the client must tell apart:
 * **503** — the provider is unusable; fall back to the manual form.
 """
 
+import logging
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -34,6 +35,8 @@ from myfarm_api.core.security import FirebaseIdentity, get_firebase_identity
 from myfarm_api.models import Farmer
 from myfarm_api.repositories.farmer import FarmerRepository
 from myfarm_api.schemas.chat_entry import ChatParseRequest, ChatParseResponse, ParsedEntry
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/activities", tags=["chat-entry"])
 
@@ -88,6 +91,15 @@ async def parse_entry(
         # Shape validation. A response that does not fit the schema is a
         # provider problem, not the farmer's, so it reads as 503 and the
         # client falls back to the form.
+        #
+        # Log which keys came back, never their values — the values are the
+        # farmer's own words. Without this the 503 is indistinguishable from
+        # every other 503 (#254).
+        logger.warning(
+            "chat-entry provider output failed validation; keys=%s errors=%s",
+            sorted(raw.keys()),
+            exc.errors(include_url=False),
+        )
         raise HTTPException(status_code=503, detail=PROVIDER_UNAVAILABLE) from exc
 
     # Semantic validation: names become ids, or are refused. Server-side,
@@ -97,6 +109,7 @@ async def parse_entry(
     try:
         resolved = resolve_entry(parsed, context)
     except UnresolvableActivityType as exc:
+        logger.info("chat-entry could not resolve an activity type: %r", str(exc))
         # 422, not 503: the provider worked, we simply could not extract a
         # usable activity. The client should ask the farmer to rephrase
         # rather than declare the feature broken.
