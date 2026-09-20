@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from myfarm_api.core.db import get_session_factory
 from myfarm_api.core.r2 import get_r2_service
 from myfarm_api.core.security import FirebaseIdentity, get_firebase_identity
+from myfarm_api.core.tenancy import ensure_owned
 from myfarm_api.models import (
     Activity,
     ActivityAttachment,
@@ -18,7 +19,7 @@ from myfarm_api.models import (
     Farmer,
 )
 from myfarm_api.repositories.crud import ConflictError
-from myfarm_api.repositories.entities import activity_repo
+from myfarm_api.repositories.entities import activity_repo, crop_repo, land_repo
 from myfarm_api.repositories.farmer import FarmerRepository
 from myfarm_api.schemas.activity import (
     ActivityCreate,
@@ -85,6 +86,22 @@ async def _record_history(
     async with session_factory() as own_session:
         own_session.add(entry)
         await own_session.commit()
+
+
+async def _ensure_owned_references(current_farmer: Farmer, payload: dict[str, Any]) -> None:
+    """Verify every farmer-owned id in an activity payload belongs to the caller.
+
+    Only keys actually present are checked, so a PATCH that does not mention
+    `land_id` leaves the existing reference alone (#246).
+    """
+    if "land_id" in payload:
+        await ensure_owned(land_repo, current_farmer.id, payload["land_id"], "Land")
+    if "crop_id" in payload:
+        await ensure_owned(crop_repo, current_farmer.id, payload["crop_id"], "Crop")
+    if "parent_activity_id" in payload:
+        await ensure_owned(
+            activity_repo, current_farmer.id, payload["parent_activity_id"], "Activity"
+        )
 
 
 @router.get("", response_model=dict)
@@ -226,7 +243,9 @@ async def create_activity(
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> ActivityRead:
     """Create a new activity."""
-    activity = Activity(**data.model_dump())
+    payload = data.model_dump()
+    await _ensure_owned_references(current_farmer, payload)
+    activity = Activity(**payload)
     try:
         activity = await activity_repo.create(current_farmer.id, activity)
     except ConflictError:
@@ -250,6 +269,7 @@ async def update_activity(
     old_status = existing.status
 
     updates = data.model_dump(exclude_unset=True)
+    await _ensure_owned_references(current_farmer, updates)
     activity = await activity_repo.update(current_farmer.id, activity_id, updates)
     if not activity:
         raise HTTPException(status_code=404, detail="Activity not found")
