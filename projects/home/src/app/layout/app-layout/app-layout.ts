@@ -5,12 +5,21 @@ import { Main } from '../main/main';
 import { Sidebar } from '../sidebar/sidebar';
 import { Toolbar } from '../toolbar/toolbar';
 import { AuthService } from '../../core/auth/auth.service';
+import { ChatBotContainerComponent } from '../../features/chat-bot/chat-bot-container/chat-bot-container.component';
 import { LoaderOutletComponent, ToastOutletComponent } from 'shared';
 
 @Component({
   standalone: true,
   selector: 'app-layout',
-  imports: [Toolbar, Sidebar, Main, RouterOutlet, ToastOutletComponent, LoaderOutletComponent],
+  imports: [
+    Toolbar,
+    Sidebar,
+    Main,
+    RouterOutlet,
+    ToastOutletComponent,
+    LoaderOutletComponent,
+    ChatBotContainerComponent,
+  ],
   templateUrl: './app-layout.html',
   styleUrl: './app-layout.scss',
 })
