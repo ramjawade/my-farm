@@ -485,29 +485,8 @@
   "workflowProgressBar": {
     "stepLabel": "Getting Started: Step {{step}} of 6"
   },
-  "chatEntry": {
-    "title": "Quick entry",
-    "beta": "Beta",
-    "inputLabel": "Describe what you did",
-    "placeholder": "e.g. 100 rs spent on North Plot",
-    "example": "Type it the way you would say it. We will fill in the rest.",
-    "add": "Add",
-    "adding": "Adding…",
-    "added": "Added",
-    "onLand": "on",
-    "forCrop": "for",
-    "uncategorised": "Uncategorised",
-    "undo": "Undo",
-    "edit": "Edit",
-    "undone": "Entry removed.",
-    "notUnderstood": "We could not tell what activity that describes. Try rephrasing, or use the form below.",
-    "unavailable": "Quick entry is unavailable right now. Please use the form below.",
-    "droppedIntro": "We did not recognise these, so they were left out:",
-    "droppedNotFound": "not found in your records",
-    "droppedAmbiguous": "matches more than one of your records",
-    "consent": "What you type here is sent to a third-party AI service to read it. On the free plan, that provider may use it to improve their products. Do not type anything you would not want shared."
-  },
   "chatBot": {
+    "open": "Log an activity with chat",
     "title": "Chat",
     "disclaimer": "Beta · nothing is saved yet",
     "close": "Close chat",

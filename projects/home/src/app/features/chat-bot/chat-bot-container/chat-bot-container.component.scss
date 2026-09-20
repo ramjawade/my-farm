@@ -1,0 +1,28 @@
+.chat-bot-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+
+  &__panel {
+    pointer-events: auto;
+    width: 100%;
+    max-width: 420px;
+    height: min(70vh, 640px);
+    margin: 0 16px 16px;
+    background-color: #f7f5f1;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+    display: flex;
+  }
+}
+
+@media (min-width: 768px) {
+  .chat-bot-overlay {
+    justify-content: flex-end;
+  }
+}

@@ -1,0 +1,30 @@
+@if (!open()) {
+  <button
+    type="button"
+    class="chat-fab"
+    [attr.aria-label]="'chatBot.open' | translate"
+    (click)="openChat()"
+  >
+    <i class="bi bi-chat-dots-fill" aria-hidden="true"></i>
+  </button>
+} @else {
+  <div class="chat-bot-overlay">
+    <app-chat-panel
+      class="chat-bot-overlay__panel"
+      [messages]="orchestrator.messages()"
+      [busy]="orchestrator.busy()"
+      (send)="orchestrator.sendText($event)"
+      (chipSelected)="orchestrator.selectChip($event)"
+      (close)="closeChat()"
+      (reviewRequested)="onReviewRequested()"
+    />
+  </div>
+}
+
+<app-review-popup
+  [entry]="reviewEntry()"
+  [originalInput]="orchestrator.originalInput()"
+  [model]="orchestrator.model() ?? ''"
+  (saved)="onReviewSaved($event)"
+  (cancelled)="onReviewCancelled()"
+/>

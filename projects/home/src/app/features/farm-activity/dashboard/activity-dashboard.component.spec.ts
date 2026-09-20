@@ -4,8 +4,6 @@ import { provideRouter, Router } from '@angular/router';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { provideTranslateService } from '@ngx-translate/core';
-import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivityDashboardComponent } from './activity-dashboard.component';
 import { ActivityService } from '../../activity/activity.service';
 import { Activity, ActivityKpiSummary } from '../../activity/activity.models';
@@ -44,11 +42,6 @@ describe('ActivityDashboardComponent', () => {
         provideZonelessChangeDetection(),
         provideRouter([]),
         provideTranslateService(),
-        // The dashboard now renders <app-chat-entry>, whose service reaches
-        // HttpClient. Testing transport keeps that inert — no request is made
-        // unless a test drives the chat box itself.
-        provideHttpClient(),
-        provideHttpClientTesting(),
         {
           provide: ActivatedRoute,
           useValue: { paramMap: new BehaviorSubject(convertToParamMap({})) },
