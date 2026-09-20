@@ -45,9 +45,22 @@ class Settings(BaseSettings):
     r2_secret_access_key: str = ""
     r2_bucket_name: str = "myfarm-attachments"
 
+    # Gemini, for natural-language entry parsing (#241). Free tier; the key
+    # is server-side only and never reaches the client. Blank disables the
+    # feature — /activities/parse then returns 503 and the client falls back
+    # to the manual form, which is the intended behaviour, not an outage.
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-2.5-flash-lite"
+    gemini_timeout_seconds: float = 20.0
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
+    @property
+    def gemini_configured(self) -> bool:
+        """Whether natural-language entry parsing can run."""
+        return bool(self.gemini_api_key)
 
     @property
     def r2_configured(self) -> bool:

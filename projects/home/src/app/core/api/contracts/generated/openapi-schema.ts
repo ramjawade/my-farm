@@ -54,6 +54,30 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/activities/parse': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Parse Entry
+     * @description Parse plain-language text into a structured entry. Persists nothing.
+     *
+     *     Returns 503 when the provider is unusable — that is the signal for the
+     *     client to fall back to the manual form. Manual entry is never blocked by
+     *     this endpoint being down.
+     */
+    post: operations['parse_entry_api_v1_activities_parse_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/activities/summary': {
     parameters: {
       query?: never;
@@ -996,6 +1020,31 @@ export interface components {
       status?: string | null;
     };
     /**
+     * ChatParseRequest
+     * @description Plain-language text describing one activity.
+     */
+    ChatParseRequest: {
+      /**
+       * Language
+       * @description BCP-47-ish hint, e.g. 'hi'. Falls back to the farmer's preferred_language.
+       */
+      language?: string | null;
+      /** Text */
+      text: string;
+    };
+    /**
+     * ChatParseResponse
+     * @description The parsed entry and what produced it.
+     *
+     *     ``model`` is recorded so #244 can store provenance on the created entry
+     *     and so accuracy can later be compared across providers.
+     */
+    ChatParseResponse: {
+      /** Model */
+      model: string;
+      parsed: components['schemas']['ParsedEntry'];
+    };
+    /**
      * CropCatalogCreate
      * @description Create a new crop catalog entry.
      */
@@ -1372,6 +1421,51 @@ export interface components {
       points?: components['schemas']['LandPoint-Input'][] | null;
     };
     /**
+     * ParsedEntry
+     * @description An activity plus its expenses, as names rather than ids.
+     */
+    ParsedEntry: {
+      /** Activity Type */
+      activity_type?: string | null;
+      /** Crop */
+      crop?: string | null;
+      /** Date */
+      date?: string | null;
+      /** Expenses */
+      expenses?: components['schemas']['ParsedExpense'][];
+      /** Land */
+      land?: string | null;
+      /** Notes */
+      notes?: string | null;
+      /**
+       * Transcript
+       * @description What the model understood the input to be. Echoes the typed text today; with #232 it carries the transcription of spoken audio, which is why it is not simply the request field.
+       */
+      transcript: string;
+    };
+    /**
+     * ParsedExpense
+     * @description One expense line the model found in the text.
+     *
+     *     Every field is optional. A field the model was unsure of must arrive as
+     *     ``None`` — a blank field costs the farmer one tap, a guessed one corrupts
+     *     a record they may not notice for a season.
+     */
+    ParsedExpense: {
+      /** Amount */
+      amount?: string | null;
+      /** Category */
+      category?: string | null;
+      /** Quantity */
+      quantity?: string | null;
+      /** Rate */
+      rate?: string | null;
+      /** Remarks */
+      remarks?: string | null;
+      /** Unit */
+      unit?: string | null;
+    };
+    /**
      * RegisterRequest
      * @description Create a PIN account.
      */
@@ -1540,6 +1634,41 @@ export interface operations {
           'application/json': {
             [key: string]: unknown;
           };
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  parse_entry_api_v1_activities_parse_post: {
+    parameters: {
+      query?: never;
+      header?: {
+        authorization?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ChatParseRequest'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ChatParseResponse'];
         };
       };
       /** @description Validation Error */
