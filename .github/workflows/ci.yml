@@ -237,6 +237,19 @@ jobs:
       - name: Run Playwright golden-path suite
         run: npm run e2e
 
+      # Without this, a proxy pointing somewhere else makes the suite pass
+      # while the backend started above is never touched — which is exactly
+      # how #248 went unnoticed. A green E2E must mean THIS backend served it.
+      - name: Assert the local backend served the suite
+        working-directory: projects/backend
+        run: |
+          if ! grep -q "POST /api/v1/auth/register" backend.log; then
+            echo "::error::E2E did not register a farmer against the local backend — check the dev-server proxy (#248)."
+            tail -50 backend.log
+            exit 1
+          fi
+          echo "Local backend served the suite."
+
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@v4

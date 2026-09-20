@@ -89,6 +89,10 @@
             },
             "development": {
               "buildTarget": "home:build:development"
+            },
+            "e2e": {
+              "buildTarget": "home:build:development",
+              "proxyConfig": "projects/home/proxy.conf.e2e.json"
             }
           },
           "defaultConfiguration": "development"

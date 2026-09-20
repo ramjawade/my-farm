@@ -4,6 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "start:e2e": "ng serve --configuration e2e",
     "build": "ng build shared && ng build home",
     "watch": "ng build home --watch --configuration development",
     "test": "ng test --watch=false --code-coverage=false --browsers=ChromeHeadlessCI",
