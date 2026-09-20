@@ -513,6 +513,16 @@
     "close": "Close chat",
     "inputLabel": "Type a message",
     "placeholder": "Type a message…",
-    "send": "Send"
+    "send": "Send",
+    "readyToReview": "Got it — everything's filled in. Tap Review & Save when you're ready.",
+    "clarify": {
+      "land": "Which land is this for?",
+      "crop": "Which crop is this for?",
+      "expenseCategory": "Which category does this expense fall under?",
+      "date": "When did this happen?"
+    },
+    "escapeHatch": "I'm having trouble understanding that. You can fill in the rest using the manual form instead.",
+    "rephrase": "I couldn't tell what activity that describes. Could you try saying it differently?",
+    "unavailable": "The chat assistant is temporarily unavailable. Please try again in a moment, or use the manual form."
   }
 }
