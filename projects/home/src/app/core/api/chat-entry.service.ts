@@ -47,6 +47,40 @@ export interface ChatParseResponse {
   model: string;
 }
 
+/**
+ * What the model produced, stored on the created activity (#244).
+ *
+ * Written to `activity.activity_meta`, which already exists as JSONB.
+ *
+ * `parsed` is a snapshot of the values the model proposed. The activity row
+ * itself is what the farmer accepted — so if they later correct it through
+ * Edit, the difference between this snapshot and the current row *is* the
+ * correction. That makes input-to-corrected-entry pairs recoverable without
+ * instrumenting the edit screen, and it keeps working for edits made days
+ * later or from anywhere else in the app.
+ *
+ * Those pairs are the answer key #232 needs to judge whether voice entry is
+ * accurate enough to build — gathered as a by-product of shipping rather
+ * than as a separate field exercise.
+ */
+export interface ChatEntryProvenance {
+  source: 'text';
+  /** Exactly what the farmer typed. */
+  input: string;
+  /** Provider model id, so accuracy can later be compared across providers. */
+  model: string;
+  parsedAt: string;
+  parsed: {
+    activity_type: string;
+    date: string | null;
+    crop_id: number | null;
+    land_id: number | null;
+    expenses: { category: string | null; amount: string | null }[];
+  };
+  /** Values the backend refused to use, and why (#242). */
+  dropped: DroppedField[];
+}
+
 /** Why a parse attempt failed, in terms the UI can act on. */
 export type ChatEntryFailure = 'not-understood' | 'unavailable';
 
@@ -93,7 +127,7 @@ export class ChatEntryService {
    * on the client — that decision was made server-side, where the crop and
    * land checks are a real tenant boundary.
    */
-  async create(entry: ResolvedEntry): Promise<Activity> {
+  async create(entry: ResolvedEntry, input: string, model: string): Promise<Activity> {
     const draft: NewActivity = {
       type: entry.activity_type as ActivityType,
       // The farmer is recording something already done, not scheduling it.
@@ -102,6 +136,7 @@ export class ChatEntryService {
       cropId: entry.crop_id ?? undefined,
       fieldId: entry.land_id ?? undefined,
       notes: entry.notes ?? undefined,
+      metadata: buildProvenance(entry, input, model),
     };
 
     const activity = await this.activities.addActivity(draft);
@@ -134,6 +169,23 @@ export class ChatEntryService {
   undo(activityId: number): void {
     this.activities.deleteActivity(activityId);
   }
+}
+
+function buildProvenance(entry: ResolvedEntry, input: string, model: string): ChatEntryProvenance {
+  return {
+    source: 'text',
+    input,
+    model,
+    parsedAt: new Date().toISOString(),
+    parsed: {
+      activity_type: entry.activity_type,
+      date: entry.date,
+      crop_id: entry.crop_id,
+      land_id: entry.land_id,
+      expenses: entry.expenses.map((e) => ({ category: e.category, amount: e.amount })),
+    },
+    dropped: entry.dropped,
+  };
 }
 
 /** Decimal strings arrive from the API as strings; blank means absent. */

@@ -72,6 +72,22 @@ describe('ChatEntryComponent', () => {
     expect(component.created()?.activity.id).toBe(99);
   });
 
+  it('passes the typed text and model through for provenance', async () => {
+    // #244: what the farmer typed and which model read it must reach the
+    // created entry, or the input-to-correction pairs #232 needs are lost.
+    chatEntry.parse.and.resolveTo({ parsed: entry(), model: 'test-model' });
+    chatEntry.create.and.resolveTo(ACTIVITY);
+
+    component.form.setValue({ text: '  100 rs on North Plot  ' });
+    await component.submit();
+
+    expect(chatEntry.create).toHaveBeenCalledWith(
+      jasmine.anything(),
+      '100 rs on North Plot',
+      'test-model',
+    );
+  });
+
   it('clears the input after a successful entry', async () => {
     chatEntry.parse.and.resolveTo({ parsed: entry(), model: 'test-model' });
     chatEntry.create.and.resolveTo(ACTIVITY);
