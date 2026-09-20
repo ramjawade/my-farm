@@ -5,9 +5,10 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException
 
 from myfarm_api.core.security import FirebaseIdentity, get_firebase_identity
+from myfarm_api.core.tenancy import ensure_owned
 from myfarm_api.models import Farmer, Land, LandPoint
 from myfarm_api.repositories.crud import ConflictError
-from myfarm_api.repositories.entities import land_repo
+from myfarm_api.repositories.entities import farm_repo, land_repo
 from myfarm_api.repositories.farmer import FarmerRepository
 from myfarm_api.schemas.land import LandCreate, LandRead, LandUpdate
 
@@ -51,6 +52,7 @@ async def create_land(
 ) -> LandRead:
     """Create a new land."""
     payload = data.model_dump(exclude={"points"})
+    await ensure_owned(farm_repo, current_farmer.id, payload.get("farm_id"), "Farm")
     land = Land(**payload)
     try:
         land = await land_repo.create(current_farmer.id, land)

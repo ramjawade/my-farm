@@ -5,9 +5,10 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException
 
 from myfarm_api.core.security import FirebaseIdentity, get_firebase_identity
+from myfarm_api.core.tenancy import ensure_owned
 from myfarm_api.models import Crop, Farmer
 from myfarm_api.repositories.crud import ConflictError
-from myfarm_api.repositories.entities import crop_repo
+from myfarm_api.repositories.entities import crop_repo, land_repo
 from myfarm_api.repositories.farmer import FarmerRepository
 from myfarm_api.schemas.crop import CropCreate, CropRead, CropUpdate
 
@@ -50,7 +51,9 @@ async def create_crop(
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> CropRead:
     """Create a new crop."""
-    crop = Crop(**data.model_dump())
+    payload = data.model_dump()
+    await ensure_owned(land_repo, current_farmer.id, payload.get("land_id"), "Land")
+    crop = Crop(**payload)
     try:
         crop = await crop_repo.create(current_farmer.id, crop)
     except ConflictError:
