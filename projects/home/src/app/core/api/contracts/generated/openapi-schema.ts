@@ -54,6 +54,30 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/activities/parse': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Parse Entry
+     * @description Parse plain-language text into a structured entry. Persists nothing.
+     *
+     *     Returns 503 when the provider is unusable — that is the signal for the
+     *     client to fall back to the manual form. Manual entry is never blocked by
+     *     this endpoint being down.
+     */
+    post: operations['parse_entry_api_v1_activities_parse_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/activities/summary': {
     parameters: {
       query?: never;
@@ -996,6 +1020,37 @@ export interface components {
       status?: string | null;
     };
     /**
+     * ChatParseRequest
+     * @description Plain-language text describing one activity.
+     */
+    ChatParseRequest: {
+      /**
+       * Language
+       * @description BCP-47-ish hint, e.g. 'hi'. Falls back to the farmer's preferred_language.
+       */
+      language?: string | null;
+      /** Text */
+      text: string;
+    };
+    /**
+     * ChatParseResponse
+     * @description The resolved entry and what produced it.
+     *
+     *     Carries ids, not just names: the client already holds the reference data,
+     *     and the save payload for `POST /api/v1/activities` is ids, so resolving
+     *     here means the UI never has to string-match. Resolution is server-side
+     *     because the checks are a tenant boundary, and a client-side check is not
+     *     a boundary at all.
+     *
+     *     ``model`` is recorded so #244 can store provenance on the created entry
+     *     and so accuracy can later be compared across providers.
+     */
+    ChatParseResponse: {
+      /** Model */
+      model: string;
+      parsed: components['schemas']['ResolvedEntry'];
+    };
+    /**
      * CropCatalogCreate
      * @description Create a new crop catalog entry.
      */
@@ -1116,6 +1171,24 @@ export interface components {
       sowing_date?: string | null;
       /** Status */
       status?: string | null;
+    };
+    /**
+     * DroppedField
+     * @description A value the model produced that we refused to use, and why.
+     *
+     *     Reported rather than silently blanked so the UI can say "we did not
+     *     recognise that land" instead of showing an unexplained empty field.
+     */
+    DroppedField: {
+      /** Field */
+      field: string;
+      /**
+       * Reason
+       * @enum {string}
+       */
+      reason: 'not_found' | 'ambiguous';
+      /** Value */
+      value: string;
     };
     /**
      * FarmCreate
@@ -1389,6 +1462,60 @@ export interface components {
       preferred_language: string;
     };
     /**
+     * ResolvedEntry
+     * @description An entry carrying database ids, ready for the client to post.
+     *
+     *     Names are kept alongside the ids so the UI can show what was understood,
+     *     and so #244 can store the pair as provenance.
+     */
+    ResolvedEntry: {
+      /** Activity Type */
+      activity_type: string;
+      /** Activity Type Id */
+      activity_type_id: number;
+      /** Crop */
+      crop?: string | null;
+      /** Crop Id */
+      crop_id?: number | null;
+      /** Date */
+      date?: string | null;
+      /** Dropped */
+      dropped?: components['schemas']['DroppedField'][];
+      /** Expenses */
+      expenses?: components['schemas']['ResolvedExpense'][];
+      /** Land */
+      land?: string | null;
+      /** Land Id */
+      land_id?: number | null;
+      /** Notes */
+      notes?: string | null;
+      /** Transcript */
+      transcript: string;
+    };
+    /**
+     * ResolvedExpense
+     * @description An expense line with its category resolved to an id.
+     *
+     *     ``expense_category_id`` may be null while the rest of the line is intact:
+     *     an unrecognised category must not discard a correct amount.
+     */
+    ResolvedExpense: {
+      /** Amount */
+      amount?: string | null;
+      /** Category */
+      category?: string | null;
+      /** Expense Category Id */
+      expense_category_id?: number | null;
+      /** Quantity */
+      quantity?: string | null;
+      /** Rate */
+      rate?: string | null;
+      /** Remarks */
+      remarks?: string | null;
+      /** Unit */
+      unit?: string | null;
+    };
+    /**
      * SessionRequest
      * @description Log in an existing PIN account.
      */
@@ -1540,6 +1667,41 @@ export interface operations {
           'application/json': {
             [key: string]: unknown;
           };
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  parse_entry_api_v1_activities_parse_post: {
+    parameters: {
+      query?: never;
+      header?: {
+        authorization?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ChatParseRequest'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ChatParseResponse'];
         };
       };
       /** @description Validation Error */

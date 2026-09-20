@@ -352,3 +352,44 @@ async def test_activity_summary_reflects_expenses(
         assert summary["expense_count"] == 1
         assert summary["status"] == "pending"
         assert summary["days_since_created"] == 0
+
+
+@pytest.mark.asyncio
+async def test_activity_meta_round_trips(
+    client: AsyncClient, reference_ids: dict[str, str]
+) -> None:
+    """`activity_meta` survives create and read back (#244).
+
+    Chat entry stores its provenance here — what the farmer typed, which model
+    read it, and what the model proposed. If the backend dropped this column
+    silently, the frontend would still look correct while the data #232 needs
+    to judge voice accuracy quietly vanished.
+    """
+    uid = f"farmer_{uuid4()}"
+    provenance = {
+        "source": "text",
+        "input": "100 rs on North Plot",
+        "model": "test-model",
+        "parsed": {"activity_type": "Maintenance", "land_id": None},
+        "dropped": [{"field": "crop", "value": "kapas", "reason": "not_found"}],
+    }
+    with patch.object(
+        firebase_auth, "verify_id_token", return_value={"uid": uid, "phone_number": None}
+    ):
+        headers = {"Authorization": "Bearer test"}
+        created = await client.post(
+            "/api/v1/activities",
+            headers=headers,
+            json={
+                "activity_type_id": int(reference_ids["activity_type_id"]),
+                "activity_meta": provenance,
+            },
+        )
+        assert created.status_code == 201, created.text
+        assert created.json()["activity_meta"] == provenance
+
+        fetched = await client.get(
+            f"/api/v1/activities/{created.json()['id']}", headers=headers
+        )
+    assert fetched.status_code == 200
+    assert fetched.json()["activity_meta"] == provenance

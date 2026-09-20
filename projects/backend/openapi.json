@@ -950,6 +950,52 @@
         "title": "ActivityUpdate",
         "type": "object"
       },
+      "ChatParseRequest": {
+        "description": "Plain-language text describing one activity.",
+        "properties": {
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "BCP-47-ish hint, e.g. 'hi'. Falls back to the farmer's preferred_language.",
+            "title": "Language"
+          },
+          "text": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "ChatParseRequest",
+        "type": "object"
+      },
+      "ChatParseResponse": {
+        "description": "The resolved entry and what produced it.\n\nCarries ids, not just names: the client already holds the reference data,\nand the save payload for `POST /api/v1/activities` is ids, so resolving\nhere means the UI never has to string-match. Resolution is server-side\nbecause the checks are a tenant boundary, and a client-side check is not\na boundary at all.\n\n``model`` is recorded so #244 can store provenance on the created entry\nand so accuracy can later be compared across providers.",
+        "properties": {
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "parsed": {
+            "$ref": "#/components/schemas/ResolvedEntry"
+          }
+        },
+        "required": [
+          "parsed",
+          "model"
+        ],
+        "title": "ChatParseResponse",
+        "type": "object"
+      },
       "CropCatalogCreate": {
         "description": "Create a new crop catalog entry.",
         "properties": {
@@ -1325,6 +1371,34 @@
           }
         },
         "title": "CropUpdate",
+        "type": "object"
+      },
+      "DroppedField": {
+        "description": "A value the model produced that we refused to use, and why.\n\nReported rather than silently blanked so the UI can say \"we did not\nrecognise that land\" instead of showing an unexplained empty field.",
+        "properties": {
+          "field": {
+            "title": "Field",
+            "type": "string"
+          },
+          "reason": {
+            "enum": [
+              "not_found",
+              "ambiguous"
+            ],
+            "title": "Reason",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "field",
+          "value",
+          "reason"
+        ],
+        "title": "DroppedField",
         "type": "object"
       },
       "FarmCreate": {
@@ -2272,6 +2346,197 @@
         "title": "RegisterRequest",
         "type": "object"
       },
+      "ResolvedEntry": {
+        "description": "An entry carrying database ids, ready for the client to post.\n\nNames are kept alongside the ids so the UI can show what was understood,\nand so #244 can store the pair as provenance.",
+        "properties": {
+          "activity_type": {
+            "title": "Activity Type",
+            "type": "string"
+          },
+          "activity_type_id": {
+            "title": "Activity Type Id",
+            "type": "integer"
+          },
+          "crop": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Crop"
+          },
+          "crop_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Crop Id"
+          },
+          "date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "dropped": {
+            "items": {
+              "$ref": "#/components/schemas/DroppedField"
+            },
+            "title": "Dropped",
+            "type": "array"
+          },
+          "expenses": {
+            "items": {
+              "$ref": "#/components/schemas/ResolvedExpense"
+            },
+            "title": "Expenses",
+            "type": "array"
+          },
+          "land": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Land"
+          },
+          "land_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Land Id"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "transcript": {
+            "title": "Transcript",
+            "type": "string"
+          }
+        },
+        "required": [
+          "transcript",
+          "activity_type_id",
+          "activity_type"
+        ],
+        "title": "ResolvedEntry",
+        "type": "object"
+      },
+      "ResolvedExpense": {
+        "description": "An expense line with its category resolved to an id.\n\n``expense_category_id`` may be null while the rest of the line is intact:\nan unrecognised category must not discard a correct amount.",
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "expense_category_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expense Category Id"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "rate": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate"
+          },
+          "remarks": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remarks"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          }
+        },
+        "title": "ResolvedExpense",
+        "type": "object"
+      },
       "SessionRequest": {
         "description": "Log in an existing PIN account.",
         "properties": {
@@ -2641,6 +2906,66 @@
         "summary": "List All Expenses",
         "tags": [
           "activities"
+        ]
+      }
+    },
+    "/api/v1/activities/parse": {
+      "post": {
+        "description": "Parse plain-language text into a structured entry. Persists nothing.\n\nReturns 503 when the provider is unusable — that is the signal for the\nclient to fall back to the manual form. Manual entry is never blocked by\nthis endpoint being down.",
+        "operationId": "parse_entry_api_v1_activities_parse_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatParseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatParseResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Parse Entry",
+        "tags": [
+          "chat-entry"
         ]
       }
     },
