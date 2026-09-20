@@ -132,10 +132,24 @@ class GeminiProvider:
             # bounded slice of it — without this, every failure looks the same
             # from the outside and needs a deploy cycle to diagnose (#254).
             logger.warning(
-                "chat-entry provider returned HTTP %s: %s",
+                "chat-entry provider returned HTTP %s for model %r: %s",
                 response.status_code,
+                self._model,
                 response.text[:500],
             )
+            if response.status_code == 404:
+                # 404 here is not "endpoint missing" — it is Google saying
+                # this model name does not exist for this key, or does not
+                # support generateContent. Model availability differs by key
+                # and changes over time, so name the culprit and the fix
+                # rather than leaving a bare status code.
+                logger.error(
+                    "chat-entry: model %r not available for this API key. "
+                    "List the valid names with "
+                    "GET https://generativelanguage.googleapis.com/v1beta/models "
+                    "and set GEMINI_MODEL to one that supports generateContent.",
+                    self._model,
+                )
             raise LlmError(f"provider returned HTTP {response.status_code}")
 
         return decode_json_object(answer_text(response.json()))
