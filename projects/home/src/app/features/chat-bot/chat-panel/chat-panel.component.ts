@@ -44,6 +44,7 @@ export class ChatPanelComponent {
   readonly send = output<string>();
   readonly chipSelected = output<ChatQuickReply>();
   readonly close = output<void>();
+  readonly reviewRequested = output<void>();
 
   private readonly threadEl = viewChild<ElementRef<HTMLDivElement>>('thread');
   private readonly pendingEcho = signal<ChatMessage | null>(null);
@@ -91,6 +92,10 @@ export class ChatPanelComponent {
 
   onClose(): void {
     this.close.emit();
+  }
+
+  onReviewClick(): void {
+    this.reviewRequested.emit();
   }
 
   private scrollToBottom(): void {

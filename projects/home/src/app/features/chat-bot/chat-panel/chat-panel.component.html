@@ -31,6 +31,18 @@
         >
           {{ message.text }}
 
+          @if (message.showReviewAction) {
+            <div class="mt-2">
+              <button
+                type="button"
+                class="btn btn-sm btn-primary rounded-pill"
+                (click)="onReviewClick()"
+              >
+                {{ 'chatBot.reviewAndSave' | translate }}
+              </button>
+            </div>
+          }
+
           @if (message.chips?.length) {
             <div class="d-flex flex-wrap gap-2 mt-2">
               @for (chip of message.chips; track chip.value) {

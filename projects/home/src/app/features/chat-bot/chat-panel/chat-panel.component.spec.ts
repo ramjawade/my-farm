@@ -114,6 +114,22 @@ describe('ChatPanelComponent', () => {
     expect(sent).not.toHaveBeenCalled();
   });
 
+  it('renders the Review & Save action on a ready message and emits reviewRequested', () => {
+    setMessages([
+      { role: 'bot', text: "Got it — you're ready to review.", showReviewAction: true },
+    ]);
+
+    const requested = jasmine.createSpy('reviewRequested');
+    component.reviewRequested.subscribe(requested);
+
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector(
+      '.chat-panel__bubble button',
+    );
+    button.click();
+
+    expect(requested).toHaveBeenCalled();
+  });
+
   it('emits close when the close button is tapped', () => {
     fixture.detectChanges();
     const closed = jasmine.createSpy('close');
