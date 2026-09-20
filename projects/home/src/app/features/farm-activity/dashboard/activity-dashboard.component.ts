@@ -9,11 +9,19 @@ import { Activity, ActivityKpiSummary } from '../../activity/activity.models';
 import { activityTypeIcon } from '../../activity/activity-display';
 import { parseId } from '../../../core/models/entity-id';
 import { ReferenceNamePipe } from '../../../core/i18n/reference-name.pipe';
+import { ChatEntryComponent } from '../chat-entry/chat-entry.component';
 
 @Component({
   selector: 'app-activity-dashboard',
   standalone: true,
-  imports: [DatePipe, DecimalPipe, RouterLink, TranslatePipe, ReferenceNamePipe],
+  imports: [
+    DatePipe,
+    DecimalPipe,
+    RouterLink,
+    TranslatePipe,
+    ReferenceNamePipe,
+    ChatEntryComponent,
+  ],
   templateUrl: './activity-dashboard.component.html',
   styleUrl: './activity-dashboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
