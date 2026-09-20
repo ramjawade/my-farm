@@ -45,7 +45,7 @@ function mapFarmer(f: FarmerResponse): FarmerRegistrationData {
     userRole: f.user_role ?? 'farmer',
     // The backend Farmer row has no farm-setup fields — Farm is a separate
     // entity — so these stay at their empty defaults, exactly as
-    // ApiStorageService.mapFromBackendFarmer does.
+    // FarmerProfileApiService.mapFromBackendFarmer does.
     farmName: '',
     farmArea: 0,
     farmAreaUnit: 'acres',

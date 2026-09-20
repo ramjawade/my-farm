@@ -12,7 +12,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { ActivityService } from '../activity/activity.service';
 import { Activity } from '../activity/activity.models';
 import { seasonForDate } from '../../core/models/season';
-import { IStorageService } from '../../core/storage/storage.interface';
+import { CropsApiService } from '../../core/api/crops-api.service';
 
 const STAGE_NOTE_PREFIX = 'Growth stage advanced to: ';
 const ONE_DAY = 24 * 60 * 60 * 1000;
@@ -67,7 +67,7 @@ function defaultExpenseCategory(type: ActivityType): string {
 export class CropTimelineService {
   private readonly authService = inject(AuthService);
   private readonly activityService = inject(ActivityService);
-  private readonly storage = inject(IStorageService);
+  private readonly storage = inject(CropsApiService);
   private readonly cropsSignal = signal<CropEntity[]>([]);
 
   // Bumped on every load and mutation so a load that resolves late is discarded.

@@ -6,8 +6,8 @@ import { AuthService } from './auth.service';
 import { HttpService } from '../http/http.service';
 import { FarmerRegistrationService } from '../../features/farmer-registration/farmer-registration.service';
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
-import { IStorageService } from '../storage/storage.interface';
-import { InMemoryStorageService } from '../../testing/in-memory-storage.service';
+import { FarmerProfileApiService } from '../api/farmer-profile-api.service';
+import { FakeFarmerProfileApiService } from '../../testing/fake-farmer-profile-api.service';
 
 const mockFarmer: FarmerRegistrationData = {
   id: 1,
@@ -35,7 +35,7 @@ describe('AuthService', () => {
     localStorage.clear();
     TestBed.configureTestingModule({
       providers: [
-        { provide: IStorageService, useClass: InMemoryStorageService },
+        { provide: FarmerProfileApiService, useClass: FakeFarmerProfileApiService },
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideRouter([]),
@@ -105,7 +105,7 @@ describe('AuthService — API token lifecycle', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
-        { provide: IStorageService, useClass: InMemoryStorageService },
+        { provide: FarmerProfileApiService, useClass: FakeFarmerProfileApiService },
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideRouter([]),

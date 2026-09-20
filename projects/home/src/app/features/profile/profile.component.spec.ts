@@ -6,8 +6,8 @@ import { provideTranslateService } from '@ngx-translate/core';
 import { ProfileComponent } from './profile.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { FarmerRegistrationData } from '../farmer-registration/farmer-registration.models';
-import { IStorageService } from '../../core/storage/storage.interface';
-import { InMemoryStorageService } from '../../testing/in-memory-storage.service';
+import { LandsApiService } from '../../core/api/lands-api.service';
+import { FakeLandsApiService } from '../../testing/fake-lands-api.service';
 
 describe('ProfileComponent', () => {
   let component: ProfileComponent;
@@ -43,7 +43,7 @@ describe('ProfileComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ProfileComponent],
       providers: [
-        { provide: IStorageService, useClass: InMemoryStorageService },
+        { provide: LandsApiService, useClass: FakeLandsApiService },
         provideZonelessChangeDetection(),
         provideRouter([]),
         provideHttpClient(),

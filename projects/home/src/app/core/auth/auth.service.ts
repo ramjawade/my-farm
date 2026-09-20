@@ -57,7 +57,7 @@ export class AuthService {
    * Log in a farmer and optionally set their API session token.
    *
    * The token is either a Firebase ID token or a backend-issued PIN session
-   * JWT (issue #45) — `ApiStorageService` sends whichever it's given as the
+   * JWT (issue #45) — `HttpService` sends whichever it's given as the
    * bearer credential, and the backend auth dependency accepts both.
    *
    * @param farmer The farmer profile

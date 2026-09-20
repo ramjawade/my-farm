@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
-import { IStorageService } from '../storage/storage.interface';
+import { LandsApiService } from '../api/lands-api.service';
 import { SavedFarm } from '../../map/models/map.models';
 
 /**
@@ -13,7 +13,7 @@ import { SavedFarm } from '../../map/models/map.models';
 })
 export class FarmLookupService {
   private readonly authService = inject(AuthService);
-  private readonly storage = inject(IStorageService);
+  private readonly storage = inject(LandsApiService);
 
   /**
    * Load farms for the currently signed-in user.

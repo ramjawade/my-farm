@@ -6,7 +6,7 @@ import { LoaderService, ToastService } from 'shared';
 
 /**
  * Single entry point for backend HTTP calls. Every API-facing service
- * (`ApiStorageService`, `ReferenceDataService`, `SessionAuthService`,
+ * (the per-domain `*ApiService`s, `ReferenceDataService`, `SessionAuthService`,
  * `WeatherService`) goes through this instead of injecting `HttpClient`
  * directly, so the API host and the bearer token are set in exactly one
  * place — nothing else should read `EnvironmentService.getApiUrl()` or

@@ -18,7 +18,7 @@ function timestampToDateString(value: number | undefined): string | undefined {
  * (backend FK) versus `type`, and `expense_category_id` versus `category`,
  * both need `ReferenceDataService`, so this can't be a plain pure function.
  * Every activity/expense read or write in the app goes through this one
- * mapper (ApiStorageService's signal-cache load, ActivityService's targeted
+ * mapper (ActivitiesApiService's list load, ActivityService's targeted
  * dashboard queries, and ActivityDetailService/ActivityExpensesService's
  * per-activity detail queries) instead of each maintaining its own copy.
  */

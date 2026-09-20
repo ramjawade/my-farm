@@ -3,8 +3,8 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { FarmDrawService } from './farm-draw.service';
 import { LatLngPoint, SavedFarm } from '../models/map.models';
-import { IStorageService } from '../../core/storage/storage.interface';
-import { InMemoryStorageService } from '../../testing/in-memory-storage.service';
+import { LandsApiService } from '../../core/api/lands-api.service';
+import { FakeLandsApiService } from '../../testing/fake-lands-api.service';
 import { AuthService } from '../../core/auth/auth.service';
 
 describe('FarmDrawService', () => {
@@ -23,7 +23,7 @@ describe('FarmDrawService', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: IStorageService, useClass: InMemoryStorageService },
+        { provide: LandsApiService, useClass: FakeLandsApiService },
         FarmDrawService,
         provideZonelessChangeDetection(),
         provideHttpClient(),

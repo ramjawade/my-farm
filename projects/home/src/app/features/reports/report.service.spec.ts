@@ -4,8 +4,10 @@ import { provideHttpClient } from '@angular/common/http';
 import { ReportService } from './report.service';
 import { ActivityService } from '../activity/activity.service';
 import { CropTimelineService } from '../crop-timeline/crop-timeline.service';
-import { IStorageService } from '../../core/storage/storage.interface';
-import { InMemoryStorageService } from '../../testing/in-memory-storage.service';
+import { ActivitiesApiService } from '../../core/api/activities-api.service';
+import { FakeActivitiesApiService } from '../../testing/fake-activities-api.service';
+import { CropsApiService } from '../../core/api/crops-api.service';
+import { FakeCropsApiService } from '../../testing/fake-crops-api.service';
 
 describe('ReportService', () => {
   let service: ReportService;
@@ -18,7 +20,8 @@ describe('ReportService', () => {
         ReportService,
         ActivityService,
         CropTimelineService,
-        { provide: IStorageService, useClass: InMemoryStorageService },
+        { provide: ActivitiesApiService, useClass: FakeActivitiesApiService },
+        { provide: CropsApiService, useClass: FakeCropsApiService },
       ],
     });
 

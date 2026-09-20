@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { FarmerRegistrationData } from './farmer-registration.models';
-import { IStorageService } from '../../core/storage/storage.interface';
+import { FarmerProfileApiService } from '../../core/api/farmer-profile-api.service';
 
 /**
  * Caches and fetches the signed-in farmer's own record — nothing here can
@@ -15,7 +15,7 @@ import { IStorageService } from '../../core/storage/storage.interface';
   providedIn: 'root',
 })
 export class FarmerRegistrationService {
-  private readonly storage = inject(IStorageService);
+  private readonly storage = inject(FarmerProfileApiService);
 
   /** Insert or replace a farmer record by id (post-login cache, demo restore,
    * profile edits via `AuthService.updateProfile`). */
