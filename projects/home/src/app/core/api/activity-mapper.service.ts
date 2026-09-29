@@ -68,7 +68,7 @@ export class ActivityMapperService {
     return {
       id: item.id,
       activityId: item.activity_id,
-      category: await this.referenceData.expenseCategoryNameForId(item.expense_category_id),
+      expenseCategoryId: item.expense_category_id,
       itemId: item.item_id ?? undefined,
       resourceId: item.resource_id ?? undefined,
       quantity:
@@ -83,10 +83,7 @@ export class ActivityMapperService {
 
   async expenseToBackend(expense: Partial<ActivityExpense>): Promise<Record<string, unknown>> {
     return {
-      expense_category_id:
-        expense.category !== undefined
-          ? await this.referenceData.expenseCategoryIdForName(expense.category)
-          : undefined,
+      expense_category_id: expense.expenseCategoryId,
       item_id: expense.itemId,
       resource_id: expense.resourceId,
       quantity: expense.quantity,

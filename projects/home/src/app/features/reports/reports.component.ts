@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Season } from '../../core/models/season';
 import { ReportService, SeasonReport } from './report.service';
+import { ReferenceDataService } from '../../core/api/reference-data.service';
 
 @Component({
   selector: 'app-reports',
@@ -89,7 +90,7 @@ import { ReportService, SeasonReport } from './report.service';
               </thead>
               <tbody>
                 <tr *ngFor="let cat of r.byCategory">
-                  <td class="fw-medium">{{ cat.category }}</td>
+                  <td class="fw-medium">{{ categoryName(cat.expenseCategoryId) }}</td>
                   <td class="text-end">₹{{ cat.total | number: '1.2-2' }}</td>
                   <td class="text-end">{{ cat.count }}</td>
                   <td class="text-end">
@@ -184,6 +185,7 @@ import { ReportService, SeasonReport } from './report.service';
 })
 export class ReportsComponent {
   private readonly reportService = inject(ReportService);
+  private readonly referenceData = inject(ReferenceDataService);
   private readonly router = inject(Router);
 
   readonly selectedSeason = signal<Season>('Kharif');
@@ -205,6 +207,10 @@ export class ReportsComponent {
     if (r) {
       this.reportService.downloadCSV(r);
     }
+  }
+
+  categoryName(expenseCategoryId: number): string {
+    return this.referenceData.expenseCategoryName(expenseCategoryId);
   }
 
   getTotalCount(report: SeasonReport): number {

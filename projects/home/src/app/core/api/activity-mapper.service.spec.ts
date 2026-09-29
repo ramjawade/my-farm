@@ -64,15 +64,17 @@ describe('ActivityMapperService', () => {
       created_at: '2026-09-08T00:00:00Z',
     });
 
-    expect(expense.category).toBe('Seeds');
+    expect(expense.expenseCategoryId).toBe(5);
+    expect(referenceData.expenseCategoryNameForId).not.toHaveBeenCalled();
     expect(expense.amount).toBe(500);
     expect(expense.activityId).toBe(10);
   });
 
   it('maps an expense update back to backend field names', async () => {
-    const payload = await service.expenseToBackend({ category: 'Seeds', amount: 250 });
+    const payload = await service.expenseToBackend({ expenseCategoryId: 5, amount: 250 });
 
     expect(payload['expense_category_id']).toBe(5);
+    expect(referenceData.expenseCategoryIdForName).not.toHaveBeenCalled();
     expect(payload['amount']).toBe(250);
   });
 });

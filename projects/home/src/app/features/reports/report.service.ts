@@ -2,9 +2,10 @@ import { Injectable, inject } from '@angular/core';
 import { ActivityService } from '../activity/activity.service';
 import { CropTimelineService } from '../crop-timeline/crop-timeline.service';
 import { Season } from '../../core/models/season';
+import { ReferenceDataService } from '../../core/api/reference-data.service';
 
 export interface ExpenseByCategory {
-  category: string;
+  expenseCategoryId: number;
   total: number;
   count: number;
 }
@@ -35,6 +36,7 @@ export interface SeasonReport {
 export class ReportService {
   private readonly activityService = inject(ActivityService);
   private readonly cropService = inject(CropTimelineService);
+  private readonly referenceData = inject(ReferenceDataService);
 
   generateSeasonReport(season: Season, year: number): SeasonReport {
     const seasonActivities = this.activityService
@@ -65,17 +67,17 @@ export class ReportService {
   }
 
   private aggregateByCategory(expenses: any[]): ExpenseByCategory[] {
-    const map = new Map<string, { total: number; count: number }>();
+    const map = new Map<number, { total: number; count: number }>();
     expenses.forEach((e) => {
-      const existing = map.get(e.category) || { total: 0, count: 0 };
-      map.set(e.category, {
+      const existing = map.get(e.expenseCategoryId) || { total: 0, count: 0 };
+      map.set(e.expenseCategoryId, {
         total: existing.total + e.amount,
         count: existing.count + 1,
       });
     });
 
     return Array.from(map.entries())
-      .map(([category, data]) => ({ category, ...data }))
+      .map(([expenseCategoryId, data]) => ({ expenseCategoryId, ...data }))
       .sort((a, b) => b.total - a.total);
   }
 
@@ -139,7 +141,8 @@ export class ReportService {
     lines.push('Expenses by Category');
     lines.push('Category,Amount,Count');
     report.byCategory.forEach((c) => {
-      lines.push(`"${this.escapeCSV(c.category)}",${c.total.toFixed(2)},${c.count}`);
+      const name = this.referenceData.expenseCategoryName(c.expenseCategoryId);
+      lines.push(`"${this.escapeCSV(name)}",${c.total.toFixed(2)},${c.count}`);
     });
     lines.push('');
 

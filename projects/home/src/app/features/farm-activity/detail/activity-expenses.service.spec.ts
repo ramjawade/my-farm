@@ -16,7 +16,7 @@ describe('ActivityExpensesService', () => {
   const mappedExpense: ActivityExpense = {
     id: 1,
     activityId: 5,
-    category: 'Seeds',
+    expenseCategoryId: 5,
     amount: 500,
     createdAt: Date.now(),
   };
@@ -57,7 +57,7 @@ describe('ActivityExpensesService', () => {
   });
 
   it('adds an expense', async () => {
-    const promise = service.addExpense(5, { category: 'Seeds', amount: 500 });
+    const promise = service.addExpense(5, { expenseCategoryId: 5, amount: 500 });
     // `expenseToBackend` resolves asynchronously before the request is made.
     await Promise.resolve();
     const req = httpMock.expectOne(`${apiUrl}/activities/5/expenses`);
