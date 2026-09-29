@@ -2,6 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideTranslateService } from '@ngx-translate/core';
 import { ExpenseListComponent } from './expense-list.component';
+import { ReferenceDataService } from '../../../../core/api/reference-data.service';
+import { FakeReferenceDataService } from '../../../../testing/fake-reference-data.service';
 import { ActivityExpensesService } from '../activity-expenses.service';
 import { ActivityExpense } from '../../../activity/activity.models';
 
@@ -14,7 +16,7 @@ describe('ExpenseListComponent', () => {
   const mockExpense: ActivityExpense = {
     id: 1,
     activityId: 5,
-    category: 'Seeds',
+    expenseCategoryId: 3,
     amount: 500,
     createdAt: Date.now(),
   };
@@ -32,6 +34,7 @@ describe('ExpenseListComponent', () => {
           provide: ActivityExpensesService,
           useValue: { getExpenses: getExpensesSpy, deleteExpense: deleteExpenseSpy },
         },
+        { provide: ReferenceDataService, useClass: FakeReferenceDataService },
       ],
     }).compileComponents();
 
@@ -45,6 +48,11 @@ describe('ExpenseListComponent', () => {
   it('loads expenses for the given activity on init', () => {
     expect(getExpensesSpy).toHaveBeenCalledWith(5);
     expect(component.expenses).toEqual([mockExpense]);
+  });
+
+  it('resolves the category name from the expense category id', () => {
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Seeds');
   });
 
   it('deletes an expense after confirmation and emits changed', async () => {

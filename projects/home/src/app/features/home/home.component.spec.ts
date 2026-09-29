@@ -15,6 +15,8 @@ import { ActivitiesApiService } from '../../core/api/activities-api.service';
 import { FakeActivitiesApiService } from '../../testing/fake-activities-api.service';
 import { LandsApiService } from '../../core/api/lands-api.service';
 import { FakeLandsApiService } from '../../testing/fake-lands-api.service';
+import { ReferenceDataService } from '../../core/api/reference-data.service';
+import { FakeReferenceDataService } from '../../testing/fake-reference-data.service';
 
 const baseUser: FarmerRegistrationData = {
   id: 1,
@@ -58,6 +60,7 @@ describe('HomeComponent', () => {
         { provide: CropsApiService, useClass: FakeCropsApiService },
         { provide: ActivitiesApiService, useClass: FakeActivitiesApiService },
         { provide: LandsApiService, useClass: FakeLandsApiService },
+        { provide: ReferenceDataService, useClass: FakeReferenceDataService },
       ],
     }).compileComponents();
 

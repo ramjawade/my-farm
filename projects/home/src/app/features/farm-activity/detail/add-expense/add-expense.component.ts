@@ -14,6 +14,7 @@ import { ActivityExpensesService } from '../activity-expenses.service';
 import { ActivityExpense } from '../../../activity/activity.models';
 import { ReferenceDataService } from '../../../../core/api/reference-data.service';
 import { ReferenceNamePipe } from '../../../../core/i18n/reference-name.pipe';
+import { ReferenceItem } from '../../../../core/api/contracts';
 
 @Component({
   selector: 'app-add-expense',
@@ -33,11 +34,11 @@ export class AddExpenseComponent implements OnInit {
   readonly added = output<ActivityExpense>();
   readonly cancelled = output<void>();
 
-  /** Real seeded category names — loaded on init, never hardcoded (must match the backend's expense_category table exactly). */
-  readonly categoriesList = signal<string[]>([]);
+  /** Real expense categories (id + name) — loaded on init, never hardcoded. */
+  readonly categoriesList = signal<ReferenceItem[]>([]);
 
   readonly expenseForm: FormGroup = this.fb.group({
-    category: ['', Validators.required],
+    expenseCategoryId: [null as number | null, Validators.required],
     itemId: [''],
     resourceId: [''],
     quantity: [null as number | null],
@@ -49,10 +50,9 @@ export class AddExpenseComponent implements OnInit {
 
   ngOnInit(): void {
     void this.referenceDataService.listExpenseCategories().then((categories) => {
-      const names = categories.map((c) => c.name);
-      this.categoriesList.set(names);
-      if (!this.expenseForm.get('category')?.value && names.length > 0) {
-        this.expenseForm.patchValue({ category: names[0] });
+      this.categoriesList.set(categories);
+      if (!this.expenseForm.get('expenseCategoryId')?.value && categories.length > 0) {
+        this.expenseForm.patchValue({ expenseCategoryId: categories[0].id });
       }
     });
   }
@@ -80,7 +80,7 @@ export class AddExpenseComponent implements OnInit {
     const val = this.expenseForm.value;
     try {
       const expense = await this.expensesService.addExpense(this.activityId(), {
-        category: val.category,
+        expenseCategoryId: Number(val.expenseCategoryId),
         itemId: val.itemId?.trim() || undefined,
         resourceId: val.resourceId?.trim() || undefined,
         quantity: val.quantity ?? undefined,
@@ -103,7 +103,7 @@ export class AddExpenseComponent implements OnInit {
 
   private resetForm(): void {
     this.expenseForm.reset({
-      category: this.categoriesList()[0] ?? '',
+      expenseCategoryId: this.categoriesList()[0]?.id ?? null,
       itemId: '',
       resourceId: '',
       quantity: null,

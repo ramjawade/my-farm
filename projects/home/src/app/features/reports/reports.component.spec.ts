@@ -73,7 +73,7 @@ describe('ReportsComponent', () => {
 
     await activityService.addExpense({
       activityId: activity.id,
-      category: 'Seeds',
+      expenseCategoryId: 3,
       amount: 500,
     } as any);
 

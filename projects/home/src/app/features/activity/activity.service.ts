@@ -221,14 +221,14 @@ export class ActivityService {
     return this.getExpensesForActivity(activityId).reduce((sum, exp) => sum + (exp.amount || 0), 0);
   }
 
-  getExpensesByCategory(activityId: number): Record<string, number> {
+  getExpensesByCategory(activityId: number): Record<number, number> {
     const expenses = this.getExpensesForActivity(activityId);
     return expenses.reduce(
       (acc, exp) => {
-        acc[exp.category] = (acc[exp.category] || 0) + (exp.amount || 0);
+        acc[exp.expenseCategoryId] = (acc[exp.expenseCategoryId] || 0) + (exp.amount || 0);
         return acc;
       },
-      {} as Record<string, number>,
+      {} as Record<number, number>,
     );
   }
 

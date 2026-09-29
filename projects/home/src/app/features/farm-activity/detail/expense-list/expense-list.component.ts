@@ -14,6 +14,7 @@ import { ActivityExpensesService } from '../activity-expenses.service';
 import { ActivityExpense } from '../../../activity/activity.models';
 import { expenseCategoryIcon } from '../../../activity/activity-display';
 import { ReferenceNamePipe } from '../../../../core/i18n/reference-name.pipe';
+import { ReferenceDataService } from '../../../../core/api/reference-data.service';
 
 @Component({
   selector: 'app-expense-list',
@@ -27,6 +28,7 @@ export class ExpenseListComponent implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly translate = inject(TranslateService);
+  private readonly referenceData = inject(ReferenceDataService);
 
   readonly activityId = input.required<number>();
   readonly changed = output<void>();
@@ -56,8 +58,12 @@ export class ExpenseListComponent implements OnInit {
     }
   }
 
-  getCategoryIcon(category: string): string {
-    return expenseCategoryIcon(category as any);
+  categoryName(expenseCategoryId: number): string {
+    return this.referenceData.expenseCategoryName(expenseCategoryId);
+  }
+
+  getCategoryIcon(expenseCategoryId: number): string {
+    return expenseCategoryIcon(this.categoryName(expenseCategoryId) as any);
   }
 
   deleteExpense(expenseId: number): void {

@@ -13,6 +13,7 @@ import { ActivityService } from '../activity/activity.service';
 import { Activity } from '../activity/activity.models';
 import { seasonForDate } from '../../core/models/season';
 import { CropsApiService } from '../../core/api/crops-api.service';
+import { ReferenceDataService } from '../../core/api/reference-data.service';
 
 const STAGE_NOTE_PREFIX = 'Growth stage advanced to: ';
 const ONE_DAY = 24 * 60 * 60 * 1000;
@@ -68,6 +69,7 @@ export class CropTimelineService {
   private readonly authService = inject(AuthService);
   private readonly activityService = inject(ActivityService);
   private readonly storage = inject(CropsApiService);
+  private readonly referenceData = inject(ReferenceDataService);
   private readonly cropsSignal = signal<CropEntity[]>([]);
 
   // Bumped on every load and mutation so a load that resolves late is discarded.
@@ -203,7 +205,9 @@ export class CropTimelineService {
     if (input.cost > 0) {
       await this.activityService.addExpense({
         activityId: created.id,
-        category: defaultExpenseCategory(input.type),
+        expenseCategoryId: await this.referenceData.expenseCategoryIdForName(
+          defaultExpenseCategory(input.type),
+        ),
         amount: input.cost,
         remarks: 'Logged from crop timeline',
       });
@@ -363,13 +367,16 @@ export class CropTimelineService {
       if (expenses.length > 0) {
         this.activityService.updateExpense(expenses[0].id, { amount: cost });
       } else {
-        this.activityService
-          .addExpense({
-            activityId,
-            category: defaultExpenseCategory(type),
-            amount: cost,
-            remarks: 'Logged from crop timeline',
-          })
+        this.referenceData
+          .expenseCategoryIdForName(defaultExpenseCategory(type))
+          .then((expenseCategoryId) =>
+            this.activityService.addExpense({
+              activityId,
+              expenseCategoryId,
+              amount: cost,
+              remarks: 'Logged from crop timeline',
+            }),
+          )
           .catch((e) => console.error('Failed to save expense', e));
       }
     } else {

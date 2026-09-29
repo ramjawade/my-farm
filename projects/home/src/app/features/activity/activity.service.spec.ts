@@ -79,7 +79,7 @@ describe('ActivityService', () => {
 
       await service.addExpense({
         activityId: activity.id,
-        category: 'Labour',
+        expenseCategoryId: 2,
         amount: 500,
       });
 
@@ -121,13 +121,13 @@ describe('ActivityService', () => {
 
       await service.addExpense({
         activityId: activity.id,
-        category: 'Labour',
+        expenseCategoryId: 2,
         amount: 500,
       });
 
       await service.addExpense({
         activityId: activity.id,
-        category: 'Seeds',
+        expenseCategoryId: 3,
         amount: 300,
       });
 
@@ -146,13 +146,13 @@ describe('ActivityService', () => {
 
       await service.addExpense({
         activityId: activity.id,
-        category: 'Labour',
+        expenseCategoryId: 2,
         amount: 500,
       });
 
       await service.addExpense({
         activityId: activity.id,
-        category: 'Seeds',
+        expenseCategoryId: 3,
         amount: 300,
       });
 

@@ -8,9 +8,9 @@
 
 ## 2. Expense category ids
 
-- [ ] 2.1 Replace `ActivityExpense.category` with `expenseCategoryId: number`; `expenseFromBackend`/`expenseToBackend` map it directly; verify with `activity-mapper.service.spec.ts`.
-- [ ] 2.2 Migrate `add-expense`, `expense-list`, `activity.service`, `crop-timeline.service`, `report.service`, `reports.component` to ids: group by id, sort by resolved name, labels via pipe or accessor; verify report specs still produce the same groups and `npm run build`.
-- [ ] 2.3 Convert to ids at the boundary in the chat-bot review popup, `chat-decision` and `chat-entry.service`; verify with their specs.
+- [x] 2.1 Replace `ActivityExpense.category` with `expenseCategoryId: number`; `expenseFromBackend`/`expenseToBackend` map it directly; verify with `activity-mapper.service.spec.ts`.
+- [x] 2.2 Migrate `add-expense`, `expense-list`, `activity.service`, `crop-timeline.service`, `report.service`, `reports.component` to ids: group by id, sort by resolved name, labels via pipe or accessor; verify report specs still produce the same groups and `npm run build`.
+- [x] 2.3 Convert to ids at the chat-bot boundary: the popup and `chat-decision` keep working in category names, `chat-entry.service` resolves the name to an id when creating; verify with `chat-entry.service.spec.ts`.
 
 ## 3. Activity type ids
 
