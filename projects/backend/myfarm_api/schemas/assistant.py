@@ -69,6 +69,46 @@ class AskResponse(BaseModel):
     needs_clarification: Clarification | None = None
 
 
+class BriefWeather(BaseModel):
+    land: str
+    temp_c: float | None = None
+    description: str | None = None
+    humidity_pct: float | None = None
+    source: str = Field(description="'live', 'cached' or 'mock' (mock means not live data).")
+
+
+class BriefActivity(BaseModel):
+    activity: str
+    date: str | None = None
+    land: str | None = None
+    crop: str | None = None
+    status: str
+
+
+class BriefPending(BaseModel):
+    count: int = Field(description="All pending activities; `next` is only the soonest few.")
+    next: list[BriefActivity]
+
+
+class BriefSpend(BaseModel):
+    total: float
+
+
+class BriefResponse(BaseModel):
+    """Structured daily brief. Every section is omitted when there is no data for it.
+
+    Carries data, not text: the client renders it from its own translations, so
+    the brief works in every language and while the model provider is down.
+    ``has_data`` false means "show the welcome instead".
+    """
+
+    has_data: bool
+    name: str | None = Field(default=None, description="The farmer's full name, for the greeting.")
+    weather: BriefWeather | None = None
+    pending: BriefPending | None = None
+    spend_7d: BriefSpend | None = None
+
+
 class ChatMessagesPage(BaseModel):
     """Newest-first page; pass the last `id` as `before` for older messages."""
 

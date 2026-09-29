@@ -1018,6 +1018,200 @@
         "title": "AskResponse",
         "type": "object"
       },
+      "BriefActivity": {
+        "properties": {
+          "activity": {
+            "title": "Activity",
+            "type": "string"
+          },
+          "crop": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Crop"
+          },
+          "date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "land": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Land"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "activity",
+          "status"
+        ],
+        "title": "BriefActivity",
+        "type": "object"
+      },
+      "BriefPending": {
+        "properties": {
+          "count": {
+            "description": "All pending activities; `next` is only the soonest few.",
+            "title": "Count",
+            "type": "integer"
+          },
+          "next": {
+            "items": {
+              "$ref": "#/components/schemas/BriefActivity"
+            },
+            "title": "Next",
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "next"
+        ],
+        "title": "BriefPending",
+        "type": "object"
+      },
+      "BriefResponse": {
+        "description": "Structured daily brief. Every section is omitted when there is no data for it.\n\nCarries data, not text: the client renders it from its own translations, so\nthe brief works in every language and while the model provider is down.\n``has_data`` false means \"show the welcome instead\".",
+        "properties": {
+          "has_data": {
+            "title": "Has Data",
+            "type": "boolean"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The farmer's full name, for the greeting.",
+            "title": "Name"
+          },
+          "pending": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BriefPending"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "spend_7d": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BriefSpend"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "weather": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BriefWeather"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "has_data"
+        ],
+        "title": "BriefResponse",
+        "type": "object"
+      },
+      "BriefSpend": {
+        "properties": {
+          "total": {
+            "title": "Total",
+            "type": "number"
+          }
+        },
+        "required": [
+          "total"
+        ],
+        "title": "BriefSpend",
+        "type": "object"
+      },
+      "BriefWeather": {
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "humidity_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Humidity Pct"
+          },
+          "land": {
+            "title": "Land",
+            "type": "string"
+          },
+          "source": {
+            "description": "'live', 'cached' or 'mock' (mock means not live data).",
+            "title": "Source",
+            "type": "string"
+          },
+          "temp_c": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temp C"
+          }
+        },
+        "required": [
+          "land",
+          "source"
+        ],
+        "title": "BriefWeather",
+        "type": "object"
+      },
       "ChatMessageCreate": {
         "description": "One message to append to the farmer's history.",
         "properties": {
@@ -4223,6 +4417,56 @@
           }
         },
         "summary": "Ask",
+        "tags": [
+          "assistant"
+        ]
+      }
+    },
+    "/api/v1/assistant/brief": {
+      "get": {
+        "description": "What matters today: weather, pending work and the last week's spend.\n\nDeterministic — no model call — so it works while the provider is down. A\nsection with no data is left out, and a weather failure just drops the\nweather line. The client decides when to fetch it (once a day).",
+        "operationId": "get_brief_api_v1_assistant_brief_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BriefResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Brief",
         "tags": [
           "assistant"
         ]

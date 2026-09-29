@@ -10,6 +10,7 @@ from myfarm_api.core import assistant_queries as q
 from myfarm_api.core.assistant_queries import Scope
 from myfarm_api.core.db import get_session_factory
 from myfarm_api.models import ExpenseCategory
+from myfarm_api.repositories.farmer import FarmerRepository
 from tests.assistant_helpers import AUTH, Farm, signed_in
 
 
@@ -199,3 +200,31 @@ async def test_weather_for_land_uses_the_land_centroid(
 
     assert (result.status, result.land) == ("ok", "Plot 1")
     get_weather.assert_awaited_once_with(19.0, 74.0)
+
+
+@pytest.mark.asyncio
+async def test_pending_count_ignores_the_display_limit(
+    client: AsyncClient, reference_ids: dict[str, str]
+) -> None:
+    uid = f"farmer_{uuid4()}"
+    with signed_in(uid):
+        farm = await Farm(client, reference_ids, uid).setup()
+        for status in ("Scheduled", "Draft", "In Progress", "Completed"):
+            await farm.activity(status=status)
+
+    assert await q.pending_count(farm.farmer_id, Scope()) == 3
+    assert len(await q.pending_activities(farm.farmer_id, Scope(), limit=1)) == 1
+
+
+@pytest.mark.asyncio
+async def test_has_any_data(client: AsyncClient, reference_ids: dict[str, str]) -> None:
+    uid_new, uid_land = f"farmer_new_{uuid4()}", f"farmer_land_{uuid4()}"
+    with signed_in(uid_new):
+        # Any authenticated call provisions the farmer row.
+        await client.get("/api/v1/assistant/messages", headers=AUTH)
+    with signed_in(uid_land):
+        farm = await Farm(client, reference_ids, uid_land).setup()
+
+    new_farmer = await FarmerRepository.get_or_create(uid_new)
+    assert await q.has_any_data(new_farmer.id) is False
+    assert await q.has_any_data(farm.farmer_id) is True

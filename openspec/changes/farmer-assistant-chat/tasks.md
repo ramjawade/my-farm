@@ -24,8 +24,8 @@ Each numbered group is one sub-issue / one PR, stacked on the parent branch (boa
 
 ## 4. Backend: daily brief (#289)
 
-- [ ] 4.1 Add `GET /api/v1/assistant/brief` returning structured `weather?`, `pending {count,next[]}`, `spend_7d`, `has_data` with no LLM call; verify tests for a farmer with data, a new farmer (`has_data=false`), and weather failure (weather omitted, 200)
-- [ ] 4.2 Regenerate OpenAPI and contracts; verify no drift and `ruff`, `mypy`, `pytest` pass
+- [x] 4.1 Add `GET /api/v1/assistant/brief` returning structured `weather?`, `pending {count,next[]}`, `spend_7d`, `has_data` with no LLM call; verify tests for a farmer with data, a new farmer (`has_data=false`), and weather failure (weather omitted, 200)
+- [x] 4.2 Regenerate OpenAPI and contracts; verify no drift and `ruff`, `mypy`, `pytest` pass
 
 ## 5. Frontend: routing, answers, language (#290)
 
