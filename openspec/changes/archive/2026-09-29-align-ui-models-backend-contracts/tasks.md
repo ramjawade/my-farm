@@ -21,5 +21,5 @@
 ## 4. Retire async lookups in mappers
 
 - [x] 4.1 Make `ActivityMapperService` and `CropMapperService` synchronous with no `ReferenceDataService` dependency; remove the now-unused name<->id methods from `ReferenceDataService`; verify with `grep` (no remaining `NameForId`/`IdForName` callers) and `npm run build`.
-- [ ] 4.2 Full gates against the parent branch: `npm run lint`, `npm test`, `npm run build`, and the e2e golden path; verify all pass with no label or report regressions.
-- [ ] 4.3 Sync delta specs to `openspec/specs/` and archive the change (`/opsx:archive`) after the parent PR merges.
+- [x] 4.2 Full gates against the parent branch: `npm run lint`, `npm test`, `npm run build`, and the e2e golden path; verify all pass with no label or report regressions.
+- [x] 4.3 Sync delta specs to `openspec/specs/` and archive the change (`/opsx:archive`) after the parent PR merges.
