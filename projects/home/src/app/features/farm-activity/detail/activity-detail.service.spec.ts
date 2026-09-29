@@ -23,7 +23,7 @@ describe('ActivityDetailService', () => {
 
   beforeEach(() => {
     mapper = jasmine.createSpyObj('ActivityMapperService', ['fromBackend']);
-    mapper.fromBackend.and.resolveTo(mappedActivity);
+    mapper.fromBackend.and.returnValue(mappedActivity);
 
     TestBed.configureTestingModule({
       providers: [

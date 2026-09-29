@@ -14,8 +14,7 @@ import { ActivityMapperService } from './activity-mapper.service';
  *
  * Mapping between the Angular model and the backend schema delegates to
  * `ActivityMapperService` (`providedIn: 'root'`, shared with the targeted-
- * fetch services) so the `activity_type_id`/`expense_category_id` <-> name
- * resolution lives in one place.
+ * fetch services) so the wire mapping lives in one place.
  */
 @Injectable({ providedIn: 'root' })
 export class ActivitiesApiService {
@@ -42,7 +41,7 @@ export class ActivitiesApiService {
   async getActivities(userId: number): Promise<Activity[]> {
     try {
       const items = await this.fetchList<unknown>('/activities');
-      return await Promise.all(items.map((item) => this.activityMapper.fromBackend(item)));
+      return items.map((item) => this.activityMapper.fromBackend(item));
     } catch (error) {
       console.error('Failed to get activities:', error);
       return [];
@@ -51,10 +50,10 @@ export class ActivitiesApiService {
 
   async saveActivity(userId: number, activity: NewActivity): Promise<Activity> {
     return this.enqueueWrite(async () => {
-      const payload = await this.activityMapper.toBackend(activity);
+      const payload = this.activityMapper.toBackend(activity);
       try {
         const response = await this.httpService.post<unknown>('/activities', payload);
-        return await this.activityMapper.fromBackend(response);
+        return this.activityMapper.fromBackend(response);
       } catch (error) {
         console.error('Failed to save activity:', error);
         throw error;
@@ -64,7 +63,7 @@ export class ActivitiesApiService {
 
   async updateActivity(userId: number, id: number, updates: Partial<Activity>): Promise<void> {
     return this.enqueueWrite(async () => {
-      const payload = await this.activityMapper.toBackend(updates);
+      const payload = this.activityMapper.toBackend(updates);
       try {
         await this.httpService.patch(`/activities/${id}`, payload);
       } catch (error) {
@@ -98,7 +97,7 @@ export class ActivitiesApiService {
   async syncExpensesForActivity(userId: number, activityId: number): Promise<ActivityExpense[]> {
     try {
       const items = await this.fetchList<unknown>(`/activities/${activityId}/expenses`);
-      return await Promise.all(items.map((item) => this.activityMapper.expenseFromBackend(item)));
+      return items.map((item) => this.activityMapper.expenseFromBackend(item));
     } catch (error) {
       console.error('Failed to sync expenses for activity:', error);
       return [];
@@ -108,7 +107,7 @@ export class ActivitiesApiService {
   async getExpenses(userId: number): Promise<ActivityExpense[]> {
     try {
       const items = await this.fetchList<unknown>('/activities/expenses');
-      return await Promise.all(items.map((item) => this.activityMapper.expenseFromBackend(item)));
+      return items.map((item) => this.activityMapper.expenseFromBackend(item));
     } catch (error) {
       console.error('Failed to get expenses:', error);
       return [];
@@ -117,13 +116,13 @@ export class ActivitiesApiService {
 
   async saveExpense(userId: number, expense: NewActivityExpense): Promise<ActivityExpense> {
     return this.enqueueWrite(async () => {
-      const payload = await this.activityMapper.expenseToBackend(expense);
+      const payload = this.activityMapper.expenseToBackend(expense);
       try {
         const response = await this.httpService.post<unknown>(
           `/activities/${expense.activityId}/expenses`,
           payload,
         );
-        return await this.activityMapper.expenseFromBackend(response);
+        return this.activityMapper.expenseFromBackend(response);
       } catch (error) {
         console.error('Failed to save expense:', error);
         throw error;
@@ -141,7 +140,7 @@ export class ActivitiesApiService {
       if (!activityId) {
         throw new Error(`updateExpense: could not resolve the owning activity for expense ${id}`);
       }
-      const payload = await this.activityMapper.expenseToBackend(updates);
+      const payload = this.activityMapper.expenseToBackend(updates);
       try {
         await this.httpService.patch(`/activities/${activityId}/expenses/${id}`, payload);
       } catch (error) {
