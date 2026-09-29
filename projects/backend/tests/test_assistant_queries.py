@@ -1,90 +1,16 @@
 """Assistant query layer against a real database (#287)."""
 
-from collections.abc import Iterator
-from contextlib import contextmanager
-from typing import Any
 from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
 import pytest
-from firebase_admin import auth as firebase_auth
 from httpx import AsyncClient
 
 from myfarm_api.core import assistant_queries as q
 from myfarm_api.core.assistant_queries import Scope
 from myfarm_api.core.db import get_session_factory
 from myfarm_api.models import ExpenseCategory
-from myfarm_api.repositories.farmer import FarmerRepository
-
-AUTH = {"Authorization": "Bearer test"}
-
-
-@contextmanager
-def signed_in(uid: str) -> Iterator[None]:
-    with patch.object(
-        firebase_auth,
-        "verify_id_token",
-        return_value={"uid": uid, "phone_number": None},
-    ):
-        yield
-
-
-async def post(client: AsyncClient, path: str, body: dict[str, Any]) -> dict[str, Any]:
-    resp = await client.post(f"/api/v1/{path}", headers=AUTH, json=body)
-    assert resp.status_code == 201, resp.text
-    result: dict[str, Any] = resp.json()
-    return result
-
-
-class Farm:
-    """One farmer with a land, a crop, and helpers to add activities/expenses."""
-
-    def __init__(self, client: AsyncClient, ref: dict[str, str], uid: str) -> None:
-        self.client = client
-        self.ref = ref
-        self.uid = uid
-        self.farmer_id = 0
-        self.land_id = 0
-        self.crop_id = 0
-
-    async def setup(self, land_name: str = "Plot 1", label: str | None = None) -> "Farm":
-        farm = await post(self.client, "farms", {"name": "Farm"})
-        land = await post(
-            self.client,
-            "lands",
-            {
-                "name": land_name,
-                "farm_id": farm["id"],
-                "area_sq_m": "1000",
-                "points": [
-                    {"lat": "18.0", "lng": "73.0"},
-                    {"lat": "20.0", "lng": "75.0"},
-                ],
-            },
-        )
-        crop = await post(
-            self.client,
-            "crops",
-            {
-                "land_id": land["id"],
-                "crop_catalog_id": int(self.ref["crop_catalog_id"]),
-                "label": label,
-            },
-        )
-        self.land_id, self.crop_id = land["id"], crop["id"]
-        self.farmer_id = (await FarmerRepository.get_or_create(self.uid)).id
-        return self
-
-    async def activity(self, **fields: Any) -> int:
-        body = {"activity_type_id": int(self.ref["activity_type_id"]), **fields}
-        return int((await post(self.client, "activities", body))["id"])
-
-    async def expense(self, activity_id: int, amount: str, category_id: str | None = None) -> int:
-        body = {
-            "expense_category_id": int(category_id or self.ref["expense_category_id"]),
-            "amount": amount,
-        }
-        return int((await post(self.client, f"activities/{activity_id}/expenses", body))["id"])
+from tests.assistant_helpers import AUTH, Farm, signed_in
 
 
 @pytest.mark.asyncio
