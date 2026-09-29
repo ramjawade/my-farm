@@ -46,9 +46,9 @@ export class ChatBotContainerComponent {
   readonly reviewEntry = computed(() => (this.reviewOpen() ? this.orchestrator.draft() : null));
 
   constructor() {
-    // The manual-form escape hatch is a one-way exit: navigate away, then
-    // reset so a farmer who comes back starts a fresh conversation instead
-    // of resuming a chat the bot already gave up on.
+    // The manual-form escape hatch is a one-way exit: navigate away, then end
+    // the entry so a farmer who comes back doesn't resume one the bot already
+    // gave up on. The thread stays: it is saved history.
     effect(() => {
       const hatch = this.orchestrator.escapeHatch();
       if (!hatch) return;
@@ -65,12 +65,16 @@ export class ChatBotContainerComponent {
       });
       this.open.set(false);
       this.reviewOpen.set(false);
-      this.orchestrator.reset();
+      this.orchestrator.endEntry();
     });
   }
 
   openChat(): void {
     this.open.set(true);
+    // Restore saved messages and, at most once a day, the brief. Deliberately
+    // an explicit call on open rather than an effect: nothing loads until the
+    // farmer actually opens the chat.
+    void this.orchestrator.onOpen();
   }
 
   closeChat(): void {
@@ -84,13 +88,13 @@ export class ChatBotContainerComponent {
   onReviewSaved(_activity: Activity): void {
     this.reviewOpen.set(false);
     this.open.set(false);
-    this.orchestrator.reset();
+    this.orchestrator.endEntry();
   }
 
   onReviewCancelled(): void {
     // Discarded — nothing was ever created. Matches #256's design: Cancel
     // clears local state entirely, same as the manual form was never opened.
     this.reviewOpen.set(false);
-    this.orchestrator.reset();
+    this.orchestrator.endEntry();
   }
 }

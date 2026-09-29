@@ -3,7 +3,12 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { TranslateService, provideTranslateService } from '@ngx-translate/core';
 
 import { AuthService } from '../../core/auth/auth.service';
-import { AskResponse, AssistantApiService } from '../../core/api/assistant-api.service';
+import {
+  AskResponse,
+  AssistantApiService,
+  AssistantMessage,
+  BriefResponse,
+} from '../../core/api/assistant-api.service';
 import { ChatEntryError, ChatEntryService, ResolvedEntry } from '../../core/api/chat-entry.service';
 import { CropsApiService } from '../../core/api/crops-api.service';
 import { LandsApiService } from '../../core/api/lands-api.service';
@@ -31,6 +36,24 @@ function reply(overrides: Partial<AskResponse> = {}): AskResponse {
   return { intent: 'question', answer: null, needs_clarification: null, ...overrides };
 }
 
+function briefResponse(overrides: Partial<BriefResponse> = {}): BriefResponse {
+  return { has_data: true, name: null, weather: null, pending: null, spend_7d: null, ...overrides };
+}
+
+function saved(
+  id: number,
+  role: 'farmer' | 'bot',
+  text: string,
+  overrides: Partial<AssistantMessage> = {},
+): AssistantMessage {
+  return { id, role, kind: 'text', text, created_at: new Date().toISOString(), ...overrides };
+}
+
+const DAY_MS = 86_400_000;
+
+/** Let queued promise callbacks (the best-effort saves) run. */
+const flush = (): Promise<void> => new Promise((resolve) => setTimeout(resolve));
+
 describe('ChatOrchestratorService', () => {
   let service: ChatOrchestratorService;
   let assistant: jasmine.SpyObj<AssistantApiService>;
@@ -41,9 +64,19 @@ describe('ChatOrchestratorService', () => {
 
   beforeEach(() => {
     chatEntry = jasmine.createSpyObj('ChatEntryService', ['parse']);
-    assistant = jasmine.createSpyObj('AssistantApiService', ['ask']);
+    assistant = jasmine.createSpyObj('AssistantApiService', [
+      'ask',
+      'brief',
+      'listMessages',
+      'appendMessages',
+      'clearMessages',
+    ]);
     // Most tests are about logging, so a fresh message routes to "log" by default.
     assistant.ask.and.resolveTo(reply({ intent: 'log' }));
+    assistant.listMessages.and.resolveTo({ items: [], has_more: false });
+    assistant.appendMessages.and.resolveTo([]);
+    assistant.brief.and.resolveTo(briefResponse({ has_data: false }));
+    assistant.clearMessages.and.resolveTo();
     lands = jasmine.createSpyObj('LandsApiService', ['getFarms']);
     crops = jasmine.createSpyObj('CropsApiService', ['getCrops']);
     auth = jasmine.createSpyObj('AuthService', ['currentUser']);
@@ -327,6 +360,330 @@ describe('ChatOrchestratorService', () => {
       finish(reply({ answer: 'done' }));
       await pending;
       expect(service.busy()).toBeFalse();
+    });
+  });
+
+  describe('saving the conversation (#291)', () => {
+    it('saves a turn as the farmer message and the bot reply in one call', async () => {
+      assistant.ask.and.resolveTo(reply({ answer: 'You spent ₹250.' }));
+
+      await service.sendText('how much did I spend?');
+      await flush();
+
+      expect(assistant.appendMessages).toHaveBeenCalledOnceWith([
+        { role: 'farmer', kind: 'text', text: 'how much did I spend?' },
+        { role: 'bot', kind: 'answer', text: 'You spent ₹250.' },
+      ]);
+    });
+
+    it('saves the text only, never the chips or the Review & Save action', async () => {
+      chatEntry.parse.and.resolveTo({ parsed: entry(), model: 'm' });
+
+      await service.sendText('100 rs fertilizer');
+      await flush();
+
+      const saved = assistant.appendMessages.calls.mostRecent().args[0];
+      expect(saved).toEqual([
+        { role: 'farmer', kind: 'text', text: '100 rs fertilizer' },
+        { role: 'bot', kind: 'text', text: 'chatBot.readyToReview' },
+      ]);
+    });
+
+    it('saves turns in the order they happened', async () => {
+      assistant.ask.and.resolveTo(reply({ answer: 'first answer' }));
+      await service.sendText('first');
+      assistant.ask.and.resolveTo(reply({ answer: 'second answer' }));
+      await service.sendText('second');
+      await flush();
+
+      const order = assistant.appendMessages.calls
+        .allArgs()
+        .flatMap(([messages]) => messages.map((m) => m.text));
+      expect(order).toEqual(['first', 'first answer', 'second', 'second answer']);
+    });
+
+    it('carries on when a save fails, and keeps saving later turns', async () => {
+      assistant.appendMessages.and.rejectWith({ status: 500 });
+      assistant.ask.and.resolveTo(reply({ answer: 'still answered' }));
+
+      await service.sendText('first');
+      await flush();
+      assistant.appendMessages.and.resolveTo([]);
+      await service.sendText('second');
+      await flush();
+
+      expect(service.messages().at(-1)?.text).toBe('still answered');
+      expect(assistant.appendMessages).toHaveBeenCalledTimes(2);
+    });
+
+    it('trims a saved message to what the backend accepts instead of dropping it', async () => {
+      assistant.ask.and.resolveTo(reply({ answer: 'x'.repeat(5000) }));
+
+      await service.sendText('long');
+      await flush();
+
+      const bot = assistant.appendMessages.calls.mostRecent().args[0][1];
+      expect(bot.text.length).toBe(4000);
+    });
+  });
+
+  describe('opening the chat (#291)', () => {
+    it('does nothing until it is opened', () => {
+      expect(assistant.listMessages).not.toHaveBeenCalled();
+      expect(assistant.brief).not.toHaveBeenCalled();
+    });
+
+    it('restores saved messages oldest-first, with their times', async () => {
+      const at = new Date(Date.now() - 2 * DAY_MS).toISOString();
+      assistant.listMessages.and.resolveTo({
+        // The backend sends newest first.
+        items: [saved(12, 'bot', 'answer', { created_at: at }), saved(11, 'farmer', 'question')],
+        has_more: true,
+      });
+      assistant.brief.and.resolveTo(briefResponse());
+
+      await service.onOpen();
+
+      expect(
+        service
+          .messages()
+          .slice(0, 2)
+          .map((m) => m.text),
+      ).toEqual(['question', 'answer']);
+      expect(service.messages()[1].createdAt).toBe(at);
+      expect(service.hasMoreHistory()).toBeTrue();
+      expect(assistant.listMessages).toHaveBeenCalledOnceWith(50);
+    });
+
+    it('restores history once per session, however often it is opened', async () => {
+      await service.onOpen();
+      await service.onOpen();
+
+      expect(assistant.listMessages).toHaveBeenCalledTimes(1);
+    });
+
+    it('adds the brief when none has been shown today, with example chips and its kind', async () => {
+      assistant.brief.and.resolveTo(
+        briefResponse({ name: 'Ramesh Kumar', spend_7d: { total: 500 } }),
+      );
+
+      await service.onOpen();
+      await flush();
+
+      const brief = service.messages().at(-1)!;
+      expect(brief.role).toBe('bot');
+      expect(brief.kind).toBe('brief');
+      expect(brief.text).toContain('chatBot.brief.greeting');
+      expect(brief.chips?.map((c) => c.kind)).toEqual(['suggestion', 'suggestion']);
+      expect(assistant.appendMessages.calls.mostRecent().args[0][0].kind).toBe('brief');
+    });
+
+    it('does not fetch the brief when history already has one from today', async () => {
+      assistant.listMessages.and.resolveTo({
+        items: [saved(5, 'bot', 'Hello 🌱', { kind: 'brief' })],
+        has_more: false,
+      });
+
+      await service.onOpen();
+
+      expect(assistant.brief).not.toHaveBeenCalled();
+    });
+
+    it('fetches a new brief when the last one is from a previous day', async () => {
+      assistant.listMessages.and.resolveTo({
+        items: [
+          saved(5, 'bot', 'Hello 🌱', {
+            kind: 'brief',
+            created_at: new Date(Date.now() - 2 * DAY_MS).toISOString(),
+          }),
+        ],
+        has_more: false,
+      });
+
+      await service.onOpen();
+
+      expect(assistant.brief).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not fetch the brief again when the chat is reopened the same day', async () => {
+      await service.onOpen();
+      await service.onOpen();
+
+      expect(assistant.brief).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows no brief, and retries history next time, when history could not be loaded', async () => {
+      assistant.listMessages.and.rejectWith({ status: 500 });
+
+      await service.onOpen();
+      expect(assistant.brief).not.toHaveBeenCalled();
+      expect(service.messages()).toEqual([]);
+
+      assistant.listMessages.and.resolveTo({ items: [], has_more: false });
+      await service.onOpen();
+      expect(assistant.brief).toHaveBeenCalledTimes(1);
+    });
+
+    it('ignores a failed brief without disturbing the chat', async () => {
+      assistant.brief.and.rejectWith({ status: 500 });
+
+      await expectAsync(service.onOpen()).toBeResolved();
+
+      expect(service.messages()).toEqual([]);
+    });
+
+    it('drops the brief if the farmer started typing while it loaded', async () => {
+      let finish!: (value: BriefResponse) => void;
+      assistant.brief.and.returnValue(new Promise<BriefResponse>((resolve) => (finish = resolve)));
+      assistant.ask.and.resolveTo(reply({ answer: 'quick answer' }));
+
+      const opening = service.onOpen();
+      await flush();
+      await service.sendText('hello');
+      finish(briefResponse());
+      await opening;
+
+      expect(service.messages().map((m) => m.text)).toEqual(['hello', 'quick answer']);
+    });
+
+    it('does not run two opens at once', async () => {
+      await Promise.all([service.onOpen(), service.onOpen()]);
+
+      expect(assistant.listMessages).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('older history (#291)', () => {
+    beforeEach(async () => {
+      assistant.listMessages.and.resolveTo({
+        items: [saved(20, 'bot', 'newer'), saved(19, 'farmer', 'new question')],
+        has_more: true,
+      });
+      assistant.brief.and.resolveTo(briefResponse());
+      await service.onOpen();
+      assistant.listMessages.calls.reset();
+    });
+
+    it('prepends the previous page, paging from the oldest message shown', async () => {
+      assistant.listMessages.and.resolveTo({
+        items: [saved(18, 'bot', 'older answer'), saved(17, 'farmer', 'older question')],
+        has_more: false,
+      });
+
+      await service.loadOlder();
+
+      expect(assistant.listMessages).toHaveBeenCalledOnceWith(50, 19);
+      expect(
+        service
+          .messages()
+          .slice(0, 4)
+          .map((m) => m.text),
+      ).toEqual(['older question', 'older answer', 'new question', 'newer']);
+      expect(service.hasMoreHistory()).toBeFalse();
+    });
+
+    it('does nothing once there is no more history', async () => {
+      assistant.listMessages.and.resolveTo({ items: [], has_more: false });
+      await service.loadOlder();
+      assistant.listMessages.calls.reset();
+
+      await service.loadOlder();
+
+      expect(assistant.listMessages).not.toHaveBeenCalled();
+    });
+
+    it('keeps the button available after a failed load', async () => {
+      assistant.listMessages.and.rejectWith({ status: 500 });
+      await service.loadOlder();
+
+      expect(service.hasMoreHistory()).toBeTrue();
+      expect(service.messages().length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('clearing and ending an entry (#291)', () => {
+    it('deletes the saved history and empties the thread', async () => {
+      assistant.listMessages.and.resolveTo({
+        items: [saved(2, 'bot', 'hi')],
+        has_more: true,
+      });
+      assistant.brief.and.resolveTo(briefResponse());
+      await service.onOpen();
+
+      const cleared = await service.clearHistory();
+
+      expect(cleared).toBeTrue();
+      expect(assistant.clearMessages).toHaveBeenCalled();
+      expect(service.messages()).toEqual([]);
+      expect(service.hasMoreHistory()).toBeFalse();
+    });
+
+    it('does not bring the brief back after clearing the same day', async () => {
+      await service.onOpen();
+      await service.clearHistory();
+
+      await service.onOpen();
+
+      expect(assistant.brief).toHaveBeenCalledTimes(1);
+    });
+
+    it('waits for saves in flight so they cannot resurrect cleared messages', async () => {
+      const order: string[] = [];
+      assistant.appendMessages.and.callFake(async () => {
+        await flush();
+        order.push('saved');
+        return [];
+      });
+      assistant.clearMessages.and.callFake(async () => {
+        order.push('cleared');
+      });
+      assistant.ask.and.resolveTo(reply({ answer: 'answer' }));
+
+      await service.sendText('question');
+      await service.clearHistory();
+
+      expect(order).toEqual(['saved', 'cleared']);
+    });
+
+    it('keeps the thread and says so when the delete fails, without saving that note', async () => {
+      assistant.ask.and.resolveTo(reply({ answer: 'answer' }));
+      await service.sendText('question');
+      await flush();
+      assistant.appendMessages.calls.reset();
+      assistant.clearMessages.and.rejectWith({ status: 500 });
+
+      const cleared = await service.clearHistory();
+      await flush();
+
+      expect(cleared).toBeFalse();
+      expect(service.messages().map((m) => m.text)).toEqual([
+        'question',
+        'answer',
+        'chatBot.clearFailed',
+      ]);
+      expect(assistant.appendMessages).not.toHaveBeenCalled();
+    });
+
+    it('endEntry() drops the draft but keeps the thread', async () => {
+      chatEntry.parse.and.resolveTo({ parsed: entry(), model: 'm' });
+      await service.sendText('100 rs fertilizer');
+      expect(service.ready()).toBeTrue();
+
+      service.endEntry();
+
+      expect(service.ready()).toBeFalse();
+      expect(service.originalInput()).toBe('');
+      expect(service.messages().length).toBe(2);
+    });
+
+    it('starts a fresh entry after endEntry() instead of appending to the old one', async () => {
+      chatEntry.parse.and.resolveTo({ parsed: entry(), model: 'm' });
+      await service.sendText('100 rs fertilizer');
+      service.endEntry();
+
+      await service.sendText('200 rs seeds');
+
+      expect(chatEntry.parse.calls.mostRecent().args[0]).toBe('200 rs seeds');
     });
   });
 });
