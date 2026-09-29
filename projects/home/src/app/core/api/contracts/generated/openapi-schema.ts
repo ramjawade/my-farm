@@ -332,6 +332,30 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/assistant/brief': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get Brief
+     * @description What matters today: weather, pending work and the last week's spend.
+     *
+     *     Deterministic — no model call — so it works while the provider is down. A
+     *     section with no data is left out, and a weather failure just drops the
+     *     weather line. The client decides when to fetch it (once a day).
+     */
+    get: operations['get_brief_api_v1_assistant_brief_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/assistant/messages': {
     parameters: {
       query?: never;
@@ -1101,6 +1125,70 @@ export interface components {
        */
       intent: 'log' | 'question' | 'unsupported';
       needs_clarification?: components['schemas']['Clarification'] | null;
+    };
+    /** BriefActivity */
+    BriefActivity: {
+      /** Activity */
+      activity: string;
+      /** Crop */
+      crop?: string | null;
+      /** Date */
+      date?: string | null;
+      /** Land */
+      land?: string | null;
+      /** Status */
+      status: string;
+    };
+    /** BriefPending */
+    BriefPending: {
+      /**
+       * Count
+       * @description All pending activities; `next` is only the soonest few.
+       */
+      count: number;
+      /** Next */
+      next: components['schemas']['BriefActivity'][];
+    };
+    /**
+     * BriefResponse
+     * @description Structured daily brief. Every section is omitted when there is no data for it.
+     *
+     *     Carries data, not text: the client renders it from its own translations, so
+     *     the brief works in every language and while the model provider is down.
+     *     ``has_data`` false means "show the welcome instead".
+     */
+    BriefResponse: {
+      /** Has Data */
+      has_data: boolean;
+      /**
+       * Name
+       * @description The farmer's full name, for the greeting.
+       */
+      name?: string | null;
+      pending?: components['schemas']['BriefPending'] | null;
+      spend_7d?: components['schemas']['BriefSpend'] | null;
+      weather?: components['schemas']['BriefWeather'] | null;
+    };
+    /** BriefSpend */
+    BriefSpend: {
+      /** Total */
+      total: number;
+    };
+    /** BriefWeather */
+    BriefWeather: {
+      /** Description */
+      description?: string | null;
+      /** Humidity Pct */
+      humidity_pct?: number | null;
+      /** Land */
+      land: string;
+      /**
+       * Source
+       * @description 'live', 'cached' or 'mock' (mock means not live data).
+       */
+      source: string;
+      /** Temp C */
+      temp_c?: number | null;
     };
     /**
      * ChatMessageCreate
@@ -2416,6 +2504,37 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['AskResponse'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  get_brief_api_v1_assistant_brief_get: {
+    parameters: {
+      query?: never;
+      header?: {
+        authorization?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BriefResponse'];
         };
       };
       /** @description Validation Error */

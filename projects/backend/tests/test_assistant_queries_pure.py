@@ -183,3 +183,24 @@ async def test_weather_reports_no_location_when_no_land_has_points() -> None:
 async def test_weather_failure_is_unavailable_not_an_exception() -> None:
     result = await _weather(1, LOCATIONS, AsyncMock(side_effect=RuntimeError("boom")))
     assert (result.status, result.land, result.facts) == ("unavailable", "Plot 1", None)
+
+
+@pytest.mark.asyncio
+async def test_first_land_avoids_the_ambiguity_for_a_greeting() -> None:
+    get_weather = AsyncMock(return_value=LIVE)
+    with (
+        patch.object(q, "land_locations", AsyncMock(return_value=LOCATIONS)),
+        patch.object(q, "get_weather", get_weather),
+    ):
+        result = await q.weather_for_land(1, None, first_land=True)
+
+    assert (result.status, result.land) == ("ok", "Plot 1")
+    get_weather.assert_awaited_once_with(18.5, 73.8)
+
+
+@pytest.mark.asyncio
+async def test_first_land_still_reports_no_location_when_none_is_mapped() -> None:
+    with patch.object(q, "land_locations", AsyncMock(return_value=[])):
+        result = await q.weather_for_land(1, None, first_land=True)
+
+    assert result.status == "no_location"

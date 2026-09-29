@@ -34,6 +34,11 @@ from myfarm_api.routers.chat_entry import get_current_farmer
 from myfarm_api.schemas.assistant import (
     AskRequest,
     AskResponse,
+    BriefActivity,
+    BriefPending,
+    BriefResponse,
+    BriefSpend,
+    BriefWeather,
     ChatMessageRead,
     ChatMessagesAppend,
     ChatMessagesPage,
@@ -288,3 +293,55 @@ async def ask(
         )
         text = fallback_answer(routed.topic, facts, language)
     return AskResponse(intent="question", answer=text)
+
+
+# ----------------------------------------------------------------- brief
+
+BRIEF_NEXT_ACTIVITIES = 3
+
+
+@router.get("/brief", response_model=BriefResponse)
+async def get_brief(current_farmer: Farmer = Depends(get_current_farmer)) -> BriefResponse:
+    """What matters today: weather, pending work and the last week's spend.
+
+    Deterministic — no model call — so it works while the provider is down. A
+    section with no data is left out, and a weather failure just drops the
+    weather line. The client decides when to fetch it (once a day).
+    """
+    farmer_id = current_farmer.id
+    today = datetime.now(UTC).date()
+
+    pending_scope = queries.Scope()
+    pending_total = await queries.pending_count(farmer_id, pending_scope)
+    pending = None
+    if pending_total:
+        upcoming = await queries.pending_activities(
+            farmer_id, pending_scope, limit=BRIEF_NEXT_ACTIVITIES
+        )
+        pending = BriefPending(
+            count=pending_total,
+            next=[BriefActivity.model_validate(a) for a in upcoming],
+        )
+
+    start, end = queries.period_bounds("last_7_days", today)
+    spend = await queries.spend(farmer_id, queries.Scope(start=start, end=end))
+    spend_7d = BriefSpend(total=spend["total"]) if spend["expense_count"] else None
+
+    weather = None
+    result = await queries.weather_for_land(farmer_id, None, first_land=True)
+    if result.status == "ok" and result.land and result.facts:
+        weather = BriefWeather(
+            land=result.land,
+            temp_c=result.facts["temp_c"],
+            description=result.facts["description"],
+            humidity_pct=result.facts["humidity_pct"],
+            source=result.facts["source"],
+        )
+
+    return BriefResponse(
+        has_data=bool(weather or pending or spend_7d or await queries.has_any_data(farmer_id)),
+        name=current_farmer.full_name,
+        weather=weather,
+        pending=pending,
+        spend_7d=spend_7d,
+    )

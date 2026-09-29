@@ -225,6 +225,33 @@ async def pending_activities(farmer_id: int, scope: Scope, limit: int = 10) -> l
     )
 
 
+async def pending_count(farmer_id: int, scope: Scope) -> int:
+    """How many pending activities there are in total (the list is capped)."""
+    stmt = (
+        select(func.count())
+        .select_from(Activity)
+        .where(*_activity_conditions(farmer_id, scope), Activity.status.in_(PENDING_STATUSES))
+    )
+    async with get_session_factory()() as session:
+        return int((await session.execute(stmt)).scalar_one())
+
+
+async def has_any_data(farmer_id: int) -> bool:
+    """Whether the farmer has recorded any land or activity at all."""
+    async with get_session_factory()() as session:
+        land = await session.execute(
+            select(Land.id).where(Land.farmer_id == farmer_id, Land.deleted_at.is_(None)).limit(1)
+        )
+        if land.first() is not None:
+            return True
+        activity = await session.execute(
+            select(Activity.id)
+            .where(Activity.farmer_id == farmer_id, Activity.deleted_at.is_(None))
+            .limit(1)
+        )
+        return activity.first() is not None
+
+
 # ------------------------------------------------------------ lands, crops
 
 
@@ -466,16 +493,20 @@ class WeatherResult:
     options: tuple[str, ...] = field(default=())
 
 
-async def weather_for_land(farmer_id: int, land_id: int | None) -> WeatherResult:
+async def weather_for_land(
+    farmer_id: int, land_id: int | None, *, first_land: bool = False
+) -> WeatherResult:
     """Current weather for the named land, or for the farmer's only located land.
 
     ``land_id`` must already have been resolved against this farmer's lands.
+    With ``first_land`` a farmer with several located lands gets the first one
+    instead of an ambiguity — right for a greeting, wrong for a question.
     """
     locations = await land_locations(farmer_id)
 
     if land_id is not None:
         chosen = next((loc for loc in locations if loc.id == land_id), None)
-    elif len(locations) == 1:
+    elif len(locations) == 1 or (first_land and locations):
         chosen = locations[0]
     elif locations:
         return WeatherResult("ambiguous", options=_distinct([loc.name for loc in locations]))
