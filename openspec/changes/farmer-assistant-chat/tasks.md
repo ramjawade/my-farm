@@ -10,9 +10,9 @@ Each numbered group is one sub-issue / one PR, stacked on the parent branch (boa
 
 ## 2. Backend: data queries (#287)
 
-- [ ] 2.1 Add `core/assistant_queries.py` with one function per topic (`spend`, `spend_by_category`, `recent_activities`, `pending_activities`, `lands`, `crops`) returning plain fact dicts, all filtered by `farmer_id` and `deleted_at IS NULL`; verify tests for totals matching `/activities/summary` for the same scope and for a second farmer's data being excluded
-- [ ] 2.2 Add name resolution for crop/land words against the farmer's own rows (exact/case-insensitive, reuse `entry_resolver` matching), returning matched / ambiguous / unknown; verify tests for all three outcomes
-- [ ] 2.3 Add `weather` topic using the first land with points (centroid → existing `core/weather.get_weather`); verify tests with the weather call stubbed, including no-land and error cases
+- [x] 2.1 Add `core/assistant_queries.py` with one function per topic (`spend`, `spend_by_category`, `recent_activities`, `pending_activities`, `lands`, `crops`) returning plain fact dicts, all filtered by `farmer_id` and `deleted_at IS NULL`; verify tests for totals matching `/activities/summary` for the same scope and for a second farmer's data being excluded
+- [x] 2.2 Add name resolution for crop/land words against the farmer's own rows (exact/case-insensitive, reuse `entry_resolver` matching), returning matched / ambiguous / unknown; verify tests for all three outcomes
+- [x] 2.3 Add `weather` topic using the first land with points (centroid → existing `core/weather.get_weather`); verify tests with the weather call stubbed, including no-land and error cases
 
 ## 3. Backend: routing and answers (#288)
 
