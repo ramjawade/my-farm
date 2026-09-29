@@ -486,12 +486,53 @@
     "stepLabel": "Getting Started: Step {{step}} of 6"
   },
   "chatBot": {
-    "open": "Log an activity with chat",
-    "title": "Chat",
+    "open": "Ask or log with the farm assistant",
+    "title": "My farm assistant",
+    "subtitle": "Ask about your farm or log an activity",
     "disclaimer": "Beta · nothing is saved yet",
     "close": "Close chat",
     "inputLabel": "Type a message",
-    "placeholder": "Type a message…",
+    "placeholder": "Ask or log something…",
+    "clear": "Clear chat",
+    "clearConfirm": {
+      "title": "Clear chat?",
+      "body": "This deletes your whole conversation. Saved activities are not affected.",
+      "cancel": "Cancel",
+      "confirm": "Clear chat"
+    },
+    "clearFailed": "Couldn't clear the chat. Please try again.",
+    "loadOlder": "Load older messages",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "brief": {
+      "welcome": "Welcome! I'm your farm assistant. Ask me about your spending, pending work, crops or the weather — or tell me an activity to log.",
+      "greeting": "Hello, {{name}} 🌱",
+      "greetingNoName": "Hello 🌱",
+      "weather": "🌤 {{land}}: {{temp}}°C, {{description}}",
+      "approximate": "(approximate)",
+      "pendingOne": "📋 {{count}} activity pending",
+      "pendingMany": "📋 {{count}} activities pending",
+      "spend7d": "💰 ₹{{amount}} spent in the last 7 days",
+      "nothingNew": "Nothing new to report today."
+    },
+    "assistant": {
+      "help": "I can help with your farm. Try asking about spending, pending work, your crops or the weather — or tell me an activity to log.",
+      "suggestions": {
+        "spend": "What did I spend this month?",
+        "pending": "What's pending?",
+        "weather": "What's the weather?"
+      },
+      "clarify": {
+        "crop": {
+          "unknown": "I couldn't find that crop. Which one did you mean?",
+          "ambiguous": "Which crop do you mean?"
+        },
+        "land": {
+          "unknown": "I couldn't find that land. Which one did you mean?",
+          "ambiguous": "Which land do you mean?"
+        }
+      }
+    },
     "send": "Send",
     "reviewAndSave": "Review & Save",
     "readyToReview": "Got it — everything's filled in. Tap Review & Save when you're ready.",
