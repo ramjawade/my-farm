@@ -9,6 +9,7 @@ import { AddCropService } from './add-crop.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { LandsApiService } from '../../../core/api/lands-api.service';
 import { FakeLandsApiService } from '../../../testing/fake-lands-api.service';
+import { ReferenceDataService } from '../../../core/api/reference-data.service';
 
 describe('AddCropComponent', () => {
   let component: AddCropComponent;
@@ -26,6 +27,10 @@ describe('AddCropComponent', () => {
         AddCropService,
         AuthService,
         { provide: LandsApiService, useClass: FakeLandsApiService },
+        {
+          provide: ReferenceDataService,
+          useValue: { cropCatalogIdForName: () => Promise.resolve(42) },
+        },
       ],
     }).compileComponents();
 
@@ -66,6 +71,7 @@ describe('AddCropComponent', () => {
     expect(addCropService.createCrop).toHaveBeenCalledWith(
       jasmine.objectContaining({
         name: 'My Soy Crop',
+        cropCatalogId: 42,
         currentStage: 'Land Preparation',
       }),
     );

@@ -57,7 +57,7 @@ describe('ReportsComponent', () => {
     const crop = await cropService.addCrop({
       fieldId: 1,
       name: 'Wheat',
-      cropType: 'Wheat',
+      cropCatalogId: 1,
       area: 2,
       areaUnit: 'acres',
       season: 'Kharif',

@@ -21,6 +21,7 @@ import { SEASONS, seasonForDate } from '../../../core/models/season';
 import { convertArea, AreaUnit } from '../../../core/pipes/area.pipe';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ReferenceNamePipe } from '../../../core/i18n/reference-name.pipe';
+import { ReferenceDataService } from '../../../core/api/reference-data.service';
 
 @Component({
   standalone: true,
@@ -38,6 +39,7 @@ export class AddCropComponent implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly workflowService = inject(WorkflowStateService);
+  private readonly referenceData = inject(ReferenceDataService);
 
   readonly savedFarms = signal<SavedFarm[]>([]);
   readonly crops = signal<CropEntity[]>([]);
@@ -137,9 +139,11 @@ export class AddCropComponent implements OnInit {
 
     this.saving.set(true);
     try {
+      // Create-or-get: a farmer-typed crop name with no catalog entry becomes one.
+      const cropCatalogId = await this.referenceData.cropCatalogIdForName(values.name);
       const newCrop = await this.addCropService.createCrop({
         name: values.name,
-        cropType: values.name,
+        cropCatalogId,
         fieldId: values.fieldId,
         area: Number(values.area),
         areaUnit: values.areaUnit as 'acres' | 'hectares',

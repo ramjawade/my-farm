@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpService } from '../http/http.service';
 import { ReferenceItem } from './contracts';
 
@@ -15,6 +15,19 @@ import { ReferenceItem } from './contracts';
  * admin.py's SEED_* lists). This is the one place that resolves between
  * the two, name<->id.
  */
+
+type RefKind = 'crops' | 'expenses' | 'activityTypes' | 'seasons' | 'stages';
+
+const REF_ENDPOINTS = {
+  crops: { slot: 'cropsPromise', path: '/reference/crops' },
+  expenses: { slot: 'expensesPromise', path: '/reference/expense-categories' },
+  activityTypes: { slot: 'activityTypesPromise', path: '/reference/activity-types' },
+  seasons: { slot: 'seasonsPromise', path: '/reference/seasons' },
+  stages: { slot: 'stagesPromise', path: '/reference/crop-stages' },
+} as const;
+
+/** A missing id refetches its endpoint at most this often (never on a timer). */
+const REFETCH_INTERVAL_MS = 30_000;
 
 @Injectable({ providedIn: 'root' })
 export class ReferenceDataService {
@@ -42,8 +55,109 @@ export class ReferenceDataService {
   private seasonsPromise: Promise<ReferenceItem[]> | null = null;
   private stagesPromise: Promise<ReferenceItem[]> | null = null;
 
+  private readyPromise: Promise<void> | null = null;
+  private loadedOnce = false;
+  private readonly lastRefetch = new Map<RefKind, number>();
+  private readonly versionSignal = signal(0);
+
+  /** Bumps whenever a cached name changes, so signal/computed readers of the
+   * sync accessors below re-evaluate once a name arrives. */
+  readonly version = this.versionSignal.asReadonly();
+
+  /**
+   * Shared "reference data is loaded" promise. Reference-heavy pages await it
+   * alongside their own data load; it reuses the per-endpoint cache, so it
+   * never issues more requests than the first lookup would have.
+   */
+  ready(): Promise<void> {
+    if (!this.readyPromise) {
+      this.readyPromise = this.ensureLoaded().catch((error) => {
+        this.readyPromise = null;
+        throw error;
+      });
+    }
+    return this.readyPromise;
+  }
+
+  /** Fire-and-forget warm-up, called once a session exists. Never blocks or throws. */
+  preload(): void {
+    this.ready().catch(() => undefined);
+  }
+
+  /** Synchronous crop name for `id`; `''` until loaded (or unknown). */
+  cropName(id: number | null | undefined): string {
+    return this.syncName('crops', this.cropsById, id);
+  }
+
+  /** Synchronous activity-type name for `id`; `''` until loaded (or unknown). */
+  activityTypeName(id: number | null | undefined): string {
+    return this.syncName('activityTypes', this.activityTypesById, id);
+  }
+
+  /** Synchronous expense-category name for `id`; `''` until loaded (or unknown). */
+  expenseCategoryName(id: number | null | undefined): string {
+    return this.syncName('expenses', this.expensesById, id);
+  }
+
+  private syncName(kind: RefKind, byId: Map<number, string>, id: number | null | undefined) {
+    this.versionSignal(); // track cache changes in computed()/templates
+    if (id === null || id === undefined) {
+      return '';
+    }
+    const name = byId.get(id);
+    if (name === undefined) {
+      void this.refetchOnMiss(kind);
+      return '';
+    }
+    return name;
+  }
+
+  /**
+   * An id is missing from the cache (created on another device, or stale):
+   * refetch just that endpoint, at most once per `REFETCH_INTERVAL_MS` per
+   * endpoint, so an unknown id can never turn into repeated requests.
+   * Resolves `true` when a refetch actually ran.
+   */
+  private async refetchOnMiss(kind: RefKind): Promise<boolean> {
+    if (!this.loadedOnce) {
+      return false; // first load is still in flight; it fetches everything anyway
+    }
+    const now = Date.now();
+    const last = this.lastRefetch.get(kind);
+    if (last !== undefined && now - last < REFETCH_INTERVAL_MS) {
+      return false;
+    }
+    this.lastRefetch.set(kind, now);
+    const { slot, path } = REF_ENDPOINTS[kind];
+    this[slot] = null;
+    try {
+      const items = await this.load(slot, path);
+      this.applyMaps(...this.itemsFor(kind, items));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private itemsFor(
+    kind: RefKind,
+    items: ReferenceItem[],
+  ): [ReferenceItem[], ReferenceItem[], ReferenceItem[], ReferenceItem[], ReferenceItem[]] {
+    const none: ReferenceItem[] = [];
+    return [
+      kind === 'crops' ? items : none,
+      kind === 'expenses' ? items : none,
+      kind === 'activityTypes' ? items : none,
+      kind === 'seasons' ? items : none,
+      kind === 'stages' ? items : none,
+    ];
+  }
+
   /** Force a re-fetch on next lookup (e.g. after seeding reference data). */
   invalidate(): void {
+    this.readyPromise = null;
+    this.loadedOnce = false;
+    this.lastRefetch.clear();
     this.cropsPromise = null;
     this.expensesPromise = null;
     this.activityTypesPromise = null;
@@ -91,6 +205,7 @@ export class ReferenceDataService {
       this.load('stagesPromise', '/reference/crop-stages'),
     ]);
     this.applyMaps(crops, expenses, activityTypes, seasons, stages);
+    this.loadedOnce = true;
   }
 
   private applyMaps(
@@ -100,25 +215,27 @@ export class ReferenceDataService {
     seasons: ReferenceItem[],
     stages: ReferenceItem[],
   ): void {
-    for (const c of crops) {
-      this.cropsByName.set(c.name, c.id);
-      this.cropsById.set(c.id, c.name);
-    }
-    for (const e of expenses) {
-      this.expensesByName.set(e.name, e.id);
-      this.expensesById.set(e.id, e.name);
-    }
-    for (const a of activityTypes) {
-      this.activityTypesByName.set(a.name, a.id);
-      this.activityTypesById.set(a.id, a.name);
-    }
-    for (const s of seasons) {
-      this.seasonsByName.set(s.name, s.id);
-      this.seasonsById.set(s.id, s.name);
-    }
-    for (const st of stages) {
-      this.stagesByName.set(st.name, st.id);
-      this.stagesById.set(st.id, st.name);
+    let changed = false;
+    const apply = (
+      items: ReferenceItem[],
+      byName: Map<string, number>,
+      byId: Map<number, string>,
+    ) => {
+      for (const item of items) {
+        if (byId.get(item.id) !== item.name) {
+          changed = true;
+        }
+        byName.set(item.name, item.id);
+        byId.set(item.id, item.name);
+      }
+    };
+    apply(crops, this.cropsByName, this.cropsById);
+    apply(expenses, this.expensesByName, this.expensesById);
+    apply(activityTypes, this.activityTypesByName, this.activityTypesById);
+    apply(seasons, this.seasonsByName, this.seasonsById);
+    apply(stages, this.stagesByName, this.stagesById);
+    if (changed) {
+      this.versionSignal.update((v) => v + 1);
     }
   }
 
@@ -141,6 +258,9 @@ export class ReferenceDataService {
 
   async cropNameForId(id: number): Promise<string> {
     await this.ensureLoaded();
+    if (!this.cropsById.has(id)) {
+      await this.refetchOnMiss('crops');
+    }
     return this.cropsById.get(id) ?? String(id);
   }
 
@@ -155,6 +275,9 @@ export class ReferenceDataService {
 
   async expenseCategoryNameForId(id: number): Promise<string> {
     await this.ensureLoaded();
+    if (!this.expensesById.has(id)) {
+      await this.refetchOnMiss('expenses');
+    }
     return this.expensesById.get(id) ?? String(id);
   }
 
@@ -169,6 +292,9 @@ export class ReferenceDataService {
 
   async activityTypeNameForId(id: number): Promise<string> {
     await this.ensureLoaded();
+    if (!this.activityTypesById.has(id)) {
+      await this.refetchOnMiss('activityTypes');
+    }
     return this.activityTypesById.get(id) ?? String(id);
   }
 
