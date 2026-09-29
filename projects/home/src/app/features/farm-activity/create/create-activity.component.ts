@@ -121,9 +121,16 @@ export class CreateActivityComponent implements OnInit {
       void this.farmDrawService.loadFarms(user.id).then((farms) => this.savedFarms.set(farms));
     }
 
-    void this.referenceDataService
-      .listActivityTypes()
-      .then((types) => this.referenceActivityTypes.set(types));
+    void this.referenceDataService.listActivityTypes().then((types) => {
+      this.referenceActivityTypes.set(types);
+      // Editing: the type name can only be resolved once reference data has loaded.
+      const editing = this.activityService.activities().find((a) => a.id === this.activityId);
+      if (editing && !this.form.get('type')?.value) {
+        this.form.patchValue({
+          type: this.referenceDataService.activityTypeName(editing.activityTypeId),
+        });
+      }
+    });
 
     // Read cropId from the route path param first (crops/:cropId/create),
     // falling back to the query param — parentActivityId/activityId stay
@@ -167,7 +174,7 @@ export class CreateActivityComponent implements OnInit {
         this.form.patchValue({
           date: act.date ? new Date(act.date).toISOString().substring(0, 10) : '',
           season: act.season,
-          type: act.type,
+          type: this.referenceDataService.activityTypeName(act.activityTypeId),
           cropId: act.cropId ?? null,
           fieldId: act.fieldId ?? null,
           parentActivityId: act.parentActivityId ?? null,
@@ -251,7 +258,6 @@ export class CreateActivityComponent implements OnInit {
       // Update existing activity
       const updates: Record<string, any> = {
         season: val.season,
-        type: val.type.trim(),
         status: val.status,
         notes: val.notes?.trim() || undefined,
         parentActivityId: val.parentActivityId || undefined,
@@ -264,6 +270,14 @@ export class CreateActivityComponent implements OnInit {
         updates['cropId'] = val.cropId;
       }
       updates['fieldId'] = val.fieldId || undefined;
+      try {
+        updates['activityTypeId'] = await this.referenceDataService.activityTypeIdForName(
+          val.type.trim(),
+        );
+      } catch {
+        this.toast.error(this.translate.instant('createActivity.saveError'));
+        return;
+      }
       this.activityService.updateActivity(this.activityId, updates);
       // Lifecycle progress is unlinked from activity completion for now (#167).
       // if (val.cropId) {
@@ -278,7 +292,7 @@ export class CreateActivityComponent implements OnInit {
         newAct = await this.activityService.addActivity({
           date: val.date ? new Date(val.date).getTime() : Date.now(),
           season: val.season,
-          type: val.type.trim(),
+          activityTypeId: await this.referenceDataService.activityTypeIdForName(val.type.trim()),
           cropId: val.cropId || undefined,
           fieldId: val.fieldId || undefined,
           status: val.status,
@@ -298,10 +312,16 @@ export class CreateActivityComponent implements OnInit {
       //   this.cropService.syncStageFromActivity(newAct.id);
       // }
 
-      const loggedTypeLabel =
-        newAct.type === 'Custom'
-          ? this.translate.instant('common.activity')
-          : resolveReferenceName(this.translate, 'activity', newAct.type);
+      const loggedTypeLabel = this.referenceDataService.isActivityType(
+        newAct.activityTypeId,
+        'Custom',
+      )
+        ? this.translate.instant('common.activity')
+        : resolveReferenceName(
+            this.translate,
+            'activity',
+            this.referenceDataService.activityTypeName(newAct.activityTypeId),
+          );
       this.toast.success(
         this.translate.instant('createActivity.loggedToast', { type: loggedTypeLabel }),
       );

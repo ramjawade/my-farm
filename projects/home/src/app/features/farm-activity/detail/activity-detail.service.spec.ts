@@ -15,7 +15,7 @@ describe('ActivityDetailService', () => {
   const apiUrl = 'https://api.test';
   const mappedActivity: Activity = {
     id: 5,
-    type: 'Irrigation',
+    activityTypeId: 2,
     status: 'Draft',
     createdAt: Date.now(),
     updatedAt: Date.now(),

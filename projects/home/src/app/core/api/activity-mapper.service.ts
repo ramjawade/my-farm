@@ -1,5 +1,4 @@
-import { Injectable, inject } from '@angular/core';
-import { ReferenceDataService } from './reference-data.service';
+import { Injectable } from '@angular/core';
 import { Activity, ActivityExpense } from '../../features/activity/activity.models';
 
 function dateStringToTimestamp(value: string | null | undefined): number | undefined {
@@ -14,18 +13,16 @@ function timestampToDateString(value: number | undefined): string | undefined {
 }
 
 /**
- * Canonical Activity/ActivityExpense wire-format mapping — `activity_type_id`
- * (backend FK) versus `type`, and `expense_category_id` versus `category`,
- * both need `ReferenceDataService`, so this can't be a plain pure function.
- * Every activity/expense read or write in the app goes through this one
+ * Canonical Activity/ActivityExpense wire-format mapping. Reference FKs
+ * (`activity_type_id`, `expense_category_id`) map straight to ids on the
+ * models; names resolve at render time. Methods stay `async` until #275
+ * makes them synchronous. Every activity/expense read or write in the app goes through this one
  * mapper (ActivitiesApiService's list load, ActivityService's targeted
  * dashboard queries, and ActivityDetailService/ActivityExpensesService's
  * per-activity detail queries) instead of each maintaining its own copy.
  */
 @Injectable({ providedIn: 'root' })
 export class ActivityMapperService {
-  private readonly referenceData = inject(ReferenceDataService);
-
   async fromBackend(item: any): Promise<Activity> {
     return {
       id: item.id,
@@ -34,9 +31,7 @@ export class ActivityMapperService {
       season: item.season ?? undefined,
       cropId: item.crop_id ?? undefined,
       fieldId: item.land_id ?? undefined,
-      type: (await this.referenceData.activityTypeNameForId(
-        item.activity_type_id,
-      )) as Activity['type'],
+      activityTypeId: item.activity_type_id,
       customActivityName: item.custom_activity_name ?? undefined,
       status: item.status,
       notes: item.notes ?? undefined,
@@ -48,10 +43,7 @@ export class ActivityMapperService {
 
   async toBackend(activity: Partial<Activity>): Promise<Record<string, unknown>> {
     return {
-      activity_type_id:
-        activity.type !== undefined
-          ? await this.referenceData.activityTypeIdForName(activity.type)
-          : undefined,
+      activity_type_id: activity.activityTypeId,
       crop_id: activity.cropId,
       land_id: activity.fieldId,
       parent_activity_id: activity.parentActivityId,

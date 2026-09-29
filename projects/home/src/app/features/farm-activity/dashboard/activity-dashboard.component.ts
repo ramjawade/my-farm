@@ -5,10 +5,11 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ActivityService } from '../../activity/activity.service';
-import { Activity, ActivityKpiSummary } from '../../activity/activity.models';
+import { Activity, ActivityKpiSummary, ActivityType } from '../../activity/activity.models';
 import { activityTypeIcon } from '../../activity/activity-display';
 import { parseId } from '../../../core/models/entity-id';
 import { ReferenceNamePipe } from '../../../core/i18n/reference-name.pipe';
+import { ReferenceDataService } from '../../../core/api/reference-data.service';
 
 @Component({
   selector: 'app-activity-dashboard',
@@ -23,6 +24,7 @@ export class ActivityDashboardComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly translate = inject(TranslateService);
+  private readonly referenceData = inject(ReferenceDataService);
 
   private readonly cropIdParam = toSignal(
     this.route.paramMap.pipe(map((params) => parseId(params.get('cropId')))),
@@ -39,7 +41,9 @@ export class ActivityDashboardComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
 
-  readonly getActivityIcon = activityTypeIcon;
+  getActivityIcon(activityTypeId: number): string {
+    return activityTypeIcon(this.referenceData.activityTypeName(activityTypeId) as ActivityType);
+  }
 
   getExpenseForActivity(activityId: number): number {
     return this.activityService.getTotalExpenseForActivity(activityId);
