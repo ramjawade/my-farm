@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpService } from '../http/http.service';
 import { ReferenceItem } from './contracts';
 
@@ -42,8 +42,56 @@ export class ReferenceDataService {
   private seasonsPromise: Promise<ReferenceItem[]> | null = null;
   private stagesPromise: Promise<ReferenceItem[]> | null = null;
 
+  private readyPromise: Promise<void> | null = null;
+  private readonly versionSignal = signal(0);
+
+  /** Bumps whenever a cached name changes, so signal/computed readers of the
+   * sync accessors below re-evaluate once a name arrives. */
+  readonly version = this.versionSignal.asReadonly();
+
+  /**
+   * Shared "reference data is loaded" promise. Reference-heavy pages await it
+   * alongside their own data load; it reuses the per-endpoint cache, so it
+   * never issues more requests than the first lookup would have.
+   */
+  ready(): Promise<void> {
+    if (!this.readyPromise) {
+      this.readyPromise = this.ensureLoaded().catch((error) => {
+        this.readyPromise = null;
+        throw error;
+      });
+    }
+    return this.readyPromise;
+  }
+
+  /** Fire-and-forget warm-up, called once a session exists. Never blocks or throws. */
+  preload(): void {
+    this.ready().catch(() => undefined);
+  }
+
+  /** Synchronous crop name for `id`; `''` until loaded (or unknown). */
+  cropName(id: number | null | undefined): string {
+    return this.syncName(this.cropsById, id);
+  }
+
+  /** Synchronous activity-type name for `id`; `''` until loaded (or unknown). */
+  activityTypeName(id: number | null | undefined): string {
+    return this.syncName(this.activityTypesById, id);
+  }
+
+  /** Synchronous expense-category name for `id`; `''` until loaded (or unknown). */
+  expenseCategoryName(id: number | null | undefined): string {
+    return this.syncName(this.expensesById, id);
+  }
+
+  private syncName(byId: Map<number, string>, id: number | null | undefined): string {
+    this.versionSignal(); // track cache changes in computed()/templates
+    return id === null || id === undefined ? '' : (byId.get(id) ?? '');
+  }
+
   /** Force a re-fetch on next lookup (e.g. after seeding reference data). */
   invalidate(): void {
+    this.readyPromise = null;
     this.cropsPromise = null;
     this.expensesPromise = null;
     this.activityTypesPromise = null;
@@ -100,25 +148,27 @@ export class ReferenceDataService {
     seasons: ReferenceItem[],
     stages: ReferenceItem[],
   ): void {
-    for (const c of crops) {
-      this.cropsByName.set(c.name, c.id);
-      this.cropsById.set(c.id, c.name);
-    }
-    for (const e of expenses) {
-      this.expensesByName.set(e.name, e.id);
-      this.expensesById.set(e.id, e.name);
-    }
-    for (const a of activityTypes) {
-      this.activityTypesByName.set(a.name, a.id);
-      this.activityTypesById.set(a.id, a.name);
-    }
-    for (const s of seasons) {
-      this.seasonsByName.set(s.name, s.id);
-      this.seasonsById.set(s.id, s.name);
-    }
-    for (const st of stages) {
-      this.stagesByName.set(st.name, st.id);
-      this.stagesById.set(st.id, st.name);
+    let changed = false;
+    const apply = (
+      items: ReferenceItem[],
+      byName: Map<string, number>,
+      byId: Map<number, string>,
+    ) => {
+      for (const item of items) {
+        if (byId.get(item.id) !== item.name) {
+          changed = true;
+        }
+        byName.set(item.name, item.id);
+        byId.set(item.id, item.name);
+      }
+    };
+    apply(crops, this.cropsByName, this.cropsById);
+    apply(expenses, this.expensesByName, this.expensesById);
+    apply(activityTypes, this.activityTypesByName, this.activityTypesById);
+    apply(seasons, this.seasonsByName, this.seasonsById);
+    apply(stages, this.stagesByName, this.stagesById);
+    if (changed) {
+      this.versionSignal.update((v) => v + 1);
     }
   }
 

@@ -281,7 +281,7 @@ describe('HomeComponent', () => {
     await cropService.addCrop({
       fieldId: 1,
       name: 'Wheat',
-      cropType: 'Wheat',
+      cropCatalogId: 1,
       area: 1.0,
       areaUnit: 'hectares',
       season: 'Kharif',

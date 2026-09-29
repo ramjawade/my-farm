@@ -1,5 +1,4 @@
-import { Injectable, inject } from '@angular/core';
-import { ReferenceDataService } from '../../core/api/reference-data.service';
+import { Injectable } from '@angular/core';
 import { CropEntity, CropStage, CropStatus, NewCrop } from './crop-timeline.models';
 
 function dateStringToTimestamp(value: string | null | undefined): number | undefined {
@@ -18,23 +17,23 @@ function normalizeCropStatus(status: unknown): CropStatus {
 }
 
 /**
- * Shared crop wire-format mapping — `crop_catalog_id` (backend FK) versus
- * `cropType` (frontend free text) needs `ReferenceDataService`, so this
- * can't be a plain pure function. Used by every crop-timeline service that
- * talks to `/api/v1/crops` directly (dashboard, add-crop, ...), so it lives
- * here instead of duplicated per service.
+ * Shared crop wire-format mapping. `crop_catalog_id` maps straight to
+ * `cropCatalogId` — the crop's display name is resolved at render time
+ * (`referenceName` pipe / `ReferenceDataService.cropName`). Used by every
+ * crop-timeline service that talks to `/api/v1/crops` directly (dashboard,
+ * add-crop, ...), so it lives here instead of duplicated per service.
+ *
+ * Methods stay `async` until the activity/expense mappers are made
+ * synchronous too (#275), so callers don't churn twice.
  */
 @Injectable({ providedIn: 'root' })
 export class CropMapperService {
-  private readonly referenceData = inject(ReferenceDataService);
-
   async fromBackend(item: any): Promise<CropEntity> {
     return {
       id: item.id,
       fieldId: item.land_id,
       name: item.label ?? '',
-      // TODO: use crop_catalog_id directly instead of resolving to cropType name.
-      cropType: await this.referenceData.cropNameForId(item.crop_catalog_id),
+      cropCatalogId: item.crop_catalog_id,
       area: item.area !== null && item.area !== undefined ? Number(item.area) : 0,
       areaUnit: item.area_unit === 'hectares' ? 'hectares' : 'acres',
       season: item.season ?? undefined,
@@ -48,10 +47,7 @@ export class CropMapperService {
   async toBackend(crop: Partial<NewCrop> | Partial<CropEntity>): Promise<Record<string, unknown>> {
     return {
       land_id: crop.fieldId,
-      crop_catalog_id:
-        crop.cropType !== undefined
-          ? await this.referenceData.cropCatalogIdForName(crop.cropType)
-          : undefined,
+      crop_catalog_id: crop.cropCatalogId,
       label: crop.name,
       area: crop.area,
       area_unit: crop.areaUnit,

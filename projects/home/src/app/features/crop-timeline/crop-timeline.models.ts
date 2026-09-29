@@ -32,7 +32,7 @@ export interface CropEntity {
   id: number;
   fieldId: number; // SavedFarm.id of the land this crop grows on
   name: string; // User-friendly name
-  cropType: string; // e.g. "Soybeans", "Wheat", "Rice"
+  cropCatalogId: number; // backend crop_catalog id; name resolves at render time
   area: number; // size value as entered
   areaUnit: 'acres' | 'hectares';
   season?: Season; // derived from sowingDate when not given

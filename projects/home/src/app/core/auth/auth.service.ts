@@ -4,6 +4,7 @@ import { FarmerRegistrationService } from '../../features/farmer-registration/fa
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
 import { WorkflowStateService } from '../workflow/workflow-state.service';
 import { HttpService } from '../http/http.service';
+import { ReferenceDataService } from '../api/reference-data.service';
 
 const ACTIVE_USER_ID_KEY = 'my_farm_active_user_id';
 const SESSION_EXPIRY_KEY = 'my_farm_session_expiry';
@@ -18,6 +19,7 @@ export class AuthService {
   private readonly registrationService = inject(FarmerRegistrationService);
   private readonly workflowService = inject(WorkflowStateService);
   private readonly httpService = inject(HttpService);
+  private readonly referenceData = inject(ReferenceDataService);
 
   private readonly currentUserSignal = signal<FarmerRegistrationData | null>(null);
   readonly currentUser = this.currentUserSignal.asReadonly();
@@ -76,6 +78,10 @@ export class AuthService {
       localStorage.removeItem(SESSION_TOKEN_KEY);
     }
     this.httpService.setAuthToken(sessionToken ?? null);
+    // Warm the reference-data cache without making sign-in wait for it (#174).
+    if (sessionToken) {
+      this.referenceData.preload();
+    }
 
     this.workflowService.markPhaseComplete('registration');
   }
@@ -153,6 +159,7 @@ export class AuthService {
         const found = await this.registrationService.findById(activeId);
         if (found) {
           this.currentUserSignal.set(found);
+          this.referenceData.preload();
           return;
         }
       }
