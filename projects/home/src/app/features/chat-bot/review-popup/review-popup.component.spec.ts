@@ -39,7 +39,7 @@ function entry(overrides: Partial<ResolvedEntry> = {}): ResolvedEntry {
 
 const mockActivity: Activity = {
   id: 42,
-  type: 'Fertilizer Application',
+  activityTypeId: 3,
   status: 'Completed',
   createdAt: Date.now(),
   updatedAt: Date.now(),

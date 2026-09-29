@@ -9,7 +9,7 @@ import { CropMapperService } from '../../features/crop-timeline/crop-mapper.serv
  *
  * Mapping between the Angular model and the backend schema delegates to
  * `CropMapperService` (`providedIn: 'root'`, shared with the targeted-fetch
- * services) so `crop_catalog_id` <-> name resolution lives in one place.
+ * services) so the wire mapping lives in one place.
  */
 @Injectable({ providedIn: 'root' })
 export class CropsApiService {
@@ -31,7 +31,7 @@ export class CropsApiService {
   async getCrops(userId: number): Promise<CropEntity[]> {
     try {
       const resp = await this.httpService.get<{ items: unknown[] }>('/crops');
-      return await Promise.all(resp.items.map((item) => this.cropMapper.fromBackend(item)));
+      return resp.items.map((item) => this.cropMapper.fromBackend(item));
     } catch (error) {
       console.error('Failed to get crops:', error);
       return [];
@@ -40,10 +40,10 @@ export class CropsApiService {
 
   async saveCrop(userId: number, crop: NewCrop): Promise<CropEntity> {
     return this.enqueueWrite(async () => {
-      const payload = await this.cropMapper.toBackend(crop);
+      const payload = this.cropMapper.toBackend(crop);
       try {
         const response = await this.httpService.post<unknown>('/crops', payload);
-        return await this.cropMapper.fromBackend(response);
+        return this.cropMapper.fromBackend(response);
       } catch (error) {
         console.error('Failed to save crop:', error);
         throw error;
@@ -53,7 +53,7 @@ export class CropsApiService {
 
   async updateCrop(userId: number, id: number, updates: Partial<CropEntity>): Promise<void> {
     return this.enqueueWrite(async () => {
-      const payload = await this.cropMapper.toBackend(updates);
+      const payload = this.cropMapper.toBackend(updates);
       try {
         await this.httpService.patch(`/crops/${id}`, payload);
       } catch (error) {

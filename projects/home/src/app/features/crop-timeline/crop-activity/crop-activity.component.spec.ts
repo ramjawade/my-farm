@@ -18,7 +18,7 @@ describe('CropActivityComponent', () => {
     id: 5,
     fieldId: 1,
     name: 'Tomato',
-    cropType: 'Tomato',
+    cropCatalogId: 1,
     area: 2,
     areaUnit: 'acres',
     sowingDate: Date.now(),

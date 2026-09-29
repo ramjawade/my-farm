@@ -18,11 +18,11 @@ export class AddCropService {
   /** Load the current farmer's crops (used for name suggestions). */
   async getCrops(): Promise<CropEntity[]> {
     const response = await this.http.get<{ items: unknown[] }>('/crops');
-    return Promise.all(response.items.map((item) => this.cropMapper.fromBackend(item)));
+    return response.items.map((item) => this.cropMapper.fromBackend(item));
   }
 
   async createCrop(data: NewCrop): Promise<CropEntity> {
-    const payload = await this.cropMapper.toBackend(data);
+    const payload = this.cropMapper.toBackend(data);
     const response = await this.http.post<unknown>('/crops', payload);
     // TODO: seed one activity per lifecycle stage (CROP_STAGES) here, like
     // CropTimelineService.addCrop() does today — deferred, revisit separately.

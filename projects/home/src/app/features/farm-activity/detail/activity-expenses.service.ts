@@ -15,14 +15,14 @@ export class ActivityExpensesService {
 
   async getExpenses(activityId: number): Promise<ActivityExpense[]> {
     const resp = await this.http.get<{ items: unknown[] }>(`/activities/${activityId}/expenses`);
-    return Promise.all(resp.items.map((item) => this.mapper.expenseFromBackend(item)));
+    return resp.items.map((item) => this.mapper.expenseFromBackend(item));
   }
 
   async addExpense(
     activityId: number,
     data: Omit<NewActivityExpense, 'activityId'>,
   ): Promise<ActivityExpense> {
-    const payload = await this.mapper.expenseToBackend(data);
+    const payload = this.mapper.expenseToBackend(data);
     const item = await this.http.post<unknown>(`/activities/${activityId}/expenses`, payload);
     return this.mapper.expenseFromBackend(item);
   }
@@ -32,7 +32,7 @@ export class ActivityExpensesService {
     expenseId: number,
     updates: Partial<ActivityExpense>,
   ): Promise<ActivityExpense> {
-    const payload = await this.mapper.expenseToBackend(updates);
+    const payload = this.mapper.expenseToBackend(updates);
     const item = await this.http.patch<unknown>(
       `/activities/${activityId}/expenses/${expenseId}`,
       payload,

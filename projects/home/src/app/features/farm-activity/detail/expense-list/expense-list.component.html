@@ -15,11 +15,13 @@
           >
             <div class="d-flex align-items-center">
               <div class="icon-box d-flex align-items-center justify-content-center">
-                <i class="bi {{ getCategoryIcon(exp.category) }}"></i>
+                <i class="bi {{ getCategoryIcon(exp.expenseCategoryId) }}"></i>
               </div>
               <div class="ms-3">
                 <h6 class="mb-1 font-sans fw-bold text-soil text-wrap-break">
-                  {{ exp.itemId || (exp.category | referenceName: 'expense') }}
+                  {{
+                    exp.itemId || (categoryName(exp.expenseCategoryId) | referenceName: 'expense')
+                  }}
                 </h6>
                 <div class="text-secondary small font-sans text-wrap-break">
                   @if (exp.quantity && exp.rate) {
@@ -29,7 +31,7 @@
                     }}/{{ exp.unit || ('expenseList.unit' | translate) }}
                   } @else {
                     {{ 'expenseList.category' | translate }}:
-                    {{ exp.category | referenceName: 'expense' }}
+                    {{ categoryName(exp.expenseCategoryId) | referenceName: 'expense' }}
                   }
                   @if (exp.remarks) {
                     • {{ exp.remarks }}

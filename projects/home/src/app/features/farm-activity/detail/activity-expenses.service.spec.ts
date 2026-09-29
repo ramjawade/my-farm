@@ -16,7 +16,7 @@ describe('ActivityExpensesService', () => {
   const mappedExpense: ActivityExpense = {
     id: 1,
     activityId: 5,
-    category: 'Seeds',
+    expenseCategoryId: 5,
     amount: 500,
     createdAt: Date.now(),
   };
@@ -26,8 +26,8 @@ describe('ActivityExpensesService', () => {
       'expenseFromBackend',
       'expenseToBackend',
     ]);
-    mapper.expenseFromBackend.and.resolveTo(mappedExpense);
-    mapper.expenseToBackend.and.resolveTo({ expense_category_id: 5, amount: 500 });
+    mapper.expenseFromBackend.and.returnValue(mappedExpense);
+    mapper.expenseToBackend.and.returnValue({ expense_category_id: 5, amount: 500 });
 
     TestBed.configureTestingModule({
       providers: [
@@ -57,9 +57,7 @@ describe('ActivityExpensesService', () => {
   });
 
   it('adds an expense', async () => {
-    const promise = service.addExpense(5, { category: 'Seeds', amount: 500 });
-    // `expenseToBackend` resolves asynchronously before the request is made.
-    await Promise.resolve();
+    const promise = service.addExpense(5, { expenseCategoryId: 5, amount: 500 });
     const req = httpMock.expectOne(`${apiUrl}/activities/5/expenses`);
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({ expense_category_id: 5, amount: 500 });
@@ -70,7 +68,6 @@ describe('ActivityExpensesService', () => {
 
   it('updates an expense', async () => {
     const promise = service.updateExpense(5, 1, { amount: 250 });
-    await Promise.resolve();
     const req = httpMock.expectOne(`${apiUrl}/activities/5/expenses/1`);
     expect(req.request.method).toBe('PATCH');
     req.flush({ id: 1 });

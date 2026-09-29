@@ -18,7 +18,7 @@ describe('CropDashboardComponent', () => {
   const mockCrop: CropEntity = {
     id: 1,
     name: 'Soybeans',
-    cropType: 'Soybeans',
+    cropCatalogId: 1,
     fieldId: 7,
     area: 10,
     areaUnit: 'hectares',

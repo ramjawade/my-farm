@@ -9,9 +9,9 @@
         <!-- Category -->
         <div class="col-12 col-md-6">
           <label class="form-label required-label">{{ 'addExpense.category' | translate }}</label>
-          <select class="form-select form-select-sm" formControlName="category">
-            @for (cat of categoriesList(); track cat) {
-              <option [value]="cat">{{ cat | referenceName: 'expense' }}</option>
+          <select class="form-select form-select-sm" formControlName="expenseCategoryId">
+            @for (cat of categoriesList(); track cat.id) {
+              <option [ngValue]="cat.id">{{ cat.name | referenceName: 'expense' }}</option>
             }
           </select>
         </div>

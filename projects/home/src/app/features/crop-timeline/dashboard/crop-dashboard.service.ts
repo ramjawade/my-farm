@@ -18,6 +18,6 @@ export class CropDashboardService {
   /** Load the current farmer's crops. Errors propagate — the component shows its own error state. */
   async getCrops(): Promise<CropEntity[]> {
     const response = await this.http.get<{ items: unknown[] }>('/crops');
-    return Promise.all(response.items.map((item) => this.cropMapper.fromBackend(item)));
+    return response.items.map((item) => this.cropMapper.fromBackend(item));
   }
 }

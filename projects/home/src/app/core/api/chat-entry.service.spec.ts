@@ -4,6 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivityService } from '../../features/activity/activity.service';
 import { Activity } from '../../features/activity/activity.models';
 import { HttpService } from '../http/http.service';
+import { ReferenceDataService } from './reference-data.service';
 import { ChatEntryProvenance, ChatEntryService, ResolvedEntry } from './chat-entry.service';
 
 function entry(overrides: Partial<ResolvedEntry> = {}): ResolvedEntry {
@@ -40,6 +41,15 @@ describe('ChatEntryService', () => {
         provideZonelessChangeDetection(),
         { provide: HttpService, useValue: jasmine.createSpyObj('HttpService', ['post']) },
         { provide: ActivityService, useValue: activities },
+        {
+          provide: ReferenceDataService,
+          useValue: {
+            expenseCategoryIdForName: (name: string) =>
+              Promise.resolve(name === 'Fertilizer' ? 4 : 9),
+            activityTypeIdForName: (name: string) =>
+              Promise.resolve(name === 'Maintenance' ? 11 : 0),
+          },
+        },
       ],
     });
     service = TestBed.inject(ChatEntryService);
@@ -85,6 +95,12 @@ describe('ChatEntryService', () => {
     expect(draft.fieldId).toBe(22);
   });
 
+  it('resolves the activity type name to its id', async () => {
+    await service.create(entry(), 'typed', 'test-model');
+
+    expect(activities.addActivity.calls.mostRecent().args[0].activityTypeId).toBe(11);
+  });
+
   it('skips an expense line carrying no amount', async () => {
     await service.create(
       entry({
@@ -105,6 +121,30 @@ describe('ChatEntryService', () => {
     );
 
     expect(activities.addExpense).not.toHaveBeenCalled();
+  });
+
+  it('resolves the expense category name to its id, defaulting to Other', async () => {
+    const line = {
+      expense_category_id: null,
+      quantity: null,
+      unit: null,
+      rate: null,
+      amount: '100',
+      remarks: null,
+    };
+    await service.create(
+      entry({
+        expenses: [
+          { ...line, category: 'Fertilizer' },
+          { ...line, category: null },
+        ],
+      }),
+      'typed',
+      'test-model',
+    );
+
+    const calls = activities.addExpense.calls.allArgs().map(([e]) => e.expenseCategoryId);
+    expect(calls).toEqual([4, 9]);
   });
 
   it('undo deletes the activity', () => {

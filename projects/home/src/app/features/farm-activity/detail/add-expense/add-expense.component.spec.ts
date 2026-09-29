@@ -15,7 +15,7 @@ describe('AddExpenseComponent', () => {
   const mockExpense: ActivityExpense = {
     id: 1,
     activityId: 5,
-    category: 'Seeds',
+    expenseCategoryId: 3,
     amount: 500,
     createdAt: Date.now(),
   };
@@ -49,8 +49,11 @@ describe('AddExpenseComponent', () => {
 
   it('loads real categories from the reference table on init', () => {
     expect(listExpenseCategoriesSpy).toHaveBeenCalled();
-    expect(component.categoriesList()).toEqual(['Labour', 'Seeds']);
-    expect(component.expenseForm.get('category')?.value).toBe('Labour');
+    expect(component.categoriesList()).toEqual([
+      { id: 2, name: 'Labour' },
+      { id: 3, name: 'Seeds' },
+    ]);
+    expect(component.expenseForm.get('expenseCategoryId')?.value).toBe(2);
   });
 
   it('does not submit an invalid form', async () => {
@@ -64,10 +67,13 @@ describe('AddExpenseComponent', () => {
     const addedSpy = jasmine.createSpy('added');
     component.added.subscribe(addedSpy);
 
-    component.expenseForm.patchValue({ category: 'Seeds', amount: 500 });
+    component.expenseForm.patchValue({ expenseCategoryId: 3, amount: 500 });
     await component.submit();
 
-    expect(addExpenseSpy).toHaveBeenCalledWith(5, jasmine.objectContaining({ amount: 500 }));
+    expect(addExpenseSpy).toHaveBeenCalledWith(
+      5,
+      jasmine.objectContaining({ expenseCategoryId: 3, amount: 500 }),
+    );
     expect(addedSpy).toHaveBeenCalledWith(mockExpense);
   });
 

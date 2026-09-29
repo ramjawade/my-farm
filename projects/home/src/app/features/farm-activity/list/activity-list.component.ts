@@ -18,7 +18,7 @@ import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
 import { SavedFarm } from '../../../map/models/map.models';
 import { AuthService } from '../../../core/auth/auth.service';
-import { Activity } from '../../activity/activity.models';
+import { Activity, ActivityType } from '../../activity/activity.models';
 import { ConfirmDialogComponent, ToastService } from 'shared';
 import { activityTypeEmoji } from '../../activity/activity-display';
 import { ReferenceDataService } from '../../../core/api/reference-data.service';
@@ -131,7 +131,7 @@ export class ActivityListComponent implements OnInit {
   // Dynamic activity types from reference data service
   readonly activityTypesList = computed(() => {
     const referenceTypes = this.referenceActivityTypes().map((t) => t.name);
-    const recorded = this.activities().map((a) => a.type);
+    const recorded = this.activities().map((a) => this.typeName(a.activityTypeId));
     return Array.from(new Set([...referenceTypes, ...recorded]));
   });
 
@@ -151,7 +151,7 @@ export class ActivityListComponent implements OnInit {
 
     const type = this.typeFilter();
     if (type !== 'All') {
-      list = list.filter((a) => a.type === type);
+      list = list.filter((a) => this.typeName(a.activityTypeId) === type);
     }
 
     if (this.sortBy() === 'cost') {
@@ -266,7 +266,13 @@ export class ActivityListComponent implements OnInit {
     });
   }
 
-  getActivityEmoji = activityTypeEmoji;
+  typeName(activityTypeId: number): string {
+    return this.referenceDataService.activityTypeName(activityTypeId);
+  }
+
+  getActivityEmoji(activityTypeId: number): string {
+    return activityTypeEmoji(this.typeName(activityTypeId) as ActivityType);
+  }
 
   onDeleteActivityClick(id: number, event: Event): void {
     event.stopPropagation();

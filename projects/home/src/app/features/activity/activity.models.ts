@@ -43,8 +43,8 @@ export interface Activity {
   fieldId?: number; // Link to SavedFarm
 
   // Activity definition
-  type: ActivityType;
-  customActivityName?: string; // Used when type === 'Custom'
+  activityTypeId: number; // backend activity_type id; name resolves at render time
+  customActivityName?: string; // Used when the type is the seeded 'Custom'
 
   // Execution state
   status: ActivityStatus;
@@ -88,7 +88,7 @@ export type NewActivity = Omit<Activity, 'id' | 'createdAt' | 'updatedAt'>;
 export interface ActivityExpense {
   id: number;
   activityId: number;
-  category: string; // Machine Rent, Labour, Seeds, Fertilizer, Transport, etc.
+  expenseCategoryId: number; // backend expense_category id; name resolves at render time
   itemId?: string;
   resourceId?: string;
   quantity?: number;

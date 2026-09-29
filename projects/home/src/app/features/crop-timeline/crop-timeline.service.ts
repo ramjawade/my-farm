@@ -13,6 +13,7 @@ import { ActivityService } from '../activity/activity.service';
 import { Activity } from '../activity/activity.models';
 import { seasonForDate } from '../../core/models/season';
 import { CropsApiService } from '../../core/api/crops-api.service';
+import { ReferenceDataService } from '../../core/api/reference-data.service';
 
 const STAGE_NOTE_PREFIX = 'Growth stage advanced to: ';
 const ONE_DAY = 24 * 60 * 60 * 1000;
@@ -38,7 +39,7 @@ function stageNote(stage: CropStage): string {
 }
 
 /** Map an expense category from the activity type when the timeline logs a lump-sum cost. */
-function defaultExpenseCategory(type: ActivityType): string {
+function defaultExpenseCategory(type: string): string {
   switch (type) {
     case 'Sowing':
       return 'Seeds';
@@ -68,6 +69,7 @@ export class CropTimelineService {
   private readonly authService = inject(AuthService);
   private readonly activityService = inject(ActivityService);
   private readonly storage = inject(CropsApiService);
+  private readonly referenceData = inject(ReferenceDataService);
   private readonly cropsSignal = signal<CropEntity[]>([]);
 
   // Bumped on every load and mutation so a load that resolves late is discarded.
@@ -153,7 +155,7 @@ export class CropTimelineService {
     for (const [idx, stage] of CROP_STAGES.entries()) {
       await this.addActivity({
         cropId: saved.id,
-        type: stageActivityType(stage),
+        activityTypeId: await this.referenceData.activityTypeIdForName(stageActivityType(stage)),
         date: hasSowingDate ? sowingTime + STAGE_OFFSET_DAYS[stage] * ONE_DAY : undefined,
         status: idx <= currentStageIdx ? 'Completed' : 'Scheduled',
         cost: 0,
@@ -186,12 +188,14 @@ export class CropTimelineService {
 
   // --- Activity API (delegates to ActivityService) ---
   async addActivity(input: CropActivityInput): Promise<CropActivity> {
+    // Name-based logic below (default expense category) needs the loaded data.
+    await this.referenceData.ready();
     const crop = this.getCropById(input.cropId);
     const created = await this.activityService.addActivity({
       parentActivityId: input.parentActivityId,
       cropId: input.cropId,
       fieldId: crop?.fieldId,
-      type: input.type,
+      activityTypeId: input.activityTypeId,
       date: input.date,
       season: crop?.season ?? seasonForDate(input.date ?? Date.now()),
       status: input.status,
@@ -203,7 +207,9 @@ export class CropTimelineService {
     if (input.cost > 0) {
       await this.activityService.addExpense({
         activityId: created.id,
-        category: defaultExpenseCategory(input.type),
+        expenseCategoryId: await this.referenceData.expenseCategoryIdForName(
+          defaultExpenseCategory(this.referenceData.activityTypeName(input.activityTypeId)),
+        ),
         amount: input.cost,
         remarks: 'Logged from crop timeline',
       });
@@ -245,7 +251,7 @@ export class CropTimelineService {
     }
 
     // Case 3: Harvest activity completed
-    if (activity.type === 'Harvest') {
+    if (this.referenceData.isActivityType(activity.activityTypeId, 'Harvest')) {
       this.reachStage(activity.cropId, 'Harvest');
     }
   }
@@ -304,7 +310,9 @@ export class CropTimelineService {
     if (rest.cropId) patch.fieldId = this.getCropById(rest.cropId)?.fieldId;
     this.activityService.updateActivity(id, patch);
 
-    if (cost !== undefined) this.syncCost(id, updates.type ?? existing.type, cost);
+    if (cost !== undefined) {
+      this.syncCost(id, updates.activityTypeId ?? existing.activityTypeId, cost);
+    }
 
     const cropId = rest.cropId ?? existing.cropId;
     if (cropId) this.updateCropUpcomingActivity(cropId);
@@ -329,19 +337,21 @@ export class CropTimelineService {
     return this.getActivitiesForCrop(cropId).find(
       (a) =>
         !a.parentActivityId &&
-        ((a.type === 'Field Inspection' && a.notes.includes(`advanced to: ${stage}`)) ||
-          (stage === 'Sowing' && a.type === 'Sowing') ||
-          (stage === 'Harvest' && a.type === 'Harvest')),
+        ((this.referenceData.isActivityType(a.activityTypeId, 'Field Inspection') &&
+          a.notes.includes(`advanced to: ${stage}`)) ||
+          (stage === 'Sowing' && this.referenceData.isActivityType(a.activityTypeId, 'Sowing')) ||
+          (stage === 'Harvest' && this.referenceData.isActivityType(a.activityTypeId, 'Harvest'))),
     );
   }
 
   /** Ensure a Scheduled placeholder activity exists for a stage, without completing an existing one. */
   async ensureScheduledActivityForStage(cropId: number, stage: CropStage): Promise<CropActivity> {
+    await this.referenceData.ready();
     const existing = this.findMainActivityForStage(cropId, stage);
     if (existing) return existing;
     return this.addActivity({
       cropId,
-      type: stageActivityType(stage),
+      activityTypeId: await this.referenceData.activityTypeIdForName(stageActivityType(stage)),
       status: 'Scheduled',
       cost: 0,
       notes: stageNote(stage),
@@ -357,19 +367,24 @@ export class CropTimelineService {
   }
 
   /** Keep a single lump-sum expense line in sync with the timeline's `cost` field. */
-  private syncCost(activityId: number, type: ActivityType, cost: number): void {
+  private syncCost(activityId: number, activityTypeId: number, cost: number): void {
     const expenses = this.activityService.getExpensesForActivity(activityId);
     if (cost > 0) {
       if (expenses.length > 0) {
         this.activityService.updateExpense(expenses[0].id, { amount: cost });
       } else {
-        this.activityService
-          .addExpense({
-            activityId,
-            category: defaultExpenseCategory(type),
-            amount: cost,
-            remarks: 'Logged from crop timeline',
-          })
+        this.referenceData
+          .expenseCategoryIdForName(
+            defaultExpenseCategory(this.referenceData.activityTypeName(activityTypeId)),
+          )
+          .then((expenseCategoryId) =>
+            this.activityService.addExpense({
+              activityId,
+              expenseCategoryId,
+              amount: cost,
+              remarks: 'Logged from crop timeline',
+            }),
+          )
           .catch((e) => console.error('Failed to save expense', e));
       }
     } else {
@@ -390,12 +405,16 @@ export class CropTimelineService {
 
     const next = planned[0];
     if (!next.date) {
-      this.updateCrop(cropId, { upcomingActivity: next.type });
+      this.updateCrop(cropId, {
+        upcomingActivity: this.referenceData.activityTypeName(next.activityTypeId),
+      });
       return;
     }
     const days = Math.ceil((next.date - Date.now()) / ONE_DAY);
     const relative = days <= 0 ? 'Today' : days === 1 ? 'Tomorrow' : `In ${days} Days`;
-    this.updateCrop(cropId, { upcomingActivity: `${next.type} (${relative})` });
+    this.updateCrop(cropId, {
+      upcomingActivity: `${this.referenceData.activityTypeName(next.activityTypeId)} (${relative})`,
+    });
   }
 
   // --- Storage ---

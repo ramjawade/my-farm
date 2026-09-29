@@ -4,6 +4,7 @@ import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { AuthService } from './auth.service';
 import { HttpService } from '../http/http.service';
+import { ReferenceDataService } from '../api/reference-data.service';
 import { FarmerRegistrationService } from '../../features/farmer-registration/farmer-registration.service';
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
 import { FarmerProfileApiService } from '../api/farmer-profile-api.service';
@@ -36,6 +37,7 @@ describe('AuthService', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: FarmerProfileApiService, useClass: FakeFarmerProfileApiService },
+        { provide: ReferenceDataService, useValue: { preload: () => undefined } },
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideRouter([]),
@@ -97,15 +99,18 @@ describe('AuthService', () => {
 describe('AuthService — API token lifecycle', () => {
   let service: AuthService;
   let httpService: HttpService;
+  let preload: jasmine.Spy;
 
   const otherFarmer: FarmerRegistrationData = { ...mockFarmer, id: 2 };
 
   beforeEach(() => {
     localStorage.clear();
+    preload = jasmine.createSpy('preload');
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
         { provide: FarmerProfileApiService, useClass: FakeFarmerProfileApiService },
+        { provide: ReferenceDataService, useValue: { preload } },
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideRouter([]),
@@ -127,6 +132,18 @@ describe('AuthService — API token lifecycle', () => {
 
     expect(spy).toHaveBeenCalledWith('token-a');
     expect(localStorage.getItem('my_farm_session_token')).toBe('token-a');
+  });
+
+  it('should warm the reference-data cache on a token login without awaiting it', () => {
+    service.login(mockFarmer, 'token-a');
+
+    expect(preload).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not preload for a tokenless login', () => {
+    service.login(mockFarmer);
+
+    expect(preload).not.toHaveBeenCalled();
   });
 
   it('should clear the token on logout', () => {

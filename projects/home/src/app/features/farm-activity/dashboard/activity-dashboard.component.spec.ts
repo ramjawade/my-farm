@@ -5,6 +5,8 @@ import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { provideTranslateService } from '@ngx-translate/core';
 import { ActivityDashboardComponent } from './activity-dashboard.component';
+import { ReferenceDataService } from '../../../core/api/reference-data.service';
+import { FakeReferenceDataService } from '../../../testing/fake-reference-data.service';
 import { ActivityService } from '../../activity/activity.service';
 import { Activity, ActivityKpiSummary } from '../../activity/activity.models';
 
@@ -24,7 +26,7 @@ describe('ActivityDashboardComponent', () => {
 
   const mockActivity: Activity = {
     id: 1,
-    type: 'Irrigation',
+    activityTypeId: 2,
     status: 'Scheduled',
     date: Date.now(),
     createdAt: Date.now(),
@@ -42,6 +44,7 @@ describe('ActivityDashboardComponent', () => {
         provideZonelessChangeDetection(),
         provideRouter([]),
         provideTranslateService(),
+        { provide: ReferenceDataService, useClass: FakeReferenceDataService },
         {
           provide: ActivatedRoute,
           useValue: { paramMap: new BehaviorSubject(convertToParamMap({})) },

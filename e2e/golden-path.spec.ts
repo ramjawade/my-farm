@@ -170,7 +170,7 @@ test.describe('Golden path', () => {
         .locator('button.fab-soft-success:visible, button:visible:has-text("Add Expense")')
         .click();
 
-      const categorySelect = page.locator('select[formcontrolname="category"]');
+      const categorySelect = page.locator('select[formcontrolname="expenseCategoryId"]');
       await expect(categorySelect).not.toHaveValue('');
       await page.locator('input[formcontrolname="amount"]').fill('500');
 

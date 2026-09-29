@@ -1,13 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 
 import { ActivityService } from '../../features/activity/activity.service';
-import {
-  Activity,
-  ActivityStatus,
-  ActivityType,
-  NewActivity,
-} from '../../features/activity/activity.models';
+import { Activity, ActivityStatus, NewActivity } from '../../features/activity/activity.models';
 import { HttpService } from '../http/http.service';
+import { ReferenceDataService } from './reference-data.service';
 
 /** One expense line from `POST /api/v1/activities/parse`. */
 export interface ParsedExpenseLine {
@@ -102,6 +98,7 @@ export class ChatEntryError extends Error {
 export class ChatEntryService {
   private readonly http = inject(HttpService);
   private readonly activities = inject(ActivityService);
+  private readonly referenceData = inject(ReferenceDataService);
 
   /**
    * Parse plain-language text. Persists nothing.
@@ -129,7 +126,8 @@ export class ChatEntryService {
    */
   async create(entry: ResolvedEntry, input: string, model: string): Promise<Activity> {
     const draft: NewActivity = {
-      type: entry.activity_type as ActivityType,
+      // The name is authoritative: the review popup lets the farmer change it.
+      activityTypeId: await this.referenceData.activityTypeIdForName(entry.activity_type),
       // The farmer is recording something already done, not scheduling it.
       status: 'Completed' as ActivityStatus,
       date: entry.date ? new Date(entry.date).getTime() : Date.now(),
@@ -147,7 +145,10 @@ export class ChatEntryService {
       if (amount === undefined) continue;
       await this.activities.addExpense({
         activityId: activity.id,
-        category: line.category ?? 'Other',
+        // The name is authoritative: the review popup lets the farmer change it.
+        expenseCategoryId: await this.referenceData.expenseCategoryIdForName(
+          line.category ?? 'Other',
+        ),
         quantity: toNumber(line.quantity),
         unit: line.unit ?? undefined,
         rate: toNumber(line.rate),

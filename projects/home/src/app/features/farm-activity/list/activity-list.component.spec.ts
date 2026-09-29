@@ -11,6 +11,7 @@ import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ReferenceDataService } from '../../../core/api/reference-data.service';
+import { FakeReferenceDataService } from '../../../testing/fake-reference-data.service';
 import { Activity } from '../../activity/activity.models';
 
 describe('ActivityListComponent', () => {
@@ -22,7 +23,7 @@ describe('ActivityListComponent', () => {
 
   const mockActivity: Activity = {
     id: 1,
-    type: 'Irrigation',
+    activityTypeId: 2,
     status: 'Scheduled',
     date: Date.now(),
     createdAt: Date.now(),
@@ -49,10 +50,7 @@ describe('ActivityListComponent', () => {
         { provide: CropTimelineService, useValue: { crops: signal([]) } },
         { provide: FarmDrawService, useValue: { loadFarms: () => Promise.resolve([]) } },
         { provide: AuthService, useValue: { currentUser: () => null } },
-        {
-          provide: ReferenceDataService,
-          useValue: { listActivityTypes: () => Promise.resolve([]) },
-        },
+        { provide: ReferenceDataService, useClass: FakeReferenceDataService },
       ],
     });
 

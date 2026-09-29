@@ -15,7 +15,7 @@ describe('ActivityDetailService', () => {
   const apiUrl = 'https://api.test';
   const mappedActivity: Activity = {
     id: 5,
-    type: 'Irrigation',
+    activityTypeId: 2,
     status: 'Draft',
     createdAt: Date.now(),
     updatedAt: Date.now(),
@@ -23,7 +23,7 @@ describe('ActivityDetailService', () => {
 
   beforeEach(() => {
     mapper = jasmine.createSpyObj('ActivityMapperService', ['fromBackend']);
-    mapper.fromBackend.and.resolveTo(mappedActivity);
+    mapper.fromBackend.and.returnValue(mappedActivity);
 
     TestBed.configureTestingModule({
       providers: [
