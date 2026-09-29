@@ -293,6 +293,6 @@ export class ActivityService {
 
     const query = params.length ? `?${params.join('&')}` : '';
     const response = await this.http.get<{ items: unknown[] }>(`/activities${query}`);
-    return Promise.all(response.items.map((item) => this.activityMapper.fromBackend(item)));
+    return response.items.map((item) => this.activityMapper.fromBackend(item));
   }
 }

@@ -4,19 +4,15 @@ import { ReferenceItem } from './contracts';
 import { ActivityType } from '../../features/activity/activity.models';
 
 /**
- * Translates between the backend's reference-table ids and the frontend's
- * fixed free-text enums.
+ * Cache of the backend's reference tables (crops, expense categories,
+ * activity types, seasons, crop stages).
  *
- * `Activity.type`, `CropEntity.cropType` and `ActivityExpense.category` are
- * plain string unions on the client (activity.constants.ts,
- * crop-timeline.component.ts's `cropNameOptions`) — the backend stores the
- * same concepts as FK ids into `activity_type` / `crop_catalog` /
- * `expense_category`, seeded once via `/api/v1/admin/seed-reference-data`
- * with names that must match those frontend enums exactly (see
- * admin.py's SEED_* lists). This is the one place that resolves between
- * the two, name<->id.
+ * Domain models carry the FK ids; this service turns them into display
+ * names (`cropName`, `activityTypeName`, `expenseCategoryName` — sync, empty
+ * until loaded, and `ReferenceNamePipe` for templates) and turns a name the
+ * farmer picked into an id at the form/API boundary (`*IdForName`). Loaded
+ * once after sign-in (`preload`); `ready()` resolves when it is warm.
  */
-
 @Injectable({ providedIn: 'root' })
 export class ReferenceDataService {
   private readonly httpService = inject(HttpService);
@@ -199,11 +195,6 @@ export class ReferenceDataService {
     return this.createCrop(name);
   }
 
-  async cropNameForId(id: number): Promise<string> {
-    await this.ensureLoaded();
-    return this.cropsById.get(id) ?? String(id);
-  }
-
   async expenseCategoryIdForName(name: string): Promise<number> {
     await this.ensureLoaded();
     const id = this.expensesByName.get(name);
@@ -213,11 +204,6 @@ export class ReferenceDataService {
     return id;
   }
 
-  async expenseCategoryNameForId(id: number): Promise<string> {
-    await this.ensureLoaded();
-    return this.expensesById.get(id) ?? String(id);
-  }
-
   async activityTypeIdForName(name: string): Promise<number> {
     await this.ensureLoaded();
     const id = this.activityTypesByName.get(name);
@@ -225,11 +211,6 @@ export class ReferenceDataService {
       throw new Error(`Unknown activity type "${name}" — run /api/v1/admin/seed-reference-data`);
     }
     return id;
-  }
-
-  async activityTypeNameForId(id: number): Promise<string> {
-    await this.ensureLoaded();
-    return this.activityTypesById.get(id) ?? String(id);
   }
 
   async createActivityType(name: string): Promise<ReferenceItem> {

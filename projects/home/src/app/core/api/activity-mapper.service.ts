@@ -15,15 +15,14 @@ function timestampToDateString(value: number | undefined): string | undefined {
 /**
  * Canonical Activity/ActivityExpense wire-format mapping. Reference FKs
  * (`activity_type_id`, `expense_category_id`) map straight to ids on the
- * models; names resolve at render time. Methods stay `async` until #275
- * makes them synchronous. Every activity/expense read or write in the app goes through this one
+ * models; names resolve at render time. Pure functions, no lookups. Every activity/expense read or write in the app goes through this one
  * mapper (ActivitiesApiService's list load, ActivityService's targeted
  * dashboard queries, and ActivityDetailService/ActivityExpensesService's
  * per-activity detail queries) instead of each maintaining its own copy.
  */
 @Injectable({ providedIn: 'root' })
 export class ActivityMapperService {
-  async fromBackend(item: any): Promise<Activity> {
+  fromBackend(item: any): Activity {
     return {
       id: item.id,
       parentActivityId: item.parent_activity_id ?? undefined,
@@ -41,7 +40,7 @@ export class ActivityMapperService {
     };
   }
 
-  async toBackend(activity: Partial<Activity>): Promise<Record<string, unknown>> {
+  toBackend(activity: Partial<Activity>): Record<string, unknown> {
     return {
       activity_type_id: activity.activityTypeId,
       crop_id: activity.cropId,
@@ -56,7 +55,7 @@ export class ActivityMapperService {
     };
   }
 
-  async expenseFromBackend(item: any): Promise<ActivityExpense> {
+  expenseFromBackend(item: any): ActivityExpense {
     return {
       id: item.id,
       activityId: item.activity_id,
@@ -73,7 +72,7 @@ export class ActivityMapperService {
     };
   }
 
-  async expenseToBackend(expense: Partial<ActivityExpense>): Promise<Record<string, unknown>> {
+  expenseToBackend(expense: Partial<ActivityExpense>): Record<string, unknown> {
     return {
       expense_category_id: expense.expenseCategoryId,
       item_id: expense.itemId,

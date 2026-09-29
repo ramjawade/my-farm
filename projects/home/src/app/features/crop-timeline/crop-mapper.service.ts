@@ -22,13 +22,10 @@ function normalizeCropStatus(status: unknown): CropStatus {
  * (`referenceName` pipe / `ReferenceDataService.cropName`). Used by every
  * crop-timeline service that talks to `/api/v1/crops` directly (dashboard,
  * add-crop, ...), so it lives here instead of duplicated per service.
- *
- * Methods stay `async` until the activity/expense mappers are made
- * synchronous too (#275), so callers don't churn twice.
  */
 @Injectable({ providedIn: 'root' })
 export class CropMapperService {
-  async fromBackend(item: any): Promise<CropEntity> {
+  fromBackend(item: any): CropEntity {
     return {
       id: item.id,
       fieldId: item.land_id,
@@ -44,7 +41,7 @@ export class CropMapperService {
     };
   }
 
-  async toBackend(crop: Partial<NewCrop> | Partial<CropEntity>): Promise<Record<string, unknown>> {
+  toBackend(crop: Partial<NewCrop> | Partial<CropEntity>): Record<string, unknown> {
     return {
       land_id: crop.fieldId,
       crop_catalog_id: crop.cropCatalogId,
