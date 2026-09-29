@@ -29,9 +29,9 @@ Each numbered group is one sub-issue / one PR, stacked on the parent branch (boa
 
 ## 5. Frontend: routing, answers, language (#290)
 
-- [ ] 5.1 Add `AssistantApiService` (`ask`, `brief`, `listMessages`, `appendMessages`, `clearMessages`) over the generated contracts, with a spec; verify `npm run build`
-- [ ] 5.2 Update `ChatOrchestratorService.sendText`: when not clarifying, call `ask` with the current app language; `log` continues into the existing parse flow, `question` appends the answer (or clarification chips from `needs_clarification`), `unsupported` shows a localized help message; `ask` failure falls back to `parse`; update `chat-orchestrator.service.spec.ts`; verify build
-- [ ] 5.3 Add en/hi/mr i18n keys for the help message (with example-question chips) and answer errors, and update the panel title/subtitle/placeholder to the mockup wording ("My farm assistant", drop "nothing is saved yet"); verify build and that the three locale files have the same keys
+- [x] 5.1 Add `AssistantApiService` (`ask`, `brief`, `listMessages`, `appendMessages`, `clearMessages`) over the generated contracts, with a spec; verify `npm run build`
+- [x] 5.2 Update `ChatOrchestratorService.sendText`: when not clarifying, call `ask` with the current app language; `log` continues into the existing parse flow, `question` appends the answer (or clarification chips from `needs_clarification`), `unsupported` shows a localized help message; `ask` failure falls back to `parse`; update `chat-orchestrator.service.spec.ts`; verify build
+- [x] 5.3 Add en/hi/mr i18n keys for the help message (with example-question chips) and answer errors, and update the panel title/subtitle/placeholder to the mockup wording ("My farm assistant", drop "nothing is saved yet"); verify build and that the three locale files have the same keys
 
 ## 6. Frontend: history and brief (#291)
 

@@ -4,6 +4,8 @@ export type ChatMessageRole = 'bot' | 'farmer';
 export interface ChatQuickReply {
   label: string;
   value: string;
+  /** `suggestion` chips are example questions: tapping one sends it as a fresh message. */
+  kind?: 'suggestion';
 }
 
 export interface ChatMessage {
