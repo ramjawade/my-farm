@@ -5,7 +5,9 @@ description: Board-first GitHub workflow for this repo. Use when planning work, 
 
 # Board-first workflow
 
-The GitHub Project board is the only plan. No local PLAN/DESIGN docs.
+The GitHub Project board tracks status; the plan lives in an OpenSpec change (`openspec/changes/<name>/`). No other local PLAN/DESIGN docs.
+
+**When a change is required:** user-visible or API behaviour, and every parent epic. Bugs, chores and no-behaviour refactors are board-only — the issue body is the plan.
 
 ## Board facts
 
@@ -41,14 +43,14 @@ gh api repos/ramjawade/my-farm/issues/P/sub_issues -F sub_issue_id=$(gh api repo
 
 ## Flow (single issue)
 
-1. **Plan** — write the issue body with the template below; big work = parent issue + one sub-issue per PR (see parent-epic flow below). Stop and wait for the user to approve. No code before approval.
+1. **Plan** — if a change is required, explore with `/opsx:explore` and write it with `/opsx:propose` (proposal, design, delta specs, tasks), then create a short issue that links the change (template below). Board-only work: put the plan in the issue body. Big work = parent issue + one sub-issue per PR, one task group per sub-issue (see parent-epic flow below). Stop and wait for the user to approve the issue and change. No code before approval.
 2. **Start** ("start N") — read issue N (it is the plan), then:
    `git fetch origin && git checkout -b claude/feature-N-<slug> origin/main`, and move the item to **In Progress**.
 3. **Build** — follow the plan exactly. If it must change, comment on the issue and ask; don't patch silently.
 4. **Gates** — `npm run lint` and `npm run build` for frontend changes. Backend: `ruff`, `mypy`, `pytest` (Python may not be on PATH locally — then say so; CI runs them). Never claim a gate passed that didn't run. **If the issue touches a backend router or Pydantic schema**: run `python scripts/export_openapi.py` (from `projects/backend/`) then `npm run generate:contracts` (from the repo root) and commit the result as part of this PR — same tier as running lint/build (issue #196; CI fails the build if either drifts).
 5. **PR** — commit messages end with `(Fixes #N)` on the final commit; push `-u origin`; `gh pr create` with the PR template, targeting `main`. Leave the item in In Progress.
 6. **Watch CI** — after the PR exists, read status with the `ccd_pr` tools (`get_status`) instead of polling `gh pr checks` by hand. If a check fails: pull the actual failure (`gh run view <run> --job <job> --log-failed`), diagnose the real cause (don't just retry), fix it, rerun the affected local gates, and push a **new commit** (never amend/force-push) to the same branch. Repeat until every check is green. Frontend and backend gates can fail independently — a green frontend run doesn't mean the backend job passed too; check both.
-7. **After merge** (user says merged) — `git checkout main && git pull origin main && git branch -D <branch>`. Check the item reached Done.
+7. **After merge** (user says merged) — `git checkout main && git pull origin main && git branch -D <branch>`. Check the item reached Done. If the issue had an OpenSpec change, run `/opsx:archive` so its delta specs update `openspec/specs/` (commit that as a docs follow-up).
 
 Bugs found along the way go into a new issue in Todo, not into the current PR.
 
@@ -68,11 +70,13 @@ A big feature is a parent issue plus one sub-issue per PR, but sub-issue PRs do 
 10. **Reverify** — this is the step that matters most for a parent epic, since it's the one moment everything actually lands on `main` together:
     - Confirm the parent **and every sub-issue** actually closed: `gh issue view N --json state,closedAt` for each, and that the board item reached **Done**.
     - Re-run the full local gate set (lint/build/test, and ruff/mypy/pytest if backend was touched and Python is on PATH) against the freshly-pulled `main` — sub-issue branches each passed CI individually against the parent branch, but the parent branch itself may never have been gate-checked against `main` until this final merge.
-11. **Parent done?** — verify every requirement in every sub-issue's body actually exists in the code (grep for it, don't trust a closed checkbox). A closed issue is not proof the work was built.
+11. **Parent done?** — verify every requirement and scenario in the change's specs (or, for a board-only epic, every sub-issue body) actually exists in the code (grep for it, don't trust a closed checkbox). A closed issue is not proof the work was built. Then `/opsx:archive` the change.
 
 Bugs found along the way go into a new issue in Todo, not into the current PR.
 
 ## Issue template
+
+For work with an OpenSpec change, keep the issue short: Overview, `## Change` (path `openspec/changes/<name>/`), Related, Acceptance Criteria, Status. Requirements and Implementation Notes live in the change. Board-only work uses the full template:
 
 ```markdown
 ## Overview

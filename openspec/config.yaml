@@ -1,0 +1,25 @@
+schema: spec-driven
+
+context: |
+  my-farm: farm management app for Indian farmers (crops, activities, expenses, weather, reports, chat-bot logging).
+  Frontend: Angular (standalone components, signals), Bootstrap CSS, workspace projects `home` and `shared` under projects/.
+  Backend: Python (FastAPI-style), checked with ruff, mypy, pytest; deployed on Render, Postgres on Neon.
+  Conventions: Bootstrap utility classes before custom CSS; follow the angular-best-practices skill for frontend code.
+  Workflow: GitHub Project board (ramjawade/projects/6) is the tracker. Every change maps to a board issue
+  (Todo -> In Progress -> Done); branch `claude/feature-<issue>-<slug>`, PR says `Fixes #<issue>`.
+
+rules:
+  proposal:
+    - Reference the GitHub issue number the change belongs to.
+    - Include a "Non-goals" section.
+  tasks:
+    - One PR-sized group of tasks per sub-issue for large features.
+    - Final tasks always include `npm run lint` and `npm run build` (backend - ruff, mypy, pytest).
+
+operations:
+  apply:
+    guidance:
+      - Do not start code until the user has approved the change and its board issue.
+  archive:
+    guidance:
+      - Archive after the PR merges; keep the board issue as the source of status.
