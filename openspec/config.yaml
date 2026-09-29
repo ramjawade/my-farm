@@ -12,6 +12,14 @@ rules:
   proposal:
     - Reference the GitHub issue number the change belongs to.
     - Include a "Non-goals" section.
+    - Include an end-to-end Mermaid flowchart of the user journey when the change alters a user-visible flow.
+  specs:
+    - Add one small Mermaid flowchart per capability, inside the Purpose section, when behaviour has branches (routing, fallbacks, once-per-day rules). Skip it for simple CRUD-style requirements.
+    - Diagrams illustrate the scenarios; the requirements and scenarios stay the source of truth.
+  design:
+    - Use Mermaid diagrams where they clarify, not for decoration - flowchart for architecture, sequenceDiagram for multi-step or multi-service calls (include failure paths), stateDiagram-v2 for client/UI state, erDiagram for new tables.
+    - Fence every diagram as ```mermaid so it renders on GitHub and in the VS Code Markdown preview; keep each diagram small enough to read without scrolling.
+    - If a change has UX, publish a static HTML mockup under design/<change-name>/ and link it from the issue.
   tasks:
     - One PR-sized group of tasks per sub-issue for large features.
     - Final tasks always include `npm run lint` and `npm run build` (backend - ruff, mypy, pytest).

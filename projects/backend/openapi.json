@@ -950,6 +950,387 @@
         "title": "ActivityUpdate",
         "type": "object"
       },
+      "AskRequest": {
+        "description": "A fresh message from the farmer (not an answer to a clarification).",
+        "properties": {
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "'en', 'hi' or 'mr'. Falls back to the farmer's preferred_language.",
+            "title": "Language"
+          },
+          "text": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "AskRequest",
+        "type": "object"
+      },
+      "AskResponse": {
+        "description": "How to handle the message.\n\n* ``log`` — continue with ``POST /activities/parse``; nothing else is set.\n* ``unsupported`` — show the fixed help message; nothing else is set.\n* ``question`` — exactly one of ``answer`` or ``needs_clarification``.",
+        "properties": {
+          "answer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer"
+          },
+          "intent": {
+            "enum": [
+              "log",
+              "question",
+              "unsupported"
+            ],
+            "title": "Intent",
+            "type": "string"
+          },
+          "needs_clarification": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Clarification"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "intent"
+        ],
+        "title": "AskResponse",
+        "type": "object"
+      },
+      "BriefActivity": {
+        "properties": {
+          "activity": {
+            "title": "Activity",
+            "type": "string"
+          },
+          "crop": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Crop"
+          },
+          "date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "land": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Land"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "activity",
+          "status"
+        ],
+        "title": "BriefActivity",
+        "type": "object"
+      },
+      "BriefPending": {
+        "properties": {
+          "count": {
+            "description": "All pending activities; `next` is only the soonest few.",
+            "title": "Count",
+            "type": "integer"
+          },
+          "next": {
+            "items": {
+              "$ref": "#/components/schemas/BriefActivity"
+            },
+            "title": "Next",
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "next"
+        ],
+        "title": "BriefPending",
+        "type": "object"
+      },
+      "BriefResponse": {
+        "description": "Structured daily brief. Every section is omitted when there is no data for it.\n\nCarries data, not text: the client renders it from its own translations, so\nthe brief works in every language and while the model provider is down.\n``has_data`` false means \"show the welcome instead\".",
+        "properties": {
+          "has_data": {
+            "title": "Has Data",
+            "type": "boolean"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The farmer's full name, for the greeting.",
+            "title": "Name"
+          },
+          "pending": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BriefPending"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "spend_7d": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BriefSpend"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "weather": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BriefWeather"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "has_data"
+        ],
+        "title": "BriefResponse",
+        "type": "object"
+      },
+      "BriefSpend": {
+        "properties": {
+          "total": {
+            "title": "Total",
+            "type": "number"
+          }
+        },
+        "required": [
+          "total"
+        ],
+        "title": "BriefSpend",
+        "type": "object"
+      },
+      "BriefWeather": {
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "humidity_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Humidity Pct"
+          },
+          "land": {
+            "title": "Land",
+            "type": "string"
+          },
+          "source": {
+            "description": "'live', 'cached' or 'mock' (mock means not live data).",
+            "title": "Source",
+            "type": "string"
+          },
+          "temp_c": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temp C"
+          }
+        },
+        "required": [
+          "land",
+          "source"
+        ],
+        "title": "BriefWeather",
+        "type": "object"
+      },
+      "ChatMessageCreate": {
+        "description": "One message to append to the farmer's history.",
+        "properties": {
+          "kind": {
+            "default": "text",
+            "enum": [
+              "text",
+              "brief",
+              "answer"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "farmer",
+              "bot"
+            ],
+            "title": "Role",
+            "type": "string"
+          },
+          "text": {
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "text"
+        ],
+        "title": "ChatMessageCreate",
+        "type": "object"
+      },
+      "ChatMessageRead": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "kind": {
+            "enum": [
+              "text",
+              "brief",
+              "answer"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "farmer",
+              "bot"
+            ],
+            "title": "Role",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "kind",
+          "text",
+          "created_at"
+        ],
+        "title": "ChatMessageRead",
+        "type": "object"
+      },
+      "ChatMessagesAppend": {
+        "description": "A turn is a farmer message and/or the bot reply, so 1–2 at a time.",
+        "properties": {
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/ChatMessageCreate"
+            },
+            "maxItems": 2,
+            "minItems": 1,
+            "title": "Messages",
+            "type": "array"
+          }
+        },
+        "required": [
+          "messages"
+        ],
+        "title": "ChatMessagesAppend",
+        "type": "object"
+      },
+      "ChatMessagesPage": {
+        "description": "Newest-first page; pass the last `id` as `before` for older messages.",
+        "properties": {
+          "has_more": {
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ChatMessageRead"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items",
+          "has_more"
+        ],
+        "title": "ChatMessagesPage",
+        "type": "object"
+      },
       "ChatParseRequest": {
         "description": "Plain-language text describing one activity.",
         "properties": {
@@ -994,6 +1375,41 @@
           "model"
         ],
         "title": "ChatParseResponse",
+        "type": "object"
+      },
+      "Clarification": {
+        "description": "The bot needs the farmer to pick a crop or land.\n\n``options`` are the farmer's own names, ready to show as quick replies.\n``reason`` lets the client word it: unknown (\"couldn't find X\") versus\nambiguous (\"which X?\").",
+        "properties": {
+          "field": {
+            "enum": [
+              "crop",
+              "land"
+            ],
+            "title": "Field",
+            "type": "string"
+          },
+          "options": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Options",
+            "type": "array"
+          },
+          "reason": {
+            "enum": [
+              "unknown",
+              "ambiguous"
+            ],
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "field",
+          "reason",
+          "options"
+        ],
+        "title": "Clarification",
         "type": "object"
       },
       "CropCatalogCreate": {
@@ -3943,6 +4359,299 @@
         "summary": "Seed Reference Data",
         "tags": [
           "admin"
+        ]
+      }
+    },
+    "/api/v1/assistant/ask": {
+      "post": {
+        "description": "Route a fresh message and, for a question, answer it from the farmer's data.\n\nPersists nothing (the client appends turns to the history itself). Returns\n503 when the provider is unusable; the client then treats the message as a\nlog entry and falls back to ``/activities/parse``.",
+        "operationId": "ask_api_v1_assistant_ask_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AskResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ask",
+        "tags": [
+          "assistant"
+        ]
+      }
+    },
+    "/api/v1/assistant/brief": {
+      "get": {
+        "description": "What matters today: weather, pending work and the last week's spend.\n\nDeterministic — no model call — so it works while the provider is down. A\nsection with no data is left out, and a weather failure just drops the\nweather line. The client decides when to fetch it (once a day).",
+        "operationId": "get_brief_api_v1_assistant_brief_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BriefResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Brief",
+        "tags": [
+          "assistant"
+        ]
+      }
+    },
+    "/api/v1/assistant/messages": {
+      "delete": {
+        "description": "Delete the current farmer's whole chat history.",
+        "operationId": "clear_messages_api_v1_assistant_messages_delete",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Clear Messages",
+        "tags": [
+          "assistant"
+        ]
+      },
+      "get": {
+        "description": "Newest-first page of the current farmer's chat history.",
+        "operationId": "list_messages_api_v1_assistant_messages_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Only messages with a lower id",
+            "in": "query",
+            "name": "before",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only messages with a lower id",
+              "title": "Before"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatMessagesPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Messages",
+        "tags": [
+          "assistant"
+        ]
+      },
+      "post": {
+        "description": "Append one turn and trim the history to the retention cap.",
+        "operationId": "append_messages_api_v1_assistant_messages_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatMessagesAppend"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ChatMessageRead"
+                  },
+                  "title": "Response Append Messages Api V1 Assistant Messages Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Append Messages",
+        "tags": [
+          "assistant"
         ]
       }
     },

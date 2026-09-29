@@ -13,8 +13,11 @@
       class="chat-bot-overlay__panel"
       [messages]="orchestrator.messages()"
       [busy]="orchestrator.busy()"
+      [hasMoreHistory]="orchestrator.hasMoreHistory()"
       (send)="orchestrator.sendText($event)"
       (chipSelected)="orchestrator.selectChip($event)"
+      (loadOlder)="orchestrator.loadOlder()"
+      (clearConfirmed)="orchestrator.clearHistory()"
       (close)="closeChat()"
       (reviewRequested)="onReviewRequested()"
     />

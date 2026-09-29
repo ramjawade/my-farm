@@ -10,6 +10,7 @@ from myfarm_api.core.db import get_engine
 from myfarm_api.routers import (
     activities,
     admin,
+    assistant,
     auth,
     chat_entry,
     crops,
@@ -65,6 +66,7 @@ def create_app() -> FastAPI:
     app.include_router(crops.router)
     app.include_router(activities.router)
     app.include_router(chat_entry.router)
+    app.include_router(assistant.router)
     app.include_router(weather.router)
 
     return app

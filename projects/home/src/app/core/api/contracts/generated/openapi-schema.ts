@@ -308,6 +308,82 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/assistant/ask': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Ask
+     * @description Route a fresh message and, for a question, answer it from the farmer's data.
+     *
+     *     Persists nothing (the client appends turns to the history itself). Returns
+     *     503 when the provider is unusable; the client then treats the message as a
+     *     log entry and falls back to ``/activities/parse``.
+     */
+    post: operations['ask_api_v1_assistant_ask_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/assistant/brief': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get Brief
+     * @description What matters today: weather, pending work and the last week's spend.
+     *
+     *     Deterministic — no model call — so it works while the provider is down. A
+     *     section with no data is left out, and a weather failure just drops the
+     *     weather line. The client decides when to fetch it (once a day).
+     */
+    get: operations['get_brief_api_v1_assistant_brief_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/assistant/messages': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List Messages
+     * @description Newest-first page of the current farmer's chat history.
+     */
+    get: operations['list_messages_api_v1_assistant_messages_get'];
+    put?: never;
+    /**
+     * Append Messages
+     * @description Append one turn and trim the history to the retention cap.
+     */
+    post: operations['append_messages_api_v1_assistant_messages_post'];
+    /**
+     * Clear Messages
+     * @description Delete the current farmer's whole chat history.
+     */
+    delete: operations['clear_messages_api_v1_assistant_messages_delete'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/auth/register': {
     parameters: {
       query?: never;
@@ -1020,6 +1096,160 @@ export interface components {
       status?: string | null;
     };
     /**
+     * AskRequest
+     * @description A fresh message from the farmer (not an answer to a clarification).
+     */
+    AskRequest: {
+      /**
+       * Language
+       * @description 'en', 'hi' or 'mr'. Falls back to the farmer's preferred_language.
+       */
+      language?: string | null;
+      /** Text */
+      text: string;
+    };
+    /**
+     * AskResponse
+     * @description How to handle the message.
+     *
+     *     * ``log`` — continue with ``POST /activities/parse``; nothing else is set.
+     *     * ``unsupported`` — show the fixed help message; nothing else is set.
+     *     * ``question`` — exactly one of ``answer`` or ``needs_clarification``.
+     */
+    AskResponse: {
+      /** Answer */
+      answer?: string | null;
+      /**
+       * Intent
+       * @enum {string}
+       */
+      intent: 'log' | 'question' | 'unsupported';
+      needs_clarification?: components['schemas']['Clarification'] | null;
+    };
+    /** BriefActivity */
+    BriefActivity: {
+      /** Activity */
+      activity: string;
+      /** Crop */
+      crop?: string | null;
+      /** Date */
+      date?: string | null;
+      /** Land */
+      land?: string | null;
+      /** Status */
+      status: string;
+    };
+    /** BriefPending */
+    BriefPending: {
+      /**
+       * Count
+       * @description All pending activities; `next` is only the soonest few.
+       */
+      count: number;
+      /** Next */
+      next: components['schemas']['BriefActivity'][];
+    };
+    /**
+     * BriefResponse
+     * @description Structured daily brief. Every section is omitted when there is no data for it.
+     *
+     *     Carries data, not text: the client renders it from its own translations, so
+     *     the brief works in every language and while the model provider is down.
+     *     ``has_data`` false means "show the welcome instead".
+     */
+    BriefResponse: {
+      /** Has Data */
+      has_data: boolean;
+      /**
+       * Name
+       * @description The farmer's full name, for the greeting.
+       */
+      name?: string | null;
+      pending?: components['schemas']['BriefPending'] | null;
+      spend_7d?: components['schemas']['BriefSpend'] | null;
+      weather?: components['schemas']['BriefWeather'] | null;
+    };
+    /** BriefSpend */
+    BriefSpend: {
+      /** Total */
+      total: number;
+    };
+    /** BriefWeather */
+    BriefWeather: {
+      /** Description */
+      description?: string | null;
+      /** Humidity Pct */
+      humidity_pct?: number | null;
+      /** Land */
+      land: string;
+      /**
+       * Source
+       * @description 'live', 'cached' or 'mock' (mock means not live data).
+       */
+      source: string;
+      /** Temp C */
+      temp_c?: number | null;
+    };
+    /**
+     * ChatMessageCreate
+     * @description One message to append to the farmer's history.
+     */
+    ChatMessageCreate: {
+      /**
+       * Kind
+       * @default text
+       * @enum {string}
+       */
+      kind: 'text' | 'brief' | 'answer';
+      /**
+       * Role
+       * @enum {string}
+       */
+      role: 'farmer' | 'bot';
+      /** Text */
+      text: string;
+    };
+    /** ChatMessageRead */
+    ChatMessageRead: {
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Id */
+      id: number;
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: 'text' | 'brief' | 'answer';
+      /**
+       * Role
+       * @enum {string}
+       */
+      role: 'farmer' | 'bot';
+      /** Text */
+      text: string;
+    };
+    /**
+     * ChatMessagesAppend
+     * @description A turn is a farmer message and/or the bot reply, so 1–2 at a time.
+     */
+    ChatMessagesAppend: {
+      /** Messages */
+      messages: components['schemas']['ChatMessageCreate'][];
+    };
+    /**
+     * ChatMessagesPage
+     * @description Newest-first page; pass the last `id` as `before` for older messages.
+     */
+    ChatMessagesPage: {
+      /** Has More */
+      has_more: boolean;
+      /** Items */
+      items: components['schemas']['ChatMessageRead'][];
+    };
+    /**
      * ChatParseRequest
      * @description Plain-language text describing one activity.
      */
@@ -1049,6 +1279,28 @@ export interface components {
       /** Model */
       model: string;
       parsed: components['schemas']['ResolvedEntry'];
+    };
+    /**
+     * Clarification
+     * @description The bot needs the farmer to pick a crop or land.
+     *
+     *     ``options`` are the farmer's own names, ready to show as quick replies.
+     *     ``reason`` lets the client word it: unknown ("couldn't find X") versus
+     *     ambiguous ("which X?").
+     */
+    Clarification: {
+      /**
+       * Field
+       * @enum {string}
+       */
+      field: 'crop' | 'land';
+      /** Options */
+      options: string[];
+      /**
+       * Reason
+       * @enum {string}
+       */
+      reason: 'unknown' | 'ambiguous';
     };
     /**
      * CropCatalogCreate
@@ -2226,6 +2478,171 @@ export interface operations {
           'application/json': {
             [key: string]: unknown;
           };
+        };
+      };
+    };
+  };
+  ask_api_v1_assistant_ask_post: {
+    parameters: {
+      query?: never;
+      header?: {
+        authorization?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AskRequest'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AskResponse'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  get_brief_api_v1_assistant_brief_get: {
+    parameters: {
+      query?: never;
+      header?: {
+        authorization?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BriefResponse'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  list_messages_api_v1_assistant_messages_get: {
+    parameters: {
+      query?: {
+        limit?: number;
+        /** @description Only messages with a lower id */
+        before?: number | null;
+      };
+      header?: {
+        authorization?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ChatMessagesPage'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  append_messages_api_v1_assistant_messages_post: {
+    parameters: {
+      query?: never;
+      header?: {
+        authorization?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ChatMessagesAppend'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ChatMessageRead'][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  clear_messages_api_v1_assistant_messages_delete: {
+    parameters: {
+      query?: never;
+      header?: {
+        authorization?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
         };
       };
     };
