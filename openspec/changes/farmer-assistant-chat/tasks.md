@@ -42,5 +42,5 @@ Each numbered group is one sub-issue / one PR, stacked on the parent branch (boa
 
 ## 7. Integration (parent PR)
 
-- [ ] 7.1 Against the merged parent branch run backend `ruff`, `mypy`, `pytest` and frontend lint/build/test; verify all green in CI
+- [x] 7.1 Against the merged parent branch run backend `ruff`, `mypy`, `pytest` and frontend lint/build/test; verify all green in CI
 - [ ] 7.2 Check every requirement in `specs/` exists in code (grep, not checkboxes), and record routing latency and extra LLM calls per fresh message on the deployed environment; verify findings noted on the parent issue
