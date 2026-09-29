@@ -16,11 +16,11 @@ Each numbered group is one sub-issue / one PR, stacked on the parent branch (boa
 
 ## 3. Backend: routing and answers (#288)
 
-- [ ] 3.1 Add prompt builders and Pydantic schemas for the routing call (closed `topic` enum) and the answer call, in `core/assistant.py` / `schemas/assistant.py`; verify unit tests that the prompt lists only allowed topics and that the language is passed through
-- [ ] 3.2 Add `POST /api/v1/assistant/ask`: classify → (log/unsupported return intent only) → resolve names → run topic query → compose answer; ambiguous/unknown names return `needs_clarification` with options; verify endpoint tests with the stub provider for log, unsupported, spend question, pending question, unknown crop and Marathi language
-- [ ] 3.3 Validate numbers in the composed answer against the supplied facts, falling back to a templated sentence on mismatch; verify a test where the stub provider returns a wrong figure
-- [ ] 3.4 Provider failure or invalid output returns 503; verify tests, and that logs contain intent/topic but not message text
-- [ ] 3.5 Regenerate OpenAPI and contracts; verify no drift and `ruff`, `mypy`, `pytest` pass
+- [x] 3.1 Add prompt builders and Pydantic schemas for the routing call (closed `topic` enum) and the answer call, in `core/assistant.py` / `schemas/assistant.py`; verify unit tests that the prompt lists only allowed topics and that the language is passed through
+- [x] 3.2 Add `POST /api/v1/assistant/ask`: classify → (log/unsupported return intent only) → resolve names → run topic query → compose answer; ambiguous/unknown names return `needs_clarification` with options; verify endpoint tests with the stub provider for log, unsupported, spend question, pending question, unknown crop and Marathi language
+- [x] 3.3 Validate numbers in the composed answer against the supplied facts, falling back to a templated sentence on mismatch; verify a test where the stub provider returns a wrong figure
+- [x] 3.4 Provider failure or invalid output returns 503; verify tests, and that logs contain intent/topic but not message text
+- [x] 3.5 Regenerate OpenAPI and contracts; verify no drift and `ruff`, `mypy`, `pytest` pass
 
 ## 4. Backend: daily brief (#289)
 
