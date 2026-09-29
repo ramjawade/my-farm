@@ -308,6 +308,30 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/assistant/ask': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Ask
+     * @description Route a fresh message and, for a question, answer it from the farmer's data.
+     *
+     *     Persists nothing (the client appends turns to the history itself). Returns
+     *     503 when the provider is unusable; the client then treats the message as a
+     *     log entry and falls back to ``/activities/parse``.
+     */
+    post: operations['ask_api_v1_assistant_ask_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/assistant/messages': {
     parameters: {
       query?: never;
@@ -1048,6 +1072,37 @@ export interface components {
       status?: string | null;
     };
     /**
+     * AskRequest
+     * @description A fresh message from the farmer (not an answer to a clarification).
+     */
+    AskRequest: {
+      /**
+       * Language
+       * @description 'en', 'hi' or 'mr'. Falls back to the farmer's preferred_language.
+       */
+      language?: string | null;
+      /** Text */
+      text: string;
+    };
+    /**
+     * AskResponse
+     * @description How to handle the message.
+     *
+     *     * ``log`` — continue with ``POST /activities/parse``; nothing else is set.
+     *     * ``unsupported`` — show the fixed help message; nothing else is set.
+     *     * ``question`` — exactly one of ``answer`` or ``needs_clarification``.
+     */
+    AskResponse: {
+      /** Answer */
+      answer?: string | null;
+      /**
+       * Intent
+       * @enum {string}
+       */
+      intent: 'log' | 'question' | 'unsupported';
+      needs_clarification?: components['schemas']['Clarification'] | null;
+    };
+    /**
      * ChatMessageCreate
      * @description One message to append to the farmer's history.
      */
@@ -1136,6 +1191,28 @@ export interface components {
       /** Model */
       model: string;
       parsed: components['schemas']['ResolvedEntry'];
+    };
+    /**
+     * Clarification
+     * @description The bot needs the farmer to pick a crop or land.
+     *
+     *     ``options`` are the farmer's own names, ready to show as quick replies.
+     *     ``reason`` lets the client word it: unknown ("couldn't find X") versus
+     *     ambiguous ("which X?").
+     */
+    Clarification: {
+      /**
+       * Field
+       * @enum {string}
+       */
+      field: 'crop' | 'land';
+      /** Options */
+      options: string[];
+      /**
+       * Reason
+       * @enum {string}
+       */
+      reason: 'unknown' | 'ambiguous';
     };
     /**
      * CropCatalogCreate
@@ -2313,6 +2390,41 @@ export interface operations {
           'application/json': {
             [key: string]: unknown;
           };
+        };
+      };
+    };
+  };
+  ask_api_v1_assistant_ask_post: {
+    parameters: {
+      query?: never;
+      header?: {
+        authorization?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AskRequest'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AskResponse'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
         };
       };
     };
