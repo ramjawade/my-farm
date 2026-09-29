@@ -1,10 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection, signal } from '@angular/core';
+import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
 import { provideTranslateService } from '@ngx-translate/core';
 
 import { ChatBotContainerComponent } from './chat-bot-container.component';
 import { ChatOrchestratorService } from '../chat-orchestrator.service';
+import { ChatPanelComponent } from '../chat-panel/chat-panel.component';
 import { ChatEntryService, ResolvedEntry } from '../../../core/api/chat-entry.service';
 import { ReferenceDataService } from '../../../core/api/reference-data.service';
 import { LandsApiService } from '../../../core/api/lands-api.service';
@@ -41,7 +43,11 @@ describe('ChatBotContainerComponent', () => {
     escapeHatch: ReturnType<typeof signal>;
     model: ReturnType<typeof signal>;
     originalInput: ReturnType<typeof signal>;
-    reset: jasmine.Spy;
+    endEntry: jasmine.Spy;
+    onOpen: jasmine.Spy;
+    loadOlder: jasmine.Spy;
+    clearHistory: jasmine.Spy;
+    hasMoreHistory: ReturnType<typeof signal>;
     sendText: jasmine.Spy;
     selectChip: jasmine.Spy;
   };
@@ -54,7 +60,11 @@ describe('ChatBotContainerComponent', () => {
       escapeHatch: signal(null),
       model: signal<string | null>(null),
       originalInput: signal(''),
-      reset: jasmine.createSpy('reset'),
+      endEntry: jasmine.createSpy('endEntry'),
+      onOpen: jasmine.createSpy('onOpen').and.resolveTo(),
+      loadOlder: jasmine.createSpy('loadOlder'),
+      clearHistory: jasmine.createSpy('clearHistory'),
+      hasMoreHistory: signal(false),
       sendText: jasmine.createSpy('sendText'),
       selectChip: jasmine.createSpy('selectChip'),
     };
@@ -109,6 +119,31 @@ describe('ChatBotContainerComponent', () => {
     expect(fixture.nativeElement.querySelector('.chat-bot-overlay')).toBeTruthy();
   });
 
+  it('loads history and the brief only when the chat is opened, never on construction', () => {
+    fixture.detectChanges();
+    expect(fakeOrchestrator.onOpen).not.toHaveBeenCalled();
+
+    component.openChat();
+
+    expect(fakeOrchestrator.onOpen).toHaveBeenCalledTimes(1);
+  });
+
+  it('wires the panel to load older messages and to clear the chat', () => {
+    fakeOrchestrator.hasMoreHistory.set(true);
+    component.openChat();
+    fixture.detectChanges();
+
+    const panel = fixture.debugElement.query(By.directive(ChatPanelComponent))
+      .componentInstance as ChatPanelComponent;
+    expect(panel.hasMoreHistory()).toBeTrue();
+
+    panel.loadOlder.emit();
+    panel.clearConfirmed.emit();
+
+    expect(fakeOrchestrator.loadOlder).toHaveBeenCalled();
+    expect(fakeOrchestrator.clearHistory).toHaveBeenCalled();
+  });
+
   it('only shows the review popup after reviewRequested, driven by the draft entry', () => {
     fixture.detectChanges();
     expect(component.reviewEntry()).toBeNull();
@@ -131,7 +166,7 @@ describe('ChatBotContainerComponent', () => {
 
     expect(component.open()).toBeFalse();
     expect(component.reviewEntry()).toBeNull();
-    expect(fakeOrchestrator.reset).toHaveBeenCalled();
+    expect(fakeOrchestrator.endEntry).toHaveBeenCalled();
   });
 
   it('resets the conversation (discards the draft) on popup cancel, keeping the chat open', () => {
@@ -142,7 +177,7 @@ describe('ChatBotContainerComponent', () => {
 
     expect(component.open()).toBeTrue();
     expect(component.reviewEntry()).toBeNull();
-    expect(fakeOrchestrator.reset).toHaveBeenCalled();
+    expect(fakeOrchestrator.endEntry).toHaveBeenCalled();
   });
 
   it('navigates to the manual create form pre-filled with resolved fields when the bot escalates', () => {
@@ -162,6 +197,6 @@ describe('ChatBotContainerComponent', () => {
       },
     });
     expect(component.open()).toBeFalse();
-    expect(fakeOrchestrator.reset).toHaveBeenCalled();
+    expect(fakeOrchestrator.endEntry).toHaveBeenCalled();
   });
 });

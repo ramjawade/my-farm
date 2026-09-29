@@ -35,10 +35,10 @@ Each numbered group is one sub-issue / one PR, stacked on the parent branch (boa
 
 ## 6. Frontend: history and brief (#291)
 
-- [ ] 6.1 Persist turns via `appendMessages` after each farmer/bot exchange (failures swallowed); on open load the last 50 messages as plain text (no chips/review action) with "load older" paging; update specs; verify build
-- [ ] 6.2 On open, fetch `brief` only when restored history has no `brief` message dated today, render it from i18n keys with params in en/hi/mr with example-question chips, and persist it with `kind="brief"`; verify build
-- [ ] 6.3 Add a trash icon in the panel header for "Clear chat" with a confirmation dialog calling `clearMessages` and resetting the thread; verify build
-- [ ] 6.4 Run `npm run lint`, `npm run build`, `npm test` and the Prettier check on `ts`/`html`/`scss`; grep `e2e/` for changed selectors/text (title, disclaimer, placeholder) and update them; verify all pass
+- [x] 6.1 Persist turns via `appendMessages` after each farmer/bot exchange (failures swallowed); on open load the last 50 messages as plain text (no chips/review action) with "load older" paging; update specs; verify build
+- [x] 6.2 On open, fetch `brief` only when restored history has no `brief` message dated today, render it from i18n keys with params in en/hi/mr with example-question chips, and persist it with `kind="brief"`; verify build
+- [x] 6.3 Add a trash icon in the panel header for "Clear chat" with a confirmation dialog calling `clearMessages` and resetting the thread; verify build
+- [x] 6.4 Run `npm run lint`, `npm run build`, `npm test` and the Prettier check on `ts`/`html`/`scss`; grep `e2e/` for changed selectors/text (title, disclaimer, placeholder) and update them; verify all pass
 
 ## 7. Integration (parent PR)
 
