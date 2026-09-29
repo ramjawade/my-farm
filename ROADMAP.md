@@ -71,9 +71,8 @@ git log for `claude/mvp1-*` branches)
 - Reports page: expenses by crop/category/month, CSV export.
 - Land ↔ crop ↔ activity cross-linking (cost roll-ups on crop/land detail).
 - PWA: manifest, icons, service worker (`ngsw-config.json`).
-- **Not done**: the Playwright golden-path smoke test (CI `e2e` job) from
-  the original plan was never added — the golden path is currently only
-  exercised by hand, per `DEMO_SCRIPT.md`.
+- Playwright golden-path smoke test (#44): `e2e/golden-path.spec.ts`, run
+  with `npm run e2e` and gated in the CI `e2e` job.
 
 **Backend — Stages 1–5 of 7** (canonical plan and stage gates:
 `BACKEND_PLAN.md` §10)
@@ -100,8 +99,6 @@ git log for `claude/mvp1-*` branches)
   BACKEND_PLAN.md §5.1.
 - **Pagination (#62, not scheduled).** Lists return every row today; add
   cursor pagination once a farmer's lists grow to a few hundred rows.
-- **E2E smoke test.** Add the Playwright golden-path spec against mobile +
-  desktop viewports, gated in CI on PRs (the one MVP1 item that didn't land).
 - **Known gaps carried forward from `BACKEND_PLAN.md` §11**, worth closing
   before they bite:
   - Render runs a native buildpack build, not the `Dockerfile` CI verifies —

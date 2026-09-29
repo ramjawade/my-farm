@@ -8,8 +8,9 @@
 
 Non-negotiables:
 
-- Plans live in issue descriptions. No local PLAN/DESIGN docs.
-- No code until the user approves the issue.
+- The issue is a short pointer that tracks status; the plan lives in an OpenSpec change (`openspec/changes/<name>/`, `/opsx:propose`). No other local PLAN/DESIGN docs.
+- A change is required for user-visible or API behaviour and for parent epics. Bugs, chores and no-behaviour refactors stay board-only (plan in the issue body).
+- No code until the user approves the issue (and its change, if any).
 - Status flow: **Todo → In Progress → Done**. Done is set automatically when the issue closes.
 - Big features: a parent issue plus one sub-issue per PR.
 - Branch: `claude/feature-<issue>-<slug>` from `origin/main`. PR says `Fixes #<issue>`.
