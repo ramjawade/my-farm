@@ -14,9 +14,9 @@
 
 ## 3. Activity type ids
 
-- [ ] 3.1 Replace `Activity.type` with `activityTypeId: number`; add `isActivityType(id, name)` in `activity.constants.ts` and route every `'Custom'`/`'Harvest'`/`'Sowing'` branch through it; verify with a spec for the helper.
-- [ ] 3.2 Migrate `create-activity`, `activity-list`, `activity-dashboard`, `activity-detail`, `home`, `activity-display` and `crop-timeline.service` to ids with render-time names; verify with their specs and `npm run build`.
-- [ ] 3.3 Convert to ids in the chat-bot flow (`review-popup`, `chat-decision`, `chat-entry.service`); verify with their specs.
+- [x] 3.1 Replace `Activity.type` with `activityTypeId: number`; add `ReferenceDataService.isActivityType(id, name)` and route every `'Custom'`/`'Harvest'`/`'Sowing'` branch through it; verify with `reference-data.service.spec.ts`.
+- [x] 3.2 Migrate `create-activity`, `activity-list`, `activity-dashboard`, `activity-detail`, `home`, `activity-display` and `crop-timeline.service` to ids with render-time names; verify with their specs and `npm run build`.
+- [x] 3.3 Convert to ids at the chat-bot boundary: the popup and `chat-decision` keep working in type names, `chat-entry.service` resolves the name to an id when creating; verify with `chat-entry.service.spec.ts`.
 
 ## 4. Retire async lookups in mappers
 

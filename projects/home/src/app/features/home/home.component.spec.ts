@@ -295,7 +295,7 @@ describe('HomeComponent', () => {
     await activityService.addActivity({
       date: Date.now(),
       season: 'Kharif',
-      type: 'Weeding',
+      activityTypeId: 5,
       status: 'Completed',
     });
     fixture.detectChanges();
@@ -347,7 +347,7 @@ describe('HomeComponent', () => {
 
       const newCropAct = await cropService.addActivity({
         cropId: 42,
-        type: 'Irrigation',
+        activityTypeId: 2,
         date: Date.now(),
         status: 'Completed',
         cost: 250,
@@ -361,7 +361,7 @@ describe('HomeComponent', () => {
       // Assert visible through ActivityService
       const syncedFarmAct = activityService.activities().find((a) => a.id === newCropAct.id);
       expect(syncedFarmAct).toBeTruthy();
-      expect(syncedFarmAct?.type).toBe('Irrigation');
+      expect(syncedFarmAct?.activityTypeId).toBe(2);
       expect(syncedFarmAct?.cropId).toBe(42);
       expect(syncedFarmAct?.notes).toBe('Irrigated for 30 minutes');
       expect(syncedFarmAct?.status).toBe('Completed');
@@ -378,7 +378,7 @@ describe('HomeComponent', () => {
       const newFarmAct = await activityService.addActivity({
         date: new Date('2026-06-13').getTime(),
         season: 'Kharif',
-        type: 'Weeding',
+        activityTypeId: 5,
         cropId: 42,
         fieldId: 7,
         status: 'Completed',
@@ -389,7 +389,7 @@ describe('HomeComponent', () => {
 
       const syncedCropAct = cropService.activities().find((a) => a.id === newFarmAct.id);
       expect(syncedCropAct).toBeDefined();
-      expect(syncedCropAct!.type).toBe('Weeding');
+      expect(syncedCropAct!.activityTypeId).toBe(5);
       expect(syncedCropAct!.cropId).toBe(42);
       expect(syncedCropAct!.notes).toBe('Manual mechanical weeding');
       expect(syncedCropAct!.status).toBe('Completed');

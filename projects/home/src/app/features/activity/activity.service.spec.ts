@@ -32,13 +32,13 @@ describe('ActivityService', () => {
     it('should add an activity with the id minted by storage', async () => {
       const activity = await service.addActivity({
         date: Date.now(),
-        type: 'Sowing',
+        activityTypeId: 1,
         status: 'Completed',
         cropId: 1,
       });
 
       expect(typeof activity.id).toBe('number');
-      expect(activity.type).toBe('Sowing');
+      expect(activity.activityTypeId).toBe(1);
       expect(service.activities().length).toBe(1);
       expect(service.getActivityById(activity.id)).toEqual(activity);
     });
@@ -47,7 +47,7 @@ describe('ActivityService', () => {
       const storage = TestBed.inject(ActivitiesApiService) as unknown as FakeActivitiesApiService;
       await service.addActivity({
         date: Date.now(),
-        type: 'Irrigation',
+        activityTypeId: 2,
         status: 'Completed',
       });
 
@@ -59,7 +59,7 @@ describe('ActivityService', () => {
     it('should update an activity', async () => {
       const activity = await service.addActivity({
         date: Date.now(),
-        type: 'Sowing',
+        activityTypeId: 1,
         status: 'Draft',
       });
 
@@ -73,7 +73,7 @@ describe('ActivityService', () => {
     it('should delete an activity and its expenses', async () => {
       const activity = await service.addActivity({
         date: Date.now(),
-        type: 'Sowing',
+        activityTypeId: 1,
         status: 'Completed',
       });
 
@@ -93,21 +93,21 @@ describe('ActivityService', () => {
     it('should filter activities by crop', async () => {
       await service.addActivity({
         date: Date.now(),
-        type: 'Sowing',
+        activityTypeId: 1,
         status: 'Completed',
         cropId: 1,
       });
 
       await service.addActivity({
         date: Date.now(),
-        type: 'Irrigation',
+        activityTypeId: 2,
         status: 'Completed',
         cropId: 2,
       });
 
       const cropActivities = service.getActivitiesForCrop(1);
       expect(cropActivities.length).toBe(1);
-      expect(cropActivities[0].type).toBe('Sowing');
+      expect(cropActivities[0].activityTypeId).toBe(1);
     });
   });
 
@@ -115,7 +115,7 @@ describe('ActivityService', () => {
     it('should fetch expenses for an activity', async () => {
       const activity = await service.addActivity({
         date: Date.now(),
-        type: 'Sowing',
+        activityTypeId: 1,
         status: 'Completed',
       });
 
@@ -140,7 +140,7 @@ describe('ActivityService', () => {
     it('should sum expenses for an activity', async () => {
       const activity = await service.addActivity({
         date: Date.now(),
-        type: 'Sowing',
+        activityTypeId: 1,
         status: 'Completed',
       });
 

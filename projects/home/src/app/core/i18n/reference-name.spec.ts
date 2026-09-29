@@ -1,4 +1,9 @@
+import { provideZonelessChangeDetection } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
+
+import { ReferenceDataService } from '../api/reference-data.service';
+import { ReferenceNamePipe } from './reference-name.pipe';
 
 import { resolveReferenceName, slugifyReferenceName } from './reference-name';
 
@@ -37,5 +42,42 @@ describe('resolveReferenceName', () => {
 
     expect(resolveReferenceName(translate, 'crop', '')).toBe('');
     expect(translate.instant).not.toHaveBeenCalled();
+  });
+});
+
+describe('ReferenceNamePipe with reference ids', () => {
+  let pipe: ReferenceNamePipe;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        { provide: TranslateService, useValue: { instant: (key: string) => key } },
+        {
+          provide: ReferenceDataService,
+          useValue: {
+            cropName: (id: number) => (id === 1 ? 'Wheat' : ''),
+            activityTypeName: (id: number) => (id === 2 ? 'Irrigation' : ''),
+            expenseCategoryName: (id: number) => (id === 3 ? 'Seeds' : ''),
+          },
+        },
+      ],
+    });
+    pipe = TestBed.runInInjectionContext(() => new ReferenceNamePipe());
+  });
+
+  it('resolves an id through the matching reference table', () => {
+    expect(pipe.transform(1, 'crop')).toBe('Wheat');
+    expect(pipe.transform(2, 'activity')).toBe('Irrigation');
+    expect(pipe.transform(3, 'expense')).toBe('Seeds');
+  });
+
+  it('renders nothing for an unknown id or a category without an id table', () => {
+    expect(pipe.transform(99, 'crop')).toBe('');
+    expect(pipe.transform(1, 'stage')).toBe('');
+  });
+
+  it('still accepts a plain name', () => {
+    expect(pipe.transform('Wheat', 'crop')).toBe('Wheat');
   });
 });

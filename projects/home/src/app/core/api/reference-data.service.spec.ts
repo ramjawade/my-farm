@@ -36,6 +36,18 @@ describe('ReferenceDataService (sync accessors, preload)', () => {
     expect(service.activityTypeName(9)).toBe('');
   });
 
+  it('isActivityType compares the resolved seeded name', async () => {
+    get.and.callFake((path: string) =>
+      Promise.resolve({
+        items: path === '/reference/activity-types' ? [{ id: 4, name: 'Custom' }] : [],
+      }),
+    );
+    expect(service.isActivityType(4, 'Custom')).toBeFalse(); // not loaded yet
+    await service.ready();
+    expect(service.isActivityType(4, 'Custom')).toBeTrue();
+    expect(service.isActivityType(4, 'Harvest')).toBeFalse();
+  });
+
   it('preload issues one request per endpoint and ready() reuses them', async () => {
     service.preload();
     await service.ready();

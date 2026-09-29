@@ -1,12 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 
 import { ActivityService } from '../../features/activity/activity.service';
-import {
-  Activity,
-  ActivityStatus,
-  ActivityType,
-  NewActivity,
-} from '../../features/activity/activity.models';
+import { Activity, ActivityStatus, NewActivity } from '../../features/activity/activity.models';
 import { HttpService } from '../http/http.service';
 import { ReferenceDataService } from './reference-data.service';
 
@@ -131,7 +126,8 @@ export class ChatEntryService {
    */
   async create(entry: ResolvedEntry, input: string, model: string): Promise<Activity> {
     const draft: NewActivity = {
-      type: entry.activity_type as ActivityType,
+      // The name is authoritative: the review popup lets the farmer change it.
+      activityTypeId: await this.referenceData.activityTypeIdForName(entry.activity_type),
       // The farmer is recording something already done, not scheduling it.
       status: 'Completed' as ActivityStatus,
       date: entry.date ? new Date(entry.date).getTime() : Date.now(),

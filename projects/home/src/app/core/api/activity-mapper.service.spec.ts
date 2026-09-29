@@ -40,14 +40,14 @@ describe('ActivityMapperService', () => {
     });
 
     expect(activity.id).toBe(10);
-    expect(activity.type).toBe('Irrigation');
+    expect(activity.activityTypeId).toBe(3);
     expect(activity.status).toBe('pending');
-    expect(referenceData.activityTypeNameForId).toHaveBeenCalledWith(3);
+    expect(referenceData.activityTypeNameForId).not.toHaveBeenCalled();
   });
 
   it('maps an activity update back to backend field names', async () => {
     const payload = await service.toBackend({
-      type: 'Irrigation' as any,
+      activityTypeId: 3,
       status: 'completed' as any,
     });
 

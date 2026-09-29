@@ -8,6 +8,8 @@ import { ActivitiesApiService } from '../../core/api/activities-api.service';
 import { FakeActivitiesApiService } from '../../testing/fake-activities-api.service';
 import { CropsApiService } from '../../core/api/crops-api.service';
 import { FakeCropsApiService } from '../../testing/fake-crops-api.service';
+import { ReferenceDataService } from '../../core/api/reference-data.service';
+import { FakeReferenceDataService } from '../../testing/fake-reference-data.service';
 
 describe('ReportsComponent', () => {
   let component: ReportsComponent;
@@ -23,6 +25,7 @@ describe('ReportsComponent', () => {
         CropTimelineService,
         { provide: ActivitiesApiService, useClass: FakeActivitiesApiService },
         { provide: CropsApiService, useClass: FakeCropsApiService },
+        { provide: ReferenceDataService, useClass: FakeReferenceDataService },
       ],
     }).compileComponents();
 
@@ -65,7 +68,7 @@ describe('ReportsComponent', () => {
     } as any);
 
     const activity = await activityService.addActivity({
-      type: 'Sowing',
+      activityTypeId: 1,
       status: 'Completed',
       season: 'Kharif',
       cropId: crop.id,

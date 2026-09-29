@@ -61,7 +61,7 @@ export interface CropActivity extends Activity {
 export interface CropActivityInput {
   cropId: number;
   parentActivityId?: number;
-  type: ActivityType;
+  activityTypeId: number;
   date?: number;
   status: ActivityStatus;
   cost: number;

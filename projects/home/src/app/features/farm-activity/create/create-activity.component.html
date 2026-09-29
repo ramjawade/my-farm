@@ -140,7 +140,7 @@
                 </option>
                 @for (pa of availableParentActivities(); track pa.id) {
                   <option [ngValue]="pa.id">
-                    {{ pa.type | referenceName: 'activity' }} -
+                    {{ pa.activityTypeId | referenceName: 'activity' }} -
                     {{ pa.notes || ('createActivity.noNotes' | translate) }}
                     @if (pa.date) {
                       ({{ pa.date | date: 'shortDate' }})

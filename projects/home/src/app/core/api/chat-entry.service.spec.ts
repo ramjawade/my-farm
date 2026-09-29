@@ -46,6 +46,8 @@ describe('ChatEntryService', () => {
           useValue: {
             expenseCategoryIdForName: (name: string) =>
               Promise.resolve(name === 'Fertilizer' ? 4 : 9),
+            activityTypeIdForName: (name: string) =>
+              Promise.resolve(name === 'Maintenance' ? 11 : 0),
           },
         },
       ],
@@ -91,6 +93,12 @@ describe('ChatEntryService', () => {
     const draft = activities.addActivity.calls.mostRecent().args[0];
     expect(draft.cropId).toBe(30);
     expect(draft.fieldId).toBe(22);
+  });
+
+  it('resolves the activity type name to its id', async () => {
+    await service.create(entry(), 'typed', 'test-model');
+
+    expect(activities.addActivity.calls.mostRecent().args[0].activityTypeId).toBe(11);
   });
 
   it('skips an expense line carrying no amount', async () => {

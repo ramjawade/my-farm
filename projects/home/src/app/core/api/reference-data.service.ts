@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpService } from '../http/http.service';
 import { ReferenceItem } from './contracts';
+import { ActivityType } from '../../features/activity/activity.models';
 
 /**
  * Translates between the backend's reference-table ids and the frontend's
@@ -77,6 +78,15 @@ export class ReferenceDataService {
   /** Synchronous activity-type name for `id`; `''` until loaded (or unknown). */
   activityTypeName(id: number | null | undefined): string {
     return this.syncName(this.activityTypesById, id);
+  }
+
+  /**
+   * Whether activity type `id` is the seeded type called `name` (`'Custom'`,
+   * `'Harvest'`, ...). Compares the resolved name, so it is `false` until the
+   * data has loaded — await `ready()` before logic that depends on it.
+   */
+  isActivityType(id: number | null | undefined, name: ActivityType): boolean {
+    return this.activityTypeName(id) === name;
   }
 
   /** Synchronous expense-category name for `id`; `''` until loaded (or unknown). */

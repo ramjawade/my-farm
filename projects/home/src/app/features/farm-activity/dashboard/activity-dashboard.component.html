@@ -114,9 +114,9 @@
               <div class="d-flex justify-content-between align-items-start gap-2">
                 <div>
                   <div class="d-flex align-items-center gap-2 mb-1">
-                    <i class="bi" [class]="getActivityIcon(act.type)"></i>
+                    <i class="bi" [class]="getActivityIcon(act.activityTypeId)"></i>
                     <strong class="small text-uppercase" style="font-size: 0.8rem">{{
-                      act.type | referenceName: 'activity'
+                      act.activityTypeId | referenceName: 'activity'
                     }}</strong>
                     <span class="badge bg-warning-subtle text-warning-emphasis">{{
                       act.status | referenceName: 'status'
@@ -198,8 +198,8 @@
               @for (act of recent(); track act.id) {
                 <tr [routerLink]="['/activities', act.id]" class="cursor-pointer">
                   <td class="border-bottom-0 py-2">
-                    <i class="bi" [class]="getActivityIcon(act.type)"></i>
-                    {{ act.type | referenceName: 'activity' }}
+                    <i class="bi" [class]="getActivityIcon(act.activityTypeId)"></i>
+                    {{ act.activityTypeId | referenceName: 'activity' }}
                   </td>
                   <td class="border-bottom-0 py-2 text-muted small">
                     {{

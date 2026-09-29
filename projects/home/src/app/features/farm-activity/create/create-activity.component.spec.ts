@@ -25,7 +25,7 @@ describe('CreateActivityComponent', () => {
 
   const mockNewActivity: Activity = {
     id: 42,
-    type: 'Irrigation',
+    activityTypeId: 2,
     status: 'Completed',
     date: Date.now(),
     createdAt: Date.now(),
@@ -57,6 +57,9 @@ describe('CreateActivityComponent', () => {
           useValue: {
             listActivityTypes: () => Promise.resolve([]),
             createActivityType: createActivityTypeSpy,
+            activityTypeIdForName: () => Promise.resolve(2),
+            activityTypeName: () => 'Irrigation',
+            isActivityType: () => false,
           },
         },
       ],
