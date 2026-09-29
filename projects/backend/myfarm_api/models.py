@@ -363,6 +363,29 @@ class ActivityHistory(Base):
     )
 
 
+class ChatMessage(Base):
+    """One turn of a farmer's assistant conversation (#286).
+
+    One rolling conversation per farmer, hard-deleted on "Clear chat" — these
+    are the farmer's own words, so there is no soft-delete. Quick-reply chips
+    and the Review & Save action are deliberately not stored.
+    """
+
+    __tablename__ = "chat_message"
+    __table_args__ = (Index("idx_chat_message_farmer_id_id", "farmer_id", "id"),)
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    farmer_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("farmer.id"), nullable=False
+    )
+    role: Mapped[str] = mapped_column(String(10), nullable=False)
+    kind: Mapped[str] = mapped_column(String(10), nullable=False, default="text")
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
 class ActivityAttachment(Base):
     """An attachment (photo, document) linked to an activity."""
 

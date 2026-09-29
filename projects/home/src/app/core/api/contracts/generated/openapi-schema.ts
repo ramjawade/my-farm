@@ -308,6 +308,34 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/assistant/messages': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List Messages
+     * @description Newest-first page of the current farmer's chat history.
+     */
+    get: operations['list_messages_api_v1_assistant_messages_get'];
+    put?: never;
+    /**
+     * Append Messages
+     * @description Append one turn and trim the history to the retention cap.
+     */
+    post: operations['append_messages_api_v1_assistant_messages_post'];
+    /**
+     * Clear Messages
+     * @description Delete the current farmer's whole chat history.
+     */
+    delete: operations['clear_messages_api_v1_assistant_messages_delete'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/auth/register': {
     parameters: {
       query?: never;
@@ -1018,6 +1046,65 @@ export interface components {
       season?: string | null;
       /** Status */
       status?: string | null;
+    };
+    /**
+     * ChatMessageCreate
+     * @description One message to append to the farmer's history.
+     */
+    ChatMessageCreate: {
+      /**
+       * Kind
+       * @default text
+       * @enum {string}
+       */
+      kind: 'text' | 'brief' | 'answer';
+      /**
+       * Role
+       * @enum {string}
+       */
+      role: 'farmer' | 'bot';
+      /** Text */
+      text: string;
+    };
+    /** ChatMessageRead */
+    ChatMessageRead: {
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Id */
+      id: number;
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: 'text' | 'brief' | 'answer';
+      /**
+       * Role
+       * @enum {string}
+       */
+      role: 'farmer' | 'bot';
+      /** Text */
+      text: string;
+    };
+    /**
+     * ChatMessagesAppend
+     * @description A turn is a farmer message and/or the bot reply, so 1–2 at a time.
+     */
+    ChatMessagesAppend: {
+      /** Messages */
+      messages: components['schemas']['ChatMessageCreate'][];
+    };
+    /**
+     * ChatMessagesPage
+     * @description Newest-first page; pass the last `id` as `before` for older messages.
+     */
+    ChatMessagesPage: {
+      /** Has More */
+      has_more: boolean;
+      /** Items */
+      items: components['schemas']['ChatMessageRead'][];
     };
     /**
      * ChatParseRequest
@@ -2226,6 +2313,105 @@ export interface operations {
           'application/json': {
             [key: string]: unknown;
           };
+        };
+      };
+    };
+  };
+  list_messages_api_v1_assistant_messages_get: {
+    parameters: {
+      query?: {
+        limit?: number;
+        /** @description Only messages with a lower id */
+        before?: number | null;
+      };
+      header?: {
+        authorization?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ChatMessagesPage'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  append_messages_api_v1_assistant_messages_post: {
+    parameters: {
+      query?: never;
+      header?: {
+        authorization?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ChatMessagesAppend'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ChatMessageRead'][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  clear_messages_api_v1_assistant_messages_delete: {
+    parameters: {
+      query?: never;
+      header?: {
+        authorization?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
         };
       };
     };

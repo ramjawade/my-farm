@@ -4,9 +4,9 @@ Each numbered group is one sub-issue / one PR, stacked on the parent branch (boa
 
 ## 1. Backend: chat history (#286)
 
-- [ ] 1.1 Add `ChatMessage` model (tenant scoped: `farmer_id`, `role`, `kind`, `text`, `created_at`) and Alembic migration `0005_chat_message`; verify `alembic upgrade head` applies and a test creates and reads a row
-- [ ] 1.2 Add `assistant` router with `GET /messages?limit&before`, `POST /messages` (batch of 1–2, trims to 500 in the same transaction), `DELETE /messages`; register in `main.py`; verify with endpoint tests for order, paging, per-farmer isolation, the 501st-message trim and clear
-- [ ] 1.3 Regenerate `openapi.json` and `npm run generate:contracts`; verify no drift and `ruff`, `mypy`, `pytest` pass
+- [x] 1.1 Add `ChatMessage` model (tenant scoped: `farmer_id`, `role`, `kind`, `text`, `created_at`) and Alembic migration `0005_chat_message`; verify `alembic upgrade head` applies and a test creates and reads a row
+- [x] 1.2 Add `assistant` router with `GET /messages?limit&before`, `POST /messages` (batch of 1–2, trims to 500 in the same transaction), `DELETE /messages`; register in `main.py`; verify with endpoint tests for order, paging, per-farmer isolation, the 501st-message trim and clear
+- [x] 1.3 Regenerate `openapi.json` and `npm run generate:contracts`; verify no drift and `ruff`, `mypy`, `pytest` pass
 
 ## 2. Backend: data queries (#287)
 
