@@ -16,19 +16,6 @@ import { ReferenceItem } from './contracts';
  * the two, name<->id.
  */
 
-type RefKind = 'crops' | 'expenses' | 'activityTypes' | 'seasons' | 'stages';
-
-const REF_ENDPOINTS = {
-  crops: { slot: 'cropsPromise', path: '/reference/crops' },
-  expenses: { slot: 'expensesPromise', path: '/reference/expense-categories' },
-  activityTypes: { slot: 'activityTypesPromise', path: '/reference/activity-types' },
-  seasons: { slot: 'seasonsPromise', path: '/reference/seasons' },
-  stages: { slot: 'stagesPromise', path: '/reference/crop-stages' },
-} as const;
-
-/** A missing id refetches its endpoint at most this often (never on a timer). */
-const REFETCH_INTERVAL_MS = 30_000;
-
 @Injectable({ providedIn: 'root' })
 export class ReferenceDataService {
   private readonly httpService = inject(HttpService);
@@ -56,8 +43,6 @@ export class ReferenceDataService {
   private stagesPromise: Promise<ReferenceItem[]> | null = null;
 
   private readyPromise: Promise<void> | null = null;
-  private loadedOnce = false;
-  private readonly lastRefetch = new Map<RefKind, number>();
   private readonly versionSignal = signal(0);
 
   /** Bumps whenever a cached name changes, so signal/computed readers of the
@@ -86,78 +71,27 @@ export class ReferenceDataService {
 
   /** Synchronous crop name for `id`; `''` until loaded (or unknown). */
   cropName(id: number | null | undefined): string {
-    return this.syncName('crops', this.cropsById, id);
+    return this.syncName(this.cropsById, id);
   }
 
   /** Synchronous activity-type name for `id`; `''` until loaded (or unknown). */
   activityTypeName(id: number | null | undefined): string {
-    return this.syncName('activityTypes', this.activityTypesById, id);
+    return this.syncName(this.activityTypesById, id);
   }
 
   /** Synchronous expense-category name for `id`; `''` until loaded (or unknown). */
   expenseCategoryName(id: number | null | undefined): string {
-    return this.syncName('expenses', this.expensesById, id);
+    return this.syncName(this.expensesById, id);
   }
 
-  private syncName(kind: RefKind, byId: Map<number, string>, id: number | null | undefined) {
+  private syncName(byId: Map<number, string>, id: number | null | undefined): string {
     this.versionSignal(); // track cache changes in computed()/templates
-    if (id === null || id === undefined) {
-      return '';
-    }
-    const name = byId.get(id);
-    if (name === undefined) {
-      void this.refetchOnMiss(kind);
-      return '';
-    }
-    return name;
-  }
-
-  /**
-   * An id is missing from the cache (created on another device, or stale):
-   * refetch just that endpoint, at most once per `REFETCH_INTERVAL_MS` per
-   * endpoint, so an unknown id can never turn into repeated requests.
-   * Resolves `true` when a refetch actually ran.
-   */
-  private async refetchOnMiss(kind: RefKind): Promise<boolean> {
-    if (!this.loadedOnce) {
-      return false; // first load is still in flight; it fetches everything anyway
-    }
-    const now = Date.now();
-    const last = this.lastRefetch.get(kind);
-    if (last !== undefined && now - last < REFETCH_INTERVAL_MS) {
-      return false;
-    }
-    this.lastRefetch.set(kind, now);
-    const { slot, path } = REF_ENDPOINTS[kind];
-    this[slot] = null;
-    try {
-      const items = await this.load(slot, path);
-      this.applyMaps(...this.itemsFor(kind, items));
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  private itemsFor(
-    kind: RefKind,
-    items: ReferenceItem[],
-  ): [ReferenceItem[], ReferenceItem[], ReferenceItem[], ReferenceItem[], ReferenceItem[]] {
-    const none: ReferenceItem[] = [];
-    return [
-      kind === 'crops' ? items : none,
-      kind === 'expenses' ? items : none,
-      kind === 'activityTypes' ? items : none,
-      kind === 'seasons' ? items : none,
-      kind === 'stages' ? items : none,
-    ];
+    return id === null || id === undefined ? '' : (byId.get(id) ?? '');
   }
 
   /** Force a re-fetch on next lookup (e.g. after seeding reference data). */
   invalidate(): void {
     this.readyPromise = null;
-    this.loadedOnce = false;
-    this.lastRefetch.clear();
     this.cropsPromise = null;
     this.expensesPromise = null;
     this.activityTypesPromise = null;
@@ -205,7 +139,6 @@ export class ReferenceDataService {
       this.load('stagesPromise', '/reference/crop-stages'),
     ]);
     this.applyMaps(crops, expenses, activityTypes, seasons, stages);
-    this.loadedOnce = true;
   }
 
   private applyMaps(
@@ -258,9 +191,6 @@ export class ReferenceDataService {
 
   async cropNameForId(id: number): Promise<string> {
     await this.ensureLoaded();
-    if (!this.cropsById.has(id)) {
-      await this.refetchOnMiss('crops');
-    }
     return this.cropsById.get(id) ?? String(id);
   }
 
@@ -275,9 +205,6 @@ export class ReferenceDataService {
 
   async expenseCategoryNameForId(id: number): Promise<string> {
     await this.ensureLoaded();
-    if (!this.expensesById.has(id)) {
-      await this.refetchOnMiss('expenses');
-    }
     return this.expensesById.get(id) ?? String(id);
   }
 
@@ -292,9 +219,6 @@ export class ReferenceDataService {
 
   async activityTypeNameForId(id: number): Promise<string> {
     await this.ensureLoaded();
-    if (!this.activityTypesById.has(id)) {
-      await this.refetchOnMiss('activityTypes');
-    }
     return this.activityTypesById.get(id) ?? String(id);
   }
 

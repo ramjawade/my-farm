@@ -2,7 +2,7 @@
 
 - [x] 1.1 Add sync accessors `cropName(id)`, `activityTypeName(id)`, `expenseCategoryName(id)` and a shared `ready` promise to `ReferenceDataService`; verify with a spec for hit, miss and pre-load cases.
 - [x] 1.2 Start the preload right after the session is issued without awaiting it in login; verify sign-in does not wait (spec) and that no extra requests are made versus today.
-- [x] 1.3 Add throttled refetch-on-miss (one endpoint, once per 30s) and keep create-or-get writes updating the cache; verify with specs for miss, throttle and farmer-created entries.
+- [x] 1.3 Keep create-or-get writes updating the cache and make unknown ids resolve to an empty string; verify with specs for farmer-created entries and unknown ids.
 - [x] 1.4 Replace `cropType` with `cropCatalogId: number` in `CropEntity`/`NewCrop`; `CropMapperService` maps `crop_catalog_id` directly with no lookup; verify with `crop-mapper.service.spec.ts`.
 - [x] 1.5 Bind the add-crop form to the catalog id, creating a catalog entry via `createCrop` for farmer-typed names; render crop names with `referenceName` where shown. Verify with updated `add-crop`, `crop-dashboard`, `crop-activity`, `reports` and `home` specs and `npm run build`.
 

@@ -49,8 +49,8 @@ Migrating to ids SHALL NOT change user-visible labels, filtering, sorting, repor
 - **WHEN** a season report groups expenses by category
 - **THEN** groups and their labels match those produced before the migration
 
-### Requirement: Reference cache stays fresh without polling
-The reference-data cache SHALL load without blocking sign-in, include entries the farmer creates in the session, and refetch a single endpoint when an id is missing, throttled and never on a timer.
+### Requirement: Reference cache loads without blocking sign-in
+The reference-data cache SHALL load without blocking sign-in and include entries the farmer creates in the session. It SHALL NOT poll or refetch on a miss.
 
 #### Scenario: Non-blocking preload
 - **WHEN** a session is issued at login
@@ -63,6 +63,5 @@ The reference-data cache SHALL load without blocking sign-in, include entries th
 
 #### Scenario: Unknown id
 - **WHEN** an id is not in the cache
-- **THEN** only that endpoint is refetched once and the lookup retried
-- **AND** further misses within 30 seconds do not refetch
-- **AND** if still unknown the name is an empty string, not an error
+- **THEN** its name is an empty string, not an error
+- **AND** no extra request is made
