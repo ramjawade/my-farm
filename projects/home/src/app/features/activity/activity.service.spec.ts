@@ -28,6 +28,40 @@ describe('ActivityService', () => {
     expect(service).toBeTruthy();
   });
 
+  describe('reload', () => {
+    function spyOnFetch(): jasmine.Spy {
+      const storage = TestBed.inject(ActivitiesApiService) as unknown as FakeActivitiesApiService;
+      return spyOn(storage, 'getActivities').and.callThrough();
+    }
+
+    it('should share one request between overlapping reloads', async () => {
+      const fetch = spyOnFetch();
+
+      await Promise.all([service.reload(), service.reload(), service.reload()]);
+
+      expect(fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('should fetch again once the previous load has finished', async () => {
+      const fetch = spyOnFetch();
+
+      await service.reload();
+      await service.reload();
+
+      expect(fetch).toHaveBeenCalledTimes(2);
+    });
+
+    it('should not reuse a load that started before a mutation', async () => {
+      const fetch = spyOnFetch();
+
+      const first = service.reload();
+      await service.addActivity({ date: Date.now(), activityTypeId: 1, status: 'Completed' });
+      await Promise.all([first, service.reload()]);
+
+      expect(fetch).toHaveBeenCalledTimes(2);
+    });
+  });
+
   describe('addActivity', () => {
     it('should add an activity with the id minted by storage', async () => {
       const activity = await service.addActivity({

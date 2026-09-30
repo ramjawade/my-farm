@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 from sqlalchemy import func, select
 
 from myfarm_api.core.db import get_session_factory
@@ -19,6 +19,11 @@ from myfarm_api.schemas.reference import (
 )
 
 router = APIRouter(prefix="/api/v1/reference", tags=["reference"])
+
+# Seeded lists with no create endpoint never change between deploys, so browsers
+# may reuse them instead of refetching on every page load (#316). The crop and
+# activity-type lists can grow via POST, so they are deliberately not cached.
+_STATIC_CACHE = "public, max-age=3600"
 
 
 @router.get("/crops", response_model=dict)
@@ -59,8 +64,9 @@ async def create_or_get_crop(
 
 
 @router.get("/expense-categories", response_model=dict)
-async def list_expense_categories() -> dict[str, Any]:
+async def list_expense_categories(response: Response) -> dict[str, Any]:
     """List all available expense categories."""
+    response.headers["Cache-Control"] = _STATIC_CACHE
     session_factory = get_session_factory()
     async with session_factory() as session:
         stmt = select(ExpenseCategory).order_by(ExpenseCategory.name)
@@ -109,8 +115,9 @@ async def create_or_get_activity_type(
 
 
 @router.get("/seasons", response_model=dict)
-async def list_seasons() -> dict[str, Any]:
+async def list_seasons(response: Response) -> dict[str, Any]:
     """List all available seasons."""
+    response.headers["Cache-Control"] = _STATIC_CACHE
     session_factory = get_session_factory()
     async with session_factory() as session:
         stmt = select(Season).order_by(Season.name)
@@ -122,8 +129,9 @@ async def list_seasons() -> dict[str, Any]:
 
 
 @router.get("/crop-stages", response_model=dict)
-async def list_crop_stages() -> dict[str, Any]:
+async def list_crop_stages(response: Response) -> dict[str, Any]:
     """List all available crop stages."""
+    response.headers["Cache-Control"] = _STATIC_CACHE
     session_factory = get_session_factory()
     async with session_factory() as session:
         stmt = select(CropStage).order_by(CropStage.name)

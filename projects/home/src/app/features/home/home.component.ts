@@ -58,9 +58,9 @@ export class HomeComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     const user = this.authService.currentUser();
     if (user) {
+      // Crops and activities are already loaded by their services on sign-in and kept
+      // current by every mutation; reloading them here only repeated both requests.
       this.farms.set(await this.farmDrawService.loadFarms(user.id));
-      void this.cropService.reload();
-      void this.activityService.reload();
     }
   }
 

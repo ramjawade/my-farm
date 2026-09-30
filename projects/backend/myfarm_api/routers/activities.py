@@ -177,30 +177,31 @@ async def get_activities_summary(
 
     pending_statuses = ["Scheduled", "Draft", "In Progress"]
 
+    # One round trip: the three counts are FILTERed aggregates over the same scan,
+    # and the expense total is a scalar subquery on the same conditions.
+    total_expense = (
+        select(func.coalesce(func.sum(ActivityExpense.amount), 0))
+        .select_from(ActivityExpense)
+        .join(Activity)
+        .where(and_(*conditions, ActivityExpense.deleted_at.is_(None)))
+        .scalar_subquery()
+    )
+    stmt = select(
+        func.count(),
+        func.count().filter(Activity.status == "Completed"),
+        func.count().filter(Activity.status.in_(pending_statuses)),
+        total_expense,
+    ).where(and_(*conditions))
+
     session_factory = get_session_factory()
     async with session_factory() as session:
-
-        async def count(*extra: Any) -> int:
-            stmt = select(func.count()).select_from(Activity).where(and_(*conditions, *extra))
-            return (await session.execute(stmt)).scalar_one()
-
-        total = await count()
-        completed = await count(Activity.status == "Completed")
-        in_progress = await count(Activity.status.in_(pending_statuses))
-        total_expense = (
-            await session.execute(
-                select(func.coalesce(func.sum(ActivityExpense.amount), 0))
-                .select_from(ActivityExpense)
-                .join(Activity)
-                .where(and_(*conditions, ActivityExpense.deleted_at.is_(None)))
-            )
-        ).scalar_one()
+        total, completed, in_progress, total_expense_value = (await session.execute(stmt)).one()
 
     return ActivitySummaryRead(
         total=total,
         completed=completed,
         in_progress=in_progress,
-        total_expense=float(total_expense or 0),
+        total_expense=float(total_expense_value or 0),
     )
 
 
@@ -218,6 +219,7 @@ async def list_all_expenses(
                 and_(
                     Activity.farmer_id == current_farmer.id,
                     Activity.deleted_at.is_(None),
+                    ActivityExpense.deleted_at.is_(None),
                 )
             )
         )
