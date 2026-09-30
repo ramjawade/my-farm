@@ -166,12 +166,16 @@
             "title": "Activity Meta"
           },
           "activity_type_id": {
+            "maximum": 9.223372036854776e+18,
+            "minimum": 1.0,
             "title": "Activity Type Id",
             "type": "integer"
           },
           "crop_id": {
             "anyOf": [
               {
+                "maximum": 9.223372036854776e+18,
+                "minimum": 1.0,
                 "type": "integer"
               },
               {
@@ -205,6 +209,8 @@
           "land_id": {
             "anyOf": [
               {
+                "maximum": 9.223372036854776e+18,
+                "minimum": 1.0,
                 "type": "integer"
               },
               {
@@ -227,6 +233,8 @@
           "parent_activity_id": {
             "anyOf": [
               {
+                "maximum": 9.223372036854776e+18,
+                "minimum": 1.0,
                 "type": "integer"
               },
               {
@@ -294,6 +302,8 @@
           "amount": {
             "anyOf": [
               {
+                "exclusiveMaximum": 10000000000.0,
+                "minimum": 0.0,
                 "type": "number"
               },
               {
@@ -307,6 +317,8 @@
             "title": "Amount"
           },
           "expense_category_id": {
+            "maximum": 9.223372036854776e+18,
+            "minimum": 1.0,
             "title": "Expense Category Id",
             "type": "integer"
           },
@@ -324,6 +336,8 @@
           "quantity": {
             "anyOf": [
               {
+                "exclusiveMaximum": 100000000.0,
+                "minimum": 0.0,
                 "type": "number"
               },
               {
@@ -339,6 +353,8 @@
           "rate": {
             "anyOf": [
               {
+                "exclusiveMaximum": 100000000.0,
+                "minimum": 0.0,
                 "type": "number"
               },
               {
@@ -525,6 +541,8 @@
           "amount": {
             "anyOf": [
               {
+                "exclusiveMaximum": 10000000000.0,
+                "minimum": 0.0,
                 "type": "number"
               },
               {
@@ -540,6 +558,8 @@
           "expense_category_id": {
             "anyOf": [
               {
+                "maximum": 9.223372036854776e+18,
+                "minimum": 1.0,
                 "type": "integer"
               },
               {
@@ -562,6 +582,8 @@
           "quantity": {
             "anyOf": [
               {
+                "exclusiveMaximum": 100000000.0,
+                "minimum": 0.0,
                 "type": "number"
               },
               {
@@ -577,6 +599,8 @@
           "rate": {
             "anyOf": [
               {
+                "exclusiveMaximum": 100000000.0,
+                "minimum": 0.0,
                 "type": "number"
               },
               {
@@ -850,6 +874,8 @@
           "activity_type_id": {
             "anyOf": [
               {
+                "maximum": 9.223372036854776e+18,
+                "minimum": 1.0,
                 "type": "integer"
               },
               {
@@ -861,6 +887,8 @@
           "crop_id": {
             "anyOf": [
               {
+                "maximum": 9.223372036854776e+18,
+                "minimum": 1.0,
                 "type": "integer"
               },
               {
@@ -894,6 +922,8 @@
           "land_id": {
             "anyOf": [
               {
+                "maximum": 9.223372036854776e+18,
+                "minimum": 1.0,
                 "type": "integer"
               },
               {
@@ -916,6 +946,8 @@
           "parent_activity_id": {
             "anyOf": [
               {
+                "maximum": 9.223372036854776e+18,
+                "minimum": 1.0,
                 "type": "integer"
               },
               {
@@ -938,6 +970,7 @@
           "status": {
             "anyOf": [
               {
+                "maxLength": 50,
                 "type": "string"
               },
               {
@@ -1463,6 +1496,8 @@
           "area": {
             "anyOf": [
               {
+                "exclusiveMaximum": 100000000.0,
+                "minimum": 0.0,
                 "type": "number"
               },
               {
@@ -1482,6 +1517,8 @@
             "type": "string"
           },
           "crop_catalog_id": {
+            "maximum": 9.223372036854776e+18,
+            "minimum": 1.0,
             "title": "Crop Catalog Id",
             "type": "integer"
           },
@@ -1519,6 +1556,8 @@
             "title": "Label"
           },
           "land_id": {
+            "maximum": 9.223372036854776e+18,
+            "minimum": 1.0,
             "title": "Land Id",
             "type": "integer"
           },
@@ -1696,6 +1735,8 @@
           "area": {
             "anyOf": [
               {
+                "exclusiveMaximum": 100000000.0,
+                "minimum": 0.0,
                 "type": "number"
               },
               {
@@ -1711,6 +1752,7 @@
           "area_unit": {
             "anyOf": [
               {
+                "maxLength": 50,
                 "type": "string"
               },
               {
@@ -1777,6 +1819,7 @@
           "status": {
             "anyOf": [
               {
+                "maxLength": 50,
                 "type": "string"
               },
               {
@@ -1823,6 +1866,8 @@
           "area": {
             "anyOf": [
               {
+                "exclusiveMaximum": 100000000.0,
+                "minimum": 0.0,
                 "type": "number"
               },
               {
@@ -1877,6 +1922,8 @@
           "lat": {
             "anyOf": [
               {
+                "maximum": 90.0,
+                "minimum": -90.0,
                 "type": "number"
               },
               {
@@ -1892,6 +1939,8 @@
           "lng": {
             "anyOf": [
               {
+                "maximum": 180.0,
+                "minimum": -180.0,
                 "type": "number"
               },
               {
@@ -1917,6 +1966,7 @@
           },
           "name": {
             "maxLength": 255,
+            "minLength": 1,
             "title": "Name",
             "type": "string"
           },
@@ -2161,6 +2211,8 @@
           "area": {
             "anyOf": [
               {
+                "exclusiveMaximum": 100000000.0,
+                "minimum": 0.0,
                 "type": "number"
               },
               {
@@ -2176,6 +2228,7 @@
           "area_unit": {
             "anyOf": [
               {
+                "maxLength": 50,
                 "type": "string"
               },
               {
@@ -2220,6 +2273,8 @@
           "lat": {
             "anyOf": [
               {
+                "maximum": 90.0,
+                "minimum": -90.0,
                 "type": "number"
               },
               {
@@ -2235,6 +2290,8 @@
           "lng": {
             "anyOf": [
               {
+                "maximum": 180.0,
+                "minimum": -180.0,
                 "type": "number"
               },
               {
@@ -2261,6 +2318,8 @@
           "name": {
             "anyOf": [
               {
+                "maxLength": 255,
+                "minLength": 1,
                 "type": "string"
               },
               {
@@ -2469,6 +2528,8 @@
           "area_sq_m": {
             "anyOf": [
               {
+                "exclusiveMaximum": 10000000000.0,
+                "minimum": 0.0,
                 "type": "number"
               },
               {
@@ -2482,11 +2543,14 @@
             "title": "Area Sq M"
           },
           "farm_id": {
+            "maximum": 9.223372036854776e+18,
+            "minimum": 1.0,
             "title": "Farm Id",
             "type": "integer"
           },
           "name": {
             "maxLength": 255,
+            "minLength": 1,
             "title": "Name",
             "type": "string"
           },
@@ -2505,7 +2569,7 @@
             "anyOf": [
               {
                 "items": {
-                  "$ref": "#/components/schemas/LandPoint-Input"
+                  "$ref": "#/components/schemas/LandPointInput"
                 },
                 "type": "array"
               },
@@ -2523,42 +2587,7 @@
         "title": "LandCreate",
         "type": "object"
       },
-      "LandPoint-Input": {
-        "description": "A GPS coordinate polygon vertex.",
-        "properties": {
-          "lat": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
-              }
-            ],
-            "title": "Lat"
-          },
-          "lng": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
-              }
-            ],
-            "title": "Lng"
-          }
-        },
-        "required": [
-          "lat",
-          "lng"
-        ],
-        "title": "LandPoint",
-        "type": "object"
-      },
-      "LandPoint-Output": {
+      "LandPoint": {
         "description": "A GPS coordinate polygon vertex.",
         "properties": {
           "lat": {
@@ -2577,6 +2606,45 @@
           "lng"
         ],
         "title": "LandPoint",
+        "type": "object"
+      },
+      "LandPointInput": {
+        "description": "A polygon vertex as submitted by a client (range-checked).",
+        "properties": {
+          "lat": {
+            "anyOf": [
+              {
+                "maximum": 90.0,
+                "minimum": -90.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Lat"
+          },
+          "lng": {
+            "anyOf": [
+              {
+                "maximum": 180.0,
+                "minimum": -180.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Lng"
+          }
+        },
+        "required": [
+          "lat",
+          "lng"
+        ],
+        "title": "LandPointInput",
         "type": "object"
       },
       "LandRead": {
@@ -2643,7 +2711,7 @@
             "anyOf": [
               {
                 "items": {
-                  "$ref": "#/components/schemas/LandPoint-Output"
+                  "$ref": "#/components/schemas/LandPoint"
                 },
                 "type": "array"
               },
@@ -2676,6 +2744,8 @@
           "area_sq_m": {
             "anyOf": [
               {
+                "exclusiveMaximum": 10000000000.0,
+                "minimum": 0.0,
                 "type": "number"
               },
               {
@@ -2691,6 +2761,8 @@
           "name": {
             "anyOf": [
               {
+                "maxLength": 255,
+                "minLength": 1,
                 "type": "string"
               },
               {
@@ -2714,7 +2786,7 @@
             "anyOf": [
               {
                 "items": {
-                  "$ref": "#/components/schemas/LandPoint-Input"
+                  "$ref": "#/components/schemas/LandPointInput"
                 },
                 "type": "array"
               },
@@ -3461,6 +3533,8 @@
             "name": "activity_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Activity Id",
               "type": "integer"
             }
@@ -3511,6 +3585,8 @@
             "name": "activity_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Activity Id",
               "type": "integer"
             }
@@ -3568,6 +3644,8 @@
             "name": "activity_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Activity Id",
               "type": "integer"
             }
@@ -3637,6 +3715,8 @@
             "name": "activity_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Activity Id",
               "type": "integer"
             }
@@ -3724,6 +3804,8 @@
             "name": "activity_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Activity Id",
               "type": "integer"
             }
@@ -3793,6 +3875,8 @@
             "name": "activity_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Activity Id",
               "type": "integer"
             }
@@ -3862,6 +3946,8 @@
             "name": "activity_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Activity Id",
               "type": "integer"
             }
@@ -3871,6 +3957,8 @@
             "name": "attachment_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Attachment Id",
               "type": "integer"
             }
@@ -3923,6 +4011,8 @@
             "name": "activity_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Activity Id",
               "type": "integer"
             }
@@ -4010,6 +4100,8 @@
             "name": "activity_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Activity Id",
               "type": "integer"
             }
@@ -4079,6 +4171,8 @@
             "name": "activity_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Activity Id",
               "type": "integer"
             }
@@ -4088,6 +4182,8 @@
             "name": "expense_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Expense Id",
               "type": "integer"
             }
@@ -4138,6 +4234,8 @@
             "name": "activity_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Activity Id",
               "type": "integer"
             }
@@ -4147,6 +4245,8 @@
             "name": "expense_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Expense Id",
               "type": "integer"
             }
@@ -4216,6 +4316,8 @@
             "name": "activity_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Activity Id",
               "type": "integer"
             }
@@ -4289,6 +4391,8 @@
             "name": "activity_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Activity Id",
               "type": "integer"
             }
@@ -4342,6 +4446,24 @@
       "post": {
         "description": "Seed reference tables with initial data.\n\nIdempotent: skips records that already exist (by name).",
         "operationId": "seed_reference_data_api_v1_admin_seed_reference_data_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-admin-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Admin-Token"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -4354,6 +4476,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
           }
         },
         "summary": "Seed Reference Data",
@@ -4699,7 +4831,7 @@
     },
     "/api/v1/auth/session": {
       "post": {
-        "description": "Verify phone + PIN, issue a session JWT.\n\nThe status code tells the login screen what to do next, so it never has\nto pre-check whether an account exists (issue #50):\n\n- **404** — no account for this phone → the client offers to register.\n- **401** — account exists, wrong PIN → the client says \"incorrect PIN\".\n- **200** — `{ token, farmer }`.",
+        "description": "Verify phone + PIN, issue a session JWT.\n\nThe status code tells the login screen what to do next, so it never has\nto pre-check whether an account exists (issue #50):\n\n- **404** — no account for this phone → the client offers to register.\n- **401** — account exists, wrong PIN → the client says \"incorrect PIN\".\n- **429** — too many wrong PINs for this phone; see `Retry-After` (#308).\n- **200** — `{ token, farmer }`.",
         "operationId": "create_session_api_v1_auth_session_post",
         "requestBody": {
           "content": {
@@ -4920,6 +5052,8 @@
             "name": "crop_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Crop Id",
               "type": "integer"
             }
@@ -4970,6 +5104,8 @@
             "name": "crop_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Crop Id",
               "type": "integer"
             }
@@ -5027,6 +5163,8 @@
             "name": "crop_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Crop Id",
               "type": "integer"
             }
@@ -5206,6 +5344,8 @@
             "name": "farm_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Farm Id",
               "type": "integer"
             }
@@ -5256,6 +5396,8 @@
             "name": "farm_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Farm Id",
               "type": "integer"
             }
@@ -5313,6 +5455,8 @@
             "name": "farm_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Farm Id",
               "type": "integer"
             }
@@ -5492,6 +5636,8 @@
             "name": "land_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Land Id",
               "type": "integer"
             }
@@ -5542,6 +5688,8 @@
             "name": "land_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Land Id",
               "type": "integer"
             }
@@ -5599,6 +5747,8 @@
             "name": "land_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Land Id",
               "type": "integer"
             }

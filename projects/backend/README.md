@@ -89,7 +89,7 @@ attempts. List endpoints return all rows for the farmer in a single call.
 ### Admin endpoints
 
 **Data initialization:**
-- `POST /api/v1/admin/seed-reference-data` — seed crops, expenses, and activity types (idempotent)
+- `POST /api/v1/admin/seed-reference-data` — seed crops, expenses, and activity types (idempotent). Requires the `X-Admin-Token` header matching `ADMIN_TOKEN`; with `ADMIN_TOKEN` unset the admin routes return 403.
 
 ### Technical details
 

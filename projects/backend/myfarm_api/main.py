@@ -4,9 +4,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import DBAPIError
 
 from myfarm_api.core.config import get_settings
 from myfarm_api.core.db import get_engine
+from myfarm_api.core.dberrors import unprocessable_message
 from myfarm_api.routers import (
     activities,
     admin,
@@ -54,6 +56,19 @@ def create_app() -> FastAPI:
             content=problem.model_dump(),
             media_type="application/problem+json",
             headers=exc.headers,
+        )
+
+    @app.exception_handler(DBAPIError)
+    async def db_input_error_handler(request: Request, exc: DBAPIError) -> JSONResponse:
+        # A constraint/range failure caused by the request (bad foreign key,
+        # overflow, ...) is a 422, not a server fault. Anything else is a real
+        # 500 and keeps the default behaviour.
+        message = unprocessable_message(exc)
+        if message is None:
+            raise exc
+        problem = ProblemDetail(title=message, status=422)
+        return JSONResponse(
+            status_code=422, content=problem.model_dump(), media_type="application/problem+json"
         )
 
     app.include_router(health.router)

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
+from myfarm_api.core import login_throttle
 from myfarm_api.core.security import (
     FirebaseIdentity,
     get_firebase_identity,
@@ -63,8 +64,16 @@ async def create_session(body: SessionRequest) -> SessionResponse:
 
     - **404** — no account for this phone → the client offers to register.
     - **401** — account exists, wrong PIN → the client says "incorrect PIN".
+    - **429** — too many wrong PINs for this phone; see `Retry-After` (#308).
     - **200** — `{ token, farmer }`.
     """
+    wait = login_throttle.retry_after(body.phone)
+    if wait:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many incorrect PIN attempts. Try again later.",
+            headers={"Retry-After": str(wait)},
+        )
     farmer = await FarmerRepository.get_by_phone(body.phone)
     if farmer is None:
         raise HTTPException(
@@ -72,10 +81,12 @@ async def create_session(body: SessionRequest) -> SessionResponse:
             detail="No account for that phone number",
         )
     if not verify_pin(body.pin, farmer.pin_hash):
+        login_throttle.record_failure(body.phone)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect PIN",
         )
+    login_throttle.record_success(body.phone)
 
     return SessionResponse(
         token=issue_session_jwt(farmer.auth_uid),

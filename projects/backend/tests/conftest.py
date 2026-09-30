@@ -27,6 +27,7 @@ from sqlalchemy.ext.asyncio import (  # noqa: E402
     create_async_engine,
 )
 
+from myfarm_api.core import login_throttle  # noqa: E402
 from myfarm_api.core.db import get_session_factory  # noqa: E402
 from myfarm_api.main import app  # noqa: E402
 from myfarm_api.models import ActivityType, CropCatalog, ExpenseCategory  # noqa: E402
@@ -100,6 +101,12 @@ async def app_role_session(app_role_engine: AsyncEngine) -> AsyncIterator[AsyncS
     async with factory() as session:
         yield session
         await session.rollback()
+
+
+@pytest.fixture(autouse=True)
+def _reset_login_throttle() -> None:
+    """Failed-login counters are process-global; never let one test lock out another."""
+    login_throttle.reset()
 
 
 @pytest_asyncio.fixture

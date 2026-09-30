@@ -20,6 +20,7 @@ export type SessionOutcome =
   | { status: 'ok'; result: SessionResult }
   | { status: 'no-account' }
   | { status: 'wrong-pin' }
+  | { status: 'locked' }
   | { status: 'unreachable' };
 
 /** Outcome of a registration attempt. */
@@ -76,7 +77,7 @@ export class SessionAuthService {
   private readonly httpService = inject(HttpService);
 
   /** Exchange phone + PIN for a session. The backend's status code maps
-   * straight to the outcome — `404 -> no-account`, `401 -> wrong-pin` — so
+   * straight to the outcome — `404 -> no-account`, `401 -> wrong-pin`, `429 -> locked` — so
    * there is no separate "does this phone exist" pre-check. */
   async createSession(phone: string, pin: string): Promise<SessionOutcome> {
     try {
@@ -87,6 +88,7 @@ export class SessionAuthService {
       if (err instanceof HttpErrorResponse) {
         if (err.status === 404) return { status: 'no-account' };
         if (err.status === 401) return { status: 'wrong-pin' };
+        if (err.status === 429) return { status: 'locked' };
       }
       return { status: 'unreachable' };
     }

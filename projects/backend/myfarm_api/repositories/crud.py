@@ -12,6 +12,7 @@ from sqlalchemy import and_, select
 from sqlalchemy.exc import IntegrityError
 
 from myfarm_api.core.db import get_session_factory
+from myfarm_api.core.dberrors import is_unique_violation
 from myfarm_api.models import TenantScopedBase
 
 
@@ -68,6 +69,8 @@ class TenantScopedCRUD[T: TenantScopedBase]:
                 await session.commit()
             except IntegrityError as e:
                 await session.rollback()
+                if not is_unique_violation(e):
+                    raise
                 raise ConflictError(f"Record with id {obj.id} already exists") from e
             await session.refresh(obj)
             return obj

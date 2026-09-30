@@ -9,6 +9,7 @@ from myfarm_api.models import Farm, Farmer
 from myfarm_api.repositories.crud import ConflictError
 from myfarm_api.repositories.entities import farm_repo
 from myfarm_api.repositories.farmer import FarmerRepository
+from myfarm_api.schemas.common import DbId
 from myfarm_api.schemas.farm import FarmCreate, FarmRead, FarmUpdate
 
 router = APIRouter(prefix="/api/v1/farms", tags=["farms"])
@@ -34,7 +35,7 @@ async def list_farms(
 
 @router.get("/{farm_id}", response_model=FarmRead)
 async def get_farm(
-    farm_id: int,
+    farm_id: DbId,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> FarmRead:
     """Get a single farm by ID."""
@@ -60,7 +61,7 @@ async def create_farm(
 
 @router.patch("/{farm_id}", response_model=FarmRead)
 async def update_farm(
-    farm_id: int,
+    farm_id: DbId,
     data: FarmUpdate,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> FarmRead:
@@ -75,7 +76,7 @@ async def update_farm(
 
 @router.delete("/{farm_id}", status_code=204)
 async def delete_farm(
-    farm_id: int,
+    farm_id: DbId,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> None:
     """Soft-delete a farm."""

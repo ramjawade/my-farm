@@ -10,6 +10,7 @@ from myfarm_api.models import Crop, Farmer
 from myfarm_api.repositories.crud import ConflictError
 from myfarm_api.repositories.entities import crop_repo, land_repo
 from myfarm_api.repositories.farmer import FarmerRepository
+from myfarm_api.schemas.common import DbId
 from myfarm_api.schemas.crop import CropCreate, CropRead, CropUpdate
 
 router = APIRouter(prefix="/api/v1/crops", tags=["crops"])
@@ -35,7 +36,7 @@ async def list_crops(
 
 @router.get("/{crop_id}", response_model=CropRead)
 async def get_crop(
-    crop_id: int,
+    crop_id: DbId,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> CropRead:
     """Get a single crop by ID."""
@@ -63,7 +64,7 @@ async def create_crop(
 
 @router.patch("/{crop_id}", response_model=CropRead)
 async def update_crop(
-    crop_id: int,
+    crop_id: DbId,
     data: CropUpdate,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> CropRead:
@@ -78,7 +79,7 @@ async def update_crop(
 
 @router.delete("/{crop_id}", status_code=204)
 async def delete_crop(
-    crop_id: int,
+    crop_id: DbId,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> None:
     """Soft-delete a crop."""

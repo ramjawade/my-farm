@@ -5,6 +5,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from myfarm_api.schemas.common import BodyId, IsoDate, NonNullUpdate
+
 
 class ActivityBase(BaseModel):
     """Shared activity fields."""
@@ -24,18 +26,26 @@ class ActivityBase(BaseModel):
 class ActivityCreate(ActivityBase):
     """Create an activity."""
 
+    activity_type_id: BodyId
+    crop_id: BodyId | None = None
+    land_id: BodyId | None = None
+    parent_activity_id: BodyId | None = None
+    date: IsoDate | None = None
 
-class ActivityUpdate(BaseModel):
+
+class ActivityUpdate(NonNullUpdate):
     """Update activity fields."""
 
-    activity_type_id: int | None = None
-    crop_id: int | None = None
-    land_id: int | None = None
-    parent_activity_id: int | None = None
+    non_null = ("activity_type_id", "status")
+
+    activity_type_id: BodyId | None = None
+    crop_id: BodyId | None = None
+    land_id: BodyId | None = None
+    parent_activity_id: BodyId | None = None
     custom_activity_name: str | None = None
-    date: str | None = None
+    date: IsoDate | None = None
     season: str | None = None
-    status: str | None = None
+    status: str | None = Field(None, max_length=50)
     notes: str | None = None
     activity_meta: dict[str, Any] | None = None
 
