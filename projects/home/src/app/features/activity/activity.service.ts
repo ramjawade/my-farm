@@ -73,7 +73,30 @@ export class ActivityService {
     return this.loadFromStorage();
   }
 
-  private async loadFromStorage(): Promise<void> {
+  /** The load currently running, and the mutation generation it started at. */
+  private inFlightLoad: { promise: Promise<void>; generation: number; userId: number } | null =
+    null;
+
+  /**
+   * Overlapping callers (the auth effect plus a page's own `reload()`) share one
+   * request. A mutation since the load started invalidates it, so a reload after
+   * a failed write still fetches fresh data.
+   */
+  private loadFromStorage(): Promise<void> {
+    const userId = this.getCurrentUserId();
+    const current = this.inFlightLoad;
+    if (current && current.generation === this.mutationGeneration && current.userId === userId) {
+      return current.promise;
+    }
+    const generation = this.mutationGeneration + 1;
+    const promise = this.fetchFromStorage().finally(() => {
+      if (this.inFlightLoad?.promise === promise) this.inFlightLoad = null;
+    });
+    this.inFlightLoad = { promise, generation, userId };
+    return promise;
+  }
+
+  private async fetchFromStorage(): Promise<void> {
     const generation = ++this.mutationGeneration;
 
     try {

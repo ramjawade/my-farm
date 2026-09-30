@@ -424,7 +424,28 @@ export class CropTimelineService {
     return user ? this.loadForUser(user.id) : Promise.resolve();
   }
 
-  private async loadForUser(userId: number): Promise<void> {
+  /** The load currently running, and the generation it started at. */
+  private inFlightLoad: { promise: Promise<void>; generation: number; userId: number } | null =
+    null;
+
+  /**
+   * Overlapping callers (the auth effect plus a page's own `reload()`) share one
+   * request; a mutation since the load started invalidates it.
+   */
+  private loadForUser(userId: number): Promise<void> {
+    const current = this.inFlightLoad;
+    if (current && current.generation === this.generation && current.userId === userId) {
+      return current.promise;
+    }
+    const generation = this.generation + 1;
+    const promise = this.fetchForUser(userId).finally(() => {
+      if (this.inFlightLoad?.promise === promise) this.inFlightLoad = null;
+    });
+    this.inFlightLoad = { promise, generation, userId };
+    return promise;
+  }
+
+  private async fetchForUser(userId: number): Promise<void> {
     const generation = ++this.generation;
     try {
       let crops = await this.storage.getCrops(userId);

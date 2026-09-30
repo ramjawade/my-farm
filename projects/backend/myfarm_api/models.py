@@ -15,6 +15,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     func,
+    text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -150,6 +151,9 @@ class Farm(TenantScopedBase):
     """A farm belonging to a farmer."""
 
     __tablename__ = "farm"
+    __table_args__ = (
+        Index("idx_farm_farmer_id", "farmer_id"),
+    )
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     area: Mapped[Decimal | None] = mapped_column(Numeric(10, 2), nullable=True)
@@ -203,6 +207,9 @@ class Land(TenantScopedBase):
     """A plot of land belonging to a farmer."""
 
     __tablename__ = "land"
+    __table_args__ = (
+        Index("idx_land_farmer_id", "farmer_id"),
+    )
 
     farm_id: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("farm.id"), nullable=False
@@ -250,6 +257,9 @@ class Crop(TenantScopedBase):
     """A crop planted on a specific land plot."""
 
     __tablename__ = "crop"
+    __table_args__ = (
+        Index("idx_crop_farmer_id", "farmer_id"),
+    )
 
     land_id: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("land.id"), nullable=False
@@ -280,6 +290,18 @@ class Activity(TenantScopedBase):
     """A farm activity (irrigation, spraying, harvesting, etc.)."""
 
     __tablename__ = "activity"
+    __table_args__ = (
+        # Serves list_all (filter farmer_id, newest first) without a sort.
+        Index(
+            "idx_activity_farmer_updated",
+            "farmer_id",
+            text("updated_at DESC"),
+            text("id DESC"),
+            postgresql_where=text("deleted_at IS NULL"),
+        ),
+        Index("idx_activity_crop_id", "crop_id"),
+        Index("idx_activity_land_id", "land_id"),
+    )
 
     parent_activity_id: Mapped[int | None] = mapped_column(
         BigInteger, ForeignKey("activity.id"), nullable=True
@@ -321,6 +343,9 @@ class ActivityExpense(Base):
     """An expense line item for an activity."""
 
     __tablename__ = "activity_expense"
+    __table_args__ = (
+        Index("idx_activity_expense_activity_id", "activity_id"),
+    )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     activity_id: Mapped[int] = mapped_column(

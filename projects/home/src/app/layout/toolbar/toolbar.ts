@@ -17,9 +17,12 @@ export class Toolbar {
   readonly menuToggle = output<void>();
 
   readonly currentUser = this.authService.currentUser;
-  readonly avatarUrl = computed(() => {
-    const name = this.currentUser()?.fullName || 'User';
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2e7d32&color=fff`;
+  /** Up to two initials, drawn locally — no third-party image request. */
+  readonly initials = computed(() => {
+    const name = this.currentUser()?.fullName?.trim() || 'User';
+    const words = name.split(/\s+/);
+    const letters = words.length > 1 ? words[0][0] + words[words.length - 1][0] : words[0][0];
+    return letters.toUpperCase();
   });
 
   readonly languages = SUPPORTED_LANGUAGES;
@@ -57,11 +60,6 @@ export class Toolbar {
     }
     this.authService.updateProfile({ preferredLanguage: lang.value });
     this.languageDropdownOpen.set(false);
-  }
-
-  fallbackAvatar(event: Event): void {
-    const img = event.target as HTMLImageElement;
-    img.src = this.avatarUrl();
   }
 
   @HostListener('document:click')
