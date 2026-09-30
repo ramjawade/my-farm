@@ -6,13 +6,13 @@ Migration Plan). Backend tasks: `ruff`, `mypy`, `pytest`; after any router/schem
 
 ## 1. API pagination, filters and sorts (PR 1, backend, default still unlimited)
 
-- [ ] 1.1 Add a cursor codec (base64url JSON `{s,k,id}`) with encode/decode and 422 on malformed or wrong-sort cursors. Verify: unit tests for round-trip, tampering and sort mismatch.
-- [ ] 1.2 Rebuild `GET /activities` as one query path: `limit` (1–100), `cursor`, `status`, `crop_id`, new `season`, `land_id`, `activity_type_id`; return `{ items, cursor, has_more }`; remove the no-params fast path; default limit constant `None`. Verify: existing activity endpoint tests still pass unchanged.
-- [ ] 1.3 Implement sorts default, `date_asc`, `date_desc` (nulls last, id tie-break) and `cost_desc` (correlated expense-sum subquery) with the keyset predicates from design.md. Verify: a traversal test per sort over data with null dates, duplicate dates and equal costs asserts every row exactly once, in order.
-- [ ] 1.4 Paginate `GET /activities/expenses` (`limit`, `cursor`, `{ items, cursor, has_more }`, order `updated_at DESC, id DESC`, excluding soft-deleted expenses and deleted activities). Verify: tests for limit honoured, full traversal, deleted expense absent, cross-tenant isolation.
-- [ ] 1.5 Test mid-traversal changes (create/update while paging never repeats an already-returned row) and filter-across-pages (120 of 300 matching). Verify: new tests pass.
-- [ ] 1.6 Check query plans on the 150k-row seed: default and `date_desc` list use an index, `cost_desc` uses `idx_activity_expense_activity_id`. Verify: paste `EXPLAIN` summaries and timings in the PR.
-- [ ] 1.7 Regenerate `openapi.json` and frontend contracts. Verify: `git diff --exit-code` after regeneration in CI ("Verify ... up to date" steps green). Run `ruff`, `mypy`, `pytest`.
+- [x] 1.1 Add a cursor codec (base64url JSON `{s,k,id}`) with encode/decode and 422 on malformed or wrong-sort cursors. Verify: unit tests for round-trip, tampering and sort mismatch.
+- [x] 1.2 Rebuild `GET /activities` as one query path: `limit` (1–100), `cursor`, `status`, `crop_id`, new `season`, `land_id`, `activity_type_id`; return `{ items, cursor, has_more }`; remove the no-params fast path; default limit constant `None`. Verify: existing activity endpoint tests still pass unchanged.
+- [x] 1.3 Implement sorts default, `date_asc`, `date_desc` (nulls last, id tie-break) and `cost_desc` (correlated expense-sum subquery) with the keyset predicates from design.md. Verify: a traversal test per sort over data with null dates, duplicate dates and equal costs asserts every row exactly once, in order.
+- [x] 1.4 Paginate `GET /activities/expenses` (`limit`, `cursor`, `{ items, cursor, has_more }`, order `updated_at DESC, id DESC`, excluding soft-deleted expenses and deleted activities). Verify: tests for limit honoured, full traversal, deleted expense absent, cross-tenant isolation.
+- [x] 1.5 Test mid-traversal changes (create/update while paging never repeats an already-returned row) and filter-across-pages (120 of 300 matching). Verify: new tests pass.
+- [x] 1.6 Check query plans on the 150k-row seed: default and `date_desc` list use an index, `cost_desc` uses `idx_activity_expense_activity_id`. Verify: paste `EXPLAIN` summaries and timings in the PR.
+- [x] 1.7 Regenerate `openapi.json` and frontend contracts. Verify: `git diff --exit-code` after regeneration in CI ("Verify ... up to date" steps green). Run `ruff`, `mypy`, `pytest`.
 
 ## 2. Client paging and list page (PR 2, frontend)
 

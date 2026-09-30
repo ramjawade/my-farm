@@ -3167,7 +3167,7 @@
   "paths": {
     "/api/v1/activities": {
       "get": {
-        "description": "List activities for the current farmer.\n\nWith no query params, behaves exactly as before (everything, newest\nupdated first) via `activity_repo.list_all`. `status` (repeatable),\n`crop_id`, `sort` and `limit` are additive filters for callers that\nneed a targeted slice (e.g. the activity dashboard's upcoming/recent\nlists) instead of the full list.",
+        "description": "List activities for the current farmer, one cursor-paginated page at a time.\n\nReturns `{ items, cursor, has_more }`; follow `cursor` until `has_more` is false to\ntraverse every match exactly once. Sorts: default (most recently updated first),\n`date_asc`, `date_desc` (undated last) and `cost_desc`; ties break on id. Filters\ncombine with AND and apply before paging.",
         "operationId": "list_activities_api_v1_activities_get",
         "parameters": [
           {
@@ -3196,6 +3196,8 @@
             "schema": {
               "anyOf": [
                 {
+                  "maximum": 9223372036854775807,
+                  "minimum": 1,
                   "type": "integer"
                 },
                 {
@@ -3207,12 +3209,64 @@
           },
           {
             "in": "query",
+            "name": "season",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Season"
+            }
+          },
+          {
+            "in": "query",
+            "name": "land_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 9223372036854775807,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Land Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "activity_type_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 9223372036854775807,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Activity Type Id"
+            }
+          },
+          {
+            "in": "query",
             "name": "sort",
             "required": false,
             "schema": {
               "anyOf": [
                 {
-                  "pattern": "^(date_asc|date_desc)$",
+                  "pattern": "^(date_asc|date_desc|cost_desc)$",
                   "type": "string"
                 },
                 {
@@ -3238,6 +3292,22 @@
                 }
               ],
               "title": "Limit"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
             }
           },
           {
@@ -3347,9 +3417,43 @@
     },
     "/api/v1/activities/expenses": {
       "get": {
-        "description": "List all expenses for the current farmer (joined through activities).",
+        "description": "List the current farmer's expenses (joined through activities), one page at a time.\n\nReturns `{ items, cursor, has_more }`, most recently updated first with an id\ntie-break; soft-deleted expenses and expenses of deleted activities are excluded.",
         "operationId": "list_all_expenses_api_v1_activities_expenses_get",
         "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Limit"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
           {
             "in": "header",
             "name": "authorization",
