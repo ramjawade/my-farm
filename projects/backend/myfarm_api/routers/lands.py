@@ -10,6 +10,7 @@ from myfarm_api.models import Farmer, Land, LandPoint
 from myfarm_api.repositories.crud import ConflictError
 from myfarm_api.repositories.entities import farm_repo, land_repo
 from myfarm_api.repositories.farmer import FarmerRepository
+from myfarm_api.schemas.common import DbId
 from myfarm_api.schemas.land import LandCreate, LandRead, LandUpdate
 
 router = APIRouter(prefix="/api/v1/lands", tags=["lands"])
@@ -35,7 +36,7 @@ async def list_lands(
 
 @router.get("/{land_id}", response_model=LandRead)
 async def get_land(
-    land_id: int,
+    land_id: DbId,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> LandRead:
     """Get a single land by ID."""
@@ -84,7 +85,7 @@ async def create_land(
 
 @router.patch("/{land_id}", response_model=LandRead)
 async def update_land(
-    land_id: int,
+    land_id: DbId,
     data: LandUpdate,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> LandRead:
@@ -120,7 +121,7 @@ async def update_land(
 
 @router.delete("/{land_id}", status_code=204)
 async def delete_land(
-    land_id: int,
+    land_id: DbId,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> None:
     """Soft-delete a land."""

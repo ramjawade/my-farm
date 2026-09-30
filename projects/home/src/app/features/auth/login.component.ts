@@ -86,6 +86,11 @@ export class LoginComponent {
         case 'wrong-pin':
           this.errorMessage.set('Incorrect PIN. Please try again.');
           return;
+        case 'locked':
+          this.errorMessage.set(
+            'Too many incorrect PIN attempts. Please try again in a few minutes.',
+          );
+          return;
         case 'unreachable':
           this.errorMessage.set(UNREACHABLE);
           return;

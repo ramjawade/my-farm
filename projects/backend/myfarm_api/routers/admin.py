@@ -1,14 +1,32 @@
 """Admin endpoints for database seeding and maintenance."""
 
+import hmac
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy import Select, select
 
+from myfarm_api.core.config import get_settings
 from myfarm_api.core.db import get_session_factory
 from myfarm_api.models import ActivityType, CropCatalog, ExpenseCategory
 
-router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
+
+async def require_admin_token(x_admin_token: str | None = Header(default=None)) -> None:
+    """Gate every admin route on the shared `X-Admin-Token` secret (#309).
+
+    A blank `ADMIN_TOKEN` disables the admin endpoints (403) rather than
+    leaving them open.
+    """
+    expected = get_settings().admin_token
+    if not expected:
+        raise HTTPException(status_code=403, detail="Admin endpoints are disabled")
+    if x_admin_token is None or not hmac.compare_digest(x_admin_token, expected):
+        raise HTTPException(status_code=401, detail="Invalid admin token")
+
+
+router = APIRouter(
+    prefix="/api/v1/admin", tags=["admin"], dependencies=[Depends(require_admin_token)]
+)
 
 # These three lists are load-bearing, not illustrative: the frontend maps a
 # fixed free-text enum to one of these rows by exact name match (see

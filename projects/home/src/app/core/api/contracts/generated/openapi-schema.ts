@@ -422,6 +422,7 @@ export interface paths {
      *
      *     - **404** — no account for this phone → the client offers to register.
      *     - **401** — account exists, wrong PIN → the client says "incorrect PIN".
+     *     - **429** — too many wrong PINs for this phone; see `Retry-After` (#308).
      *     - **200** — `{ token, farmer }`.
      */
     post: operations['create_session_api_v1_auth_session_post'];
@@ -1628,27 +1629,27 @@ export interface components {
       /** Notes */
       notes?: string | null;
       /** Points */
-      points?: components['schemas']['LandPoint-Input'][] | null;
+      points?: components['schemas']['LandPointInput'][] | null;
     };
     /**
      * LandPoint
      * @description A GPS coordinate polygon vertex.
      */
-    'LandPoint-Input': {
-      /** Lat */
-      lat: number | string;
-      /** Lng */
-      lng: number | string;
-    };
-    /**
-     * LandPoint
-     * @description A GPS coordinate polygon vertex.
-     */
-    'LandPoint-Output': {
+    LandPoint: {
       /** Lat */
       lat: string;
       /** Lng */
       lng: string;
+    };
+    /**
+     * LandPointInput
+     * @description A polygon vertex as submitted by a client (range-checked).
+     */
+    LandPointInput: {
+      /** Lat */
+      lat: number | string;
+      /** Lng */
+      lng: number | string;
     };
     /**
      * LandRead
@@ -1675,7 +1676,7 @@ export interface components {
       /** Notes */
       notes?: string | null;
       /** Points */
-      points?: components['schemas']['LandPoint-Output'][] | null;
+      points?: components['schemas']['LandPoint'][] | null;
       /**
        * Updated At
        * Format: date-time
@@ -1694,7 +1695,7 @@ export interface components {
       /** Notes */
       notes?: string | null;
       /** Points */
-      points?: components['schemas']['LandPoint-Input'][] | null;
+      points?: components['schemas']['LandPointInput'][] | null;
     };
     /**
      * RegisterRequest
@@ -2463,7 +2464,9 @@ export interface operations {
   seed_reference_data_api_v1_admin_seed_reference_data_post: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        'x-admin-token'?: string | null;
+      };
       path?: never;
       cookie?: never;
     };
@@ -2478,6 +2481,15 @@ export interface operations {
           'application/json': {
             [key: string]: unknown;
           };
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
         };
       };
     };

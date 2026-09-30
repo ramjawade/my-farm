@@ -29,6 +29,8 @@ services:
         sync: false # Neon pooled endpoint, postgresql+asyncpg://…
       - key: SESSION_JWT_SECRET
         sync: false # HS256 signing key for PIN session tokens (issue #45)
+      - key: ADMIN_TOKEN
+        sync: false # shared secret for /api/v1/admin/* (X-Admin-Token); blank disables them
       - key: FIREBASE_PROJECT_ID
         sync: false # may be "" — the session JWT path does not need it
       - key: CORS_ORIGINS

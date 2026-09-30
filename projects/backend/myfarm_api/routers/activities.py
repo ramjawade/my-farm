@@ -5,9 +5,11 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import and_, func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from myfarm_api.core.db import get_session_factory
+from myfarm_api.core.dberrors import is_unique_violation
 from myfarm_api.core.r2 import get_r2_service
 from myfarm_api.core.security import FirebaseIdentity, get_firebase_identity
 from myfarm_api.core.tenancy import ensure_owned
@@ -40,6 +42,7 @@ from myfarm_api.schemas.activity_expense import (
     ActivityExpenseUpdate,
 )
 from myfarm_api.schemas.activity_history import ActivityHistoryRead
+from myfarm_api.schemas.common import DbId
 
 router = APIRouter(prefix="/api/v1/activities", tags=["activities"])
 
@@ -64,7 +67,7 @@ async def _get_owned_activity(current_farmer: Farmer, activity_id: int) -> Activ
 
 
 async def _record_history(
-    activity_id: int,
+    activity_id: DbId,
     event_type: str,
     detail: dict[str, Any] | None = None,
     session: AsyncSession | None = None,
@@ -227,7 +230,7 @@ async def list_all_expenses(
 
 @router.get("/{activity_id}", response_model=ActivityRead)
 async def get_activity(
-    activity_id: int,
+    activity_id: DbId,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> ActivityRead:
     """Get a single activity by ID."""
@@ -258,7 +261,7 @@ async def create_activity(
 
 @router.patch("/{activity_id}", response_model=ActivityRead)
 async def update_activity(
-    activity_id: int,
+    activity_id: DbId,
     data: ActivityUpdate,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> ActivityRead:
@@ -286,7 +289,7 @@ async def update_activity(
 
 @router.delete("/{activity_id}", status_code=204)
 async def delete_activity(
-    activity_id: int,
+    activity_id: DbId,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> None:
     """Soft-delete an activity."""
@@ -306,7 +309,7 @@ async def delete_activity(
 
 @router.get("/{activity_id}/expenses", response_model=dict)
 async def list_activity_expenses(
-    activity_id: int,
+    activity_id: DbId,
     current_farmer: Farmer = Depends(get_current_farmer),
     cursor: str | None = Query(None),
     limit: int = Query(20, ge=1, le=100),
@@ -353,7 +356,7 @@ async def list_activity_expenses(
 
 @router.post("/{activity_id}/expenses", response_model=ActivityExpenseRead, status_code=201)
 async def create_activity_expense(
-    activity_id: int,
+    activity_id: DbId,
     data: ActivityExpenseCreate,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> ActivityExpenseRead:
@@ -376,12 +379,15 @@ async def create_activity_expense(
         )
         try:
             await session.commit()
-        except Exception as e:
+        except IntegrityError as e:
             await session.rollback()
-            if "duplicate key" in str(e).lower() or "integrity" in str(e).lower():
+            if is_unique_violation(e):
                 raise HTTPException(
                     status_code=409, detail="Expense with this ID already exists"
                 ) from e
+            raise
+        except Exception:
+            await session.rollback()
             raise
         await session.refresh(expense)
     return ActivityExpenseRead.model_validate(expense)
@@ -392,8 +398,8 @@ async def create_activity_expense(
     response_model=ActivityExpenseRead,
 )
 async def update_activity_expense(
-    activity_id: int,
-    expense_id: int,
+    activity_id: DbId,
+    expense_id: DbId,
     data: ActivityExpenseUpdate,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> ActivityExpenseRead:
@@ -426,8 +432,8 @@ async def update_activity_expense(
 
 @router.delete("/{activity_id}/expenses/{expense_id}", status_code=204)
 async def delete_activity_expense(
-    activity_id: int,
-    expense_id: int,
+    activity_id: DbId,
+    expense_id: DbId,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> None:
     """Soft-delete an expense for an activity."""
@@ -459,7 +465,7 @@ async def delete_activity_expense(
 
 @router.get("/{activity_id}/history", response_model=dict)
 async def get_activity_history(
-    activity_id: int,
+    activity_id: DbId,
     current_farmer: Farmer = Depends(get_current_farmer),
     limit: int = Query(100, ge=1, le=500),
 ) -> dict[str, Any]:
@@ -481,7 +487,7 @@ async def get_activity_history(
 
 @router.get("/{activity_id}/summary", response_model=ActivityDetailSummaryRead)
 async def get_activity_detail_summary(
-    activity_id: int,
+    activity_id: DbId,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> ActivityDetailSummaryRead:
     """Get per-activity KPI summary: total expense, expense count, age, status."""
@@ -515,7 +521,7 @@ async def get_activity_detail_summary(
 
 @router.get("/{activity_id}/attachments", response_model=dict)
 async def list_activity_attachments(
-    activity_id: int,
+    activity_id: DbId,
     current_farmer: Farmer = Depends(get_current_farmer),
     cursor: str | None = Query(None),
     limit: int = Query(20, ge=1, le=100),
@@ -564,7 +570,7 @@ async def list_activity_attachments(
     "/{activity_id}/attachments/upload", response_model=ActivityAttachmentUploadResponse
 )
 async def get_attachment_upload_url(
-    activity_id: int,
+    activity_id: DbId,
     request: ActivityAttachmentUploadRequest,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> ActivityAttachmentUploadResponse:
@@ -593,7 +599,7 @@ async def get_attachment_upload_url(
     "/{activity_id}/attachments", response_model=ActivityAttachmentRead, status_code=201
 )
 async def create_activity_attachment(
-    activity_id: int,
+    activity_id: DbId,
     data: ActivityAttachmentCreate,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> ActivityAttachmentRead:
@@ -611,8 +617,8 @@ async def create_activity_attachment(
 
 @router.delete("/{activity_id}/attachments/{attachment_id}", status_code=204)
 async def delete_activity_attachment(
-    activity_id: int,
-    attachment_id: int,
+    activity_id: DbId,
+    attachment_id: DbId,
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> None:
     """Soft-delete an attachment for an activity.

@@ -34,6 +34,17 @@ class Settings(BaseSettings):
     session_jwt_secret: str = ""
     session_jwt_ttl_seconds: int = 24 * 60 * 60
 
+    # PIN login throttle (#308): after this many wrong PINs for one phone the
+    # phone is locked out for `login_lockout_seconds`. Counters are in-process
+    # (one Render instance), so they reset on restart — a speed bump against
+    # PIN guessing, not a substitute for long PINs.
+    login_max_failures: int = 5
+    login_lockout_seconds: int = 15 * 60
+
+    # Shared secret for /api/v1/admin/* (#309), sent as `X-Admin-Token`. Blank
+    # disables the admin endpoints entirely.
+    admin_token: str = ""
+
     # Comma-separated allowlist. The GitHub Pages origin in production;
     # localhost during development.
     cors_origins: str = "http://localhost:4200"

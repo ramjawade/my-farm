@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from myfarm_api.schemas.farmer import FarmerRead
 
-_PIN_RE = re.compile(r"^\d{4,6}$")
+_PIN_RE = re.compile(r"\d{4,6}")
 
 
 def normalize_phone(raw: str) -> str:
@@ -31,7 +31,7 @@ class _PhonePin(BaseModel):
     @field_validator("pin")
     @classmethod
     def _check_pin(cls, v: str) -> str:
-        if not _PIN_RE.match(v):
+        if not _PIN_RE.fullmatch(v):
             raise ValueError("pin must be 4-6 digits")
         return v
 
@@ -44,6 +44,14 @@ class RegisterRequest(_PhonePin):
     """Create a PIN account."""
 
     full_name: str = Field(min_length=3, max_length=255)
+
+    @field_validator("full_name")
+    @classmethod
+    def _strip_name(cls, v: str) -> str:
+        v = v.strip()
+        if len(v) < 3:
+            raise ValueError("full_name must be at least 3 characters")
+        return v
     preferred_language: str = Field(default="en", max_length=10)
 
 

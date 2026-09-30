@@ -5,6 +5,8 @@ from decimal import Decimal
 
 from pydantic import BaseModel, Field
 
+from myfarm_api.schemas.common import BodyId, Decimal10, IsoDate, NonNullUpdate
+
 
 class CropBase(BaseModel):
     """Shared crop fields."""
@@ -24,18 +26,26 @@ class CropBase(BaseModel):
 class CropCreate(CropBase):
     """Create a crop."""
 
+    land_id: BodyId
+    crop_catalog_id: BodyId
+    area: Decimal10 | None = None
+    sowing_date: IsoDate | None = None
+    expected_harvest_date: IsoDate | None = None
 
-class CropUpdate(BaseModel):
+
+class CropUpdate(NonNullUpdate):
     """Update crop fields."""
 
+    non_null = ("area_unit", "status")
+
     label: str | None = None
-    area: Decimal | None = None
-    area_unit: str | None = None
+    area: Decimal10 | None = None
+    area_unit: str | None = Field(None, max_length=50)
     season: str | None = None
-    sowing_date: str | None = None
+    sowing_date: IsoDate | None = None
     current_stage: str | None = None
-    status: str | None = None
-    expected_harvest_date: str | None = None
+    status: str | None = Field(None, max_length=50)
+    expected_harvest_date: IsoDate | None = None
 
 
 class CropRead(CropBase):

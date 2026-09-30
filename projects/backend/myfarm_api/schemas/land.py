@@ -5,6 +5,15 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from myfarm_api.schemas.common import (
+    BodyId,
+    Decimal12,
+    Latitude,
+    Longitude,
+    Name,
+    NonNullUpdate,
+)
+
 
 class LandPoint(BaseModel):
     """A GPS coordinate polygon vertex."""
@@ -25,17 +34,32 @@ class LandBase(BaseModel):
     points: list[LandPoint] | None = None
 
 
+class LandPointInput(BaseModel):
+    """A polygon vertex as submitted by a client (range-checked)."""
+
+    lat: Latitude
+    lng: Longitude
+
+
 class LandCreate(LandBase):
     """Create a land."""
 
+    name: Name
+    farm_id: BodyId
+    area_sq_m: Decimal12 | None = None
+    # Invariant list override of LandBase's read-side type, hence the ignore.
+    points: list[LandPointInput] | None = None  # type: ignore[assignment]
 
-class LandUpdate(BaseModel):
+
+class LandUpdate(NonNullUpdate):
     """Update land fields."""
 
-    name: str | None = None
-    area_sq_m: Decimal | None = None
+    non_null = ("name",)
+
+    name: Name | None = None
+    area_sq_m: Decimal12 | None = None
     notes: str | None = None
-    points: list[LandPoint] | None = None
+    points: list[LandPointInput] | None = None
 
 
 class LandRead(LandBase):
