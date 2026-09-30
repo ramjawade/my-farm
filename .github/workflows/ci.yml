@@ -230,7 +230,9 @@ jobs:
           exit 1
 
       - name: Seed reference data
-        run: curl -sf -X POST -H "X-Admin-Token: $ADMIN_TOKEN" http://localhost:8000/api/v1/admin/seed-reference-data
+        run: |
+          curl -sf -X POST -H "X-Admin-Token: $ADMIN_TOKEN" \
+            http://localhost:8000/api/v1/admin/seed-reference-data
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
