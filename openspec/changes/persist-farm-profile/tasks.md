@@ -8,9 +8,9 @@
 
 ## 2. Client (sub-issue B)
 
-- [ ] 2.1 Shared default-farm resolver (lowest id, create if missing) used by profile and Lands. Verify: unit spec.
-- [ ] 2.2 Async `updateProfile` writing `/me` and farm; state updated only on success. Verify: unit specs incl. failure and no-farm paths.
-- [ ] 2.3 Hydrate farm fields after login and session restore. Verify: unit spec.
-- [ ] 2.4 Dialog: saving state, error handling, phone read-only, remove "Other" crop. Verify: component spec.
-- [ ] 2.5 Golden-path e2e: save, reload, values persist.
-- [ ] 2.6 `npm run lint` and `npm run build` pass.
+- [x] 2.1 Shared default-farm resolver (lowest id, create if missing) used by profile and Lands. Verify: unit spec.
+- [x] 2.2 Async `updateProfile` writing `/me` and farm; state updated only on success. Verify: unit specs incl. failure and no-farm paths.
+- [x] 2.3 Hydrate farm fields after login and session restore. Verify: unit spec.
+- [x] 2.4 Dialog: saving state, error handling, phone read-only, remove "Other" crop. Verify: component spec.
+- [x] 2.5 Golden-path e2e: save, reload, values persist.
+- [x] 2.6 `npm run lint` and `npm run build` pass.

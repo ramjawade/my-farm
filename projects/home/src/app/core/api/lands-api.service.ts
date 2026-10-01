@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpService } from '../http/http.service';
+import { FarmsApiService } from './farms-api.service';
 import { SavedFarm, FarmAreaResult, NewSavedFarm, LatLngPoint } from '../../map/models/map.models';
 import { toGeoJsonPolygon } from '../../map/farm-draw/farm-area.utils';
 
@@ -22,6 +23,8 @@ export class LandsApiService {
   private defaultFarmIdPromise: Promise<number> | null = null;
   private writeQueue: Promise<unknown> = Promise.resolve();
 
+  private readonly farms = inject(FarmsApiService);
+
   constructor(private httpService: HttpService) {}
 
   private enqueueWrite<T>(fn: () => Promise<T>): Promise<T> {
@@ -39,13 +42,8 @@ export class LandsApiService {
     return this.defaultFarmIdPromise;
   }
 
-  private async resolveDefaultFarmId(): Promise<number> {
-    const list = await this.httpService.get<{ items: { id: number }[] }>('/farms');
-    if (list.items.length > 0) {
-      return list.items[0].id;
-    }
-    const response = await this.httpService.post<{ id: number }>('/farms', { name: 'My Farm' });
-    return response.id;
+  private resolveDefaultFarmId(): Promise<number> {
+    return this.farms.getOrCreateDefaultFarmId();
   }
 
   async getFarms(userId: number): Promise<SavedFarm[]> {

@@ -185,3 +185,66 @@ describe('AuthService — API token lifecycle', () => {
     expect(localStorage.getItem('my_farm_session_token')).toBeFalsy();
   });
 });
+
+describe('AuthService — profile persistence', () => {
+  let service: AuthService;
+  let api: FakeFarmerProfileApiService;
+
+  beforeEach(() => {
+    localStorage.clear();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: FarmerProfileApiService, useClass: FakeFarmerProfileApiService },
+        { provide: ReferenceDataService, useValue: { preload: () => undefined } },
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideRouter([]),
+        AuthService,
+        FarmerRegistrationService,
+      ],
+    });
+    service = TestBed.inject(AuthService);
+    api = TestBed.inject(FarmerProfileApiService) as unknown as FakeFarmerProfileApiService;
+  });
+
+  afterEach(() => localStorage.clear());
+
+  it('should save to the backend before updating the signed-in user', async () => {
+    service.login(mockFarmer);
+    await service.updateProfile({ farmName: 'Green Acres' });
+
+    expect(api.savedProfiles).toEqual([{ farmName: 'Green Acres' }]);
+    expect(service.currentUser()?.farmName).toBe('Green Acres');
+  });
+
+  it('should leave the user unchanged and reject when the save fails', async () => {
+    service.login(mockFarmer);
+    api.failSave = true;
+
+    await expectAsync(service.updateProfile({ farmName: 'Nope' })).toBeRejected();
+    expect(service.currentUser()?.farmName).toBe('Test Farm');
+  });
+
+  it('should load the stored farm into the user after a token login', async () => {
+    api.farmFields = { farmName: 'Stored Farm', primaryCrops: ['Wheat'] };
+    service.login(mockFarmer, 'token-a');
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(service.currentUser()?.farmName).toBe('Stored Farm');
+    expect(service.currentUser()?.primaryCrops).toEqual(['Wheat']);
+  });
+
+  it('should load the stored farm when restoring a session after reload', async () => {
+    api.farmers = [{ ...mockFarmer, farmName: '' }];
+    api.farmFields = { farmName: 'Stored Farm' };
+    localStorage.setItem('my_farm_active_user_id', '1');
+    localStorage.setItem('my_farm_session_expiry', String(Date.now() + 60_000));
+    localStorage.setItem('my_farm_session_token', 'token-a');
+
+    const restored = TestBed.runInInjectionContext(() => new AuthService());
+    await restored.whenReady();
+
+    expect(restored.currentUser()?.farmName).toBe('Stored Farm');
+  });
+});

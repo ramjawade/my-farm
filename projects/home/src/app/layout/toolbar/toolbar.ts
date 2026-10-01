@@ -58,7 +58,9 @@ export class Toolbar {
     if (!lang.supported) {
       return;
     }
-    this.authService.updateProfile({ preferredLanguage: lang.value });
+    this.authService
+      .updateProfile({ preferredLanguage: lang.value })
+      .catch((e) => console.error('Failed to save language', e));
     this.languageDropdownOpen.set(false);
   }
 

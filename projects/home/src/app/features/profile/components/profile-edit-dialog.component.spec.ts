@@ -6,6 +6,8 @@ import { ProfileEditDialogComponent } from './profile-edit-dialog.component';
 import { AuthService } from '../../../core/auth/auth.service';
 import { FarmerRegistrationData } from '../../farmer-registration/farmer-registration.models';
 import { LandsApiService } from '../../../core/api/lands-api.service';
+import { FarmerProfileApiService } from '../../../core/api/farmer-profile-api.service';
+import { FakeFarmerProfileApiService } from '../../../testing/fake-farmer-profile-api.service';
 import { FakeLandsApiService } from '../../../testing/fake-lands-api.service';
 
 describe('ProfileEditDialogComponent', () => {
@@ -43,6 +45,7 @@ describe('ProfileEditDialogComponent', () => {
       imports: [ProfileEditDialogComponent],
       providers: [
         { provide: LandsApiService, useClass: FakeLandsApiService },
+        { provide: FarmerProfileApiService, useClass: FakeFarmerProfileApiService },
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideTranslateService(),
@@ -134,11 +137,10 @@ describe('ProfileEditDialogComponent', () => {
     component.editEmail.set('updated@example.com');
 
     spyOn(authService, 'updateProfile').and.callThrough();
-    component.save();
+    await component.save();
 
     expect(authService.updateProfile).toHaveBeenCalledWith({
       fullName: 'Updated Full Name',
-      phone: '1122334455',
       email: 'updated@example.com',
       preferredLanguage: 'English',
     });
@@ -156,7 +158,7 @@ describe('ProfileEditDialogComponent', () => {
     component.selectedCrops.set(['Wheat', 'Cotton']);
 
     spyOn(authService, 'updateProfile').and.callThrough();
-    component.save();
+    await component.save();
 
     expect(authService.updateProfile).toHaveBeenCalledWith({
       waterSource: 'River',
@@ -164,5 +166,41 @@ describe('ProfileEditDialogComponent', () => {
       primaryCrops: ['Wheat', 'Cotton'],
     });
     expect(component.show()).toBeFalse();
+  });
+
+  it('should keep the dialog open with an error when the save fails', async () => {
+    fixture.componentRef.setInput('section', 'land');
+    component.show.set(true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    (TestBed.inject(FarmerProfileApiService) as unknown as FakeFarmerProfileApiService).failSave =
+      true;
+    component.editFarmName.set('Changed Name');
+
+    await component.save();
+
+    expect(component.show()).toBeTrue();
+    expect(component.saveError()).toContain("Couldn't save");
+    expect(component.saving()).toBeFalse();
+    expect(component.editFarmName()).toBe('Changed Name');
+    expect(authService.currentUser()?.farmName).toBe('Green Acres');
+  });
+
+  it('should ignore a second save while one is in progress', async () => {
+    fixture.componentRef.setInput('section', 'operations');
+    component.show.set(true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const spy = spyOn(authService, 'updateProfile').and.returnValue(new Promise(() => undefined));
+
+    void component.save();
+    void component.save();
+
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(component.saving()).toBeTrue();
+  });
+
+  it('should not offer an Other crop (it has no catalog row)', async () => {
+    expect(component.cropOptions.some((c) => c.value === 'Other')).toBeFalse();
   });
 });
