@@ -17,6 +17,8 @@ import { LandsApiService } from '../../core/api/lands-api.service';
 import { FakeLandsApiService } from '../../testing/fake-lands-api.service';
 import { ReferenceDataService } from '../../core/api/reference-data.service';
 import { FakeReferenceDataService } from '../../testing/fake-reference-data.service';
+import { IWeatherService } from '../../core/weather/weather.interface';
+import { FakeWeatherService } from '../../testing/fake-weather.service';
 
 const baseUser: FarmerRegistrationData = {
   id: 1,
@@ -61,6 +63,7 @@ describe('HomeComponent', () => {
         { provide: ActivitiesApiService, useClass: FakeActivitiesApiService },
         { provide: LandsApiService, useClass: FakeLandsApiService },
         { provide: ReferenceDataService, useClass: FakeReferenceDataService },
+        { provide: IWeatherService, useClass: FakeWeatherService },
       ],
     }).compileComponents();
 
@@ -393,6 +396,91 @@ describe('HomeComponent', () => {
       expect(syncedCropAct!.cropId).toBe(42);
       expect(syncedCropAct!.notes).toBe('Manual mechanical weeding');
       expect(syncedCropAct!.status).toBe('Completed');
+    });
+  });
+
+  describe('weather card', () => {
+    const pinned: FarmerRegistrationData = {
+      ...baseUser,
+      village: 'Hadapsar',
+      state: 'Maharashtra',
+      locationType: 'map',
+      location: { lat: 18.5, lng: 73.8 },
+    };
+    const text = () => (fixture.nativeElement as HTMLElement).textContent ?? '';
+    let weather: FakeWeatherService;
+
+    beforeEach(() => {
+      weather = TestBed.inject(IWeatherService) as unknown as FakeWeatherService;
+    });
+
+    it('asks the farmer to set a location instead of showing invented weather', () => {
+      authService.login(baseUser); // no land, no pinned location
+      fixture.detectChanges();
+
+      expect(component.weatherLocation()).toBeNull();
+      expect(text()).toContain('home.weatherNoLocation');
+      expect(text()).not.toContain('28°C');
+      expect(text()).not.toContain('home.dripAdvisoryBody');
+    });
+
+    it('shows the real conditions from the weather service', () => {
+      authService.login(pinned);
+      weather.publish({ temp: 33, feelsLike: 36, humidity: 41, windSpeed: 9 });
+      fixture.detectChanges();
+
+      expect(text()).toContain('33°C');
+      expect(text()).toContain('41%');
+      expect(text()).toContain('9 km/h');
+      expect(text()).not.toContain('28°C');
+      expect(text()).not.toContain('68%');
+    });
+
+    it('says so when the weather is sample data', () => {
+      authService.login(pinned);
+      weather.publish({ temp: 29 }, 'demo');
+      fixture.detectChanges();
+
+      expect(text()).toContain('home.weatherSample');
+    });
+
+    it('does not show the sample-data notice for live weather', () => {
+      authService.login(pinned);
+      weather.publish({ temp: 29 }, 'live');
+      fixture.detectChanges();
+
+      expect(text()).not.toContain('home.weatherSample');
+    });
+
+    it('uses the centre of the first saved land when there is one', () => {
+      authService.login(baseUser);
+      component.farms.set([
+        {
+          id: 1,
+          name: 'North Plot',
+          points: [
+            { lat: 10, lng: 20 },
+            { lat: 12, lng: 22 },
+          ],
+        } as any,
+      ]);
+
+      expect(component.weatherLocation()).toEqual({ lat: 11, lng: 21, name: 'North Plot' });
+    });
+
+    it('falls back to the profile pin when there is no saved land', () => {
+      authService.login(pinned);
+
+      expect(component.weatherLocation()).toEqual({ lat: 18.5, lng: 73.8, name: 'Hadapsar' });
+    });
+
+    it('fetches weather for the location when the dashboard opens', async () => {
+      authService.login(pinned);
+      const reopened = TestBed.createComponent(HomeComponent);
+      reopened.detectChanges();
+      await reopened.whenStable();
+
+      expect(weather.requested).toEqual([{ lat: 18.5, lng: 73.8, name: 'Hadapsar' }]);
     });
   });
 });

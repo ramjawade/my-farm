@@ -72,12 +72,7 @@
     "productionCostsLogged": "{{month}} में दर्ज उत्पादन लागत",
     "weatherMonitor": "मौसम मॉनिटर",
     "fullForecast": "पूरा पूर्वानुमान",
-    "weatherSummary": "आंशिक रूप से बादल छाए | महसूस होता है 31°C",
-    "soilMoisture": "मिट्टी की नमी",
-    "soilMoistureValue": "42% (उपयुक्त)",
     "humidity": "आर्द्रता",
-    "dripAdvisoryTitle": "ड्रिप सिंचाई सलाह",
-    "dripAdvisoryBody": "आज सामान्य 30-मिनट के ड्रिप चक्र जारी रखें। मिट्टी की नमी पर्याप्त है। अगली बारिश मंगलवार को अपेक्षित है।",
     "cropsMonitor": "फसल मॉनिटर",
     "viewTimeline": "टाइमलाइन देखें",
     "sownDaysAgo": "{{days}} दिन पहले बोई गई",
@@ -114,7 +109,13 @@
         "description": "काम और खर्च दर्ज करें ताकि लागत प्रति फसल जुड़ सके।",
         "action": "गतिविधि दर्ज करें"
       }
-    }
+    },
+    "weatherSummaryLive": "{{condition}} | महसूस {{feelsLike}}°C",
+    "wind": "हवा",
+    "weatherNoLocation": "अपने क्षेत्र का मौसम देखने के लिए अपनी ज़मीन या खेत का स्थान जोड़ें।",
+    "weatherSetLocation": "अपनी ज़मीन बनाएं",
+    "weatherLoading": "मौसम लोड हो रहा है…",
+    "weatherSample": "नमूना डेटा: लाइव मौसम अभी उपलब्ध नहीं है, इसलिए यह असली पूर्वानुमान नहीं है।"
   },
   "landEdit": {
     "title": "भूमि और स्थान संपादित करें",
@@ -355,7 +356,17 @@
     "saveError": "गतिविधि सहेजी नहीं जा सकी। कृपया पुनः प्रयास करें।",
     "loggedToast": "{{type}} दर्ज किया गया।"
   },
+  "historyEvent": {
+    "created": "गतिविधि बनाई गई",
+    "updated": "गतिविधि अपडेट की गई",
+    "deleted": "गतिविधि हटाई गई",
+    "status_changed": "स्थिति बदली गई",
+    "expense_added": "खर्च जोड़ा गया",
+    "expense_updated": "खर्च अपडेट किया गया",
+    "expense_deleted": "खर्च हटाया गया"
+  },
   "activityDetail": {
+    "notes": "नोट्स",
     "loading": "गतिविधि लोड हो रही है…",
     "loadError": "यह गतिविधि लोड नहीं हो सकी",
     "season": "मौसम",

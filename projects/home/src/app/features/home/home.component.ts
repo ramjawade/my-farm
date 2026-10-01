@@ -11,6 +11,10 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth.service';
+import { WorkflowStateService } from '../../core/workflow/workflow-state.service';
+import { IWeatherService } from '../../core/weather/weather.interface';
+import { WeatherLocation } from '../../core/weather/weather.models';
+import { centroidOf } from '../../core/weather/weather-location.util';
 import { CropTimelineService } from '../crop-timeline/crop-timeline.service';
 import { ActivityService } from '../activity/activity.service';
 import { FarmDrawService } from '../../map/farm-draw/farm-draw.service';
@@ -49,6 +53,8 @@ export class HomeComponent implements OnInit {
   private readonly cropService = inject(CropTimelineService);
   private readonly activityService = inject(ActivityService);
   private readonly farmDrawService = inject(FarmDrawService);
+  private readonly weatherService = inject(IWeatherService);
+  private readonly workflowService = inject(WorkflowStateService);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
@@ -61,8 +67,35 @@ export class HomeComponent implements OnInit {
       // Crops and activities are already loaded by their services on sign-in and kept
       // current by every mutation; reloading them here only repeated both requests.
       this.farms.set(await this.farmDrawService.loadFarms(user.id));
+      if (this.farms().length > 0) {
+        this.workflowService.markPhaseComplete('land');
+      }
+      const location = this.weatherLocation();
+      if (location) {
+        void this.weatherService.getWeatherData(location);
+      }
     }
   }
+
+  /**
+   * Where to fetch weather for: the first saved land's centre, else the profile's pinned
+   * location. `null` when the farmer has set neither (no guessing a place for them).
+   */
+  readonly weatherLocation = computed<WeatherLocation | null>(() => {
+    const farm = this.farms()[0];
+    const centre = farm ? centroidOf(farm.points) : null;
+    if (farm && centre) return { ...centre, name: farm.name };
+    const location = this.currentUser()?.location;
+    return location ? { ...location, name: this.currentUser()?.village } : null;
+  });
+
+  /** Real conditions for the card; `null` until loaded or when there is no location. */
+  readonly currentWeather = computed(() =>
+    this.weatherLocation() ? (this.weatherService.weatherData()?.current ?? null) : null,
+  );
+
+  /** True when the weather shown is sample data, not a real forecast. */
+  readonly weatherIsSample = computed(() => this.weatherService.source() === 'demo');
 
   // Authentication State
   readonly isLoggedIn = this.authService.isLoggedIn;

@@ -15,6 +15,8 @@ import { ActivityService } from '../../activity/activity.service';
 import { CropEntity, CropStage, CROP_STAGES } from '../crop-timeline.models';
 import { stageIndex, stageProgressPercent } from '../crop-timeline.utils';
 import { ReferenceNamePipe } from '../../../core/i18n/reference-name.pipe';
+import { AuthService } from '../../../core/auth/auth.service';
+import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
 
 @Component({
   standalone: true,
@@ -29,18 +31,30 @@ export class CropDashboardComponent implements OnInit {
   private readonly activityService = inject(ActivityService);
   private readonly router = inject(Router);
   private readonly translate = inject(TranslateService);
+  private readonly authService = inject(AuthService);
+  private readonly farmDraw = inject(FarmDrawService);
 
   readonly searchTerm = signal<string>('');
   readonly crops = signal<CropEntity[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
 
+  /** Land names by land id, so a crop card can say where it is planted instead of showing an id. */
+  private readonly landNames = signal<ReadonlyMap<number, string>>(new Map());
+
+  /** The land's name, or '' when it is unknown (e.g. the land was removed). */
+  landName(fieldId: number): string {
+    return this.landNames().get(fieldId) ?? '';
+  }
+
   readonly filteredCrops = computed(() => {
     const term = this.searchTerm().trim().toLowerCase();
     const allCrops = this.crops();
     if (!term) return allCrops;
     return allCrops.filter(
-      (c) => c.name.toLowerCase().includes(term) || String(c.fieldId).includes(term),
+      (c) =>
+        c.name.toLowerCase().includes(term) ||
+        this.landName(c.fieldId).toLowerCase().includes(term),
     );
   });
 
@@ -64,6 +78,18 @@ export class CropDashboardComponent implements OnInit {
       this.error.set(this.translate.instant('cropDashboard.loadError'));
     } finally {
       this.loading.set(false);
+    }
+    void this.loadLandNames();
+  }
+
+  private async loadLandNames(): Promise<void> {
+    const user = this.authService.currentUser();
+    if (!user) return;
+    try {
+      const farms = await this.farmDraw.loadFarms(user.id);
+      this.landNames.set(new Map(farms.map((farm) => [farm.id, farm.name])));
+    } catch {
+      // Cards simply omit the land badge if the names cannot be loaded.
     }
   }
 

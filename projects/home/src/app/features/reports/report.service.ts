@@ -38,16 +38,19 @@ export class ReportService {
   private readonly cropService = inject(CropTimelineService);
   private readonly referenceData = inject(ReferenceDataService);
 
+  /** When the work happened: the activity's own date, else when it was recorded. */
+  private occurredAt(activity: { date?: number; createdAt: number }): number {
+    return activity.date ?? activity.createdAt;
+  }
+
   generateSeasonReport(season: Season, year: number): SeasonReport {
     const seasonActivities = this.activityService
       .activities()
-      .filter(
-        (a) => a.season === season && a.createdAt && new Date(a.createdAt).getFullYear() === year,
-      );
+      .filter((a) => a.season === season && new Date(this.occurredAt(a)).getFullYear() === year);
 
     const expenses = this.activityService.expenses().filter((e) => {
       const a = this.activityService.getActivityById(e.activityId);
-      return a && a.season === season && new Date(a.createdAt).getFullYear() === year;
+      return a && a.season === season && new Date(this.occurredAt(a)).getFullYear() === year;
     });
 
     const totalExpense = expenses.reduce((sum, e) => sum + e.amount, 0);
@@ -117,7 +120,8 @@ export class ReportService {
   private aggregateByMonth(expenses: any[]): ExpenseByMonth[] {
     const map = new Map<string, number>();
     expenses.forEach((e) => {
-      const date = new Date(e.createdAt);
+      const activity = this.activityService.getActivityById(e.activityId);
+      const date = new Date(activity ? this.occurredAt(activity) : e.createdAt);
       const monthKey = date.toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
       map.set(monthKey, (map.get(monthKey) || 0) + e.amount);
     });

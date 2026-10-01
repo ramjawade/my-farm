@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Season } from '../../core/models/season';
 import { ReportService, SeasonReport } from './report.service';
+import { WorkflowStateService } from '../../core/workflow/workflow-state.service';
 import { ReferenceDataService } from '../../core/api/reference-data.service';
 
 @Component({
@@ -32,7 +33,7 @@ import { ReferenceDataService } from '../../core/api/reference-data.service';
           <div class="col-12 col-md-6">
             <label for="yearSelect" class="form-label fw-semibold">Year</label>
             <select id="yearSelect" class="form-select" [(ngModel)]="selectedYear">
-              <option *ngFor="let year of availableYears()" [value]="year">{{ year }}</option>
+              <option *ngFor="let year of availableYears()" [ngValue]="year">{{ year }}</option>
             </select>
           </div>
           <div class="col-12">
@@ -187,6 +188,7 @@ export class ReportsComponent {
   private readonly reportService = inject(ReportService);
   private readonly referenceData = inject(ReferenceDataService);
   private readonly router = inject(Router);
+  private readonly workflowService = inject(WorkflowStateService);
 
   readonly selectedSeason = signal<Season>('Kharif');
   readonly selectedYear = signal<number>(new Date().getFullYear());
@@ -200,6 +202,7 @@ export class ReportsComponent {
   generateReport(): void {
     const r = this.reportService.generateSeasonReport(this.selectedSeason(), this.selectedYear());
     this.report.set(r);
+    this.workflowService.markPhaseComplete('report');
   }
 
   exportCSV(): void {

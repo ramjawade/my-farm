@@ -12,6 +12,17 @@ import {
 } from './weather.models';
 type DataSource = 'live' | 'cache' | 'demo';
 
+/**
+ * Maps the backend's `source` flag to what the UI shows. The backend answers with
+ * `mock` or `error` when its weather provider is down or unconfigured; that is
+ * sample data and must not be presented as live.
+ */
+function toDataSource(backendSource: string | undefined): DataSource {
+  if (backendSource === 'live') return 'live';
+  if (backendSource === 'cached') return 'cache';
+  return 'demo';
+}
+
 @Injectable({ providedIn: 'root' })
 export class WeatherService extends IWeatherService {
   private readonly httpService = inject(HttpService);
@@ -59,8 +70,12 @@ export class WeatherService extends IWeatherService {
           isStale: false,
         };
 
-        this.cacheService.set(location, weatherData);
-        this.sourceSignal.set('live');
+        const source = toDataSource(response.source);
+        // Sample data is never cached: a later fresh-cache hit would show it as "cached" real data.
+        if (source !== 'demo') {
+          this.cacheService.set(location, weatherData);
+        }
+        this.sourceSignal.set(source);
         this.weatherDataSignal.set(weatherData);
         this.loadingSignal.set(false);
 
@@ -83,7 +98,7 @@ export class WeatherService extends IWeatherService {
       const response = await this.fetchFromBackend(location);
       const cached = this.cacheService.get(location);
 
-      if (cached) {
+      if (cached && toDataSource(response.source) !== 'demo') {
         cached.current = response.current;
         cached.lastRefreshed = Date.now();
         cached.isStale = false;
@@ -141,6 +156,7 @@ export class WeatherService extends IWeatherService {
     current: CurrentWeather;
     forecast: { days: any[]; fetchedAt: number };
     alerts: WeatherAlert[];
+    source: string;
   }> {
     const response = await this.httpService.get<{
       data: OpenWeatherResponse;
@@ -196,6 +212,7 @@ export class WeatherService extends IWeatherService {
       current,
       forecast,
       alerts: [],
+      source: response.source,
     };
   }
 

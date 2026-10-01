@@ -139,6 +139,16 @@
       </div>
     }
 
+    <!-- Notes the farmer wrote when recording the activity -->
+    @if (act.notes) {
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="mf-meta-label mb-1">{{ 'activityDetail.notes' | translate }}</div>
+          <p class="mb-0 text-break" style="white-space: pre-line">{{ act.notes }}</p>
+        </div>
+      </div>
+    }
+
     <div class="row g-4">
       <!-- Left Column: History -->
       <div class="col-12 col-lg-4">

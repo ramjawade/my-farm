@@ -3,7 +3,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { provideTranslateService } from '@ngx-translate/core';
+import { provideTranslateService, TranslateService } from '@ngx-translate/core';
 import { ActivityDetailComponent } from './activity-detail.component';
 import { ActivityDetailService } from './activity-detail.service';
 import { ActivityExpensesService } from './activity-expenses.service';
@@ -121,5 +121,68 @@ describe('ActivityDetailComponent', () => {
     await (component as any).reload(5);
 
     expect(component.error()).toBe('Could not load this activity. Please try again.');
+  });
+
+  describe('notes', () => {
+    const text = () => (fixture.nativeElement as HTMLElement).textContent ?? '';
+
+    it('shows the notes the farmer wrote', async () => {
+      getActivitySpy.and.resolveTo({ ...mockActivity, notes: 'Sprayed 2 litres\nnear the well' });
+      await component.ngOnInit();
+      fixture.detectChanges();
+
+      expect(text()).toContain('Sprayed 2 litres');
+      expect(text()).toContain('near the well');
+      expect(text()).toContain('activityDetail.notes');
+    });
+
+    it('shows no notes block when there are none', async () => {
+      getActivitySpy.and.resolveTo({ ...mockActivity, notes: undefined });
+      await component.ngOnInit();
+      fixture.detectChanges();
+
+      expect(text()).not.toContain('activityDetail.notes');
+    });
+  });
+
+  describe('history labels', () => {
+    const EVENT_TYPES = [
+      'created',
+      'updated',
+      'deleted',
+      'status_changed',
+      'expense_added',
+      'expense_updated',
+      'expense_deleted',
+    ];
+
+    for (const lang of ['en', 'hi', 'mr']) {
+      it(`has a readable ${lang} label for every event type the backend records`, async () => {
+        const translations = await (await fetch(`/i18n/${lang}.json`)).json();
+
+        for (const type of EVENT_TYPES) {
+          const label: string | undefined = translations.historyEvent?.[type];
+          expect(label).withContext(`${lang}: historyEvent.${type}`).toBeTruthy();
+          expect(label).withContext(`${lang}: ${type} is not the raw code`).not.toBe(type);
+        }
+      });
+    }
+
+    it('renders the English label instead of the raw event code', async () => {
+      const translate = TestBed.inject(TranslateService);
+      translate.setTranslation('en', await (await fetch('/i18n/en.json')).json());
+      translate.use('en');
+      getHistorySpy.and.resolveTo([
+        { id: 1, activityId: 5, eventType: 'expense_added', createdAt: Date.now() },
+        { id: 2, activityId: 5, eventType: 'created', createdAt: Date.now() },
+      ]);
+      await component.ngOnInit();
+      fixture.detectChanges();
+
+      const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+      expect(text).toContain('Expense added');
+      expect(text).toContain('Activity created');
+      expect(text).not.toContain('expense_added');
+    });
   });
 });

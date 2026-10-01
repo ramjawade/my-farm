@@ -11,6 +11,7 @@ import { WeatherService } from '../../core/weather/weather.service';
 import { WorkflowStateService } from '../../core/workflow/workflow-state.service';
 import { OnboardingGuideService } from '../../core/workflow/onboarding-guide.service';
 import { WorkflowPromptCardComponent } from '../shared/components/workflow-prompt-card.component';
+import { centroidOf } from '../../core/weather/weather-location.util';
 
 interface WeatherMetric {
   title: string;
@@ -138,7 +139,14 @@ export class WeatherComponent implements OnInit {
     const loc = this.getLocationForDisplay();
     return `${loc.name}, ${loc.state}`;
   });
-  readonly locationSub = signal('Live Weather Monitoring');
+  readonly locationSub = computed(() => {
+    const source = this.weatherService.source();
+    return source === 'live'
+      ? 'Live Weather Monitoring'
+      : source === 'cache'
+        ? 'Cached Weather Data'
+        : 'Sample Weather Data';
+  });
 
   readonly sourceDisplay = computed(() => {
     const source = this.weatherService.source();
@@ -346,12 +354,7 @@ export class WeatherComponent implements OnInit {
   }
 
   private calculateCentroid(points: { lat: number; lng: number }[]): { lat: number; lng: number } {
-    if (points.length === 0) return { lat: 19.1136, lng: 79.0882 };
-    const sum = points.reduce((acc, p) => ({ lat: acc.lat + p.lat, lng: acc.lng + p.lng }), {
-      lat: 0,
-      lng: 0,
-    });
-    return { lat: sum.lat / points.length, lng: sum.lng / points.length };
+    return centroidOf(points) ?? { lat: 19.1136, lng: 79.0882 };
   }
 
   private generateAdvisory(weather: any, crops: string[]): string[] {
