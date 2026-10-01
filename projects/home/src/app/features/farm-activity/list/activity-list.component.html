@@ -9,10 +9,7 @@
       <div>
         <h2 class="mf-page-title">{{ 'activityList.title' | translate }}</h2>
         <p class="text-muted mb-0">
-          {{
-            'activityList.showingCount'
-              | translate: { shown: filteredActivities().length, total: activities().length }
-          }}
+          {{ 'activityList.showingCount' | translate: { shown: activities().length } }}
         </p>
       </div>
 
@@ -231,6 +228,9 @@
     }
   </section>
 
+  <!-- Announces appended pages to screen readers; focus stays on the Load more button -->
+  <div class="visually-hidden" role="status" aria-live="polite">{{ liveMessage() }}</div>
+
   <!-- Grid or List of Cards -->
   @if (loading()) {
     <div class="d-flex flex-column align-items-center justify-content-center py-5 text-muted">
@@ -247,11 +247,11 @@
         <i class="bi bi-arrow-clockwise me-2"></i>{{ 'cropDashboard.tryAgain' | translate }}
       </button>
     </div>
-  } @else if (filteredActivities().length > 0) {
+  } @else if (activities().length > 0) {
     @if (viewMode() === 'grid') {
       <!-- Grid View -->
       <div class="row g-3">
-        @for (act of filteredActivities(); track act.id) {
+        @for (act of activities(); track act.id) {
           <div class="col-12 col-md-6 col-lg-4">
             <div
               [routerLink]="['/activities', act.id]"
@@ -388,7 +388,7 @@
               </tr>
             </thead>
             <tbody>
-              @for (act of filteredActivities(); track act.id) {
+              @for (act of activities(); track act.id) {
                 <tr
                   [routerLink]="['/activities', act.id]"
                   class="cursor-pointer activity-table-row"
@@ -475,6 +475,37 @@
         </div>
       </div>
     }
+
+    <!-- Paging footer: "Load more" appends the next page for the current filters -->
+    <div class="d-flex flex-column align-items-center gap-2 py-4">
+      @if (loadMoreError()) {
+        <div class="alert alert-danger py-2 small mb-0" role="alert">
+          {{ 'activityList.loadMoreError' | translate }}
+        </div>
+      }
+      @if (hasMore()) {
+        <button
+          type="button"
+          class="btn w-100 w-md-auto px-5"
+          [class.btn-outline-success]="!loadMoreError()"
+          [class.btn-outline-danger]="loadMoreError()"
+          [attr.aria-busy]="loadingMore()"
+          [attr.aria-disabled]="loadingMore()"
+          (click)="loadMore()"
+        >
+          @if (loadingMore()) {
+            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+            {{ 'activityList.loadingMore' | translate }}
+          } @else if (loadMoreError()) {
+            {{ 'activityList.loadMoreRetry' | translate }}
+          } @else {
+            {{ 'activityList.loadMore' | translate }}
+          }
+        </button>
+      } @else {
+        <p class="text-center text-muted small mb-0">{{ 'activityList.allLoaded' | translate }}</p>
+      }
+    </div>
   } @else {
     <div class="card card-glass empty-state-container p-5 text-center my-4">
       <i class="bi bi-search text-muted display-3"></i>

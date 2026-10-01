@@ -23,8 +23,12 @@ The app-wide activity and expense cache SHALL load by following the API cursor i
 - **THEN** the cache is filled by three requests of at most 100 items, and every consumer sees all 250
 
 #### Scenario: Older API
-- **WHEN** the API returns a full list with no `has_more`
-- **THEN** the cache loads it in one request and stops
+- **WHEN** the API returns a list with no `has_more`
+- **THEN** the cache treats it as complete and stops
+
+#### Scenario: Older API that truncated at the page size
+- **WHEN** a response has no `has_more` and as many rows as the requested page size (an API that treats `limit` as a cap)
+- **THEN** the cache refetches once without a limit so no rows are silently lost
 
 #### Scenario: Write during loading
 - **WHEN** the farmer saves or deletes an activity while pages are loading
