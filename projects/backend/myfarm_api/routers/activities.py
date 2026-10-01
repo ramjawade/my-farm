@@ -1,15 +1,23 @@
 """CRUD endpoints for activities — farmer-owned entities."""
 
 from datetime import UTC, datetime
+from decimal import Decimal
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from myfarm_api.core.db import get_session_factory
 from myfarm_api.core.dberrors import is_unique_violation
+from myfarm_api.core.pagination import (
+    DEFAULT_PAGE_LIMIT,
+    CursorPosition,
+    InvalidCursorError,
+    decode_cursor,
+    encode_cursor,
+)
 from myfarm_api.core.r2 import get_r2_service
 from myfarm_api.core.security import FirebaseIdentity, get_firebase_identity
 from myfarm_api.core.tenancy import ensure_owned
@@ -107,54 +115,117 @@ async def _ensure_owned_references(current_farmer: Farmer, payload: dict[str, An
         )
 
 
+def _cost_expression() -> Any:
+    """Sum of an activity's non-deleted expenses (0 when none), as a SQL expression."""
+    total = (
+        select(func.sum(ActivityExpense.amount))
+        .where(ActivityExpense.activity_id == Activity.id, ActivityExpense.deleted_at.is_(None))
+        .correlate(Activity)
+        .scalar_subquery()
+    )
+    return func.coalesce(total, 0)
+
+
+def _decode_or_422(raw: str, sort: str) -> CursorPosition:
+    try:
+        return decode_cursor(raw, sort)
+    except InvalidCursorError:
+        raise HTTPException(status_code=422, detail="Invalid cursor") from None
+
+
+def _activity_page_clause(sort: str, position: CursorPosition, cost: Any) -> Any:
+    """Predicate selecting the rows that come after `position` in the `sort` order."""
+    row_id = position.id
+    if sort in ("date_desc", "date_asc"):
+        descending = sort == "date_desc"
+        behind_id = Activity.id < row_id if descending else Activity.id > row_id
+        if position.key is None:  # already in the undated tail
+            return and_(Activity.date.is_(None), behind_id)
+        ahead = Activity.date < position.key if descending else Activity.date > position.key
+        return or_(ahead, and_(Activity.date == position.key, behind_id), Activity.date.is_(None))
+    if sort == "cost_desc":
+        last_cost = Decimal(position.key or "0")
+        return or_(cost < last_cost, and_(cost == last_cost, Activity.id < row_id))
+    last_updated = datetime.fromisoformat(position.key or "")
+    return or_(
+        Activity.updated_at < last_updated,
+        and_(Activity.updated_at == last_updated, Activity.id < row_id),
+    )
+
+
 @router.get("", response_model=dict)
 async def list_activities(
     status: list[str] | None = Query(None),
-    crop_id: int | None = Query(None),
-    sort: str | None = Query(None, pattern="^(date_asc|date_desc)$"),
+    crop_id: DbId | None = Query(None),
+    season: str | None = Query(None),
+    land_id: DbId | None = Query(None),
+    activity_type_id: DbId | None = Query(None),
+    sort: str | None = Query(None, pattern="^(date_asc|date_desc|cost_desc)$"),
     limit: int | None = Query(None, ge=1, le=100),
+    cursor: str | None = Query(None),
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> dict[str, Any]:
-    """List activities for the current farmer.
+    """List activities for the current farmer, one cursor-paginated page at a time.
 
-    With no query params, behaves exactly as before (everything, newest
-    updated first) via `activity_repo.list_all`. `status` (repeatable),
-    `crop_id`, `sort` and `limit` are additive filters for callers that
-    need a targeted slice (e.g. the activity dashboard's upcoming/recent
-    lists) instead of the full list.
+    Returns `{ items, cursor, has_more }`; follow `cursor` until `has_more` is false to
+    traverse every match exactly once. Sorts: default (most recently updated first),
+    `date_asc`, `date_desc` (undated last) and `cost_desc`; ties break on id. Filters
+    combine with AND and apply before paging.
     """
-    if status is None and crop_id is None and sort is None and limit is None:
-        activities = await activity_repo.list_all(current_farmer.id)
-        return {
-            "items": [ActivityRead.model_validate(a) for a in activities],
-        }
+    sort_name = sort or "updated"
+    cost = _cost_expression()
 
-    conditions = [
-        Activity.farmer_id == current_farmer.id,
-        Activity.deleted_at.is_(None),
-    ]
+    conditions = [Activity.farmer_id == current_farmer.id, Activity.deleted_at.is_(None)]
     if status:
         conditions.append(Activity.status.in_(status))
     if crop_id is not None:
         conditions.append(Activity.crop_id == crop_id)
+    if season is not None:
+        conditions.append(Activity.season == season)
+    if land_id is not None:
+        conditions.append(Activity.land_id == land_id)
+    if activity_type_id is not None:
+        conditions.append(Activity.activity_type_id == activity_type_id)
+    if cursor:
+        conditions.append(_activity_page_clause(sort_name, _decode_or_422(cursor, sort_name), cost))
 
-    stmt = select(Activity).where(and_(*conditions))
+    stmt = select(Activity, cost.label("cost")).where(and_(*conditions))
     if sort == "date_asc":
-        stmt = stmt.order_by(Activity.date.asc().nulls_last())
+        stmt = stmt.order_by(Activity.date.asc().nulls_last(), Activity.id.asc())
     elif sort == "date_desc":
-        stmt = stmt.order_by(Activity.date.desc().nulls_last())
+        stmt = stmt.order_by(Activity.date.desc().nulls_last(), Activity.id.desc())
+    elif sort == "cost_desc":
+        stmt = stmt.order_by(cost.desc(), Activity.id.desc())
     else:
         stmt = stmt.order_by(Activity.updated_at.desc(), Activity.id.desc())
-    if limit:
-        stmt = stmt.limit(limit)
+
+    page_size = limit or DEFAULT_PAGE_LIMIT
+    if page_size:
+        stmt = stmt.limit(page_size + 1)
 
     session_factory = get_session_factory()
     async with session_factory() as session:
-        result = await session.execute(stmt)
-        activities = list(result.scalars().all())
+        rows = list((await session.execute(stmt)).all())
+
+    has_more = bool(page_size) and len(rows) > (page_size or 0)
+    if has_more:
+        rows = rows[:page_size]
+
+    next_cursor = None
+    if has_more:
+        last, last_cost = rows[-1]
+        keys = {
+            "date_asc": last.date,
+            "date_desc": last.date,
+            "cost_desc": format(Decimal(last_cost), "f"),
+        }
+        key = keys.get(sort_name, last.updated_at.isoformat())
+        next_cursor = encode_cursor(sort_name, key, last.id)
 
     return {
-        "items": [ActivityRead.model_validate(a) for a in activities],
+        "items": [ActivityRead.model_validate(activity) for activity, _ in rows],
+        "cursor": next_cursor,
+        "has_more": has_more,
     }
 
 
@@ -207,26 +278,56 @@ async def get_activities_summary(
 
 @router.get("/expenses", response_model=dict)
 async def list_all_expenses(
+    limit: int | None = Query(None, ge=1, le=100),
+    cursor: str | None = Query(None),
     current_farmer: Farmer = Depends(get_current_farmer),
 ) -> dict[str, Any]:
-    """List all expenses for the current farmer (joined through activities)."""
-    session_factory = get_session_factory()
-    async with session_factory() as session:
-        stmt = (
-            select(ActivityExpense)
-            .join(Activity)
-            .where(
-                and_(
-                    Activity.farmer_id == current_farmer.id,
-                    Activity.deleted_at.is_(None),
-                    ActivityExpense.deleted_at.is_(None),
-                )
+    """List the current farmer's expenses (joined through activities), one page at a time.
+
+    Returns `{ items, cursor, has_more }`, most recently updated first with an id
+    tie-break; soft-deleted expenses and expenses of deleted activities are excluded.
+    """
+    conditions = [
+        Activity.farmer_id == current_farmer.id,
+        Activity.deleted_at.is_(None),
+        ActivityExpense.deleted_at.is_(None),
+    ]
+    if cursor:
+        position = _decode_or_422(cursor, "expenses")
+        last_updated = datetime.fromisoformat(position.key or "")
+        conditions.append(
+            or_(
+                ActivityExpense.updated_at < last_updated,
+                and_(ActivityExpense.updated_at == last_updated, ActivityExpense.id < position.id),
             )
         )
-        result = await session.execute(stmt)
-        expenses = result.scalars().all()
+
+    stmt = (
+        select(ActivityExpense)
+        .join(Activity)
+        .where(and_(*conditions))
+        .order_by(ActivityExpense.updated_at.desc(), ActivityExpense.id.desc())
+    )
+    page_size = limit or DEFAULT_PAGE_LIMIT
+    if page_size:
+        stmt = stmt.limit(page_size + 1)
+
+    session_factory = get_session_factory()
+    async with session_factory() as session:
+        expenses = list((await session.execute(stmt)).scalars().all())
+
+    has_more = bool(page_size) and len(expenses) > (page_size or 0)
+    if has_more:
+        expenses = expenses[:page_size]
+    next_cursor = (
+        encode_cursor("expenses", expenses[-1].updated_at.isoformat(), expenses[-1].id)
+        if has_more
+        else None
+    )
     return {
         "items": [ActivityExpenseRead.model_validate(e) for e in expenses],
+        "cursor": next_cursor,
+        "has_more": has_more,
     }
 
 

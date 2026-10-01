@@ -11,6 +11,25 @@ import { AuthService } from '../../core/auth/auth.service';
 import { HttpService } from '../../core/http/http.service';
 import { ActivityMapperService } from '../../core/api/activity-mapper.service';
 
+/** Filters, sort and paging for a targeted `/api/v1/activities` query; every field is optional. */
+export interface ActivityQuery {
+  status?: string[];
+  sort?: 'date_asc' | 'date_desc' | 'cost_desc';
+  limit?: number;
+  cropId?: number;
+  season?: string;
+  landId?: number;
+  activityTypeId?: number;
+  cursor?: string;
+}
+
+/** One page of activities and where the next one starts. */
+export interface ActivityPage {
+  items: Activity[];
+  cursor: string | null;
+  hasMore: boolean;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -303,19 +322,31 @@ export class ActivityService {
    * path). Used by the dashboard's KPI/upcoming/recent methods above and by
    * `ActivityListService` for the full activity-list view.
    */
-  async queryActivities(opts: {
-    status?: string[];
-    sort?: 'date_asc' | 'date_desc';
-    limit?: number;
-    cropId?: number;
-  }): Promise<Activity[]> {
+  async queryActivities(opts: ActivityQuery): Promise<Activity[]> {
+    return (await this.queryActivitiesPage(opts)).items;
+  }
+
+  /** One page of `/api/v1/activities`: the rows plus the cursor for the next page, if any. */
+  async queryActivitiesPage(opts: ActivityQuery): Promise<ActivityPage> {
     const params: string[] = (opts.status ?? []).map((s) => `status=${encodeURIComponent(s)}`);
     if (opts.sort) params.push(`sort=${opts.sort}`);
     if (opts.limit !== undefined) params.push(`limit=${opts.limit}`);
     if (opts.cropId !== undefined) params.push(`crop_id=${opts.cropId}`);
+    if (opts.season) params.push(`season=${encodeURIComponent(opts.season)}`);
+    if (opts.landId !== undefined) params.push(`land_id=${opts.landId}`);
+    if (opts.activityTypeId !== undefined) params.push(`activity_type_id=${opts.activityTypeId}`);
+    if (opts.cursor) params.push(`cursor=${encodeURIComponent(opts.cursor)}`);
 
     const query = params.length ? `?${params.join('&')}` : '';
-    const response = await this.http.get<{ items: unknown[] }>(`/activities${query}`);
-    return response.items.map((item) => this.activityMapper.fromBackend(item));
+    const response = await this.http.get<{
+      items: unknown[];
+      cursor?: string | null;
+      has_more?: boolean;
+    }>(`/activities${query}`);
+    return {
+      items: response.items.map((item) => this.activityMapper.fromBackend(item)),
+      cursor: response.cursor ?? null,
+      hasMore: response.has_more ?? false,
+    };
   }
 }

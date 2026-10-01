@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Activity list: Load more (mockup)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+<style>
+  body { background: #f5f7f5; }
+  .state { max-width: 420px; }
+  .card-row { border-left: 4px solid #2e7d32; }
+</style>
+</head>
+<body class="p-3">
+<h1 class="h5 mb-1">Activity list &mdash; page-at-a-time</h1>
+<p class="text-muted small">Static mockup for the <code>paginate-activities-and-expenses</code> change. Four states of the list footer.</p>
+
+<div class="d-flex flex-wrap gap-4">
+
+  <section class="state" aria-label="More available">
+    <h2 class="h6">1. More available</h2>
+    <p class="small text-muted mb-2" id="count1">Showing 20 recorded operations</p>
+    <div class="card card-row mb-2"><div class="card-body py-2">Irrigation &middot; Wheat &middot; 12 Sep</div></div>
+    <div class="card card-row mb-2"><div class="card-body py-2">Sowing &middot; Wheat &middot; 10 Sep</div></div>
+    <div class="text-muted text-center small mb-2">&hellip; 18 more rows &hellip;</div>
+    <button type="button" class="btn btn-outline-success w-100">Load more</button>
+  </section>
+
+  <section class="state" aria-label="Loading more">
+    <h2 class="h6">2. Loading more</h2>
+    <p class="small text-muted mb-2">Showing 20 recorded operations</p>
+    <div class="text-muted text-center small mb-2">&hellip; rows stay in place &hellip;</div>
+    <button type="button" class="btn btn-outline-success w-100" aria-busy="true" disabled>
+      <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Loading&hellip;
+    </button>
+  </section>
+
+  <section class="state" aria-label="Load more failed">
+    <h2 class="h6">3. Load more failed</h2>
+    <p class="small text-muted mb-2">Showing 20 recorded operations</p>
+    <div class="alert alert-danger py-2 small" role="alert">Could not load more activities. Please try again.</div>
+    <button type="button" class="btn btn-outline-danger w-100">Retry</button>
+  </section>
+
+  <section class="state" aria-label="All loaded">
+    <h2 class="h6">4. End of list</h2>
+    <p class="small text-muted mb-2">Showing 35 recorded operations</p>
+    <div class="text-muted text-center small mb-2">&hellip; last rows &hellip;</div>
+    <p class="text-center text-muted small mb-0" role="status">All activities shown</p>
+  </section>
+
+</div>
+<p class="small text-muted mt-4 mb-0">Live region (screen readers): &ldquo;20 more activities loaded&rdquo; after each append; &ldquo;All activities shown&rdquo; at the end. Focus stays on the button.</p>
+</body>
+</html>
