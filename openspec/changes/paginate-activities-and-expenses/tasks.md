@@ -16,14 +16,14 @@ Migration Plan). Backend tasks: `ruff`, `mypy`, `pytest`; after any router/schem
 
 ## 2. Client paging and list page (PR 2, frontend)
 
-- [ ] 2.1 Add `fetchAllPages` to `ActivitiesApiService` (limit 100, follow cursor, stop on `has_more` false/absent, 200-page cap) and use it in `getActivities`/`getExpenses`. Verify: spec with a fake `HttpService` covering 3 pages, a response without `has_more`, and the page cap.
-- [ ] 2.2 Confirm `ActivityService` generation/in-flight guards discard a load that a mutation interrupts mid-paging. Verify: spec that mutates between page 1 and page 2 and sees the stale result dropped.
-- [ ] 2.3 Replace `ActivityListService.load` with `loadPage(filters, cursor?)` returning `{ items, cursor, hasMore }`, passing status, sort (`cost` → `cost_desc`), crop, season, `land_id`, `activity_type_id`, `limit=20`. Verify: service spec asserting the query string for each filter.
-- [ ] 2.4 Update `ActivityListComponent`: page state signals, reset-on-filter-change with stale-response token, "Load more" with inline retry, remove client-only season/field/type filters and client cost sort, bind type/field dropdowns to ids. Verify: component spec for first page, append, end of list, failure keeps rows, filter change resets, stale response ignored.
-- [ ] 2.5 Template and a11y: "Load more" `<button>` with `aria-busy`, polite live region for "N more loaded"/"all shown", focus stays on the button. Verify: component spec on the live region text and focus; manual keyboard pass.
-- [ ] 2.6 i18n: change `showingCount` to the no-total wording and add `loadMore`, `loadingMore`, `allLoaded`, `loadMoreError` in `en`, `hi`, `mr`. Verify: no missing-key warnings; specs use the keys.
-- [ ] 2.7 Static mockup under `design/paginate-activities-and-expenses/` linked from the parent issue. Verify: file opens standalone.
-- [ ] 2.8 Measure against the 150k-row seed in a browser: DOM nodes on `/activities/list` ≈ constant (~20 cards) and per-request payloads ≤ 100 rows. Verify: numbers recorded in the PR. Run `npm run lint`, `npm run build`, `npm test`, Prettier check, and the Playwright golden path (grep `e2e/` for changed selectors/text first).
+- [x] 2.1 Add `fetchAllPages` to `ActivitiesApiService` (limit 100, follow cursor, stop on `has_more` false/absent, 200-page cap, refetch without a limit if an older API truncated at the page size) and use it in `getActivities`/`getExpenses`. Verify: spec with a fake `HttpService` covering 3 pages, a response without `has_more`, and the page cap.
+- [x] 2.2 Confirm `ActivityService` generation/in-flight guards discard a load that a mutation interrupts mid-paging. Verify: spec that mutates between page 1 and page 2 and sees the stale result dropped.
+- [x] 2.3 Replace `ActivityListService.load` with `loadPage(filters, cursor?)` returning `{ items, cursor, hasMore }`, passing status, sort (`cost` → `cost_desc`), crop, season, `land_id`, `activity_type_id`, `limit=20`. Verify: service spec asserting the query string for each filter.
+- [x] 2.4 Update `ActivityListComponent`: page state signals, reset-on-filter-change with stale-response token, "Load more" with inline retry, remove client-only season/field/type filters and client cost sort, bind type/field dropdowns to ids. Verify: component spec for first page, append, end of list, failure keeps rows, filter change resets, stale response ignored.
+- [x] 2.5 Template and a11y: "Load more" `<button>` with `aria-busy`, polite live region for "N more loaded"/"all shown", focus stays on the button. Verify: component spec on the live region text and focus; manual keyboard pass.
+- [x] 2.6 i18n: change `showingCount` to the no-total wording and add `loadMore`, `loadingMore`, `allLoaded`, `loadMoreError` in `en`, `hi`, `mr`. Verify: no missing-key warnings; specs use the keys.
+- [x] 2.7 Static mockup under `design/paginate-activities-and-expenses/` linked from the parent issue. Verify: file opens standalone.
+- [x] 2.8 Measure against the 150k-row seed in a browser: DOM nodes on `/activities/list` ≈ constant (~20 cards) and per-request payloads ≤ 100 rows. Verify: numbers recorded in the PR. Run `npm run lint`, `npm run build`, `npm test`, Prettier check, and the Playwright golden path (grep `e2e/` for changed selectors/text first).
 
 ## 3. Default page cap (PR 3, backend; only after PR 2 is live)
 

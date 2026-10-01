@@ -13,7 +13,7 @@ import { DatePipe, CommonModule } from '@angular/common';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ActivityService } from '../../activity/activity.service';
 import { ReferenceNamePipe } from '../../../core/i18n/reference-name.pipe';
-import { ActivityListService } from './activity-list.service';
+import { ActivityListFilters, ActivityListService } from './activity-list.service';
 import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
 import { SavedFarm } from '../../../map/models/map.models';
@@ -60,11 +60,22 @@ export class ActivityListComponent implements OnInit {
   readonly savedFarms = signal<SavedFarm[]>([]);
   readonly referenceActivityTypes = signal<ReferenceItem[]>([]);
 
-  // Server-backed list, loaded via ActivityListService.load() — not the
-  // shared ActivityService.activities() signal cache.
+  // Server-backed list, loaded a page at a time via ActivityListService.loadPage() — not the
+  // shared ActivityService.activities() signal cache. Holds only the pages loaded so far.
   readonly activities = signal<Activity[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
+
+  // Paging: `cursor` is where the next page starts; `hasMore` mirrors the API's has_more.
+  readonly cursor = signal<string | null>(null);
+  readonly hasMore = signal(false);
+  readonly loadingMore = signal(false);
+  readonly loadMoreError = signal(false);
+  /** Text for the polite live region, announced after rows are appended. */
+  readonly liveMessage = signal('');
+
+  // Bumped on every reload/loadMore so a response that arrives after a newer request is dropped.
+  private requestToken = 0;
 
   readonly showDeleteConfirm = signal(false);
   readonly selectedActivityId = signal<number | null>(null);
@@ -78,7 +89,7 @@ export class ActivityListComponent implements OnInit {
   // URL-synced. Hidden when the route already supplies a `cropId` (see html).
   readonly cropFilter = signal<string>('All');
 
-  // Client-only filters, applied over the already-loaded batch.
+  // Season/field/type are server-driven too — each change refetches page 1 for the whole history.
   readonly seasonFilter = signal<string>('All');
   readonly fieldFilter = signal<string>('All');
   readonly typeFilter = signal<string>('All');
@@ -128,47 +139,21 @@ export class ActivityListComponent implements OnInit {
   readonly cropFilterName = computed(() => this.getCropName(Number(this.cropFilter())));
   readonly fieldFilterName = computed(() => this.getFieldName(Number(this.fieldFilter())));
 
-  // Dynamic activity types from reference data service
-  readonly activityTypesList = computed(() => {
-    const referenceTypes = this.referenceActivityTypes().map((t) => t.name);
-    const recorded = this.activities().map((a) => this.typeName(a.activityTypeId));
-    return Array.from(new Set([...referenceTypes, ...recorded]));
-  });
-
-  // Client-only narrowing (season/field/type) + 'cost' sort over the server-loaded batch.
-  readonly filteredActivities = computed(() => {
-    let list = this.activities();
-
-    const season = this.seasonFilter();
-    if (season !== 'All') {
-      list = list.filter((a) => a.season === season);
-    }
-
-    const field = this.fieldFilter();
-    if (field !== 'All') {
-      list = list.filter((a) => String(a.fieldId) === field);
-    }
-
-    const type = this.typeFilter();
-    if (type !== 'All') {
-      list = list.filter((a) => this.typeName(a.activityTypeId) === type);
-    }
-
-    if (this.sortBy() === 'cost') {
-      list = [...list].sort(
-        (a, b) => this.getActivityTotalCost(b.id) - this.getActivityTotalCost(a.id),
-      );
-    }
-
-    return list;
-  });
+  // Activity type names come from the reference data (the server filters by type id).
+  readonly activityTypesList = computed(() => this.referenceActivityTypes().map((t) => t.name));
 
   async ngOnInit(): Promise<void> {
     // 1. Read filter inputs first: route params, then query params.
+    let first = true;
     this.route.queryParams.subscribe((params) => {
-      this.statusFilter.set(params['status'] || 'All');
-      this.sortBy.set(params['sort'] || 'latest');
-      this.reload();
+      const status = params['status'] || 'All';
+      const sort = params['sort'] || 'latest';
+      const changed = status !== this.statusFilter() || sort !== this.sortBy();
+      this.statusFilter.set(status);
+      this.sortBy.set(sort);
+      // Only refetch when status/sort actually changed (and always for the first emission).
+      if (first || changed) void this.reload();
+      first = false;
     });
 
     const user = this.authService.currentUser();
@@ -184,22 +169,69 @@ export class ActivityListComponent implements OnInit {
     }
   }
 
-  // 2. Once filters are known, load the activities that match them.
+  /** The server-side filters currently selected on the page. */
+  private currentFilters(): ActivityListFilters {
+    const manualCropId = this.cropFilter() !== 'All' ? Number(this.cropFilter()) : undefined;
+    const type = this.typeFilter();
+    const field = this.fieldFilter();
+    return {
+      status: this.statusFilter(),
+      sort: this.sortBy(),
+      cropId: this.cropIdParam() ?? manualCropId,
+      season: this.seasonFilter() !== 'All' ? this.seasonFilter() : undefined,
+      landId: field !== 'All' ? Number(field) : undefined,
+      activityTypeId:
+        type !== 'All' ? this.referenceActivityTypes().find((t) => t.name === type)?.id : undefined,
+    };
+  }
+
+  // 2. Once filters are known, load the first page of the activities that match them.
   async reload(): Promise<void> {
+    const token = ++this.requestToken;
     this.loading.set(true);
     this.error.set(null);
+    this.loadMoreError.set(false);
+    this.loadingMore.set(false);
+    this.liveMessage.set('');
     try {
-      const manualCropId = this.cropFilter() !== 'All' ? Number(this.cropFilter()) : undefined;
-      const activities = await this.activityListService.load({
-        status: this.statusFilter(),
-        sort: this.sortBy(),
-        cropId: this.cropIdParam() ?? manualCropId,
-      });
-      this.activities.set(activities);
+      const page = await this.activityListService.loadPage(this.currentFilters());
+      if (token !== this.requestToken) return; // a newer filter/sort change superseded this one
+      this.activities.set(page.items);
+      this.cursor.set(page.cursor);
+      this.hasMore.set(page.hasMore);
     } catch {
+      if (token !== this.requestToken) return;
       this.error.set(this.translate.instant('activityList.loadError'));
     } finally {
-      this.loading.set(false);
+      if (token === this.requestToken) this.loading.set(false);
+    }
+  }
+
+  /** Appends the next page for the current filters; on failure the loaded rows stay. */
+  async loadMore(): Promise<void> {
+    const cursor = this.cursor();
+    if (!this.hasMore() || !cursor || this.loadingMore() || this.loading()) return;
+    const token = this.requestToken;
+    this.loadingMore.set(true);
+    this.loadMoreError.set(false);
+    try {
+      const page = await this.activityListService.loadPage(this.currentFilters(), cursor);
+      if (token !== this.requestToken) return;
+      const known = new Set(this.activities().map((a) => a.id));
+      const fresh = page.items.filter((a) => !known.has(a.id));
+      this.activities.update((rows) => [...rows, ...fresh]);
+      this.cursor.set(page.cursor);
+      this.hasMore.set(page.hasMore);
+      this.liveMessage.set(
+        this.translate.instant(
+          page.hasMore ? 'activityList.moreLoaded' : 'activityList.allLoaded',
+          { count: fresh.length },
+        ),
+      );
+    } catch {
+      if (token === this.requestToken) this.loadMoreError.set(true);
+    } finally {
+      if (token === this.requestToken) this.loadingMore.set(false);
     }
   }
 
@@ -219,25 +251,28 @@ export class ActivityListComponent implements OnInit {
     return farm ? farm.name : String(fieldId);
   }
 
-  // Client-only filter setters — no reload needed.
+  // Server-driven — each change refetches the first page for the whole history.
   setSeason(val: string): void {
     this.seasonFilter.set(val);
+    void this.reload();
   }
   setField(val: string): void {
     this.fieldFilter.set(val);
+    void this.reload();
   }
   setType(val: string): void {
     this.typeFilter.set(val);
+    void this.reload();
   }
 
   // Server-driven — re-fetches with the new crop scope.
   setCrop(val: string): void {
     this.cropFilter.set(val);
-    this.reload();
+    void this.reload();
   }
 
-  // Server-driven filter setters — re-sync the URL, which triggers reload() via the
-  // queryParams subscription above.
+  // URL-synced filter setters — they re-sync the URL, which refetches via the queryParams
+  // subscription above.
   setStatus(val: string): void {
     this.router.navigate([], {
       relativeTo: this.route,
@@ -259,11 +294,14 @@ export class ActivityListComponent implements OnInit {
     this.fieldFilter.set('All');
     this.typeFilter.set('All');
 
-    // Clearing status/sort query params re-triggers reload() via the subscription.
+    // A status/sort change also re-emits queryParams (which refetches); otherwise refetch here
+    // so the cleared season/crop/field/type take effect.
+    const paramsChange = this.statusFilter() !== 'All' || this.sortBy() !== 'latest';
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {},
     });
+    if (!paramsChange) void this.reload();
   }
 
   typeName(activityTypeId: number): string {

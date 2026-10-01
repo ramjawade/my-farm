@@ -4,6 +4,8 @@ import { TestBed } from '@angular/core/testing';
 import { ActivityService } from './activity.service';
 import { ActivitiesApiService } from '../../core/api/activities-api.service';
 import { FakeActivitiesApiService } from '../../testing/fake-activities-api.service';
+import { HttpService } from '../../core/http/http.service';
+import { Activity } from './activity.models';
 
 describe('ActivityService', () => {
   let service: ActivityService;
@@ -59,6 +61,87 @@ describe('ActivityService', () => {
       await Promise.all([first, service.reload()]);
 
       expect(fetch).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('queryActivitiesPage', () => {
+    let get: jasmine.Spy;
+
+    beforeEach(() => {
+      get = jasmine.createSpy('get').and.resolveTo({
+        items: [{ id: 1, activity_type_id: 1, status: 'Scheduled' }],
+        cursor: 'next',
+        has_more: true,
+      });
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideHttpClient(),
+          { provide: ActivitiesApiService, useClass: FakeActivitiesApiService },
+          { provide: HttpService, useValue: { get } },
+        ],
+      });
+      service = TestBed.inject(ActivityService);
+    });
+
+    it('builds the query string from filters, sort, limit and cursor', async () => {
+      await service.queryActivitiesPage({
+        status: ['Scheduled', 'In Progress'],
+        sort: 'cost_desc',
+        limit: 20,
+        cropId: 3,
+        season: 'Kharif',
+        landId: 8,
+        activityTypeId: 2,
+        cursor: 'a b/c',
+      });
+
+      expect(get).toHaveBeenCalledOnceWith(
+        '/activities?status=Scheduled&status=In%20Progress&sort=cost_desc&limit=20&crop_id=3' +
+          '&season=Kharif&land_id=8&activity_type_id=2&cursor=a%20b%2Fc',
+      );
+    });
+
+    it('returns the mapped rows with the next cursor and has_more', async () => {
+      const page = await service.queryActivitiesPage({ limit: 20 });
+
+      expect(page.items.map((a) => a.id)).toEqual([1]);
+      expect(page.cursor).toBe('next');
+      expect(page.hasMore).toBeTrue();
+    });
+
+    it('treats an older API response without paging fields as the last page', async () => {
+      get.and.resolveTo({ items: [] });
+
+      const page = await service.queryActivitiesPage({});
+
+      expect(page).toEqual({ items: [], cursor: null, hasMore: false });
+    });
+
+    it('queryActivities still returns just the rows', async () => {
+      expect((await service.queryActivities({ limit: 5 })).length).toBe(1);
+    });
+  });
+
+  describe('load interrupted by a mutation', () => {
+    it('drops the stale result instead of overwriting the newer state', async () => {
+      const storage = TestBed.inject(ActivitiesApiService) as unknown as FakeActivitiesApiService;
+      let release!: (rows: Activity[]) => void;
+      spyOn(storage, 'getActivities').and.returnValue(
+        new Promise<Activity[]>((resolve) => (release = resolve)),
+      );
+
+      const loading = service.reload(); // a (possibly multi-page) load is in flight...
+      const saved = await service.addActivity({
+        date: Date.now(),
+        activityTypeId: 1,
+        status: 'Completed',
+      }); // ...and the farmer saves something
+      release([]); // the stale load resolves without the new row
+      await loading;
+
+      expect(service.activities().map((a) => a.id)).toEqual([saved.id]);
     });
   });
 

@@ -8,6 +8,17 @@ import {
 } from '../../features/activity/activity.models';
 import { ActivityMapperService } from './activity-mapper.service';
 
+/** Rows per request when filling the shared cache (the API's maximum page size). */
+const CACHE_PAGE_SIZE = 100;
+/** Runaway guard: 200 pages is 20,000 rows, far beyond any real farm. */
+const MAX_PAGES = 200;
+
+interface PagedResponse<T> {
+  items: T[];
+  cursor?: string | null;
+  has_more?: boolean;
+}
+
 /**
  * Activities & their nested expenses, backed by the MyFarm backend via
  * Firebase-authenticated HTTP requests. Online-only — no offline outbox.
@@ -38,9 +49,34 @@ export class ActivitiesApiService {
     return resp.items;
   }
 
+  /**
+   * Fills a list by following the API cursor in pages of up to `CACHE_PAGE_SIZE`, so no single
+   * response is huge. A response without `has_more` is a complete list (an API that predates
+   * pagination).
+   */
+  private async fetchAllPages<T>(path: string): Promise<T[]> {
+    const items: T[] = [];
+    let cursor: string | null = null;
+    for (let page = 0; page < MAX_PAGES; page++) {
+      const params: Record<string, string> = { limit: String(CACHE_PAGE_SIZE) };
+      if (cursor) params['cursor'] = cursor;
+      const resp: PagedResponse<T> = await this.httpService.get<PagedResponse<T>>(path, params);
+
+      if (resp.has_more === undefined && resp.items.length >= CACHE_PAGE_SIZE) {
+        // A pre-pagination API treats `limit` as a cap and silently truncates; ask for everything.
+        return this.fetchList<T>(path);
+      }
+      items.push(...resp.items);
+      if (!resp.has_more || !resp.cursor) return items;
+      cursor = resp.cursor;
+    }
+    console.error(`Stopped paging ${path} after ${MAX_PAGES} pages`);
+    return items;
+  }
+
   async getActivities(userId: number): Promise<Activity[]> {
     try {
-      const items = await this.fetchList<unknown>('/activities');
+      const items = await this.fetchAllPages<unknown>('/activities');
       return items.map((item) => this.activityMapper.fromBackend(item));
     } catch (error) {
       console.error('Failed to get activities:', error);
@@ -106,7 +142,7 @@ export class ActivitiesApiService {
 
   async getExpenses(userId: number): Promise<ActivityExpense[]> {
     try {
-      const items = await this.fetchList<unknown>('/activities/expenses');
+      const items = await this.fetchAllPages<unknown>('/activities/expenses');
       return items.map((item) => this.activityMapper.expenseFromBackend(item));
     } catch (error) {
       console.error('Failed to get expenses:', error);
