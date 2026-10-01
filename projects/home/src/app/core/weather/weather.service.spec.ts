@@ -78,6 +78,49 @@ describe('WeatherService', () => {
     expect(service.source()).toBe('live');
   });
 
+  describe('data source reported by the backend', () => {
+    async function load(source: string) {
+      const promise = service.getWeatherData(testLocation);
+      httpMock
+        .expectOne((r) => r.url === '/api/v1/weather')
+        .flush({ ...mockBackendResponse, source });
+      return promise;
+    }
+
+    it('shows mock backend data as demo, not live', async () => {
+      await load('mock');
+
+      expect(service.source()).toBe('demo');
+    });
+
+    it('shows an error-fallback response as demo', async () => {
+      await load('error');
+
+      expect(service.source()).toBe('demo');
+    });
+
+    it('shows backend-cached data as cached', async () => {
+      await load('cached');
+
+      expect(service.source()).toBe('cache');
+    });
+
+    it('does not cache sample data, so the next load still reports demo', async () => {
+      await load('mock');
+      expect(cacheService.get(testLocation)).toBeNull();
+
+      await load('mock');
+
+      expect(service.source()).toBe('demo');
+    });
+
+    it('caches live data', async () => {
+      await load('live');
+
+      expect(cacheService.get(testLocation)).not.toBeNull();
+    });
+  });
+
   it('should return fresh data from cache without a network call', async () => {
     const weatherData = {
       location: testLocation,

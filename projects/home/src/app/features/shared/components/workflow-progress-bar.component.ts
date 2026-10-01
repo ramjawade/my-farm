@@ -9,7 +9,7 @@ import { WorkflowStateService } from '../../../core/workflow/workflow-state.serv
   imports: [CommonModule, TranslatePipe],
   template: `
     <div class="workflow-progress-container">
-      @if (workflowService.isFirstTime()) {
+      @if (workflowService.showProgress()) {
         <div class="progress-section">
           <div class="progress-header">
             <span class="progress-label">

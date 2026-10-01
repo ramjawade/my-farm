@@ -95,6 +95,65 @@ describe('ReportsComponent', () => {
     expect(compiled.textContent).toContain('Wheat');
   });
 
+  describe('year dropdown', () => {
+    async function pickYear(index: number): Promise<void> {
+      const select: HTMLSelectElement = fixture.nativeElement.querySelector('#yearSelect');
+      select.selectedIndex = index;
+      select.dispatchEvent(new Event('change'));
+      await fixture.whenStable();
+      fixture.detectChanges();
+    }
+
+    it('keeps selectedYear a number after the farmer changes it', async () => {
+      const currentYear = new Date().getFullYear();
+
+      await pickYear(1);
+
+      expect(component.selectedYear()).toBe(currentYear - 1);
+      expect(typeof component.selectedYear()).toBe('number');
+    });
+
+    it('generates the report for the year that was picked, not an empty one', async () => {
+      const activityService = TestBed.inject(ActivityService);
+      const activity = await activityService.addActivity({
+        activityTypeId: 1,
+        status: 'Completed',
+        season: 'Kharif',
+        date: new Date('2025-06-15').getTime(),
+      });
+      await activityService.addExpense({
+        activityId: activity.id,
+        expenseCategoryId: 3,
+        amount: 750,
+      } as any);
+
+      await pickYear(1); // last year
+      component.generateReport();
+
+      expect(component.report()?.year).toBe(new Date().getFullYear() - 1);
+      expect(component.report()?.totalExpense).toBe(750);
+    });
+
+    it("re-selecting the current year still finds this year's data", async () => {
+      const activityService = TestBed.inject(ActivityService);
+      const activity = await activityService.addActivity({
+        activityTypeId: 1,
+        status: 'Completed',
+        season: 'Kharif',
+      });
+      await activityService.addExpense({
+        activityId: activity.id,
+        expenseCategoryId: 3,
+        amount: 200,
+      } as any);
+
+      await pickYear(0);
+      component.generateReport();
+
+      expect(component.report()?.totalExpense).toBe(200);
+    });
+  });
+
   it('clicking the Generate Report button in the DOM populates the report', async () => {
     const compiled: HTMLElement = fixture.nativeElement;
     const button = Array.from(compiled.querySelectorAll('button')).find((b) =>

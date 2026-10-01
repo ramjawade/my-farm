@@ -2,7 +2,6 @@ import { Injectable, inject, signal, computed, effect } from '@angular/core';
 import { Router } from '@angular/router';
 import { FarmerRegistrationService } from '../../features/farmer-registration/farmer-registration.service';
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
-import { WorkflowStateService } from '../workflow/workflow-state.service';
 import { HttpService } from '../http/http.service';
 import { ReferenceDataService } from '../api/reference-data.service';
 
@@ -17,7 +16,6 @@ const SESSION_DURATION_MS = 24 * 60 * 60 * 1000;
 export class AuthService {
   private readonly router = inject(Router);
   private readonly registrationService = inject(FarmerRegistrationService);
-  private readonly workflowService = inject(WorkflowStateService);
   private readonly httpService = inject(HttpService);
   private readonly referenceData = inject(ReferenceDataService);
 
@@ -82,8 +80,6 @@ export class AuthService {
     if (sessionToken) {
       this.referenceData.preload();
     }
-
-    this.workflowService.markPhaseComplete('registration');
   }
 
   /**

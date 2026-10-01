@@ -288,46 +288,55 @@
               </a>
             </div>
 
-            <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-3 gap-sm-4 mb-4">
-              <div class="weather-dash-temp-wrapper d-flex align-items-center gap-2">
-                <i class="bi bi-cloud-sun text-info fs-1"></i>
-                <div>
-                  <div class="h1 fw-bold mb-0">28°C</div>
-                  <div class="text-xs text-muted">{{ 'home.weatherSummary' | translate }}</div>
-                </div>
+            @if (!weatherLocation()) {
+              <div class="text-center text-muted py-4">
+                <i class="bi bi-geo-alt fs-2 d-block mb-2"></i>
+                <p class="text-sm mb-2">{{ 'home.weatherNoLocation' | translate }}</p>
+                <a routerLink="/map" class="btn btn-sm btn-outline-success">{{
+                  'home.weatherSetLocation' | translate
+                }}</a>
               </div>
-              <div class="border-start-sm ps-sm-4 flex-grow-1 mt-3 mt-sm-0">
-                <div class="row g-2">
-                  <div class="col-6">
-                    <div class="text-xxs text-muted text-nowrap">
-                      {{ 'home.soilMoisture' | translate }}
-                    </div>
-                    <div class="fw-bold text-sm text-secondary text-nowrap">
-                      {{ 'home.soilMoistureValue' | translate }}
+            } @else if (currentWeather(); as w) {
+              <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-3 gap-sm-4">
+                <div class="weather-dash-temp-wrapper d-flex align-items-center gap-2">
+                  <i class="bi bi-cloud-sun text-info fs-1"></i>
+                  <div>
+                    <div class="h1 fw-bold mb-0">{{ w.temp }}°C</div>
+                    <div class="text-xs text-muted">
+                      {{
+                        'home.weatherSummaryLive'
+                          | translate: { condition: w.condition, feelsLike: w.feelsLike }
+                      }}
                     </div>
                   </div>
-                  <div class="col-6">
-                    <div class="text-xxs text-muted text-nowrap">
-                      {{ 'home.humidity' | translate }}
+                </div>
+                <div class="border-start-sm ps-sm-4 flex-grow-1 mt-3 mt-sm-0">
+                  <div class="row g-2">
+                    <div class="col-6">
+                      <div class="text-xxs text-muted text-nowrap">
+                        {{ 'home.humidity' | translate }}
+                      </div>
+                      <div class="fw-bold text-sm text-secondary">{{ w.humidity }}%</div>
                     </div>
-                    <div class="fw-bold text-sm text-secondary">68%</div>
+                    <div class="col-6">
+                      <div class="text-xxs text-muted text-nowrap">
+                        {{ 'home.wind' | translate }}
+                      </div>
+                      <div class="fw-bold text-sm text-secondary text-nowrap">
+                        {{ w.windSpeed }} km/h
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-
-            <!-- Short Advisories -->
-            <div
-              class="weather-advisory-box p-3 rounded-3 bg-light border border-light-subtle d-flex gap-2 align-items-start"
-            >
-              <i class="bi bi-lightbulb-fill text-warning mt-0.5"></i>
-              <div>
-                <span class="fw-bold text-xs text-success-dark d-block">{{
-                  'home.dripAdvisoryTitle' | translate
-                }}</span>
-                <span class="text-xxs text-muted">{{ 'home.dripAdvisoryBody' | translate }}</span>
-              </div>
-            </div>
+              @if (weatherIsSample()) {
+                <div class="alert alert-warning py-2 px-3 text-xs mt-3 mb-0" role="status">
+                  {{ 'home.weatherSample' | translate }}
+                </div>
+              }
+            } @else {
+              <p class="text-muted text-sm mb-0">{{ 'home.weatherLoading' | translate }}</p>
+            }
           </div>
         </div>
 

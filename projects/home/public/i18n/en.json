@@ -72,12 +72,7 @@
     "productionCostsLogged": "Production costs logged in {{month}}",
     "weatherMonitor": "Weather Monitor",
     "fullForecast": "Full Forecast",
-    "weatherSummary": "Partly Cloudy | Feels 31°C",
-    "soilMoisture": "SOIL MOISTURE",
-    "soilMoistureValue": "42% (Optimal)",
     "humidity": "HUMIDITY",
-    "dripAdvisoryTitle": "Drip Irrigation Advisory",
-    "dripAdvisoryBody": "Maintain standard 30-minute drip cycles today. Soil moisture is adequate. Next precipitation expected on Tuesday.",
     "cropsMonitor": "Crops Monitor",
     "viewTimeline": "View Timeline",
     "sownDaysAgo": "sown {{days}} days ago",
@@ -114,7 +109,13 @@
         "description": "Record work and expenses so costs roll up per crop.",
         "action": "Log activity"
       }
-    }
+    },
+    "weatherSummaryLive": "{{condition}} | Feels {{feelsLike}}°C",
+    "wind": "WIND",
+    "weatherNoLocation": "Set up your land or farm location to see your local weather.",
+    "weatherSetLocation": "Draw your land",
+    "weatherLoading": "Loading weather…",
+    "weatherSample": "Sample data: live weather is unavailable right now, so this is not a real forecast."
   },
   "landEdit": {
     "title": "Edit Land & Location",
@@ -355,7 +356,17 @@
     "saveError": "Could not save the activity. Please try again.",
     "loggedToast": "{{type}} logged."
   },
+  "historyEvent": {
+    "created": "Activity created",
+    "updated": "Activity updated",
+    "deleted": "Activity deleted",
+    "status_changed": "Status changed",
+    "expense_added": "Expense added",
+    "expense_updated": "Expense updated",
+    "expense_deleted": "Expense deleted"
+  },
   "activityDetail": {
+    "notes": "Notes",
     "loading": "Loading activity…",
     "loadError": "Could not load this activity",
     "season": "Season",

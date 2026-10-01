@@ -72,12 +72,7 @@
     "productionCostsLogged": "{{month}} मध्ये नोंदवलेला उत्पादन खर्च",
     "weatherMonitor": "हवामान मॉनिटर",
     "fullForecast": "संपूर्ण अंदाज",
-    "weatherSummary": "अंशतः ढगाळ | जाणवते 31°C",
-    "soilMoisture": "मातीतील ओलावा",
-    "soilMoistureValue": "42% (योग्य)",
     "humidity": "आर्द्रता",
-    "dripAdvisoryTitle": "ठिबक सिंचन सल्ला",
-    "dripAdvisoryBody": "आज नेहमीप्रमाणे 30-मिनिटांचे ठिबक चक्र सुरू ठेवा. मातीतील ओलावा पुरेसा आहे. पुढील पाऊस मंगळवारी अपेक्षित आहे.",
     "cropsMonitor": "पीक मॉनिटर",
     "viewTimeline": "टाइमलाइन पहा",
     "sownDaysAgo": "{{days}} दिवसांपूर्वी पेरले",
@@ -114,7 +109,13 @@
         "description": "काम आणि खर्च नोंदवा जेणेकरून खर्च प्रत्येक पिकानुसार मोजला जाईल.",
         "action": "क्रियाकलाप नोंदवा"
       }
-    }
+    },
+    "weatherSummaryLive": "{{condition}} | जाणवते {{feelsLike}}°C",
+    "wind": "वारा",
+    "weatherNoLocation": "तुमच्या भागातील हवामान पाहण्यासाठी तुमची जमीन किंवा शेताचे ठिकाण जोडा.",
+    "weatherSetLocation": "तुमची जमीन काढा",
+    "weatherLoading": "हवामान लोड होत आहे…",
+    "weatherSample": "नमुना डेटा: थेट हवामान सध्या उपलब्ध नाही, त्यामुळे हा खरा अंदाज नाही."
   },
   "landEdit": {
     "title": "जमीन आणि स्थान संपादित करा",
@@ -355,7 +356,17 @@
     "saveError": "क्रियाकलाप जतन करता आला नाही. कृपया पुन्हा प्रयत्न करा.",
     "loggedToast": "{{type}} नोंदवले."
   },
+  "historyEvent": {
+    "created": "क्रियाकलाप तयार केला",
+    "updated": "क्रियाकलाप अद्यतनित केला",
+    "deleted": "क्रियाकलाप हटवला",
+    "status_changed": "स्थिती बदलली",
+    "expense_added": "खर्च जोडला",
+    "expense_updated": "खर्च अद्यतनित केला",
+    "expense_deleted": "खर्च हटवला"
+  },
   "activityDetail": {
+    "notes": "टिपा",
     "loading": "क्रियाकलाप लोड होत आहे…",
     "loadError": "हा क्रियाकलाप लोड करता आला नाही",
     "season": "हंगाम",
