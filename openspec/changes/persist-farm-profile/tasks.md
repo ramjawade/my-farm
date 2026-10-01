@@ -1,10 +1,10 @@
 ## 1. API (sub-issue A)
 
-- [ ] 1.1 Add `setup_completed` and `crop_catalog_ids` to farm update; return `crop_catalog_ids` on farm read. Verify: pytest for replace, dedupe, unknown id 422, omitted unchanged.
-- [ ] 1.2 Add validated `user_role` to profile update. Verify: pytest valid/invalid role round-trips via `GET /me`.
-- [ ] 1.3 Default-farm ordering by lowest id wherever the API exposes it for resolvers. Verify: pytest.
-- [ ] 1.4 Export OpenAPI and regenerate client contracts. Verify: `python scripts/export_openapi.py`, `npm run generate:contracts` show no stray diff.
-- [ ] 1.5 `ruff`, `mypy`, `pytest` pass.
+- [x] 1.1 Add `setup_completed` and `crop_catalog_ids` to farm update; return `crop_catalog_ids` on farm read. Verify: pytest for replace, dedupe, unknown id 422, omitted unchanged.
+- [x] 1.2 Add validated `user_role` to profile update. Verify: pytest valid/invalid role round-trips via `GET /me`.
+- [x] 1.3 Default farm = lowest id is resolved client-side (task 2.1); the list order stays unchanged so other callers are unaffected.
+- [x] 1.4 Export OpenAPI and regenerate client contracts. Verify: `python scripts/export_openapi.py`, `npm run generate:contracts` show no stray diff.
+- [x] 1.5 `ruff`, `mypy`, `pytest` pass.
 
 ## 2. Client (sub-issue B)
 

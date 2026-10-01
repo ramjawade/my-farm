@@ -2047,6 +2047,13 @@
             "title": "Created At",
             "type": "string"
           },
+          "crop_catalog_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Crop Catalog Ids",
+            "type": "array"
+          },
           "deleted_at": {
             "anyOf": [
               {
@@ -2237,6 +2244,22 @@
             ],
             "title": "Area Unit"
           },
+          "crop_catalog_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "maximum": 9.223372036854776e+18,
+                  "minimum": 1.0,
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Crop Catalog Ids"
+          },
           "district": {
             "anyOf": [
               {
@@ -2338,6 +2361,17 @@
               }
             ],
             "title": "Pincode"
+          },
+          "setup_completed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Setup Completed"
           },
           "state": {
             "anyOf": [
@@ -2504,6 +2538,26 @@
               }
             ],
             "title": "Preferred Language"
+          },
+          "user_role": {
+            "anyOf": [
+              {
+                "enum": [
+                  "farmer",
+                  "farm_owner",
+                  "agronomist",
+                  "farm_worker",
+                  "student",
+                  "researcher",
+                  "gardener"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Role"
           }
         },
         "title": "FarmerUpdate",

@@ -1497,6 +1497,8 @@ export interface components {
        * Format: date-time
        */
       created_at: string;
+      /** Crop Catalog Ids */
+      crop_catalog_ids?: number[];
       /** Deleted At */
       deleted_at?: string | null;
       /** District */
@@ -1542,6 +1544,8 @@ export interface components {
       area?: number | string | null;
       /** Area Unit */
       area_unit?: string | null;
+      /** Crop Catalog Ids */
+      crop_catalog_ids?: number[] | null;
       /** District */
       district?: string | null;
       /** Farming Method */
@@ -1558,6 +1562,8 @@ export interface components {
       name?: string | null;
       /** Pincode */
       pincode?: string | null;
+      /** Setup Completed */
+      setup_completed?: boolean | null;
       /** State */
       state?: string | null;
       /** Village */
@@ -1611,6 +1617,18 @@ export interface components {
       full_name?: string | null;
       /** Preferred Language */
       preferred_language?: string | null;
+      /** User Role */
+      user_role?:
+        | (
+            | 'farmer'
+            | 'farm_owner'
+            | 'agronomist'
+            | 'farm_worker'
+            | 'student'
+            | 'researcher'
+            | 'gardener'
+          )
+        | null;
     };
     /** HTTPValidationError */
     HTTPValidationError: {
