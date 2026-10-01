@@ -13,13 +13,12 @@ export interface paths {
     };
     /**
      * List Activities
-     * @description List activities for the current farmer.
+     * @description List activities for the current farmer, one cursor-paginated page at a time.
      *
-     *     With no query params, behaves exactly as before (everything, newest
-     *     updated first) via `activity_repo.list_all`. `status` (repeatable),
-     *     `crop_id`, `sort` and `limit` are additive filters for callers that
-     *     need a targeted slice (e.g. the activity dashboard's upcoming/recent
-     *     lists) instead of the full list.
+     *     Returns `{ items, cursor, has_more }`; follow `cursor` until `has_more` is false to
+     *     traverse every match exactly once. Sorts: default (most recently updated first),
+     *     `date_asc`, `date_desc` (undated last) and `cost_desc`; ties break on id. Filters
+     *     combine with AND and apply before paging.
      */
     get: operations['list_activities_api_v1_activities_get'];
     put?: never;
@@ -43,7 +42,10 @@ export interface paths {
     };
     /**
      * List All Expenses
-     * @description List all expenses for the current farmer (joined through activities).
+     * @description List the current farmer's expenses (joined through activities), one page at a time.
+     *
+     *     Returns `{ items, cursor, has_more }`, most recently updated first with an id
+     *     tie-break; soft-deleted expenses and expenses of deleted activities are excluded.
      */
     get: operations['list_all_expenses_api_v1_activities_expenses_get'];
     put?: never;
@@ -1832,8 +1834,12 @@ export interface operations {
       query?: {
         status?: string[] | null;
         crop_id?: number | null;
+        season?: string | null;
+        land_id?: number | null;
+        activity_type_id?: number | null;
         sort?: string | null;
         limit?: number | null;
+        cursor?: string | null;
       };
       header?: {
         authorization?: string | null;
@@ -1902,7 +1908,10 @@ export interface operations {
   };
   list_all_expenses_api_v1_activities_expenses_get: {
     parameters: {
-      query?: never;
+      query?: {
+        limit?: number | null;
+        cursor?: string | null;
+      };
       header?: {
         authorization?: string | null;
       };
