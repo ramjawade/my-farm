@@ -7,6 +7,8 @@ import { ProfileComponent } from './profile.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { FarmerRegistrationData } from '../farmer-registration/farmer-registration.models';
 import { LandsApiService } from '../../core/api/lands-api.service';
+import { FarmerProfileApiService } from '../../core/api/farmer-profile-api.service';
+import { FakeFarmerProfileApiService } from '../../testing/fake-farmer-profile-api.service';
 import { FakeLandsApiService } from '../../testing/fake-lands-api.service';
 
 describe('ProfileComponent', () => {
@@ -44,6 +46,7 @@ describe('ProfileComponent', () => {
       imports: [ProfileComponent],
       providers: [
         { provide: LandsApiService, useClass: FakeLandsApiService },
+        { provide: FarmerProfileApiService, useClass: FakeFarmerProfileApiService },
         provideZonelessChangeDetection(),
         provideRouter([]),
         provideHttpClient(),
@@ -96,9 +99,9 @@ describe('ProfileComponent', () => {
     expect(component.showEditDialog()).toBeTrue();
   });
 
-  it('should reset agronomic fields when deleteAgronomic is called and confirmed', () => {
+  it('should reset agronomic fields when deleteAgronomic is called and confirmed', async () => {
     spyOn(window, 'confirm').and.returnValue(true);
-    component.deleteAgronomic();
+    await component.deleteAgronomic();
 
     const user = authService.currentUser();
     expect(user?.userRole).toBe('Farmer');
@@ -106,9 +109,9 @@ describe('ProfileComponent', () => {
     expect(user?.farmSetupCompleted).toBeFalse();
   });
 
-  it('should reset land & location fields when deleteLandLocation is called and confirmed', () => {
+  it('should reset land & location fields when deleteLandLocation is called and confirmed', async () => {
     spyOn(window, 'confirm').and.returnValue(true);
-    component.deleteLandLocation();
+    await component.deleteLandLocation();
 
     const user = authService.currentUser();
     expect(user?.farmName).toBe('');
@@ -122,9 +125,9 @@ describe('ProfileComponent', () => {
     expect(user?.farmSetupCompleted).toBeFalse();
   });
 
-  it('should reset operational fields when deleteOperations is called and confirmed', () => {
+  it('should reset operational fields when deleteOperations is called and confirmed', async () => {
     spyOn(window, 'confirm').and.returnValue(true);
-    component.deleteOperations();
+    await component.deleteOperations();
 
     const user = authService.currentUser();
     expect(user?.waterSource).toBe('');

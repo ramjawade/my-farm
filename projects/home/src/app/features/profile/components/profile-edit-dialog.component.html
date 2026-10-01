@@ -52,23 +52,12 @@
             </div>
 
             <div class="col-md-12">
-              <label for="phone" class="field-label required-label">Contact Number</label>
+              <label for="phone" class="field-label">Contact Number</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-telephone-fill"></i></span>
-                <input
-                  type="tel"
-                  id="phone"
-                  class="form-control"
-                  [ngModel]="editPhone()"
-                  (ngModelChange)="editPhone.set($event)"
-                  placeholder="e.g. +91 9876543210"
-                />
+                <input type="tel" id="phone" class="form-control" [value]="editPhone()" readonly />
               </div>
-              @if (!isPhonePatternValid()) {
-                <div class="text-danger small mt-1">
-                  Please enter a valid 10-15 digit phone number.
-                </div>
-              }
+              <div class="form-text">Your sign-in number can't be changed here.</div>
             </div>
 
             <div class="col-md-12">
@@ -739,21 +728,34 @@
       </div>
 
       <!-- MODAL FOOTER -->
+      @if (saveError()) {
+        <div class="alert alert-danger mt-3 mb-0" role="alert">{{ saveError() }}</div>
+      }
       <div class="wizard-footer mf-action-row border-top pt-4 mt-4">
-        <button type="button" class="btn btn-outline-secondary px-4 py-2" (click)="close()">
+        <button
+          type="button"
+          class="btn btn-outline-secondary px-4 py-2"
+          [disabled]="saving()"
+          (click)="close()"
+        >
           Cancel
         </button>
         <button
           type="button"
           class="btn btn-success px-4 py-2 fw-semibold"
           [disabled]="
+            saving() ||
             (section() === 'account' && !isAccountValid()) ||
             (section() === 'land' && !isLandValid()) ||
             (section() === 'operations' && !isOperationsValid())
           "
           (click)="save()"
         >
-          Save Changes
+          @if (saving()) {
+            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Saving…
+          } @else {
+            Save Changes
+          }
         </button>
       </div>
     </div>

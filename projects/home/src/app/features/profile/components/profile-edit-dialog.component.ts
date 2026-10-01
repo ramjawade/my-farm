@@ -61,6 +61,9 @@ export class ProfileEditDialogComponent {
   readonly editPincode = signal('');
   readonly selectedCrops = signal<string[]>([]);
 
+  readonly saving = signal(false);
+  readonly saveError = signal('');
+
   // Geocentric coordinates state
   readonly locationMethod = signal<'map' | 'manual'>('map');
   readonly mapMode = signal<'pin' | 'draw'>('pin');
@@ -79,7 +82,6 @@ export class ProfileEditDialogComponent {
     { value: 'Mustard', label: 'Mustard', icon: 'bi-brightness-high', color: '#d69e2e' },
     { value: 'Vegetables', label: 'Vegetables', icon: 'bi-basket', color: '#e53e3e' },
     { value: 'Fruits', label: 'Fruits', icon: 'bi-apple', color: '#e53e3e' },
-    { value: 'Other', label: 'Other', icon: 'bi-grid-fill', color: '#4a5568' },
   ];
 
   readonly waterSourceOptions = [
@@ -130,11 +132,6 @@ export class ProfileEditDialogComponent {
     return !name || (name.trim().length >= 3 && name.length <= 255);
   });
 
-  readonly isPhonePatternValid = computed(() => {
-    const phone = this.editPhone();
-    return !phone || /^[0-9-+() ]{10,15}$/.test(phone);
-  });
-
   readonly isEmailPatternValid = computed(() => {
     const email = this.editEmail();
     return !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -142,14 +139,12 @@ export class ProfileEditDialogComponent {
 
   readonly isAccountValid = computed(() => {
     const name = this.editFullName();
-    const phone = this.editPhone();
     const email = this.editEmail();
 
     const isNameValid = name && name.trim().length >= 3;
-    const isPhoneValid = phone && /^[0-9-+() ]{10,15}$/.test(phone);
     const isEmailValid = !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-    return !!(isNameValid && isPhoneValid && isEmailValid);
+    return !!(isNameValid && isEmailValid);
   });
 
   readonly isLandValid = computed(() => {
@@ -236,6 +231,7 @@ export class ProfileEditDialogComponent {
   }
 
   private initFormValues(): void {
+    this.saveError.set('');
     const user = this.currentUser();
     if (user) {
       this.editFullName.set(user.fullName);
@@ -363,16 +359,15 @@ export class ProfileEditDialogComponent {
     this.map = undefined;
   }
 
-  save(): void {
+  async save(): Promise<void> {
     const user = this.currentUser();
-    if (!user) return;
+    if (!user || this.saving()) return;
 
     const secVal = this.section();
     const updates: Partial<FarmerRegistrationData> = {};
 
     if (secVal === 'account') {
       updates.fullName = this.editFullName();
-      updates.phone = this.editPhone();
       updates.email = this.editEmail();
       updates.preferredLanguage = this.editPreferredLanguage();
     } else if (secVal === 'agronomic') {
@@ -407,7 +402,17 @@ export class ProfileEditDialogComponent {
       updates.farmSetupCompleted = true;
     }
 
-    this.authService.updateProfile(updates);
+    this.saving.set(true);
+    this.saveError.set('');
+    try {
+      await this.authService.updateProfile(updates);
+    } catch (error) {
+      console.error('Failed to save profile', error);
+      this.saveError.set("Couldn't save your changes. Check your connection and try again.");
+      return;
+    } finally {
+      this.saving.set(false);
+    }
 
     // Mark workflow phases complete
     if (secVal === 'land' && updates.village && updates.state) {
