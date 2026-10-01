@@ -1,8 +1,13 @@
 """Pydantic schemas for farmer endpoints."""
 
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, Field
+
+UserRole = Literal[
+    "farmer", "farm_owner", "agronomist", "farm_worker", "student", "researcher", "gardener"
+]
 
 
 class FarmerBase(BaseModel):
@@ -26,6 +31,7 @@ class FarmerUpdate(BaseModel):
     full_name: str | None = Field(None, max_length=255)
     email: str | None = Field(None, max_length=255)
     preferred_language: str | None = Field(None, max_length=10)
+    user_role: UserRole | None = None
 
 
 class FarmerRead(FarmerBase):

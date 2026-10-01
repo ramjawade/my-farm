@@ -131,3 +131,52 @@ async def test_update_and_delete_farm(client: AsyncClient) -> None:
             headers={"Authorization": "Bearer test"},
         )
         assert get_resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_farm_crops_and_setup_flag_round_trip(
+    client: AsyncClient, reference_ids: dict[str, str]
+) -> None:
+    """Crops replace as a set, dedupe, reject unknown ids; omitted leaves them."""
+    uid = f"farmer_{uuid4()}"
+    crop_id = int(reference_ids["crop_catalog_id"])
+    headers = {"Authorization": "Bearer test"}
+    with patch.object(
+        firebase_auth, "verify_id_token", return_value={"uid": uid, "phone_number": None}
+    ):
+        farm = (await client.post("/api/v1/farms", headers=headers, json={"name": "F"})).json()
+        assert farm["crop_catalog_ids"] == []
+        assert farm["setup_completed"] is False
+
+        resp = await client.patch(
+            f"/api/v1/farms/{farm['id']}",
+            headers=headers,
+            json={"crop_catalog_ids": [crop_id, crop_id], "setup_completed": True},
+        )
+        assert resp.status_code == 200
+        assert resp.json()["crop_catalog_ids"] == [crop_id]
+        assert resp.json()["setup_completed"] is True
+
+        resp = await client.patch(
+            f"/api/v1/farms/{farm['id']}", headers=headers, json={"name": "G"}
+        )
+        assert resp.json()["crop_catalog_ids"] == [crop_id]
+
+        listed = (await client.get("/api/v1/farms", headers=headers)).json()["items"]
+        assert listed[0]["crop_catalog_ids"] == [crop_id]
+
+        bad = await client.patch(
+            f"/api/v1/farms/{farm['id']}", headers=headers, json={"crop_catalog_ids": [999999999]}
+        )
+        assert bad.status_code == 422
+        again = (await client.get(f"/api/v1/farms/{farm['id']}", headers=headers)).json()
+        assert again["crop_catalog_ids"] == [crop_id]
+
+        cleared = await client.patch(
+            f"/api/v1/farms/{farm['id']}", headers=headers, json={"crop_catalog_ids": []}
+        )
+        assert cleared.json()["crop_catalog_ids"] == []
+        null = await client.patch(
+            f"/api/v1/farms/{farm['id']}", headers=headers, json={"crop_catalog_ids": None}
+        )
+        assert null.status_code == 422
