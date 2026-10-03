@@ -29,3 +29,4 @@ Non-negotiables:
 - **Don't drive the Browser** unless asked. Run `npm run build` to catch errors, but don't screenshot or navigate to verify UI unless requested.
 - **Prefer Bootstrap CSS** over custom CSS. Use utility classes (`d-flex`, `btn`, `badge`) first; write custom CSS only as a last resort.
 - **Angular/TypeScript coding rules:** the `angular-best-practices` skill ([`.claude/skills/angular-best-practices/SKILL.md`](.claude/skills/angular-best-practices/SKILL.md)). Load it whenever writing or reviewing frontend code.
+- **Home Daily brief card:** parked at the bottom of the Home Overview and greyed out (button disabled) until a design is chosen. Options A/B/C were mocked in the prototype options page. The prototype snapshot is `design/prototype/myfarm-prototype.html`.
