@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-10-09
+goal: Adopt the full MyFarm prototype (look, feel and features) in the Angular app
+skip_specs: true

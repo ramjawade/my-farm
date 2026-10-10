@@ -1,0 +1,695 @@
+<!doctype html>
+<html lang="mr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MyFarm Leaf Logo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600;700&family=Mukta:wght@400;500;600;700&display=swap" />
+<style>
+:root{
+  --r-md:10px; --r-lg:12px; --r-xl:14px; --r-pill:999px;
+  --bg:#eef1ec; --surface:#ffffff; --surface2:#f4f6f2; --line:#dde3d8;
+  --fg:#18231a; --muted:#5d6b5f;
+  --leaf:#2f7a3f; --leaf-soft:#dcefdf; --leaf-ink:#1d5a2b;
+  --sun:#c98a14; --sun-soft:#faefd2;
+  --display:'Bricolage Grotesque','Mukta','Segoe UI',system-ui,sans-serif;
+  --body:'Figtree','Mukta','Segoe UI',system-ui,sans-serif;
+  --deva:'Mukta','Figtree',sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:400 15px/1.55 var(--body);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:24px 16px 64px}
+h1{font:700 30px/1.15 var(--deva);margin:0 0 4px}
+h2{font:700 21px/1.2 var(--deva);margin:0 0 4px}
+h2 small{font:500 14px var(--body);color:var(--muted);margin-left:6px}
+.lede{color:var(--muted);margin:0 0 20px;max-width:68ch}
+section{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-xl);padding:20px;margin-top:16px}
+.hero{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center}
+@media (max-width:700px){.hero{grid-template-columns:1fr;justify-items:center;text-align:center}}
+.hero .icon{width:220px;height:220px;max-width:70vw;max-height:70vw}
+.story{display:flex;flex-direction:column;gap:14px}
+.story p{margin:0}
+.lockup{display:inline-flex;align-items:center;gap:12px;background:var(--surface2);border-radius:var(--r-lg);padding:12px 16px}
+@media (max-width:700px){.lockup{align-self:center}}
+.lockup svg{width:56px;height:56px;flex:none}
+.word{display:flex;flex-direction:column;line-height:1.1;text-align:left}
+.word .dv{font:700 26px var(--deva)}
+.word .en{font:600 14px var(--display);color:var(--muted)}
+.word .tag{font:500 13px var(--deva);color:var(--leaf);margin-top:4px}
+.anatomy{display:grid;grid-template-columns:1fr;gap:16px}
+.anatomy svg.diagram{width:100%;height:auto;display:block}
+.diagram text{font-family:var(--deva);fill:var(--fg)}
+.diagram .num{font:700 5px var(--body);fill:#fff}
+@media (max-width:600px){.diagram .lbl{display:none}}
+.legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin:0;padding:0;list-style:none}
+.legend li{display:flex;gap:10px;background:var(--surface2);border-radius:var(--r-lg);padding:12px}
+.badge{flex:none;width:26px;height:26px;border-radius:50%;background:var(--leaf);color:#fff;display:grid;place-items:center;font:700 13px var(--body)}
+.legend b{font:700 16px var(--deva);display:block}
+.legend .en{font:600 12px var(--body);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.legend p{margin:4px 0 0;font-size:14px}
+.sizes{display:flex;flex-wrap:wrap;align-items:flex-end;gap:18px}
+.sizes figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:6px}
+.sizes figcaption{font:500 12px var(--body);color:var(--muted);text-align:center}
+.note{color:var(--muted);font-size:14px;margin:12px 0 0}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.tiles figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px;border-radius:var(--r-lg);background:var(--surface2)}
+.tiles figure.dark{background:#18231a;color:#e8efe8}
+.tiles svg{width:112px;height:112px}
+.tiles figcaption{font:500 13px var(--body)}
+.ctx{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.phone{display:flex;justify-content:center;gap:14px;padding:18px 10px;border-radius:var(--r-lg);background:linear-gradient(160deg,#355e3f,#18231a)}
+.phone .app{display:flex;flex-direction:column;align-items:center;gap:5px;font:500 12px var(--deva);color:#fff}
+.phone .app svg{width:56px;height:56px}
+.phone .ghost{width:56px;height:56px;border-radius:14px;background:rgba(255,255,255,.18)}
+.browser{border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;background:var(--surface2)}
+.browser .tab{display:flex;align-items:center;gap:8px;background:var(--surface);margin:8px 8px 0;border-radius:8px 8px 0 0;padding:8px 10px;font:500 13px var(--deva);width:max-content;max-width:calc(100% - 16px)}
+.browser .tab svg{width:16px;height:16px;flex:none}
+.browser .bar{display:flex;align-items:center;gap:8px;background:var(--surface);padding:10px 12px;border-top:1px solid var(--line)}
+.browser .bar svg{width:30px;height:30px}
+.browser .bar .nm{font:700 18px var(--deva);color:var(--leaf)}
+.browser .bar .sp{flex:1}
+.browser .bar .av{width:30px;height:30px;border-radius:50%;background:var(--leaf-soft)}
+.login{display:flex;flex-direction:column;align-items:center;gap:6px;padding:20px 12px;border-radius:var(--r-lg);background:var(--sun-soft);text-align:center}
+.login svg{width:96px;height:96px}
+.login .dv{font:700 24px var(--deva)}
+.login .tag{font:500 14px var(--deva);color:var(--muted)}
+footer{margin-top:24px;color:var(--muted);font-size:13px}
+.jump{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 8px}
+.jump a{font:600 13px var(--deva);color:var(--leaf-ink);background:var(--leaf-soft);padding:6px 12px;border-radius:var(--r-pill);text-decoration:none;min-height:32px;display:inline-flex;align-items:center}
+.concept-h{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;margin:36px 0 0;scroll-margin-top:12px}
+.concept-h:first-of-type{margin-top:12px}
+.concept-h h2{font:700 24px/1.2 var(--deva);margin:0}
+.pill{background:var(--leaf);color:#fff;font:700 12px var(--body);padding:3px 10px;border-radius:var(--r-pill)}
+.pill.new{background:var(--sun)}
+.duo{display:flex;flex-wrap:wrap;gap:16px;justify-content:center}
+.duo figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:6px}
+.duo svg{width:min(200px,40vw);height:min(200px,40vw)}
+.duo figcaption{font:600 13px var(--deva);color:var(--muted)}
+</style>
+</head>
+<body>
+
+<!-- Shared defs and marks. Leaf space is 100x100; marks are filled by the script below. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="g-up" gradientUnits="userSpaceOnUse" x1="30" y1="26" x2="54" y2="52"><stop offset="0" stop-color="#62b06d"/><stop offset="1" stop-color="#3b8a49"/></linearGradient>
+    <linearGradient id="g-low" gradientUnits="userSpaceOnUse" x1="24" y1="80" x2="82" y2="22"><stop offset="0" stop-color="#8a5a2e"/><stop offset=".32" stop-color="#7a6430"/><stop offset=".58" stop-color="#3f7d3a"/><stop offset="1" stop-color="#2a6e38"/></linearGradient>
+    <linearGradient id="g-stem" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6b5a2a"/><stop offset="1" stop-color="#4a3a1c"/></linearGradient>
+    <clipPath id="clip-up"><path id="p-up" d=""/></clipPath>
+    <clipPath id="clip-low"><path id="p-low" d=""/></clipPath>
+    <linearGradient id="g2-low" gradientUnits="userSpaceOnUse" x1="66" y1="40" x2="40" y2="80"><stop offset="0" stop-color="#2f7a3f"/><stop offset="1" stop-color="#1d5a2b"/></linearGradient>
+    <linearGradient id="g2-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe3f5"/><stop offset=".55" stop-color="#eef3e6"/><stop offset="1" stop-color="#faefd2"/></linearGradient>
+    <linearGradient id="g2-soil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a5a2e"/><stop offset="1" stop-color="#5a3a1f"/></linearGradient>
+    <clipPath id="clip-out"><path id="p-out" d=""/></clipPath>
+    <clipPath id="c2-tile"><rect width="100" height="100" rx="22"/></clipPath>
+    <linearGradient id="g3-soil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a5530"/><stop offset="1" stop-color="#4a2e18"/></linearGradient>
+    <linearGradient id="g3-crown" gradientUnits="userSpaceOnUse" x1="30" y1="10" x2="68" y2="50"><stop offset="0" stop-color="#6cb874"/><stop offset=".55" stop-color="#3b8a49"/><stop offset="1" stop-color="#245f31"/></linearGradient>
+    <linearGradient id="g3-trunk" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5a3a1f"/><stop offset=".5" stop-color="#8a5f36"/><stop offset="1" stop-color="#5a3a1f"/></linearGradient>
+    <linearGradient id="g4-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fdf3dc"/><stop offset="1" stop-color="#f5d48f"/></linearGradient>
+    <linearGradient id="g4-field" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a86d38"/><stop offset="1" stop-color="#7a4a24"/></linearGradient>
+    <filter id="f-shadow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.2"/></filter>
+  </defs>
+  <symbol id="tile-cream" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#faefd2"/></symbol>
+  <symbol id="tile-white" viewBox="0 0 100 100"><rect x=".5" y=".5" width="99" height="99" rx="22" fill="#ffffff" stroke="#dde3d8"/></symbol>
+  <symbol id="tile-green" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#1d5a2b"/></symbol>
+  <symbol id="mk-full" viewBox="0 0 100 100"></symbol>
+  <symbol id="mk-simple" viewBox="0 0 100 100"></symbol>
+  <symbol id="mk2-full" viewBox="0 0 100 100"></symbol>
+  <symbol id="mk2-simple" viewBox="0 0 100 100"></symbol>
+  <symbol id="mk3-full" viewBox="0 0 100 100"></symbol>
+  <symbol id="mk3-simple" viewBox="0 0 100 100"></symbol>
+  <symbol id="mk4-full" viewBox="0 0 100 100"></symbol>
+  <symbol id="mk4-ai" viewBox="0 0 100 100"></symbol>
+  <symbol id="mk4-simple" viewBox="0 0 100 100"></symbol>
+</svg>
+
+<div class="wrap">
+  <h1>माझी शेती — पानाचा लोगो</h1>
+  <p class="lede">Four concepts where every natural part carries a meaning. The newest, Concept 4, is first.</p>
+  <nav class="jump" aria-label="Concepts"><a href="#c4">Concept 4 · सूर्योदय आणि झाड (new)</a><a href="#c1">Concept 1 · जमीन + तंत्रज्ञान</a><a href="#c2">Concept 2 · निसर्ग + न्यूरल नेटवर्क</a><a href="#c3">Concept 3 · मेंदू-झाड</a></nav>
+
+  <div class="concept-h" id="c4"><span class="pill new">Concept 4</span><h2>सूर्योदय, शेत आणि झाड</h2></div>
+  <p class="lede" style="margin:6px 0 0">Simple and calm: a ploughed field running to the horizon, the sun rising behind, and one tree in front with open branches, leaves and roots.</p>
+
+  <section class="hero" aria-label="Concept 4 logo">
+    <div class="duo">
+      <figure><svg viewBox="0 0 100 100" role="img" aria-label="MyFarm sunrise tree logo"><use href="#mk4-full"/></svg><figcaption>साधं · Clean</figcaption></figure>
+      <figure><svg viewBox="0 0 100 100" role="img" aria-label="MyFarm sunrise tree logo with AI points"><use href="#mk4-ai"/></svg><figcaption>AI स्पर्श · With AI points</figcaption></figure>
+    </div>
+    <div class="story">
+      <h2>मातीत मुळं, उद्याकडे फांद्या</h2>
+      <p>A new day rises over the ploughed field. In front stands one strong tree: its roots hold the soil, its trunk is steady, and its branches open toward the sun with fresh leaves. It is the farmer and the farm growing together, season after season.</p>
+      <p>The second version adds small gold points where the branches and roots fork, a quiet hint that the tree is smart, without making it busy.</p>
+      <div class="lockup">
+        <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#mk4-simple"/></svg>
+        <div class="word"><span class="dv">माझी शेती</span><span class="en">MyFarm</span><span class="tag">मातीत मुळं · उद्याकडे फांद्या</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="anatomy" aria-labelledby="h-anatomy4">
+    <h2 id="h-anatomy4">प्रत्येक भागाचा अर्थ <small>What each part means</small></h2>
+    <svg class="diagram" id="diagram4" viewBox="-64 -2 228 104" role="img" aria-label="Labelled diagram for concept 4"></svg>
+    <ol class="legend" id="legend4"></ol>
+  </section>
+
+  <section aria-labelledby="h-sizes4">
+    <h2 id="h-sizes4">Sizes <small>app icon down to favicon</small></h2>
+    <div class="sizes" id="sizes4"></div>
+    <p class="note">From 40&nbsp;px down: a plain sun disc, bolder furrows, a thicker tree with fewer, bigger leaves and three roots.</p>
+  </section>
+
+  <section aria-labelledby="h-ctx4">
+    <h2 id="h-ctx4">In use</h2>
+    <div class="ctx">
+      <div class="phone"><div class="ghost"></div><div class="app"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#mk4-full"/></svg><span>माझी शेती</span></div><div class="ghost"></div></div>
+      <div class="browser">
+        <div class="tab"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#mk4-simple"/></svg>माझी शेती — मुख्यपृष्ठ</div>
+        <div class="bar"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#mk4-simple"/></svg><span class="nm">माझी शेती</span><span class="sp"></span><span class="av"></span></div>
+      </div>
+      <div class="login"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#mk4-full"/></svg><div class="dv">माझी शेती</div><div class="tag">मातीत मुळं · उद्याकडे फांद्या</div></div>
+    </div>
+  </section>
+
+  <div class="concept-h" id="c1"><span class="pill">Concept 1</span><h2>जमीन + तंत्रज्ञान</h2></div>
+  <p class="lede" style="margin:6px 0 0">The lower half is ploughed land, the upper half's veins turn into a computer and AI network, and a modern farmer stands on the land.</p>
+
+  <section class="hero" aria-label="Logo">
+    <svg class="icon" viewBox="0 0 100 100" role="img" aria-label="MyFarm leaf logo"><use href="#tile-cream"/><use href="#mk-full"/></svg>
+    <div class="story">
+      <h2>परंपरेची मुळं, तंत्रज्ञानाची पानं</h2>
+      <p>The leaf grows from the soil of tradition. Its lower half is the farmer's ploughed land, brown soil turning into green crop. Up the midrib, the same veins become circuits: records on a computer, and an AI network that learns from the farm. At the tip, where a leaf grows next, sits the AI spark: the future of farming.</p>
+      <div class="lockup">
+        <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#tile-cream"/><use href="#mk-simple"/></svg>
+        <div class="word"><span class="dv">माझी शेती</span><span class="en">MyFarm</span><span class="tag">परंपरेची मुळं · तंत्रज्ञानाची पानं</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="anatomy" aria-labelledby="h-anatomy">
+    <h2 id="h-anatomy">पानाचा प्रत्येक भाग काही सांगतो <small>What each part means</small></h2>
+    <svg class="diagram" id="diagram" viewBox="-64 -2 228 104" role="img" aria-label="Labelled leaf diagram"></svg>
+    <ol class="legend" id="legend"></ol>
+  </section>
+
+  <section aria-labelledby="h-sizes">
+    <h2 id="h-sizes">Sizes <small>app icon down to favicon</small></h2>
+    <div class="sizes" id="sizes"></div>
+    <p class="note">From 40&nbsp;px down, the logo switches to a simple version: the same two-tone leaf, bold furrows, midrib and spark, without the small chip, nodes, farmer and dew drop that would blur.</p>
+  </section>
+
+  <section aria-labelledby="h-tiles">
+    <h2 id="h-tiles">Backgrounds</h2>
+    <div class="tiles">
+      <figure><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#tile-cream"/><use href="#mk-full"/></svg><figcaption>Cream (primary)</figcaption></figure>
+      <figure><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#tile-white"/><use href="#mk-full"/></svg><figcaption>White</figcaption></figure>
+      <figure class="dark"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#tile-green"/><use href="#mk-full"/></svg><figcaption>Deep green</figcaption></figure>
+      <figure><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#mk-full"/></svg><figcaption>No tile</figcaption></figure>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-ctx">
+    <h2 id="h-ctx">In use</h2>
+    <div class="ctx">
+      <div class="phone"><div class="ghost"></div><div class="app"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#tile-cream"/><use href="#mk-full"/></svg><span>माझी शेती</span></div><div class="ghost"></div></div>
+      <div class="browser">
+        <div class="tab"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#mk-simple"/></svg>माझी शेती — मुख्यपृष्ठ</div>
+        <div class="bar"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#mk-simple"/></svg><span class="nm">माझी शेती</span><span class="sp"></span><span class="av"></span></div>
+      </div>
+      <div class="login"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#mk-full"/></svg><div class="dv">माझी शेती</div><div class="tag">परंपरेची मुळं · तंत्रज्ञानाची पानं</div></div>
+    </div>
+  </section>
+
+  <div class="concept-h" id="c2"><span class="pill">Concept 2</span><h2>निसर्ग + न्यूरल नेटवर्क</h2></div>
+  <p class="lede" style="margin:6px 0 0">The leaf with everything it needs from nature: sun, cloud, rain, air, soil and roots. Its natural net of veins is the neural network.</p>
+
+  <section class="hero" aria-label="Concept 2 logo">
+    <svg class="icon" viewBox="0 0 100 100" role="img" aria-label="MyFarm nature and neural network leaf logo"><use href="#mk2-full"/></svg>
+    <div class="story">
+      <h2>निसर्गाची साथ, AI ची जोड</h2>
+      <p>A real leaf has a net of veins that carries water and food to every cell. Here that net is a neural network. It joins what the leaf receives from nature (sunlight, rain, air, and soil through the roots) into one living intelligence. The roots branch into a network too, carrying what the soil knows up into the leaf.</p>
+      <div class="lockup">
+        <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#mk2-simple"/></svg>
+        <div class="word"><span class="dv">माझी शेती</span><span class="en">MyFarm</span><span class="tag">निसर्गाची साथ · AI ची जोड</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="anatomy" aria-labelledby="h-anatomy2">
+    <h2 id="h-anatomy2">निसर्ग आणि न्यूरल नेटवर्क <small>What each part means</small></h2>
+    <svg class="diagram" id="diagram2" viewBox="-64 -2 228 104" role="img" aria-label="Labelled diagram for concept 2"></svg>
+    <ol class="legend" id="legend2"></ol>
+  </section>
+
+  <section aria-labelledby="h-sizes2">
+    <h2 id="h-sizes2">Sizes <small>app icon down to favicon</small></h2>
+    <div class="sizes" id="sizes2"></div>
+    <p class="note">From 40&nbsp;px down: sun, cloud, two rain drops, the leaf with a few bold vein nodes, and the soil. Air, roots and the fine network are dropped so it stays clear.</p>
+  </section>
+
+  <section aria-labelledby="h-ctx2">
+    <h2 id="h-ctx2">In use</h2>
+    <div class="ctx">
+      <div class="phone"><div class="ghost"></div><div class="app"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#mk2-full"/></svg><span>माझी शेती</span></div><div class="ghost"></div></div>
+      <div class="browser">
+        <div class="tab"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#mk2-simple"/></svg>माझी शेती — मुख्यपृष्ठ</div>
+        <div class="bar"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#mk2-simple"/></svg><span class="nm">माझी शेती</span><span class="sp"></span><span class="av"></span></div>
+      </div>
+      <div class="login"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#mk2-full"/></svg><div class="dv">माझी शेती</div><div class="tag">निसर्गाची साथ · AI ची जोड</div></div>
+    </div>
+  </section>
+
+  <div class="concept-h" id="c3"><span class="pill">Concept 3</span><h2>मेंदू-झाड · निसर्ग + न्यूरल ब्रेन</h2></div>
+  <p class="lede" style="margin:6px 0 0">A whole tree. The crown is a brain with a neural network, the roots are a network in the soil, and nature surrounds it: sun, cloud, rain, air, crops and groundwater.</p>
+
+  <section class="hero" aria-label="Concept 3 logo">
+    <svg class="icon" viewBox="0 0 100 100" role="img" aria-label="MyFarm brain tree logo"><use href="#mk3-full"/></svg>
+    <div class="story">
+      <h2>मुळं मातीत, बुद्धी आकाशात</h2>
+      <p>The tree stands in the middle of the farm. Its roots spread through the soil like a network, finding water and nutrients. The trunk carries what they learn up into the crown, and the crown is a brain: two halves, folds and a neural network that thinks about everything around it (sun, rain, air and the crops in the field). New leaves on the edge of the brain show that it keeps growing.</p>
+      <div class="lockup">
+        <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#mk3-simple"/></svg>
+        <div class="word"><span class="dv">माझी शेती</span><span class="en">MyFarm</span><span class="tag">मुळं मातीत · बुद्धी आकाशात</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="anatomy" aria-labelledby="h-anatomy3">
+    <h2 id="h-anatomy3">झाडाचा प्रत्येक भाग <small>What each part means</small></h2>
+    <svg class="diagram" id="diagram3" viewBox="-64 -2 228 104" role="img" aria-label="Labelled diagram for concept 3"></svg>
+    <ol class="legend" id="legend3"></ol>
+  </section>
+
+  <section aria-labelledby="h-sizes3">
+    <h2 id="h-sizes3">Sizes <small>app icon down to favicon</small></h2>
+    <div class="sizes" id="sizes3"></div>
+    <p class="note">From 40&nbsp;px down: sun, cloud, the brain crown with its centre line and four bold nodes, the trunk, the ground and three thick roots. Fine folds, crops, air, rain and groundwater are dropped so it stays clear.</p>
+  </section>
+
+  <section aria-labelledby="h-ctx3">
+    <h2 id="h-ctx3">In use</h2>
+    <div class="ctx">
+      <div class="phone"><div class="ghost"></div><div class="app"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#mk3-full"/></svg><span>माझी शेती</span></div><div class="ghost"></div></div>
+      <div class="browser">
+        <div class="tab"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#mk3-simple"/></svg>माझी शेती — मुख्यपृष्ठ</div>
+        <div class="bar"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#mk3-simple"/></svg><span class="nm">माझी शेती</span><span class="sp"></span><span class="av"></span></div>
+      </div>
+      <div class="login"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#mk3-full"/></svg><div class="dv">माझी शेती</div><div class="tag">मुळं मातीत · बुद्धी आकाशात</div></div>
+    </div>
+  </section>
+
+  <footer>Master artwork is a 100×100 SVG; the leaf sits at 86% of the tile, inside the PWA maskable safe zone. If this direction is approved, the next step is a board issue to export favicon.ico and the 72–512 px PNGs, and to use the mark in the manifest, toolbar and login.</footer>
+</div>
+
+<script>
+// ---- Leaf geometry (leaf space 0..100, base bottom-left, tip top-right) ----
+const OUT = 'M22 80 C14 62 18 40 34 28 C48 18 66 16 80 15 C84 14.5 87 13 89 11 C87.5 14 86.5 17 86 20 C85 36 80 54 66 68 C54 79 38 84 22 80 Z';
+const UP  = 'M22 80 C14 62 18 40 34 28 C48 18 66 16 80 15 C84 14.5 87 13 89 11 C60 36 40 60 22 80 Z';
+const LOW = 'M22 80 C40 60 60 36 89 11 C87.5 14 86.5 17 86 20 C85 36 80 54 66 68 C54 79 38 84 22 80 Z';
+const MID = [[22,80],[40,60],[60,36],[89,11]];
+const STEM = 'M24 78.5 C20 84 15 87.5 8 91 L6.8 88.6 C13 85.5 17.5 82 20.5 77.5 Z';
+const SCALE = .86;
+document.getElementById('p-up').setAttribute('d', UP);
+document.getElementById('p-low').setAttribute('d', LOW);
+
+const f = v => v.toFixed(1);
+const at = t => { const u = 1 - t; return [0,1].map(i => u*u*u*MID[0][i] + 3*u*u*t*MID[1][i] + 3*u*t*t*MID[2][i] + t*t*t*MID[3][i]); };
+const tan = t => { const u = 1 - t; const d = [0,1].map(i => 3*u*u*(MID[1][i]-MID[0][i]) + 6*u*t*(MID[2][i]-MID[1][i]) + 3*t*t*(MID[3][i]-MID[2][i])); const l = Math.hypot(d[0], d[1]); return [d[0]/l, d[1]/l]; };
+const nrm = t => { const T = tan(t); return [T[1], -T[0]]; };           // points to the upper (digital) half
+const add = (p, v, k) => [p[0] + v[0]*k, p[1] + v[1]*k];
+const curve = (S, C, E) => `M${f(S[0])} ${f(S[1])} Q${f(C[0])} ${f(C[1])} ${f(E[0])} ${f(E[1])}`;
+const spark = (cx, cy, r) => `<path transform="translate(${f(cx-r)} ${f(cy-r)}) scale(${(r/50).toFixed(3)})" d="M50 0 C54 38 62 46 100 50 C62 54 54 62 50 100 C46 62 38 54 0 50 C38 46 46 38 50 0 Z" fill="#e3a93a" stroke="#fff8ee" stroke-width="7" paint-order="stroke"/>`;
+
+// Furrows on the land half: curves leaving the midrib like veins, clipped to the lower half.
+function furrows(ts, width, opacity){
+  return ts.map(t => {
+    const S = at(t), T = tan(t), N = nrm(t), h = 24;
+    return `<path d="${curve(S, add(add(S, N, -h*.55), T, h*.2), add(add(S, N, -h*1.25), T, h*1.0))}" stroke-width="${width}"/>`;
+  }).join('').replace(/^/, `<g clip-path="url(#clip-low)" fill="none" stroke="#f3e3c0" stroke-linecap="round" opacity="${opacity}">`) + '</g>';
+}
+
+// Positions shared by the mark and the diagram.
+const tC = .5, Tc = tan(tC), Nc = nrm(tC);
+const CHIP = add(at(tC), Nc, 9);
+const local = (u, v) => add(add(CHIP, Tc, u), Nc, v);                  // u: toward tip, v: toward upper edge
+const NODES = { A:[3,12], B:[15,5], C:[-13,4], D:[25,3], E:[-9,13] };
+const FARMER = add(at(.3), nrm(.3), -9.5);
+const DEW = add(at(.8), nrm(.8), -6.5);
+const TIP_SPARK = [90.5, 9.7];
+const angC = Math.atan2(Tc[1], Tc[0]) * 180 / Math.PI;
+
+function markFull(){
+  const g = [];
+  g.push(`<path d="${OUT}" transform="translate(1.8 2.8)" fill="#18231a" opacity=".18" filter="url(#f-shadow)"/>`);
+  g.push(`<path d="${STEM}" fill="url(#g-stem)"/>`);
+  g.push(`<path d="${LOW}" fill="url(#g-low)"/>`);
+  g.push(`<path d="${UP}" fill="url(#g-up)"/>`);
+  g.push(furrows([.04,.1,.16,.22,.28,.34,.4,.46,.52,.58,.64,.7,.76,.82,.88], 1.5, .4));
+  // natural veins on the upper half, away from the chip
+  let veins = '';
+  for (const t of [.14, .26, .74, .86]) {
+    const S = at(t), T = tan(t), N = nrm(t), h = 27 * Math.pow(Math.sin(Math.PI * Math.min(t + .05, 1)), .7);
+    veins += `<path d="${curve(S, add(add(S, N, h*.62), T, h*.22), add(add(S, N, h*.86), T, h*1.0))}" stroke-width="${(1.5 - t).toFixed(2)}"/>`;
+  }
+  g.push(`<g clip-path="url(#clip-up)" fill="none" stroke="#d6ecd0" stroke-linecap="round" opacity=".34">${veins}</g>`);
+  // AI network links between vein-end nodes
+  const P = k => local(...NODES[k]);
+  const links = [['C','E'],['E','A'],['A','B'],['B','D'],['A','D'],['C','A']].map(([a,b]) => `M${f(P(a)[0])} ${f(P(a)[1])} L${f(P(b)[0])} ${f(P(b)[1])}`).join(' ');
+  g.push(`<path d="${links}" clip-path="url(#clip-up)" fill="none" stroke="#e3a93a" stroke-width=".8" opacity=".65"/>`);
+  // circuit traces + chip (local frame: x toward tip, y toward the midrib)
+  g.push(`<g transform="translate(${f(CHIP[0])} ${f(CHIP[1])}) rotate(${f(angC)})">
+    <g fill="none" stroke="#fff8ee" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" opacity=".92">
+      <path d="M0 4.5 V9"/><path d="M0 -4.5 V-8 L3 -12"/><path d="M4.5 0 H10 L15 -5"/><path d="M-4.5 0 H-9 L-13 -4"/>
+      <path d="M-2.2 -4.5 V-6.3 M2.2 -4.5 V-6.3 M-2.2 4.5 V6.3 M2.2 4.5 V6.3 M-4.5 -2.2 H-6.3 M-4.5 2.2 H-6.3 M4.5 -2.2 H6.3 M4.5 2.2 H6.3"/>
+    </g>
+    <rect x="-4.5" y="-4.5" width="9" height="9" rx="1.4" fill="#fff8ee"/>
+    <rect x="-2.1" y="-2.1" width="4.2" height="4.2" rx=".6" fill="#2f7a3f"/>
+  </g>`);
+  g.push(Object.keys(NODES).map(k => `<circle cx="${f(P(k)[0])}" cy="${f(P(k)[1])}" r="1.9" fill="#2f7a3f" stroke="#e3a93a" stroke-width="1.1"/>`).join(''));
+  // midrib: the bridge between land and technology
+  g.push(`<path d="M22 80 C40 60 60 36 89 11" fill="none" stroke="#fff8ee" stroke-width="1.9" stroke-linecap="round" opacity=".85"/>`);
+  // modern farmer standing on the land
+  const [fx, fy] = FARMER;
+  g.push(`<g fill="#fff8ee"><circle cx="${f(fx)}" cy="${f(fy-4.2)}" r="2.6"/><path d="M${f(fx-4.6)} ${f(fy+3.4)} Q${f(fx-4.6)} ${f(fy-1)} ${f(fx)} ${f(fy-1)} Q${f(fx+4.6)} ${f(fy-1)} ${f(fx+4.6)} ${f(fy+3.4)} Z"/></g>`);
+  // dew drop
+  const [dx, dy] = DEW;
+  g.push(`<circle cx="${f(dx)}" cy="${f(dy)}" r="2.8" fill="#dff1ff" opacity=".45" stroke="#ffffff" stroke-width=".6"/><circle cx="${f(dx-.9)}" cy="${f(dy-.9)}" r=".9" fill="#ffffff" opacity=".9"/>`);
+  g.push(`<path d="${OUT}" fill="none" stroke="#1d3a1f" stroke-width=".7" opacity=".4"/>`);
+  g.push(spark(TIP_SPARK[0], TIP_SPARK[1], 6.5));
+  return `<g transform="translate(50 50) scale(${SCALE}) translate(-50 -50)">${g.join('')}</g>`;
+}
+
+function markSimple(){
+  return `<g transform="translate(50 50) scale(${SCALE}) translate(-50 -50)">`
+    + `<path d="${STEM}" transform="translate(-1 1) scale(1.04)" fill="url(#g-stem)"/>`
+    + `<path d="${LOW}" fill="url(#g-low)"/><path d="${UP}" fill="url(#g-up)"/>`
+    + furrows([.2,.38,.56,.74], 3.4, .5)
+    + `<path d="M22 80 C40 60 60 36 89 11" fill="none" stroke="#fff8ee" stroke-width="3.2" stroke-linecap="round"/>`
+    + `<rect x="${f(CHIP[0]-4.5)}" y="${f(CHIP[1]-4.5)}" width="9" height="9" rx="1.6" fill="#fff8ee" transform="rotate(${f(angC)} ${f(CHIP[0])} ${f(CHIP[1])})"/>`
+    + spark(TIP_SPARK[0] - 1, TIP_SPARK[1] + 1, 9.5)
+    + `</g>`;
+}
+document.getElementById('mk-full').innerHTML = markFull();
+document.getElementById('mk-simple').innerHTML = markSimple();
+
+// ---- Anatomy diagram ----
+const PARTS = [
+  { mr:'देठ', en:'Stem', at:[13,87], text:'परंपरा. The roots: generations of farming that everything grows from.' },
+  { mr:'नांगरलेली जमीन', en:'Ploughed land', at:add(at(.48), nrm(.48), -15), text:'The lower half is a ploughed field, brown soil turning into green crop: the farmer\'s land and hard work.' },
+  { mr:'आधुनिक शेतकरी', en:'Modern farmer', at:FARMER, text:'Stands on the land, at the centre of it all. The app is built around the farmer.' },
+  { mr:'मुख्य शीर', en:'Midrib', at:at(.64), text:'The bridge between land and technology. Information flows both ways along it.' },
+  { mr:'संगणक चिप', en:'Computer', at:CHIP, text:'Digital records: crops, expenses, land maps and history in one place.' },
+  { mr:'AI शिरा-जाळं', en:'AI network', at:local(...NODES.D), text:'Veins become circuits and nodes: AI that learns from the farm and gives advice.' },
+  { mr:'दवबिंदू', en:'Dew drop', at:DEW, text:'Water and weather: rain, irrigation and timely alerts.' },
+  { mr:'AI ठिणगी', en:'AI spark', at:TIP_SPARK, text:'At the tip, where the leaf grows next: the future of farming.' },
+  { mr:'दोन बाजू', en:'Two halves', at:add(at(.24), nrm(.24), 13), text:'Land below, technology above: tradition and technology make one leaf.' },
+];
+
+function drawDiagram(svgId, legendId, markHref, partsIn){
+  const parts = partsIn.map((p, i) => ({ ...p, n:i+1 }));
+  const left = parts.filter(p => p.pt[0] < 50).sort((a,b) => a.pt[1] - b.pt[1]);
+  const right = parts.filter(p => p.pt[0] >= 50).sort((a,b) => a.pt[1] - b.pt[1]);
+  let out = `<use href="${markHref}" x="0" y="0" width="100" height="100"/>`;
+  const col = (list, side) => list.forEach((p, i) => {
+    const y = 8 + i * (84 / Math.max(list.length - 1, 1));
+    const bx = side === 'L' ? -58 : 158;
+    const lx = side === 'L' ? -8 : 108;
+    out += `<path d="M${f(lx)} ${f(y)} L${f(p.pt[0])} ${f(p.pt[1])}" stroke="#5d6b5f" stroke-width=".35" fill="none"/>`;
+    out += `<circle cx="${f(p.pt[0])}" cy="${f(p.pt[1])}" r="1.1" fill="#18231a" stroke="#fff" stroke-width=".5"/>`;
+    out += `<circle cx="${bx}" cy="${f(y)}" r="3.6" fill="#2f7a3f"/><text class="num" x="${bx}" y="${f(y+1.75)}" text-anchor="middle">${p.n}</text>`;
+    out += side === 'L'
+      ? `<text class="lbl" x="${bx+5.5}" y="${f(y+1.8)}" font-size="5" font-weight="600">${p.mr}</text>`
+      : `<text class="lbl" x="${bx-5.5}" y="${f(y+1.8)}" font-size="5" font-weight="600" text-anchor="end">${p.mr}</text>`;
+  });
+  col(left, 'L'); col(right, 'R');
+  document.getElementById(svgId).innerHTML = out;
+  document.getElementById(legendId).innerHTML = parts.map(p => `<li><span class="badge">${p.n}</span><div><b>${p.mr}</b><span class="en">${p.en}</span><p>${p.text}</p></div></li>`).join('');
+}
+function drawSizes(id, full, simple, tile){
+  document.getElementById(id).innerHTML = [180, 96, 64, 40, 32, 16].map(sz => {
+    const small = sz <= 40;
+    return `<figure><svg width="${sz}" height="${sz}" viewBox="0 0 100 100" aria-hidden="true">${tile ? `<use href="${tile}"/>` : ''}<use href="${small ? simple : full}"/></svg><figcaption>${sz} px${small ? '<br>simple' : ''}</figcaption></figure>`;
+  }).join('');
+}
+
+// Concept 1
+const T1 = q => [50 + SCALE*(q[0]-50), 50 + SCALE*(q[1]-50)];
+drawDiagram('diagram', 'legend', '#mk-full', PARTS.map(q => ({ ...q, pt:T1(q.at) })));
+drawSizes('sizes', '#mk-full', '#mk-simple', '#tile-cream');
+
+// ---- Concept 2: nature + neural network ----
+document.getElementById('p-out').setAttribute('d', OUT);
+const L2 = q => [14.2 + .72*q[0], 22.4 + .72*q[1]];                  // leaf space -> tile space
+const LEAF2 = 'translate(14.2 22.4) scale(.72)';
+const drop2 = (x, y, r) => `<path d="M${f(x)} ${f(y-r*1.6)} C${f(x+r)} ${f(y-r*.2)} ${f(x+r)} ${f(y+r)} ${f(x)} ${f(y+r)} C${f(x-r)} ${f(y+r)} ${f(x-r)} ${f(y-r*.2)} ${f(x)} ${f(y-r*1.6)} Z"/>`;
+const cloud2 = (dx, dy, fill) => `<g fill="${fill}" transform="translate(${dx} ${dy})"><circle cx="58" cy="17" r="5.5"/><circle cx="66" cy="12.5" r="7.5"/><circle cx="74.5" cy="16.5" r="5.5"/><rect x="58" y="15" width="16.5" height="7.5" rx="2"/></g>`;
+const SOIL2 = 'M0 84 Q28 79.5 50 83 Q74 86.5 100 81.5 V100 H0 Z';
+
+// Leaf outline sampled into a polygon, for keeping vein-end nodes inside the leaf.
+const OUT_SEGS = [[[22,80],[14,62],[18,40],[34,28]], [[34,28],[48,18],[66,16],[80,15]], [[80,15],[84,14.5],[87,13],[89,11]],
+  [[89,11],[87.5,14],[86.5,17],[86,20]], [[86,20],[85,36],[80,54],[66,68]], [[66,68],[54,79],[38,84],[22,80]]];
+const OUT_POLY = OUT_SEGS.flatMap(sg => Array.from({ length:24 }, (_, i) => { const t = i/24, u = 1-t;
+  return [0,1].map(k => u*u*u*sg[0][k] + 3*u*u*t*sg[1][k] + 3*u*t*t*sg[2][k] + t*t*t*sg[3][k]); }));
+const insideLeaf = (x, y) => { let c = false;
+  for (let i = 0, j = OUT_POLY.length - 1; i < OUT_POLY.length; j = i++) {
+    const [xi, yi] = OUT_POLY[i], [xj, yj] = OUT_POLY[j];
+    if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) c = !c;
+  } return c; };
+const qAt = (S, C, E, u) => [0,1].map(k => (1-u)*(1-u)*S[k] + 2*(1-u)*u*C[k] + u*u*E[k]);
+// Furthest point along the vein whose surroundings (radius 4) are all inside the leaf.
+const safeEnd = (S, C, E) => { for (let u = .92; u > .3; u -= .02) { const q = qAt(S, C, E, u);
+  if ([[0,0],[4,0],[-4,0],[0,4],[0,-4]].every(([dx, dy]) => insideLeaf(q[0] + dx, q[1] + dy))) return q; } return qAt(S, C, E, .3); };
+
+// Vein net: midrib junction S, vein middle M, vein end E (node kept inside the leaf), for both halves.
+const NET = { up:[], low:[] };
+for (const t of [.14, .28, .42, .56, .7, .84]) {
+  const S = at(t), T = tan(t), N = nrm(t);
+  for (const [key, side, peak] of [['up', 1, 27], ['low', -1, 23]]) {
+    const h = peak * Math.pow(Math.sin(Math.PI * Math.min(t + .05, 1)), .7);
+    const C = add(add(S, N, side*h*.62), T, h*.22), E = add(add(S, N, side*h*.86), T, h*1.0);
+    const M = [.25*S[0] + .5*C[0] + .25*E[0], .25*S[1] + .5*C[1] + .25*E[1]];
+    NET[key].push({ t, S, C, E:safeEnd(S, C, E), Ev:E, M });
+  }
+}
+const ln = (a, b) => `M${f(a[0])} ${f(a[1])} L${f(b[0])} ${f(b[1])}`;
+
+function leaf2(detail){
+  const g = [];
+  g.push(`<path d="${OUT}" transform="translate(1.6 2.4)" fill="#18231a" opacity=".16" filter="url(#f-shadow)"/>`);
+  g.push(`<path d="${STEM}" fill="#2f6a33"/>`);
+  g.push(`<path d="${LOW}" fill="url(#g2-low)"/><path d="${UP}" fill="url(#g-up)"/>`);
+  if (detail === 'full') {
+    const all = [...NET.up, ...NET.low];
+    const veins = all.map(v => `<path d="${curve(v.S, v.C, v.Ev)}" stroke-width="${(1.9 - v.t).toFixed(2)}"/>`).join('');
+    let links = '';
+    for (const side of [NET.up, NET.low]) for (let i = 0; i < side.length - 1; i++) {
+      links += ln(side[i].E, side[i+1].E) + ' ' + ln(side[i].M, side[i+1].E) + ' ';
+    }
+    g.push(`<g clip-path="url(#clip-out)"><g fill="none" stroke="#fff8ee" stroke-linecap="round" opacity=".8">${veins}</g><path d="${links}" fill="none" stroke="#e3a93a" stroke-width=".9" opacity=".75"/></g>`);
+    g.push(`<path d="M22 80 C40 60 60 36 89 11" fill="none" stroke="#fff8ee" stroke-width="2" stroke-linecap="round" opacity=".9"/>`);
+    g.push(all.map(v => `<circle cx="${f(v.S[0])}" cy="${f(v.S[1])}" r="1.5" fill="#fff8ee"/><circle cx="${f(v.M[0])}" cy="${f(v.M[1])}" r="1.3" fill="#fff8ee"/><circle cx="${f(v.E[0])}" cy="${f(v.E[1])}" r="2.1" fill="#2f7a3f" stroke="#e3a93a" stroke-width="1.2"/>`).join(''));
+  } else {
+    const pick = [NET.up[1], NET.up[3], NET.low[2]];
+    g.push(`<g clip-path="url(#clip-out)" fill="none" stroke="#fff8ee" stroke-width="2.8" stroke-linecap="round">${pick.map(v => `<path d="${curve(v.S, v.C, v.Ev)}"/>`).join('')}<path d="M22 80 C40 60 60 36 89 11" stroke-width="3.6"/></g>`);
+    g.push(pick.map(v => `<circle cx="${f(v.E[0])}" cy="${f(v.E[1])}" r="3.6" fill="#e3a93a" stroke="#fff8ee" stroke-width="1.4"/>`).join(''));
+  }
+  g.push(`<path d="${OUT}" fill="none" stroke="#1d3a1f" stroke-width=".7" opacity=".4"/>`);
+  return `<g transform="${LEAF2}">${g.join('')}</g>`;
+}
+
+function mark2(detail){
+  const full = detail === 'full';
+  let o = `<g clip-path="url(#c2-tile)"><rect width="100" height="100" fill="url(#g2-sky)"/>`;
+  // sun with a Warli dotted ring
+  o += full
+    ? '<circle cx="22" cy="24" r="12.5" fill="none" stroke="#e3a93a" stroke-width="3" pathLength="24" stroke-dasharray=".45 .55"/><circle cx="22" cy="24" r="7.5" fill="#e3a93a"/>'
+    : '<circle cx="22" cy="24" r="10.5" fill="#e3a93a"/>';
+  // air
+  if (full) o += '<g fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" opacity=".9"><path d="M6 49 C11 45 17 45 20 49"/><path d="M9 56 C14 52.5 19 52.5 23 56"/></g>';
+  // cloud and rain
+  o += cloud2(0, 1.4, '#bcd3ea') + cloud2(0, 0, '#ffffff');
+  o += `<g fill="#2b74b8">${full ? drop2(59, 28.5, 1.6) + drop2(66.5, 26.5, 1.6) + drop2(74, 28.5, 1.6) : drop2(61, 29, 2.4) + drop2(71.5, 29, 2.4)}</g>`;
+  // soil and roots
+  o += `<path d="${SOIL2}" fill="url(#g2-soil)"/>`;
+  if (full) {
+    o += '<g fill="none" stroke="#e6c79a" stroke-width="1.2" stroke-linecap="round"><path d="M20 85.5 C19 89.5 16 93 11 96"/><path d="M20 85.5 C22 89.5 26 91.5 31 93.5"/><path d="M20 86 C20 90 21 94.5 21 99"/><path d="M26 91 C28.5 93.5 30 96 30.5 99"/><path d="M16 92.5 C13.5 92.5 11 91.5 9 90"/></g>';
+    o += '<g fill="#e3a93a"><circle cx="11" cy="96" r="1.3"/><circle cx="31" cy="93.5" r="1.3"/><circle cx="21" cy="98.6" r="1.3"/><circle cx="30.5" cy="98.6" r="1.3"/><circle cx="9" cy="90" r="1.3"/></g>';
+  }
+  o += leaf2(detail);
+  return o + '</g>';
+}
+document.getElementById('mk2-full').innerHTML = mark2('full');
+document.getElementById('mk2-simple').innerHTML = mark2('simple');
+
+const PARTS2 = [
+  { mr:'सूर्य', en:'Sun', pt:[22,24], text:'Sunlight and energy: heat, daylight and weather alerts.' },
+  { mr:'ढग', en:'Cloud', pt:[66,11.5], text:'Monsoon and forecasts: knowing what the sky will do.' },
+  { mr:'पाऊस', en:'Rain', pt:[66.5,26.5], text:'Water: rain, irrigation and the right timing.' },
+  { mr:'हवा', en:'Air', pt:[14,51], text:'Air and climate: humidity, wind and the air the leaf breathes.' },
+  { mr:'पान', en:'Leaf', pt:L2(add(at(.3), nrm(.3), 15)), text:'The crop the farmer grows: the heart of the app.' },
+  { mr:'न्यूरल शिरा', en:'Neural veins', pt:L2(NET.up[3].E), text:'A real leaf has a net of veins. Here that net is a neural network: AI that joins sun, rain, air and soil into advice.' },
+  { mr:'मध्यशीर', en:'Midrib', pt:L2(at(.62)), text:'The main line that carries everything the AI learns to every part of the farm.' },
+  { mr:'माती', en:'Soil', pt:[64,91], text:'The land and its health: soil tests, moisture and nutrients.' },
+  { mr:'मुळं', en:'Roots', pt:[26,91.5], text:'Roots branch like a network too, carrying what the soil knows up into the leaf.' },
+];
+drawDiagram('diagram2', 'legend2', '#mk2-full', PARTS2);
+drawSizes('sizes2', '#mk2-full', '#mk2-simple', null);
+
+// ---- Concept 3: brain tree ----
+const CROWN = [[35,33,12],[42,22,11],[50,19,10],[58,22,11],[65,33,12],[50,36,13],[40,41,8],[60,41,8]];
+const GROUND3 = 'M0 62 Q50 57 100 62 V100 H0 Z';
+const groundY = x => { const t = x / 100; return 62 - 10 * t * (1 - t); };
+const NODES3_L = [[44,15],[40,24],[33,27],[31,35],[38,34],[45,32],[36,43],[44,41]];
+const LINKS3_L = [[0,1],[1,2],[1,5],[2,3],[3,4],[4,5],[4,6],[6,7],[7,5],[2,4]];
+const ROOT_ENDS = [[15,81],[85,81],[30,80],[70,80],[36,95],[66,95],[44,88],[58,90]];
+const mirrorG = inner => '<g transform="translate(100 0) scale(-1 1)">' + inner + '</g>';
+const P3 = (a, b) => 'M' + a[0] + ' ' + a[1] + ' L' + b[0] + ' ' + b[1];
+const sprout3 = x => { const y = groundY(x); return '<path d="M' + x + ' ' + f(y) + ' V' + f(y-4.5) + '" stroke="#3b8a49" stroke-width="1.2" stroke-linecap="round"/>'
+  + '<path d="M' + x + ' ' + f(y-2.5) + ' C' + f(x-1.5) + ' ' + f(y-2.5) + ' ' + f(x-3) + ' ' + f(y-3.5) + ' ' + f(x-3.2) + ' ' + f(y-5) + ' C' + f(x-1.6) + ' ' + f(y-5) + ' ' + f(x-.3) + ' ' + f(y-4) + ' ' + x + ' ' + f(y-2.5) + ' Z" fill="#3b8a49"/>'
+  + '<path d="M' + x + ' ' + f(y-3.5) + ' C' + f(x+1.5) + ' ' + f(y-3.5) + ' ' + f(x+3) + ' ' + f(y-4.5) + ' ' + f(x+3.2) + ' ' + f(y-6) + ' C' + f(x+1.6) + ' ' + f(y-6) + ' ' + f(x+.3) + ' ' + f(y-5) + ' ' + x + ' ' + f(y-3.5) + ' Z" fill="#3b8a49"/>'; };
+const leaflet3 = (x, y, ang, k = 1) => '<path transform="translate(' + x + ' ' + y + ') rotate(' + ang + ') scale(' + k + ')" d="M0 0 C2 -2 2 -6 0 -9 C-2 -6 -2 -2 0 0 Z" fill="#4f9f5a" stroke="#245f31" stroke-width=".5"/>';
+
+function mark3(detail){
+  const full = detail === 'full';
+  let o = '<g clip-path="url(#c2-tile)"><rect width="100" height="100" fill="url(#g2-sky)"/>';
+  // sun
+  o += full
+    ? '<circle cx="16" cy="15.5" r="9" fill="none" stroke="#e3a93a" stroke-width="2.4" pathLength="18" stroke-dasharray=".45 .55"/><circle cx="16" cy="15.5" r="5.6" fill="#e3a93a"/>'
+    : '<circle cx="15" cy="15" r="8.5" fill="#e3a93a"/>';
+  // cloud and rain
+  const cloud3 = (dy, fill) => '<g fill="' + fill + '" transform="translate(0 ' + dy + ')"><circle cx="78.5" cy="12" r="5"/><circle cx="85" cy="8.5" r="6.5"/><circle cx="91.5" cy="12" r="5"/><rect x="78.5" y="10.5" width="13" height="6.5" rx="2"/></g>';
+  o += cloud3(1.3, '#bcd3ea') + cloud3(0, '#ffffff');
+  o += '<g fill="#2b74b8">' + (full ? drop2(79.5, 23.5, 1.4) + drop2(85.5, 25.5, 1.4) + drop2(91, 23, 1.4) : drop2(81, 24.5, 2.2) + drop2(89, 24.5, 2.2)) + '</g>';
+  // air
+  if (full) o += '<g fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity=".95"><path d="M4 45 C8 42 13 42 16 45"/><path d="M6 51 C10 48.5 15 48.5 19 51"/></g>';
+  // ground, crops
+  o += '<path d="' + GROUND3 + '" fill="url(#g3-soil)"/>';
+  o += '<path d="M0 62 Q50 57 100 62" fill="none" stroke="#4f9a4a" stroke-width="' + (full ? 2.4 : 3.4) + '"/>';
+  if (full) o += [9, 17, 25, 75, 83, 91].map(sprout3).join('');
+  // roots: network in the soil
+  const rw = full ? 1 : 1.9;
+  o += '<g fill="none" stroke="#e6c79a" stroke-linecap="round">'
+    + '<path d="M50 61 C49 70 47 78 44 88" stroke-width="' + (1.9*rw) + '"/><path d="M50 61 C52 70 54 79 58 90" stroke-width="' + (1.9*rw) + '"/>'
+    + '<path d="M49 62.5 C42 66 33 67 24 72" stroke-width="' + (1.6*rw) + '"/><path d="M51 62.5 C58 66 67 67 76 72" stroke-width="' + (1.6*rw) + '"/>';
+  if (full) o += '<g stroke-width="1.1"><path d="M24 72 C20 74 17 77 15 81"/><path d="M76 72 C80 74 83 77 85 81"/><path d="M33 67.5 C31 72 30 76 30 80"/><path d="M67 67.5 C69 72 70 76 70 80"/>'
+    + '<path d="M44 88 C42 91 39 93 36 95"/><path d="M58 90 C60 92 63 94 66 95"/></g>';
+  o += '</g>';
+  if (full) {
+    o += '<path d="' + [[15,81],[30,80],[44,88]].map((q, i, a) => i ? '' : P3(a[0], a[1]) + ' ' + P3(a[1], a[2])).join('') + ' ' + P3([85,81],[70,80]) + ' ' + P3([70,80],[58,90]) + ' ' + P3([24,72],[30,80]) + ' ' + P3([76,72],[70,80]) + '" fill="none" stroke="#e3a93a" stroke-width=".7" stroke-dasharray="1.6 1.2" opacity=".85"/>';
+    o += '<g fill="#e3a93a" stroke="#fff8ee" stroke-width=".5">' + ROOT_ENDS.concat([[24,72],[76,72]]).map(([x, y]) => '<circle cx="' + x + '" cy="' + y + '" r="1.5"/>').join('') + '</g>';
+    o += '<g fill="#2b74b8" opacity=".85">' + drop2(21, 90, 1.5) + drop2(79, 90, 1.5) + drop2(51, 96.5, 1.5) + '</g>';
+  }
+  // trunk
+  o += '<path d="M45 61.5 C47 55 47.5 50 47.5 44 L52.5 44 C52.5 50 53 55 55 61.5 Z" fill="url(#g3-trunk)"/>';
+  // crown = brain: outline first, then fill, so only the outer edge shows
+  o += '<g fill="none" stroke="#1d4a26" stroke-width="' + (full ? 1.4 : 2) + '">' + CROWN.map(([x, y, r]) => '<circle cx="' + x + '" cy="' + y + '" r="' + r + '"/>').join('') + '</g>';
+  o += '<g fill="url(#g3-crown)">' + CROWN.map(([x, y, r]) => '<circle cx="' + x + '" cy="' + y + '" r="' + r + '"/>').join('') + '</g>';
+  if (full) o += leaflet3(23.5, 30, -80) + leaflet3(76.5, 30, 80) + leaflet3(31, 17, -40, .85) + leaflet3(69, 17, 40, .85);
+  // central fissure, continuing the trunk
+  o += '<path d="M50 10 C48.5 18 51.5 24 50 30 C48.5 36 51 42 50 48" fill="none" stroke="#1d4a26" stroke-width="' + (full ? 1.6 : 2.6) + '" stroke-linecap="round" opacity=".75"/>';
+  if (full) {
+    const folds = '<g fill="none" stroke="#e9f5df" stroke-width="1.2" stroke-linecap="round" opacity=".5">'
+      + '<path d="M29 29 C32 25 36 28 39 25 C42 22 45 25 47 21"/><path d="M26 37 C30 34 33 38 37 35 C40 32 43 36 47 32"/>'
+      + '<path d="M31 45 C34 42 38 45 42 42 C44 40 46 42 47.5 40"/><path d="M37 16 C39 14 42 16 45 13.5"/></g>';
+    const net = '<path d="' + LINKS3_L.map(([a, b]) => P3(NODES3_L[a], NODES3_L[b])).join(' ') + '" fill="none" stroke="#e3a93a" stroke-width=".8" opacity=".9"/>'
+      + '<g fill="#e3a93a" stroke="#fff8ee" stroke-width=".6">' + NODES3_L.map(([x, y]) => '<circle cx="' + x + '" cy="' + y + '" r="1.7"/>').join('') + '</g>';
+    o += folds + mirrorG(folds);
+    // links across the two halves and down into the trunk
+    o += '<path d="' + P3([45,32],[55,32]) + ' ' + P3([44,15],[56,15]) + ' ' + P3([44,41],[56,41]) + ' ' + P3([44,41],[50,47]) + ' ' + P3([56,41],[50,47]) + '" fill="none" stroke="#e3a93a" stroke-width=".8" opacity=".9"/>';
+    o += net + mirrorG(net);
+    o += '<path d="M50 47 V60.5" stroke="#fff8ee" stroke-width="1.1" stroke-dasharray="1.8 1.4" opacity=".9"/><circle cx="50" cy="47" r="1.9" fill="#e3a93a" stroke="#fff8ee" stroke-width=".6"/><circle cx="50" cy="61" r="1.9" fill="#e3a93a" stroke="#fff8ee" stroke-width=".6"/>';
+  } else {
+    o += '<g fill="#e3a93a" stroke="#fff8ee" stroke-width="1">' + [[39,25],[61,25],[36,38],[64,38]].map(([x, y]) => '<circle cx="' + x + '" cy="' + y + '" r="3.2"/>').join('') + '</g>';
+  }
+  return o + '</g>';
+}
+document.getElementById('mk3-full').innerHTML = mark3('full');
+document.getElementById('mk3-simple').innerHTML = mark3('simple');
+
+const PARTS3 = [
+  { mr:'सूर्य', en:'Sun', pt:[16,15.5], text:'Energy and daylight: heat, sunshine and weather alerts.' },
+  { mr:'ढग', en:'Cloud', pt:[85,8], text:'Monsoon and forecasts: knowing what the sky will do.' },
+  { mr:'पाऊस', en:'Rain', pt:[85.5,25.5], text:'Water from the sky: rain, irrigation and timing.' },
+  { mr:'हवा', en:'Air', pt:[11,48], text:'Air and climate: humidity, wind and temperature.' },
+  { mr:'मेंदू-मुकुट', en:'Brain crown', pt:[64,25], text:'The crown of the tree is a brain: the AI that thinks about the whole farm.' },
+  { mr:'न्यूरल जाळं', en:'Neural network', pt:[40,24], text:'Gold nodes and links inside the brain, joined across both halves: learning from every signal.' },
+  { mr:'नवी पानं', en:'New leaves', pt:[28,13.5], text:'Leaves on the edge of the brain: it is alive and keeps growing.' },
+  { mr:'खोड', en:'Trunk', pt:[50,54], text:'The strong trunk: experience and the app\'s core, carrying information between roots and brain.' },
+  { mr:'शेतं', en:'Crops', pt:[83,57.5], text:'Rows of crops on both sides: the fields the tree looks after.' },
+  { mr:'माती', en:'Soil', pt:[62,75], text:'The land and its health: soil tests, moisture and nutrients.' },
+  { mr:'मुळांचं जाळं', en:'Root network', pt:[30,80], text:'Roots branch like the brain above them: they gather what the soil knows and send it up.' },
+  { mr:'भूजल', en:'Groundwater', pt:[21,90], text:'Water under the ground: wells, borewells and planning water use.' },
+];
+drawDiagram('diagram3', 'legend3', '#mk3-full', PARTS3);
+drawSizes('sizes3', '#mk3-full', '#mk3-simple', null);
+
+// ---- Concept 4: sunrise field + tree ----
+const VP4 = [50, 55];
+const FURROW_X = [-60, -25, 5, 30, 70, 95, 125, 160];
+const furrow4 = xb => { const t = 3.5 / 45; return 'M' + f(50 + (xb - 50) * t) + ' 58.5 L' + xb + ' 100'; };
+const LEAF4 = 'M0 0 C3 -3 3.2 -8 0 -11 C-3.2 -8 -3 -3 0 0 Z';
+const LEAVES4 = [
+  [50,18,0,1],[45.5,22,-35,.9],[54.5,22,35,.9],[47,29,-70,.8],[53,29,70,.8],
+  [30,27,-55,1],[34,30,-100,.8],[36,26,-20,.8],[38,24,-5,.9],[41,31,-40,.7],
+  [70,27,55,1],[66,30,100,.8],[64,26,20,.8],[62,24,5,.9],[59,31,40,.7],
+  [31,43,-90,.9],[35,44,-130,.7],[37,41,-60,.7],
+  [69,43,90,.9],[65,44,130,.7],[63,41,60,.7],
+];
+const LEAVES4_SIMPLE = [[50,19,0,1.35],[44,23,-35,1.2],[56,23,35,1.2],[31,28,-55,1.3],[69,28,55,1.3],[38,25,-10,1.15],[62,25,10,1.15],[32,43,-90,1.2],[68,43,90,1.2]];
+const LEAF_COLORS = ['#2f7a3f', '#3b8a49', '#5aa866'];
+const leaf4 = ([x, y, a, k], i) => '<g transform="translate(' + x + ' ' + y + ') rotate(' + a + ') scale(' + k + ')"><path d="' + LEAF4 + '" fill="' + LEAF_COLORS[i % 3] + '" stroke="#1d5a2b" stroke-width=".5"/><path d="M0 -.5 V-9.5" stroke="#e9f5df" stroke-width=".55" opacity=".6"/></g>';
+
+function mark4(variant){
+  const simple = variant === 'simple', ai = variant === 'ai', bw = simple ? 1.5 : 1;
+  let o = '<g clip-path="url(#c2-tile)"><rect width="100" height="100" fill="url(#g4-sky)"/>';
+  // rising sun behind the tree
+  if (!simple) o += '<circle cx="50" cy="42" r="31" fill="none" stroke="#d9932a" stroke-width="3" pathLength="40" stroke-dasharray=".4 .6"/>';
+  o += '<circle cx="50" cy="42" r="' + (simple ? 25 : 23) + '" fill="#e3a93a"/>';
+  if (!simple) o += '<circle cx="50" cy="42" r="17" fill="#eebd55" opacity=".6"/>';
+  // field: distant crop line, ploughed land, furrows to the horizon
+  o += '<path d="M0 57.5 Q50 51.5 100 57.5" fill="none" stroke="#4f9a4a" stroke-width="' + (simple ? 3 : 2.2) + '"/>';
+  o += '<path d="M0 58 Q50 52 100 58 V100 H0 Z" fill="url(#g4-field)"/>';
+  o += '<g stroke="#d39a5c" opacity=".7" stroke-width="' + (simple ? 3.6 : 2.4) + '" stroke-linecap="round">' + (simple ? [-40, 10, 90, 140] : FURROW_X).map(xb => '<path d="' + furrow4(xb) + '"/>').join('') + '</g>';
+  // roots
+  o += '<g fill="none" stroke="#4a2e18" stroke-linecap="round">'
+    + '<path d="M48 74 C43 78 35 80 25 83" stroke-width="' + (2.6*bw) + '"/><path d="M52 74 C57 78 65 80 75 83" stroke-width="' + (2.6*bw) + '"/>'
+    + '<path d="M50 75 V95" stroke-width="' + (2*bw) + '"/>';
+  if (!simple) o += '<path d="M49 75 C46 81 43 86 39 92" stroke-width="2.2"/><path d="M51 75 C54 81 57 86 61 92" stroke-width="2.2"/>'
+    + '<path d="M35 80.3 C32 83 30 86 29 89" stroke-width="1.4"/><path d="M65 80.3 C68 83 70 86 71 89" stroke-width="1.4"/>';
+  o += '</g>';
+  // trunk and branches
+  o += '<path d="M' + (simple ? 44.5 : 45.5) + ' 75 C47 66 47.5 56 48 46 L52 46 C52.5 56 53 66 ' + (simple ? 55.5 : 54.5) + ' 75 Z" fill="url(#g3-trunk)"/>';
+  o += '<g fill="none" stroke="#4a2e18" stroke-linecap="round">'
+    + '<path d="M50 47 V20" stroke-width="' + (2.6*bw) + '"/>'
+    + '<path d="M49.5 45 C46 40 43 36 40 34 C36 31 33 29 30 27" stroke-width="' + (2.4*bw) + '"/><path d="M50.5 45 C54 40 57 36 60 34 C64 31 67 29 70 27" stroke-width="' + (2.4*bw) + '"/>'
+    + '<path d="M49 51 C46 48 43 46 40 45 C37 44 34 43.5 31 43" stroke-width="' + (2*bw) + '"/><path d="M51 51 C54 48 57 46 60 45 C63 44 66 43.5 69 43" stroke-width="' + (2*bw) + '"/>';
+  if (!simple) o += '<path d="M40 34 C39 30 38.5 27 38 24" stroke-width="1.6"/><path d="M60 34 C61 30 61.5 27 62 24" stroke-width="1.6"/>';
+  o += '</g>';
+  o += (simple ? LEAVES4_SIMPLE : LEAVES4).map(leaf4).join('');
+  if (ai) {
+    o += '<g fill="#e3a93a" stroke="#fff8ee" stroke-width=".7">' + [[50,47],[40,34],[60,34],[40,45],[60,45],[50,32],[50,75],[35,80.3],[65,80.3]].map(([x, y]) => '<circle cx="' + x + '" cy="' + y + '" r="1.9"/>').join('') + '</g>';
+    o += spark(61, 11, 3.6);
+  }
+  return o + '</g>';
+}
+document.getElementById('mk4-full').innerHTML = mark4('full');
+document.getElementById('mk4-ai').innerHTML = mark4('ai');
+document.getElementById('mk4-simple').innerHTML = mark4('simple');
+
+const PARTS4 = [
+  { mr:'उगवता सूर्य', en:'Rising sun', pt:[27.5,50], text:'A new day and new hope; sunlight, energy and the weather.' },
+  { mr:'नांगरलेलं शेत', en:'Ploughed field', pt:[80,82], text:'The farmer\'s land and hard work, rows running to the horizon.' },
+  { mr:'क्षितिजावरची पिकं', en:'Crops on the horizon', pt:[88,55.5], text:'The green line in the distance: the harvest that is coming.' },
+  { mr:'पानं', en:'Leaves', pt:[30,25], text:'Fresh leaves: every season\'s growth and every record kept.' },
+  { mr:'फांद्या', en:'Branches', pt:[60,34], text:'One trunk, many branches: crops, expenses, land and weather, all growing from one app.' },
+  { mr:'खोड', en:'Trunk', pt:[50,62], text:'Strong and steady: trust and the farmer\'s experience.' },
+  { mr:'मुळं', en:'Roots', pt:[61,92], text:'Deep in the soil: tradition, and knowledge of the land.' },
+];
+drawDiagram('diagram4', 'legend4', '#mk4-full', PARTS4);
+drawSizes('sizes4', '#mk4-full', '#mk4-simple', null);
+</script>
+</body>
+</html>
