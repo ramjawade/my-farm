@@ -110,15 +110,18 @@ export class HomeFarmMapComponent implements OnDestroy {
   /** Built from DOM nodes so a land name is never read as markup. */
   private labelFor(land: SavedFarm, detail?: string): HTMLElement {
     const chip = document.createElement('div');
-    chip.className = 'badge text-bg-light text-wrap text-center shadow-sm';
+    // White text with a dark outline on the imagery, name over detail, as in the prototype.
     chip.style.cssText =
-      'position:absolute;transform:translate(-50%,-50%);width:max-content;max-width:150px;pointer-events:none';
-    const name = document.createElement('strong');
+      'position:absolute;transform:translate(-50%,-50%);width:max-content;max-width:160px;' +
+      'text-align:center;line-height:1.25;pointer-events:none;color:var(--mf-map-fill);' +
+      '-webkit-text-stroke:3px var(--bs-black);paint-order:stroke fill';
+    const name = document.createElement('div');
+    name.style.cssText = 'font-size:12px;font-weight:700';
     name.textContent = land.name;
     chip.append(name);
     if (detail) {
       const line = document.createElement('div');
-      line.className = 'fw-normal';
+      line.style.cssText = 'font-size:11px;font-weight:500';
       line.textContent = detail;
       chip.append(line);
     }
