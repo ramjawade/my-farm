@@ -34,6 +34,6 @@ test('village and pincode saved in the profile are still there after a reload', 
   await expect(page.getByText('Pincode saved.')).toBeVisible();
 
   await page.reload();
-  await expect(page.getByText('Sinnar')).toBeVisible();
-  await expect(page.getByText('422103')).toBeVisible();
+  await expect(page.getByRole('button', { name: /Village/ })).toContainText('Sinnar');
+  await expect(page.getByRole('button', { name: /Pincode/ })).toContainText('422103');
 });
