@@ -1,0 +1,23 @@
+@if (showEmblem()) {
+  <!-- NgOptimizedImage cannot change width/height after creation, so a new size re-creates the image. -->
+  @for (key of [size()]; track key) {
+    <span class="brand-logo__backing rounded-circle overflow-hidden d-inline-flex">
+      <img
+        [ngSrc]="emblemSrc()"
+        [width]="size()"
+        [height]="size()"
+        [alt]="alt()"
+        [attr.aria-hidden]="decorative() ? 'true' : null"
+        [priority]="priority()"
+      />
+    </span>
+  }
+} @else {
+  <img
+    src="brand/mark.svg"
+    [width]="size()"
+    [height]="size()"
+    [alt]="alt()"
+    [attr.aria-hidden]="decorative() ? 'true' : null"
+  />
+}

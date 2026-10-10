@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { BrandLogoComponent } from '../../layout/brand-logo/brand-logo.component';
 import { SessionAuthService, SessionResult } from '../../core/auth/session-auth.service';
 import { FarmerRegistrationService } from '../farmer-registration/farmer-registration.service';
 
@@ -19,7 +20,7 @@ const UNREACHABLE = 'Cannot reach the server. Check your connection and try agai
 @Component({
   standalone: true,
   selector: 'app-login',
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, BrandLogoComponent],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

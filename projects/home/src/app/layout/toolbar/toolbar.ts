@@ -1,13 +1,14 @@
 import { Component, input, output, signal, computed, HostListener, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { BrandLogoComponent } from '../brand-logo/brand-logo.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { SUPPORTED_LANGUAGES, SupportedLanguage } from '../../core/i18n/supported-languages';
 
 @Component({
   standalone: true,
   selector: 'app-toolbar',
-  imports: [RouterLink, TranslatePipe],
+  imports: [RouterLink, TranslatePipe, BrandLogoComponent],
   templateUrl: './toolbar.html',
   styleUrl: './toolbar.scss',
 })

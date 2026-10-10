@@ -100,17 +100,6 @@
     0 5px 15px rgba(var(--mf-shadow-rgb), 0.02) !important;
 }
 
-.brand-logo-container {
-  width: 64px;
-  height: 64px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, var(--mf-leaf-soft) 0%, var(--mf-leaf-soft) 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(var(--mf-leaf-rgb), 0.1);
-}
-
 .brand-title {
   font-weight: 800;
   font-size: 1.75rem;
