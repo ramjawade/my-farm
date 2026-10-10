@@ -39,5 +39,5 @@
 
 - [x] 5.1 After each PR, open every route (home, login, map, crops, crop detail, add crop, activities, activity detail, create activity, weather, profile, reports, not-found) at 1280 px and 375 px; fix only unreadable text, invisible borders, overflow or clipping; list deferred visual mismatches in the PR description for the screen changes
 - [x] 5.2 Check Marathi and Hindi text renders in Mukta (switch language in Profile)
-- [ ] 5.3 Run `npm run lint` (includes `lint:colors`), `npm run build` and `npm test`; run the Playwright golden path (`npm run e2e`)
-- [ ] 5.4 After both PRs merge, archive this change and tick task 1.1 in `prototype-adoption-roadmap/tasks.md`
+- [x] 5.3 Run `npm run lint` (includes `lint:colors`), `npm run build` and `npm test`; run the Playwright golden path (`npm run e2e`)
+- [x] 5.4 After both PRs merge, archive this change and tick task 1.1 in `prototype-adoption-roadmap/tasks.md`
