@@ -6,6 +6,7 @@ import {
   inject,
   OnDestroy,
   OnInit,
+  computed,
   signal,
   viewChild,
   Input,
@@ -13,7 +14,8 @@ import {
 } from '@angular/core';
 import * as L from 'leaflet';
 import { Router } from '@angular/router';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { ConfirmDialogComponent, ToastService } from 'shared';
 
 import { FarmDrawLayer } from './farm-draw/farm-draw-layer';
 import { MapMyFarmComponent } from './component/map-my-farm/map-my-farm.component';
@@ -21,8 +23,17 @@ import { FarmDrawService } from './farm-draw/farm-draw.service';
 import { MapSearchResult, SavedFarm } from './models/map.models';
 import { HomeControl, LayerToggleControl } from './controls';
 import { MapSearchComponent } from './component/map-search/map-search.component';
-import { SavedFarmsComponent } from './component/saved-farms/saved-farms.component';
+import { LandDetailComponent } from './component/land-detail/land-detail.component';
+import {
+  LandSaveFormComponent,
+  LandDetails,
+} from './component/land-save-form/land-save-form.component';
+import { LandsListComponent } from './component/lands-list/lands-list.component';
+import { LandSavedService } from './farm-draw/land-saved.service';
 import { AuthService } from '../core/auth/auth.service';
+import { LocalNumberPipe } from '../core/i18n/localized.pipes';
+import { CropTimelineService } from '../features/crop-timeline/crop-timeline.service';
+import { CropEntity } from '../features/crop-timeline/crop-timeline.models';
 
 type MapLayer = 'street' | 'satellite';
 
@@ -31,9 +42,19 @@ const SEARCH_ZOOM = 15;
 @Component({
   standalone: true,
   selector: 'app-map',
-  imports: [MapMyFarmComponent, MapSearchComponent, SavedFarmsComponent, TranslatePipe],
+  imports: [
+    MapMyFarmComponent,
+    MapSearchComponent,
+    LandsListComponent,
+    LandDetailComponent,
+    LandSaveFormComponent,
+    ConfirmDialogComponent,
+    LocalNumberPipe,
+    TranslatePipe,
+  ],
   templateUrl: './map.html',
   styleUrl: './map.scss',
+  host: { '[class.lands-host]': '!isPicker' },
 })
 export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() isPicker = false;
@@ -47,6 +68,10 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly farmDraw = inject(FarmDrawService);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly cropService = inject(CropTimelineService);
+  private readonly landSaved = inject(LandSavedService);
+  private readonly toast = inject(ToastService);
+  private readonly translate = inject(TranslateService);
 
   private map?: L.Map;
   private farmDrawLayer?: FarmDrawLayer;
@@ -59,6 +84,29 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
 
   readonly farms = signal<SavedFarm[]>([]);
   readonly selected = signal<SavedFarm | null>(null);
+
+  readonly saving = signal(false);
+  /** The land just saved, for the "add a crop" card; cleared on dismiss or the next draw. */
+  readonly justSaved = signal<SavedFarm | null>(null);
+  readonly showDeleteConfirm = signal(false);
+  private readonly pendingDeleteId = signal<number | null>(null);
+
+  readonly totalAcres = computed(() => this.farms().reduce((sum, f) => sum + f.area.acres, 0));
+
+  readonly cropsByLand = computed(() => {
+    const byLand: Record<number, CropEntity[]> = {};
+    for (const crop of this.cropService.crops()) {
+      (byLand[crop.fieldId] ??= []).push(crop);
+    }
+    return byLand;
+  });
+
+  readonly selectedCrops = computed(() => this.cropsByLand()[this.selected()?.id ?? -1] ?? []);
+
+  /** Expenses logged on the selected land's crops. */
+  readonly selectedExpenses = computed(() =>
+    this.selectedCrops().reduce((sum, crop) => sum + this.cropService.costForCrop(crop.id), 0),
+  );
 
   constructor() {
     effect(() => {
@@ -96,16 +144,69 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     this.initMap();
   }
 
-  async onSaveFarm(name: string): Promise<void> {
+  async onSaveLand(details: LandDetails): Promise<void> {
+    if (this.saving()) return;
+    this.saving.set(true);
     try {
-      const farm = await this.farmDraw.saveFarm(name, this.farms());
+      const farm = await this.farmDraw.saveFarm(details.name, this.farms(), {
+        waterSource: details.waterSource,
+        notes: details.notes,
+      });
       if (farm) {
         this.farms.update((fs) => [farm, ...fs]);
         this.selected.set(farm);
+        this.justSaved.set(farm);
+        this.landSaved.handle(farm);
       }
     } catch (e) {
       console.error('Failed to save farm', e);
+      this.toast.error(this.translate.instant('common.saveFailed'));
+    } finally {
+      this.saving.set(false);
     }
+  }
+
+  startDraw(): void {
+    this.justSaved.set(null);
+    this.selected.set(null);
+    this.farmDraw.startDrawing();
+  }
+
+  discardDraft(): void {
+    this.farmDraw.cancelDrawing();
+  }
+
+  onRenameLand(event: { id: number; name: string }): void {
+    this.onRenameFarm(event.id, event.name);
+    this.toast.success(this.translate.instant('savedFarms.renamedToast'));
+  }
+
+  /** A land with crops cannot be deleted; otherwise ask first. */
+  requestDelete(id: number): void {
+    const count = this.cropsByLand()[id]?.length ?? 0;
+    if (count > 0) {
+      const key = count > 1 ? 'savedFarms.hasCropsPlural' : 'savedFarms.hasCrop';
+      this.toast.warning(this.translate.instant(key, { count }));
+      return;
+    }
+    this.pendingDeleteId.set(id);
+    this.showDeleteConfirm.set(true);
+  }
+
+  confirmDelete(): void {
+    const id = this.pendingDeleteId();
+    if (id === null) return;
+    this.onDeleteFarm(id);
+    this.pendingDeleteId.set(null);
+    this.toast.success(this.translate.instant('savedFarms.deletedToast'));
+  }
+
+  addCrop(landId: number): void {
+    this.router.navigate(['/crops', 'add'], { queryParams: { landId } });
+  }
+
+  viewCrop(cropId: number): void {
+    this.router.navigate(['/crops', cropId]);
   }
 
   onDeleteFarm(id: number): void {
@@ -137,6 +238,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onSelectFarm(farm: SavedFarm | null): void {
+    this.justSaved.set(null);
     this.farmDraw.notifyFarmSelected(farm);
     this.selected.set(farm);
   }

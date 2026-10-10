@@ -117,6 +117,7 @@ export class LandsApiService {
       geoJson: points.length >= 3 ? toGeoJsonPolygon(points) : null,
       createdAt: new Date(item.created_at).getTime(),
       notes: item.notes ?? undefined,
+      waterSource: item.water_source ?? undefined,
     };
   }
 
@@ -126,6 +127,7 @@ export class LandsApiService {
       farm_id: farmId,
       area_sq_m: farm.area?.squareMeters,
       notes: farm.notes,
+      water_source: farm.waterSource,
       points: farm.points?.map((p) => ({ lat: p.lat, lng: p.lng })),
     };
   }

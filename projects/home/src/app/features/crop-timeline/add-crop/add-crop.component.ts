@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CROP_STAGES, CropEntity } from '../crop-timeline.models';
 import { AddCropService } from './add-crop.service';
@@ -33,6 +33,7 @@ import { ReferenceDataService } from '../../../core/api/reference-data.service';
 export class AddCropComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly addCropService = inject(AddCropService);
   private readonly farmLookup = inject(FarmLookupService);
   private readonly authService = inject(AuthService);
@@ -114,8 +115,12 @@ export class AddCropComponent implements OnInit {
       ]);
       this.savedFarms.set(farms);
       this.crops.set(crops);
-      // Auto-select field if only one farm exists
-      if (this.savedFarms().length === 1) {
+      // Preselect the land the farmer came from (?landId=), else the only land
+      const landId = Number(this.route.snapshot.queryParamMap.get('landId'));
+      const requested = this.savedFarms().find((f) => f.id === landId);
+      if (requested) {
+        this.cropForm.patchValue({ fieldId: requested.id });
+      } else if (this.savedFarms().length === 1) {
         this.cropForm.patchValue({ fieldId: this.savedFarms()[0].id });
       }
     }

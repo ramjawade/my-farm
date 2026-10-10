@@ -895,5 +895,48 @@
     "kharif": "खरीप",
     "rabi": "रब्बी",
     "zaid": "उन्हाळी"
+  },
+  "lands": {
+    "title": "जमिनी",
+    "subtitle": "{{count}} जमिनी, {{area}} एकर.",
+    "drawLand": "जमीन काढा",
+    "allLands": "सर्व जमिनी",
+    "step1": "सीमा काढा",
+    "step2": "तपशील जोडा",
+    "saveLand": "जमीन जतन करा",
+    "landName": "जमिनीचे नाव",
+    "nameRequired": "या जमिनीचे नाव लिहा.",
+    "waterSourceOptional": "पाण्याचा स्रोत (ऐच्छिक)",
+    "waterSource": "पाण्याचा स्रोत",
+    "waterNotSet": "निवडलेले नाही",
+    "notesPlaceholder": "माती, रस्ता, पाण्याचा स्रोत",
+    "areaHint": "तुम्ही काढलेल्या सीमेवरून क्षेत्र मोजले आहे. जमीन जतन केल्यानंतर तुम्ही पिके जोडू शकता.",
+    "discard": "रद्द करा",
+    "savedTitle": "{{name}} जतन केली",
+    "savedMessage": "ती तुमच्या नकाशावर आहे. मागोवा घेण्यासाठी पीक जोडा.",
+    "addCrop": "पीक जोडा",
+    "notNow": "आत्ता नको",
+    "nothingGrowing": "{{name}} वर काहीही पिकत नाही",
+    "nothingGrowingHint": "कामे आणि खर्च पाहण्यासाठी पीक लावा.",
+    "viewCropDetails": "पिकाचा तपशील पहा",
+    "addAnotherCrop": "+ आणखी पीक जोडा",
+    "kpi": {
+      "area": "क्षेत्र",
+      "crops": "पिके",
+      "expenses": "एकूण खर्च",
+      "costPerAcre": "प्रति एकर खर्च"
+    },
+    "editNotes": "नोंदी संपादित करा",
+    "actionsFor": "{{name}} साठी कृती",
+    "noLandsTitle": "अजून जमिनी नाहीत",
+    "noLandsHint": "नकाशावर तुमच्या पहिल्या शेताची सीमा काढा. नंतर त्यात पिके जोडा.",
+    "drawFirst": "तुमची पहिली जमीन काढा",
+    "water": {
+      "Borewell": "बोअरवेल",
+      "Canal": "कालवा",
+      "River": "नदी",
+      "FarmPond": "शेततळे",
+      "Rainfed": "पावसावर अवलंबून"
+    }
   }
 }

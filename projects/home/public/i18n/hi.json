@@ -895,5 +895,48 @@
     "kharif": "खरीफ",
     "rabi": "रबी",
     "zaid": "जायद"
+  },
+  "lands": {
+    "title": "ज़मीनें",
+    "subtitle": "{{count}} ज़मीनें, {{area}} एकड़।",
+    "drawLand": "ज़मीन बनाएँ",
+    "allLands": "सभी ज़मीनें",
+    "step1": "सीमा बनाएँ",
+    "step2": "जानकारी जोड़ें",
+    "saveLand": "ज़मीन सहेजें",
+    "landName": "ज़मीन का नाम",
+    "nameRequired": "इस ज़मीन का नाम लिखें।",
+    "waterSourceOptional": "पानी का स्रोत (वैकल्पिक)",
+    "waterSource": "पानी का स्रोत",
+    "waterNotSet": "चुना नहीं गया",
+    "notesPlaceholder": "मिट्टी, रास्ता, पानी का स्रोत",
+    "areaHint": "क्षेत्र आपकी बनाई सीमा से निकाला गया है। ज़मीन सहेजने के बाद आप फ़सलें जोड़ सकते हैं।",
+    "discard": "रद्द करें",
+    "savedTitle": "{{name}} सहेजी गई",
+    "savedMessage": "यह आपके नक्शे पर है। ट्रैक करने के लिए फ़सल जोड़ें।",
+    "addCrop": "फसल जोड़ें",
+    "notNow": "अभी नहीं",
+    "nothingGrowing": "{{name}} पर कुछ नहीं उग रहा",
+    "nothingGrowingHint": "काम और लागत ट्रैक करने के लिए फ़सल लगाएँ।",
+    "viewCropDetails": "फसल का विवरण देखें",
+    "addAnotherCrop": "+ एक और फसल जोड़ें",
+    "kpi": {
+      "area": "क्षेत्र",
+      "crops": "फसलें",
+      "expenses": "कुल खर्च",
+      "costPerAcre": "प्रति एकड़ लागत"
+    },
+    "editNotes": "नोट संपादित करें",
+    "actionsFor": "{{name}} के लिए कार्रवाई",
+    "noLandsTitle": "अभी कोई ज़मीन नहीं",
+    "noLandsHint": "नक्शे पर अपने पहले खेत की सीमा बनाएँ। फ़सलें बाद में जोड़ें।",
+    "drawFirst": "अपनी पहली ज़मीन बनाएँ",
+    "water": {
+      "Borewell": "बोरवेल",
+      "Canal": "नहर",
+      "River": "नदी",
+      "FarmPond": "खेत तालाब",
+      "Rainfed": "वर्षा आधारित"
+    }
   }
 }

@@ -1,118 +1,111 @@
-<div class="land-detail-panel" *ngIf="land() as land">
-  <div
-    class="panel-header d-flex align-items-center justify-content-between pb-3 border-bottom mb-3"
-  >
-    <div class="d-flex align-items-center gap-2">
-      <h5 class="m-0">{{ land.name }}</h5>
-      <span class="badge" [ngClass]="getStatusBadgeClass()" style="font-size: 0.65rem">
-        {{ getStatusLabel() }}
-      </span>
-    </div>
-    <button
-      type="button"
-      class="btn btn-sm btn-link text-muted p-0"
-      (click)="closed.emit()"
-      [attr.aria-label]="'common.close' | translate"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        fill="currentColor"
-        viewBox="0 0 16 16"
-      >
-        <path
-          d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"
-        />
-      </svg>
-    </button>
-  </div>
-
-  <div class="panel-body">
-    <!-- Land Area -->
-    <div class="mb-3 p-2 bg-light rounded">
-      <p class="text-muted small mb-1">{{ 'landDetail.landArea' | translate }}</p>
-      <p class="m-0 fw-bold">
-        {{ land.area.hectares.toFixed(2) }} ha / {{ land.area.acres.toFixed(2) }} ac
-      </p>
-    </div>
-
-    <!-- Notes Section -->
-    <div class="mb-3">
-      <div class="d-flex align-items-center justify-content-between mb-2">
-        <h6 class="fw-bold mb-0">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 20 20"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="me-2"
-            style="display: inline-block; margin-bottom: 2px; color: var(--mf-fg)"
-          >
-            <rect x="3" y="3" width="6" height="6" rx="1" />
-            <rect x="11" y="3" width="6" height="6" rx="1" />
-            <rect x="3" y="11" width="6" height="6" rx="1" />
-            <rect x="11" y="11" width="6" height="6" rx="1" />
-          </svg>
-          {{ 'landDetail.notes' | translate }}
-        </h6>
-        <button
-          type="button"
-          class="btn btn-sm btn-link p-0"
-          (click)="startEditingNotes()"
-          *ngIf="!editingNotes()"
-          style="font-size: 0.75rem"
-        >
-          <svg
-            width="13"
-            height="13"
-            viewBox="0 0 20 20"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.6"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M14.5 3.5a1.5 1.5 0 0 1 2 2L6 16 2 17l1-4Z" />
-          </svg>
+<section class="card">
+  <div class="card-body">
+    @if (crops().length === 0) {
+      <div class="empty-state">
+        <span class="empty-state__icon" aria-hidden="true"><i class="bi bi-flower1"></i></span>
+        <h2 class="empty-state__title">
+          {{ 'lands.nothingGrowing' | translate: { name: land().name } }}
+        </h2>
+        <p class="empty-state__text">{{ 'lands.nothingGrowingHint' | translate }}</p>
+        <button type="button" class="btn btn-primary" (click)="addCrop.emit()">
+          {{ 'lands.addCrop' | translate }}
         </button>
       </div>
-
-      @if (editingNotes()) {
-        <div class="mb-2">
-          <textarea
-            class="form-control form-control-sm"
-            [value]="notesValue()"
-            (input)="notesValue.set($any($event.target).value)"
-            rows="3"
-            style="font-size: 0.75rem"
-          ></textarea>
-          <div class="d-flex gap-1 mt-2">
-            <button type="button" class="btn btn-sm btn-success" (click)="saveNotes()">
-              {{ 'mapMyFarm.save' | translate }}
-            </button>
-            <button type="button" class="btn btn-sm btn-secondary" (click)="cancelEditingNotes()">
-              {{ 'common.cancel' | translate }}
-            </button>
+      <p class="small text-body-secondary mt-2 mb-0">
+        {{ land().area.acres | localNumber: '1.0-2' }} {{ 'landEdit.acres' | translate }}
+        @if (land().waterSource) {
+          · {{ waterLabel() }}
+        }
+      </p>
+    } @else {
+      <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+        <h2 class="h5 mb-0">{{ land().name }}</h2>
+        <button
+          type="button"
+          class="btn btn-link p-0 text-nowrap"
+          (click)="viewCrop.emit(crops()[0].id)"
+        >
+          {{ 'lands.viewCropDetails' | translate }}
+          <i class="bi bi-chevron-right small" aria-hidden="true"></i>
+        </button>
+      </div>
+      <dl class="row row-cols-2 row-cols-sm-3 g-3 mb-2">
+        <div class="col">
+          <dt class="small text-body-secondary fw-normal">{{ 'lands.kpi.area' | translate }}</dt>
+          <dd class="fw-bold mb-0">
+            {{ land().area.acres | localNumber: '1.0-2' }} {{ 'landEdit.acres' | translate }}
+          </dd>
+        </div>
+        <div class="col">
+          <dt class="small text-body-secondary fw-normal">{{ 'lands.kpi.crops' | translate }}</dt>
+          <dd class="fw-bold mb-0">{{ crops().length | localNumber }}</dd>
+        </div>
+        <div class="col">
+          <dt class="small text-body-secondary fw-normal">
+            {{ 'lands.kpi.expenses' | translate }}
+          </dt>
+          <dd class="fw-bold mb-0">₹{{ expenses() | localNumber: '1.0-0' }}</dd>
+        </div>
+        <div class="col">
+          <dt class="small text-body-secondary fw-normal">
+            {{ 'lands.kpi.costPerAcre' | translate }}
+          </dt>
+          <dd class="fw-bold mb-0">
+            @if (costPerAcre() !== null) {
+              ₹{{ costPerAcre() | localNumber: '1.0-0' }}
+            } @else {
+              –
+            }
+          </dd>
+        </div>
+        @if (land().waterSource) {
+          <div class="col">
+            <dt class="small text-body-secondary fw-normal">
+              {{ 'lands.waterSource' | translate }}
+            </dt>
+            <dd class="fw-bold mb-0">{{ waterLabel() }}</dd>
           </div>
-        </div>
-      } @else {
-        <div class="notes-box">
-          @if (land.notes) {
-            <p class="m-0" style="font-size: 0.76rem; line-height: 1.45; color: var(--mf-fg)">
-              {{ land.notes }}
-            </p>
-          } @else {
-            <p class="m-0 text-muted" style="font-size: 0.76rem">
-              {{ 'landDetail.noNotesHint' | translate }}
-            </p>
-          }
-        </div>
+        }
+      </dl>
+      <button type="button" class="btn btn-link p-0" (click)="addCrop.emit()">
+        {{ 'lands.addAnotherCrop' | translate }}
+      </button>
+    }
+
+    <hr />
+    <div class="d-flex align-items-center justify-content-between mb-1">
+      <h3 class="h6 mb-0">{{ 'landDetail.notes' | translate }}</h3>
+      @if (!editingNotes()) {
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-secondary border-0"
+          [attr.aria-label]="'lands.editNotes' | translate"
+          (click)="startEditingNotes()"
+        >
+          <i class="bi bi-pencil" aria-hidden="true"></i>
+        </button>
       }
     </div>
+    @if (editingNotes()) {
+      <textarea
+        class="form-control form-control-sm mb-2"
+        rows="3"
+        [attr.aria-label]="'landDetail.notes' | translate"
+        [value]="notesValue()"
+        (input)="onNotesInput($event)"
+      ></textarea>
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-sm btn-primary" (click)="saveNotes()">
+          {{ 'common.save' | translate }}
+        </button>
+        <button type="button" class="btn btn-sm btn-secondary" (click)="editingNotes.set(false)">
+          {{ 'common.cancel' | translate }}
+        </button>
+      </div>
+    } @else if (land().notes) {
+      <p class="small mb-0">{{ land().notes }}</p>
+    } @else {
+      <p class="small text-body-secondary mb-0">{{ 'landDetail.noNotesHint' | translate }}</p>
+    }
   </div>
-</div>
+</section>

@@ -1,0 +1,116 @@
+<section class="card">
+  <div class="card-body">
+    <h2 class="h6 d-flex align-items-center gap-2 mb-3">
+      {{ 'lands.allLands' | translate }}
+      <span class="badge text-bg-secondary rounded-pill">{{ farms().length }}</span>
+    </h2>
+
+    <ul class="list-unstyled d-flex flex-column gap-2 mb-0">
+      @for (farm of farms(); track farm.id) {
+        <li
+          class="d-flex align-items-center gap-2 border rounded-3 p-2 position-relative"
+          [class.border-success]="selectedId() === farm.id"
+          [class.bg-body-tertiary]="selectedId() === farm.id"
+        >
+          @if (renamingId() === farm.id) {
+            <app-land-outline [points]="farm.points" />
+            <div class="flex-grow-1 min-w-0">
+              <input
+                class="form-control form-control-sm"
+                [class.is-invalid]="renameError()"
+                [value]="renameValue()"
+                maxlength="40"
+                autocomplete="off"
+                [attr.aria-label]="'lands.landName' | translate"
+                [attr.aria-invalid]="renameError()"
+                (input)="onRenameInput($event)"
+                (keydown.enter)="confirmRename(farm.id)"
+              />
+              @if (renameError()) {
+                <div class="invalid-feedback d-block" role="alert">
+                  {{ 'lands.nameRequired' | translate }}
+                </div>
+              }
+            </div>
+            <button
+              type="button"
+              class="btn btn-sm btn-success"
+              [attr.aria-label]="'savedFarms.saveName' | translate"
+              (click)="confirmRename(farm.id)"
+            >
+              <i class="bi bi-check-lg" aria-hidden="true"></i>
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary"
+              [attr.aria-label]="'common.cancel' | translate"
+              (click)="cancelRename()"
+            >
+              <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+          } @else {
+            <button
+              type="button"
+              class="btn btn-link text-reset text-decoration-none text-start d-flex align-items-center gap-2 flex-grow-1 min-w-0 p-0"
+              [attr.aria-current]="selectedId() === farm.id ? 'true' : null"
+              (click)="selectLand.emit(farm)"
+            >
+              <app-land-outline [points]="farm.points" />
+              <span class="flex-grow-1 min-w-0">
+                <strong class="d-block text-truncate">{{ farm.name }}</strong>
+                <small class="text-body-secondary d-block text-truncate">
+                  @for (crop of cropsByLand()[farm.id] ?? []; track crop.id; let last = $last) {
+                    {{ crop.name | referenceName: 'crop' }}{{ last ? '' : ', ' }}
+                  } @empty {
+                    <span class="badge text-bg-secondary">{{
+                      'savedFarms.fallow' | translate
+                    }}</span>
+                  }
+                </small>
+              </span>
+              <span class="fw-semibold text-nowrap">
+                {{ farm.area.acres | localNumber: '1.0-2' }} {{ 'landEdit.acres' | translate }}
+              </span>
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary border-0"
+              aria-haspopup="menu"
+              [attr.aria-expanded]="menuId() === farm.id"
+              [attr.aria-label]="'lands.actionsFor' | translate: { name: farm.name }"
+              (click)="toggleMenu(farm.id)"
+            >
+              <i class="bi bi-three-dots-vertical" aria-hidden="true"></i>
+            </button>
+            @if (menuId() === farm.id) {
+              <div
+                class="dropdown-menu show position-absolute end-0 top-100 mt-1"
+                role="menu"
+                style="z-index: 5"
+              >
+                <button
+                  type="button"
+                  class="dropdown-item"
+                  role="menuitem"
+                  (click)="startRename(farm)"
+                >
+                  <i class="bi bi-pencil me-2" aria-hidden="true"></i
+                  >{{ 'savedFarms.renameLand' | translate }}
+                </button>
+                <button
+                  type="button"
+                  class="dropdown-item text-danger"
+                  role="menuitem"
+                  (click)="remove(farm.id)"
+                >
+                  <i class="bi bi-trash me-2" aria-hidden="true"></i
+                  >{{ 'savedFarms.deleteLand' | translate }}
+                </button>
+              </div>
+            }
+          }
+        </li>
+      }
+    </ul>
+  </div>
+</section>

@@ -83,12 +83,9 @@ test.describe('Golden path', () => {
       const box = await mapContainer.boundingBox();
       if (!box) throw new Error('Map container has no bounding box');
 
-      // Two overlays float on top of the map itself and must be avoided: the
-      // "Map my farm" panel (map.scss's .map-page__farm-draw) bottom-center,
-      // wide enough to span the container's horizontal center once drawing
-      // starts; and the "My Saved Farms" list (saved-farms.component.scss's
-      // .map-page__saved-farms) top-left, ~14rem wide. The top-right corner
-      // is clear of both on any viewport size.
+      // The "Map my farm" panel (map.scss's .map-page__farm-draw) floats over
+      // the map bottom-center, and the search box top-center. The top-right
+      // corner is clear of both on any viewport size.
       const vertices = [
         { x: box.width * 0.7, y: box.height * 0.12 },
         { x: box.width * 0.92, y: box.height * 0.12 },
@@ -104,19 +101,15 @@ test.describe('Golden path', () => {
       // Click back on the first vertex to close (and finish) the polygon.
       await mapContainer.click({ position: vertices[0] });
 
-      await panel.getByPlaceholder('Enter farm name...').fill(farmName);
-      // The "Land saved" toast fires optimistically the instant Save is
-      // clicked (map-my-farm.component.ts's save()), before the backend
-      // POST /api/v1/lands it triggers even goes out — asserting on it (or
-      // on the farm name reappearing) doesn't prove persistence, and a next
-      // step navigating away too soon can abort that request mid-flight.
-      // Wait for the actual response so the land genuinely exists before we
-      // move on to a page that depends on it.
+      // The save-land form appears beside (or below) the map once the
+      // boundary is closed. Wait for the actual POST response so the land
+      // genuinely exists before we move on to a page that depends on it.
+      await page.locator('#land-name').fill(farmName);
       const [landResponse] = await Promise.all([
         page.waitForResponse(
           (res) => res.request().method() === 'POST' && res.url().includes('/api/v1/lands'),
         ),
-        panel.getByRole('button', { name: 'Save', exact: true }).click(),
+        page.getByRole('button', { name: 'Save land', exact: true }).click(),
       ]);
       expect(landResponse.ok()).toBeTruthy();
     });
