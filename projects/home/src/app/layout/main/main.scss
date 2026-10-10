@@ -23,6 +23,11 @@
   // Back/Add/Delete) so it clears every page, not just single-FAB ones.
   @media (max-width: 767.98px) {
     padding-bottom: 200px;
+
+    // The map page fills the whole area; its buttons float over the map.
+    &:has(app-map) {
+      padding-bottom: 0;
+    }
   }
 }
 
