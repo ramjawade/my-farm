@@ -30,5 +30,5 @@
 
 - [x] 5.1 Run `npm run lint` and `npm run build`; fix findings
 - [x] 5.2 Headless check of the login screen in mr, hi and en at 1280 px and 375 px, light and dark: no overflow, pad visible without scrolling on a phone
-- [ ] 5.3 Open the PR naming `warli-login-registration`
+- [x] 5.3 Open the PR naming `warli-login-registration`
 - [ ] 5.4 After the PR merges, archive this change and tick task 2.1 in `prototype-adoption-roadmap/tasks.md`
