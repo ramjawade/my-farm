@@ -216,6 +216,7 @@ class Land(TenantScopedBase):
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     area_sq_m: Mapped[Decimal | None] = mapped_column(Numeric(12, 2), nullable=True)
+    water_source: Mapped[str | None] = mapped_column(String(255), nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
@@ -270,6 +271,8 @@ class Crop(TenantScopedBase):
     label: Mapped[str | None] = mapped_column(String(255), nullable=True)
     area: Mapped[Decimal | None] = mapped_column(Numeric(10, 2), nullable=True)
     area_unit: Mapped[str] = mapped_column(String(50), default="sq_m")
+    irrigation_type: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    farming_method: Mapped[str | None] = mapped_column(String(255), nullable=True)
     season: Mapped[str | None] = mapped_column(String(100), nullable=True)
     sowing_date: Mapped[str | None] = mapped_column(String(10), nullable=True)
     current_stage: Mapped[str | None] = mapped_column(String(100), nullable=True)

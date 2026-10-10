@@ -184,3 +184,39 @@ async def test_update_and_delete_crop(client: AsyncClient, reference_ids: dict[s
             headers={"Authorization": "Bearer test"},
         )
         assert get_resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_crop_irrigation_and_method(
+    client: AsyncClient, reference_ids: dict[str, str]
+) -> None:
+    """Irrigation and farming method are stored on the crop and optional."""
+    uid = f"farmer_{uuid4()}"
+    headers = {"Authorization": "Bearer test"}
+
+    with patch.object(
+        firebase_auth, "verify_id_token", return_value={"uid": uid, "phone_number": None}
+    ):
+        farm = await client.post("/api/v1/farms", headers=headers, json={"name": "F"})
+        land = await client.post(
+            "/api/v1/lands",
+            headers=headers,
+            json={"name": "L", "farm_id": str(farm.json()["id"])},
+        )
+        base = {
+            "land_id": str(land.json()["id"]),
+            "crop_catalog_id": reference_ids["crop_catalog_id"],
+        }
+
+        full = await client.post(
+            "/api/v1/crops",
+            headers=headers,
+            json={**base, "irrigation_type": "Drip", "farming_method": "Organic"},
+        )
+        assert full.status_code == 201
+        assert full.json()["irrigation_type"] == "Drip"
+        assert full.json()["farming_method"] == "Organic"
+
+        blank = await client.post("/api/v1/crops", headers=headers, json=base)
+        assert blank.json()["irrigation_type"] is None
+        assert blank.json()["farming_method"] is None

@@ -1,0 +1,78 @@
+<button
+  type="button"
+  class="mf-scrim border-0 p-0"
+  tabindex="-1"
+  [attr.aria-label]="'common.cancel' | translate"
+  (click)="cancel.emit()"
+></button>
+<div
+  class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center pe-none"
+  style="z-index: var(--mf-z-dialog)"
+>
+  <form
+    class="mf-dialog mf-sheet pe-auto"
+    role="dialog"
+    aria-modal="true"
+    novalidate
+    [attr.aria-labelledby]="titleId"
+    (submit)="submit($event)"
+  >
+    <h3 [id]="titleId">{{ field().labelKey | translate }}</h3>
+    @if (field().helpKey) {
+      <p class="text-body-secondary small">{{ field().helpKey! | translate }}</p>
+    }
+
+    @for (control of field().controls; track control.name) {
+      <div class="mb-3">
+        <label class="form-label" [for]="'pf-' + control.name">
+          {{ control.labelKey | translate }}
+        </label>
+        @if (control.kind === 'select') {
+          <select
+            class="form-select"
+            [id]="'pf-' + control.name"
+            [value]="values()[control.name]"
+            (change)="onInput(control.name, $event)"
+          >
+            @for (option of options(control); track option.value) {
+              <option [value]="option.value" [selected]="option.value === values()[control.name]">
+                {{ option.labelKey ? (option.labelKey | translate) : option.label }}
+              </option>
+            }
+          </select>
+        } @else {
+          <input
+            class="form-control"
+            autocomplete="off"
+            [id]="'pf-' + control.name"
+            [type]="control.kind === 'email' ? 'email' : 'text'"
+            [attr.inputmode]="inputMode(control)"
+            [class.is-invalid]="!!shownErrors()[control.name]"
+            [attr.aria-invalid]="!!shownErrors()[control.name]"
+            [attr.aria-describedby]="shownErrors()[control.name] ? 'pf-err-' + control.name : null"
+            [value]="values()[control.name]"
+            (input)="onInput(control.name, $event)"
+          />
+          @if (shownErrors()[control.name]) {
+            <div class="invalid-feedback d-block" [id]="'pf-err-' + control.name" role="alert">
+              {{ shownErrors()[control.name] | translate }}
+            </div>
+          }
+        }
+      </div>
+    }
+
+    @if (saveError()) {
+      <div class="alert alert-danger py-2 small" role="alert">{{ saveError() }}</div>
+    }
+
+    <div class="d-flex justify-content-end gap-2">
+      <button type="button" class="btn btn-secondary" (click)="cancel.emit()">
+        {{ 'common.cancel' | translate }}
+      </button>
+      <button type="submit" class="btn btn-primary" [disabled]="saving()">
+        {{ 'common.save' | translate }}
+      </button>
+    </div>
+  </form>
+</div>
