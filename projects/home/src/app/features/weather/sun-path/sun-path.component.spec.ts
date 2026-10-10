@@ -1,3 +1,4 @@
+import { provideTranslateService } from '@ngx-translate/core';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
@@ -10,7 +11,7 @@ describe('SunPathComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SunPathComponent],
-      providers: [provideZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection(), provideTranslateService()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SunPathComponent);

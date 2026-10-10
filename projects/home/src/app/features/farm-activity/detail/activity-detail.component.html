@@ -46,15 +46,15 @@
           <span>
             <i class="bi bi-calendar-check me-1"></i>
             {{ 'activityDetail.performedOn' | translate }}:
-            <strong class="text-soil">{{ act.date | date: 'dd MMM yyyy' }}</strong>
+            <strong class="text-soil">{{ act.date | localDate: 'dd MMM yyyy' }}</strong>
           </span>
           <span>
             <i class="bi bi-clock me-1"></i> {{ 'activityDetail.recorded' | translate }}:
-            <strong class="text-soil">{{ act.createdAt | date: 'dd MMM yyyy HH:mm' }}</strong>
+            <strong class="text-soil">{{ act.createdAt | localDate: 'dd MMM yyyy HH:mm' }}</strong>
           </span>
           <span>
             <i class="bi bi-arrow-repeat me-1"></i> {{ 'activityDetail.updated' | translate }}:
-            <strong class="text-soil">{{ act.updatedAt | date: 'dd MMM yyyy HH:mm' }}</strong>
+            <strong class="text-soil">{{ act.updatedAt | localDate: 'dd MMM yyyy HH:mm' }}</strong>
           </span>
         </div>
       </div>
@@ -86,7 +86,7 @@
           <div class="row text-center align-items-center">
             <div class="col-12 col-md-4 summary-col">
               <div class="mf-meta-label mb-1">{{ 'activityList.totalExpense' | translate }}</div>
-              <div class="total font-sans">₹{{ sum.totalExpense | number }}</div>
+              <div class="total font-sans">₹{{ sum.totalExpense | localNumber }}</div>
             </div>
             <div class="col-12 col-md-4 summary-col">
               <div class="mf-meta-label mb-1">{{ 'activityDetail.expenseItems' | translate }}</div>
@@ -164,7 +164,7 @@
                   {{ evt.eventType | referenceName: 'historyEvent' }}
                 </h6>
                 <div class="text-secondary small mt-1 font-sans">
-                  {{ evt.createdAt | date: 'dd MMM hh:mm a' }}
+                  {{ evt.createdAt | localDate: 'dd MMM hh:mm a' }}
                 </div>
               </div>
             } @empty {

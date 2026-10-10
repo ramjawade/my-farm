@@ -52,7 +52,7 @@
         >
           {{ 'activityDashboard.totalExpense' | translate }}
         </div>
-        <div class="metric">₹{{ kpi()?.totalExpense ?? 0 | number: '1.0-0' }}</div>
+        <div class="metric">₹{{ kpi()?.totalExpense ?? 0 | localNumber: '1.0-0' }}</div>
       </div>
     </div>
     <div class="col-6 col-md-3">
@@ -124,7 +124,7 @@
                   </div>
                   @if (act.date) {
                     <span class="badge bg-light text-dark font-monospace">{{
-                      act.date | date: 'mediumDate'
+                      act.date | localDate: 'mediumDate'
                     }}</span>
                   }
                   <p class="small text-muted mb-0 mt-1">
@@ -204,12 +204,12 @@
                   <td class="border-bottom-0 py-2 text-muted small">
                     {{
                       act.date
-                        ? (act.date | date: 'dd MMM yyyy')
+                        ? (act.date | localDate: 'dd MMM yyyy')
                         : ('activityDashboard.noDate' | translate)
                     }}
                   </td>
                   <td class="border-bottom-0 py-2 text-end fw-bold text-success">
-                    ₹{{ getExpenseForActivity(act.id) | number }}
+                    ₹{{ getExpenseForActivity(act.id) | localNumber }}
                   </td>
                 </tr>
               }

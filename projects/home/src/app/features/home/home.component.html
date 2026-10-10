@@ -17,22 +17,22 @@
           <span
             class="badge badge-premium mb-3 px-3 py-2 text-uppercase fw-semibold tracking-wider"
           >
-            <i class="bi bi-stars me-1 text-warning"></i> Smart Agriculture Platform
+            <i class="bi bi-stars me-1 text-warning"></i> {{ 'home.landing.badge' | translate }}
           </span>
           <h1 class="hero-title fw-extrabold mb-3">
-            Digitize, Manage & Optimize <br class="d-none d-md-block" />
-            <span class="text-gradient-green">Your Farm in Real-Time</span>
+            {{ 'home.landing.title' | translate }} <br class="d-none d-md-block" />
+            <span class="text-gradient-green">{{ 'home.landing.highlight' | translate }}</span>
           </h1>
           <p class="hero-subtitle text-muted mx-auto mb-4 max-w-2xl">
-            Outlines fields using Leaflet maps, tracks soil conditions, schedules crop timeline
-            tasks, and calculates input expenses on a unified dashboard tailored for farmers.
+            {{ 'home.landing.intro' | translate }}
           </p>
           <div class="d-flex flex-wrap justify-content-center gap-3">
             <a
               routerLink="/login"
               class="btn btn-success btn-lg px-4 py-2.5 fw-semibold hover-lift shadow-md"
             >
-              <i class="bi bi-person-plus-fill me-2"></i>Create Free Profile
+              <i class="bi bi-person-plus-fill me-2"></i
+              >{{ 'home.landing.createProfile' | translate }}
             </a>
           </div>
         </div>
@@ -41,9 +41,9 @@
       <!-- CORE FEATURES -->
       <section class="mb-5">
         <div class="text-center mb-4.5">
-          <h2 class="section-title fw-bold mb-1">Everything You Need To Grow Better</h2>
+          <h2 class="section-title fw-bold mb-1">{{ 'home.landing.featuresTitle' | translate }}</h2>
           <p class="text-muted text-sm">
-            Advanced utility tools packaged in a simple, easy-to-use application.
+            {{ 'home.landing.featuresSubtitle' | translate }}
           </p>
         </div>
 
@@ -53,10 +53,11 @@
               <div class="feature-icon-wrapper bg-success-subtle text-success mb-3">
                 <i class="bi bi-map-fill"></i>
               </div>
-              <h3 class="h5 fw-bold mb-2 text-success-dark">Field Mapping</h3>
+              <h3 class="h5 fw-bold mb-2 text-success-dark">
+                {{ 'home.landing.mappingTitle' | translate }}
+              </h3>
               <p class="text-muted text-xs mb-0">
-                Outline boundaries on interactive maps. We automatically compute accurate field
-                acreage and center coordinates.
+                {{ 'home.landing.mappingText' | translate }}
               </p>
             </div>
           </div>
@@ -66,10 +67,11 @@
               <div class="feature-icon-wrapper bg-info-subtle text-info mb-3">
                 <i class="bi bi-cloud-sun-fill"></i>
               </div>
-              <h3 class="h5 fw-bold mb-2 text-info-dark">Weather Monitoring</h3>
+              <h3 class="h5 fw-bold mb-2 text-info-dark">
+                {{ 'home.landing.weatherTitle' | translate }}
+              </h3>
               <p class="text-muted text-xs mb-0">
-                Localized weather alerts, hourly wind speeds, soil moisture levels, and solar
-                coordinates tracking for your exact village.
+                {{ 'home.landing.weatherText' | translate }}
               </p>
             </div>
           </div>
@@ -79,10 +81,11 @@
               <div class="feature-icon-wrapper bg-warning-subtle text-warning mb-3">
                 <i class="bi bi-grid-3x3-gap-fill"></i>
               </div>
-              <h3 class="h5 fw-bold mb-2 text-warning-dark">Crop Timelines</h3>
+              <h3 class="h5 fw-bold mb-2 text-warning-dark">
+                {{ 'home.landing.timelineTitle' | translate }}
+              </h3>
               <p class="text-muted text-xs mb-0">
-                Step-by-step guidance through sowing, vegetative growth, flowering, and maturity.
-                Log observations and upload field photos.
+                {{ 'home.landing.timelineText' | translate }}
               </p>
             </div>
           </div>
@@ -92,10 +95,11 @@
               <div class="feature-icon-wrapper bg-danger-subtle text-danger mb-3">
                 <i class="bi bi-activity"></i>
               </div>
-              <h3 class="h5 fw-bold mb-2 text-danger-dark">Expense Logger</h3>
+              <h3 class="h5 fw-bold mb-2 text-danger-dark">
+                {{ 'home.landing.expenseTitle' | translate }}
+              </h3>
               <p class="text-muted text-xs mb-0">
-                Record machine rents, fertilizer purchases, seed costs, and labor hire. Stay on top
-                of crop production budgets.
+                {{ 'home.landing.expenseText' | translate }}
               </p>
             </div>
           </div>
@@ -104,16 +108,15 @@
 
       <!-- CTA BANNER -->
       <section class="cta-banner text-center py-5 px-4 rounded-4 text-white">
-        <h2 class="fw-bold mb-2">Ready to digitize your farming operations?</h2>
+        <h2 class="fw-bold mb-2">{{ 'home.landing.ctaTitle' | translate }}</h2>
         <p class="mb-4 opacity-90 max-w-xl mx-auto text-sm">
-          Create your profile in 30 seconds. No credit cards, no complex setups. Just simple,
-          practical tools designed for real farmers.
+          {{ 'home.landing.ctaText' | translate }}
         </p>
         <a
           routerLink="/login"
           class="btn btn-light text-success fw-bold px-4 py-2.5 hover-lift shadow-sm"
         >
-          <i class="bi bi-person-plus-fill me-2"></i>Register My Farm
+          <i class="bi bi-person-plus-fill me-2"></i>{{ 'home.landing.register' | translate }}
         </a>
       </section>
     </div>
@@ -193,7 +196,9 @@
             </div>
             <div class="h3 fw-bold text-success-dark mb-0">
               {{ metrics().acreage }}
-              <span class="text-sm fw-medium">{{ currentUser()?.farmAreaUnit || 'hectares' }}</span>
+              <span class="text-sm fw-medium">{{
+                'landEdit.' + (currentUser()?.farmAreaUnit || 'hectares') | translate
+              }}</span>
             </div>
             <div class="text-xxs text-muted mt-1">
               @if (metrics().landsCount > 0) {
@@ -260,7 +265,7 @@
               </div>
             </div>
             <div class="h3 fw-bold text-danger-dark mb-0">
-              ₹{{ metrics().totalExpenses | number }}
+              ₹{{ metrics().totalExpenses | localNumber }}
             </div>
             <div class="text-xxs text-muted mt-1">
               {{ 'home.productionCostsLogged' | translate: { month: metrics().monthName } }}

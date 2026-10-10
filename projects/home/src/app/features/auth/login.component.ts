@@ -1,7 +1,11 @@
+import { I18n } from '../../core/i18n/i18n.service';
+import { TranslatePipe } from '@ngx-translate/core';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { LanguageService } from '../../core/i18n/language.service';
+import { LanguageSwitchComponent } from '../../layout/language-switch/language-switch.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { BrandLogoComponent } from '../../layout/brand-logo/brand-logo.component';
 import { SessionAuthService, SessionResult } from '../../core/auth/session-auth.service';
@@ -10,7 +14,6 @@ import { FarmerRegistrationService } from '../farmer-registration/farmer-registr
 type LoginStep = 'phone' | 'pin' | 'register';
 
 const PIN_RE = /^[0-9]{4,6}$/;
-const UNREACHABLE = 'Cannot reach the server. Check your connection and try again.';
 
 /**
  * PIN sign-in (issues #45, #50). **Online-only**: every step needs the
@@ -20,16 +23,25 @@ const UNREACHABLE = 'Cannot reach the server. Check your connection and try agai
 @Component({
   standalone: true,
   selector: 'app-login',
-  imports: [CommonModule, FormsModule, RouterLink, BrandLogoComponent],
+  imports: [
+    TranslatePipe,
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    BrandLogoComponent,
+    LanguageSwitchComponent,
+  ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent {
+  private readonly i18n = inject(I18n);
   private readonly authService = inject(AuthService);
   private readonly sessionAuth = inject(SessionAuthService);
   private readonly farmerService = inject(FarmerRegistrationService);
   private readonly router = inject(Router);
+  private readonly languageService = inject(LanguageService);
 
   readonly step = signal<LoginStep>('phone');
   readonly phone = signal('');
@@ -54,7 +66,7 @@ export class LoginComponent {
     const phoneVal = digitsOnly.length > 10 ? digitsOnly.slice(-10) : digitsOnly;
 
     if (phoneVal.length !== 10) {
-      this.errorMessage.set('Please enter a valid 10-digit mobile number.');
+      this.errorMessage.set(this.i18n.t('login.errPhone'));
       return;
     }
 
@@ -66,7 +78,7 @@ export class LoginComponent {
   async onSubmitPin(): Promise<void> {
     const pinVal = this.pin().trim();
     if (!PIN_RE.test(pinVal)) {
-      this.errorMessage.set('Please enter a valid 4-6 digit PIN.');
+      this.errorMessage.set(this.i18n.t('login.errPin'));
       return;
     }
 
@@ -85,15 +97,13 @@ export class LoginComponent {
           this.step.set('register');
           return;
         case 'wrong-pin':
-          this.errorMessage.set('Incorrect PIN. Please try again.');
+          this.errorMessage.set(this.i18n.t('login.errWrongPin'));
           return;
         case 'locked':
-          this.errorMessage.set(
-            'Too many incorrect PIN attempts. Please try again in a few minutes.',
-          );
+          this.errorMessage.set(this.i18n.t('login.errLocked'));
           return;
         case 'unreachable':
-          this.errorMessage.set(UNREACHABLE);
+          this.errorMessage.set(this.i18n.t('login.errUnreachable'));
           return;
       }
     } finally {
@@ -107,15 +117,15 @@ export class LoginComponent {
     const confirmVal = this.confirmPin().trim();
 
     if (nameVal.length < 3) {
-      this.errorMessage.set('Please enter your full name (minimum 3 characters).');
+      this.errorMessage.set(this.i18n.t('login.errName'));
       return;
     }
     if (!PIN_RE.test(pinVal)) {
-      this.errorMessage.set('Please enter a valid 4-6 digit PIN.');
+      this.errorMessage.set(this.i18n.t('login.errPin'));
       return;
     }
     if (pinVal !== confirmVal) {
-      this.errorMessage.set('PINs do not match.');
+      this.errorMessage.set(this.i18n.t('login.errPinMismatch'));
       return;
     }
 
@@ -126,6 +136,7 @@ export class LoginComponent {
         phone: this.phone(),
         fullName: nameVal,
         pin: pinVal,
+        preferredLanguage: this.languageService.language(),
       });
       switch (outcome.status) {
         case 'ok':
@@ -135,10 +146,10 @@ export class LoginComponent {
           this.pin.set('');
           this.confirmPin.set('');
           this.step.set('pin');
-          this.errorMessage.set('That number is already registered. Enter your PIN to sign in.');
+          this.errorMessage.set(this.i18n.t('login.errTaken'));
           return;
         case 'unreachable':
-          this.errorMessage.set(UNREACHABLE);
+          this.errorMessage.set(this.i18n.t('login.errUnreachable'));
           return;
       }
     } finally {

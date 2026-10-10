@@ -1,3 +1,4 @@
+import { LocalDatePipe, LocalNumberPipe } from '../../../core/i18n/localized.pipes';
 import {
   Component,
   inject,
@@ -9,7 +10,7 @@ import {
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
-import { DatePipe, CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ActivityService } from '../../activity/activity.service';
 import { ReferenceNamePipe } from '../../../core/i18n/reference-name.pipe';
@@ -29,8 +30,9 @@ import { parseId } from '../../../core/models/entity-id';
   selector: 'app-activity-list',
   standalone: true,
   imports: [
+    LocalDatePipe,
+    LocalNumberPipe,
     RouterLink,
-    DatePipe,
     CommonModule,
     ConfirmDialogComponent,
     TranslatePipe,

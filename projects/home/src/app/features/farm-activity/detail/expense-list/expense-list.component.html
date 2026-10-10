@@ -27,7 +27,7 @@
                   @if (exp.quantity && exp.rate) {
                     {{ 'expenseList.qty' | translate }}: {{ exp.quantity }}
                     {{ exp.unit || ('expenseList.units' | translate) }} @ ₹{{
-                      exp.rate | number
+                      exp.rate | localNumber
                     }}/{{ exp.unit || ('expenseList.unit' | translate) }}
                   } @else {
                     {{ 'expenseList.category' | translate }}:
@@ -43,7 +43,9 @@
             <div
               class="d-flex align-items-center justify-content-between justify-content-sm-end gap-3 w-100 w-sm-auto border-top-mobile pt-2 pt-sm-0"
             >
-              <div class="amount font-monospace text-success-dark">₹{{ exp.amount | number }}</div>
+              <div class="amount font-monospace text-success-dark">
+                ₹{{ exp.amount | localNumber }}
+              </div>
               <button
                 class="btn btn-link text-danger p-0"
                 (click)="deleteExpense(exp.id)"

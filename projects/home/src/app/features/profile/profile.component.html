@@ -15,7 +15,7 @@
           <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
             <h2 class="h3 fw-bold text-success-dark mb-0">{{ currentUser()?.fullName }}</h2>
             <span class="badge bg-success-subtle text-success rounded-pill fw-semibold text-xxs">
-              {{ currentUser()?.userRole || ('profile.farmerRole' | translate) }}
+              {{ roleLabel() }}
             </span>
           </div>
           <p class="text-xs text-muted mb-0 d-flex align-items-center gap-1.5 flex-wrap">
@@ -142,7 +142,7 @@
               </div>
               <div class="col-8 text-sm fw-bold text-dark">
                 <span class="badge bg-success-subtle text-success px-2.5 py-1 rounded-pill">{{
-                  currentUser()?.userRole || ('profile.farmerRole' | translate)
+                  roleLabel()
                 }}</span>
               </div>
             </div>
@@ -199,7 +199,7 @@
                 {{ 'profile.cultivatedArea' | translate }}
               </div>
               <div class="col-8 text-sm fw-bold text-dark">
-                {{ landSummary().area }} {{ landSummary().unit }}
+                {{ landSummary().area }} {{ 'landEdit.' + landSummary().unit | translate }}
               </div>
             </div>
             <div class="row">
@@ -237,9 +237,9 @@
               <div class="col-8 text-xs font-monospace text-secondary">
                 @if (currentUser()?.location) {
                   {{ 'profile.lat' | translate }}:
-                  {{ currentUser()?.location?.lat | number: '1.4-4' }},
+                  {{ currentUser()?.location?.lat | localNumber: '1.4-4' }},
                   {{ 'profile.lng' | translate }}:
-                  {{ currentUser()?.location?.lng | number: '1.4-4' }}
+                  {{ currentUser()?.location?.lng | localNumber: '1.4-4' }}
                 } @else {
                   {{ 'profile.noBoundaryMapped' | translate }}
                 }

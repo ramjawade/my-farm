@@ -1,3 +1,4 @@
+import { DEFAULT_LANGUAGE } from '../i18n/app-language';
 import { Injectable, inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { HttpService } from '../http/http.service';
@@ -43,7 +44,7 @@ function mapFarmer(f: FarmerResponse): FarmerRegistrationData {
     fullName: f.full_name ?? '',
     phone: f.phone ?? '',
     email: f.email ?? undefined,
-    preferredLanguage: f.preferred_language ?? 'en',
+    preferredLanguage: f.preferred_language ?? DEFAULT_LANGUAGE,
     userRole: roleLabel(f.user_role),
     // The backend Farmer row has no farm-setup fields — Farm is a separate
     // entity — so these stay at their empty defaults, exactly as
@@ -102,7 +103,7 @@ export class SessionAuthService {
         phone: req.phone,
         full_name: req.fullName,
         pin: req.pin,
-        preferred_language: req.preferredLanguage ?? 'en',
+        preferred_language: req.preferredLanguage ?? DEFAULT_LANGUAGE,
       };
       const resp = await this.httpService.post<SessionResponse>('/auth/register', body);
       return { status: 'ok', result: { token: resp.token, farmer: mapFarmer(resp.farmer) } };

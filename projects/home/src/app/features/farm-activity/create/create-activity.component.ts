@@ -1,3 +1,4 @@
+import { LocalDatePipe } from '../../../core/i18n/localized.pipes';
 import {
   Component,
   inject,
@@ -30,7 +31,14 @@ import { resolveReferenceName } from '../../../core/i18n/reference-name';
 @Component({
   selector: 'app-create-activity',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ComboboxComponent, TranslatePipe, ReferenceNamePipe],
+  imports: [
+    LocalDatePipe,
+    CommonModule,
+    ReactiveFormsModule,
+    ComboboxComponent,
+    TranslatePipe,
+    ReferenceNamePipe,
+  ],
   templateUrl: './create-activity.component.html',
   styleUrl: './create-activity.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

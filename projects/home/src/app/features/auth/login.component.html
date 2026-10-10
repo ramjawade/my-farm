@@ -3,23 +3,26 @@
   <div class="background-blob blob-top"></div>
   <div class="background-blob blob-bottom"></div>
 
-  <a routerLink="/" class="home-btn" aria-label="Back to home">
+  <a routerLink="/" class="home-btn" [attr.aria-label]="'login.backToHome' | translate">
     <i class="bi bi-house-fill"></i>
   </a>
 
   <div class="login-container">
     <div class="card card-glass login-card mx-auto animate-fade-in">
+      <div class="d-flex justify-content-center mb-2"><app-language-switch /></div>
       <!-- Logo & Header -->
       <div class="text-center mb-4 pt-2">
         <app-brand-logo class="mb-3 shadow-sm rounded-circle" [size]="96" [priority]="true" />
         <h2 class="brand-title mb-1">My Farm</h2>
-        <p class="brand-subtitle">Smart Agriculture Management Portal</p>
+        <p class="brand-subtitle">{{ 'login.subtitle' | translate }}</p>
       </div>
 
       @if (step() === 'phone') {
         <form (ngSubmit)="onSubmitPhone()" class="login-form">
           <div class="mb-3">
-            <label for="phoneInput" class="field-label required-label">Mobile Number</label>
+            <label for="phoneInput" class="field-label required-label">{{
+              'login.mobileNumber' | translate
+            }}</label>
             <div class="input-group">
               <span class="input-group-text bg-white border-end-0 text-muted">
                 <i class="bi bi-telephone-fill"></i>
@@ -28,7 +31,7 @@
                 type="tel"
                 id="phoneInput"
                 class="form-control border-start-0 ps-0"
-                placeholder="e.g. 9876543210"
+                [placeholder]="'login.phonePlaceholder' | translate"
                 inputmode="numeric"
                 maxlength="10"
                 [value]="phone()"
@@ -48,7 +51,7 @@
             class="btn btn-success w-100 py-2.5 fw-semibold hover-lift shadow-xs d-flex align-items-center justify-content-center gap-2"
           >
             <i class="bi bi-arrow-right-circle-fill"></i>
-            <span>Continue</span>
+            <span>{{ 'login.continue' | translate }}</span>
           </button>
         </form>
       }
@@ -56,10 +59,12 @@
       @if (step() === 'pin') {
         <form (ngSubmit)="onSubmitPin()" class="login-form animate-fade-in">
           <p class="text-muted text-sm mb-3">
-            Enter the PIN for <strong>{{ phone() }}</strong>
+            {{ 'login.enterPinFor' | translate }} <strong>{{ phone() }}</strong>
           </p>
           <div class="mb-3">
-            <label for="pinInput" class="field-label required-label">PIN</label>
+            <label for="pinInput" class="field-label required-label">{{
+              'login.pin' | translate
+            }}</label>
             <div class="input-group">
               <span class="input-group-text bg-white border-end-0 text-muted">
                 <i class="bi bi-shield-lock-fill"></i>
@@ -70,7 +75,7 @@
                 maxlength="6"
                 id="pinInput"
                 class="form-control border-start-0 ps-0"
-                placeholder="4-6 digit PIN"
+                [placeholder]="'login.pinPlaceholder' | translate"
                 [value]="pin()"
                 (input)="pin.set($any($event.target).value)"
                 [class.is-invalid]="errorMessage()"
@@ -89,7 +94,7 @@
             class="btn btn-success w-100 py-2.5 fw-semibold hover-lift shadow-xs d-flex align-items-center justify-content-center gap-2"
           >
             <i class="bi bi-box-arrow-in-right"></i>
-            <span>{{ busy() ? 'Signing in…' : 'Access Account' }}</span>
+            <span>{{ (busy() ? 'login.signingIn' : 'login.accessAccount') | translate }}</span>
           </button>
 
           <button
@@ -97,7 +102,7 @@
             class="btn btn-link w-100 mt-2 text-muted"
             (click)="resetToPhoneStep()"
           >
-            <i class="bi bi-arrow-left me-1"></i>Use a different number
+            <i class="bi bi-arrow-left me-1"></i>{{ 'login.differentNumber' | translate }}
           </button>
         </form>
       }
@@ -105,44 +110,47 @@
       @if (step() === 'register') {
         <form (ngSubmit)="onSubmitRegister()" class="login-form animate-fade-in">
           <p class="text-success text-xs mb-3 fw-semibold">
-            <i class="bi bi-info-circle-fill me-1"></i>This number is not registered. Create a
-            profile to get started.
+            <i class="bi bi-info-circle-fill me-1"></i>{{ 'login.notRegistered' | translate }}
           </p>
           <div class="mb-3">
-            <label for="nameInput" class="field-label required-label">Full Name</label>
+            <label for="nameInput" class="field-label required-label">{{
+              'login.fullName' | translate
+            }}</label>
             <input
               type="text"
               id="nameInput"
               class="form-control"
-              placeholder="e.g. Rajesh Kumar"
+              [placeholder]="'login.namePlaceholder' | translate"
               [value]="name()"
               (input)="name.set($any($event.target).value)"
             />
           </div>
           <div class="mb-3">
-            <label for="registerPinInput" class="field-label required-label">Create PIN</label>
+            <label for="registerPinInput" class="field-label required-label">{{
+              'login.createPin' | translate
+            }}</label>
             <input
               type="password"
               inputmode="numeric"
               maxlength="6"
               id="registerPinInput"
               class="form-control"
-              placeholder="4-6 digit PIN"
+              [placeholder]="'login.pinPlaceholder' | translate"
               [value]="pin()"
               (input)="pin.set($any($event.target).value)"
             />
           </div>
           <div class="mb-3">
-            <label for="confirmRegisterPinInput" class="field-label required-label"
-              >Confirm PIN</label
-            >
+            <label for="confirmRegisterPinInput" class="field-label required-label">{{
+              'login.confirmPin' | translate
+            }}</label>
             <input
               type="password"
               inputmode="numeric"
               maxlength="6"
               id="confirmRegisterPinInput"
               class="form-control"
-              placeholder="Re-enter PIN"
+              [placeholder]="'login.confirmPinPlaceholder' | translate"
               [value]="confirmPin()"
               (input)="confirmPin.set($any($event.target).value)"
               [class.is-invalid]="errorMessage()"
@@ -160,7 +168,7 @@
             class="btn btn-success w-100 py-2.5 fw-semibold hover-lift shadow-xs d-flex align-items-center justify-content-center gap-2"
           >
             <i class="bi bi-person-plus-fill"></i>
-            <span>{{ busy() ? 'Creating…' : 'Create Profile & Enter' }}</span>
+            <span>{{ (busy() ? 'login.creating' : 'login.createAndEnter') | translate }}</span>
           </button>
 
           <button
@@ -168,7 +176,7 @@
             class="btn btn-link w-100 mt-2 text-muted"
             (click)="resetToPhoneStep()"
           >
-            <i class="bi bi-arrow-left me-1"></i>Use a different number
+            <i class="bi bi-arrow-left me-1"></i>{{ 'login.differentNumber' | translate }}
           </button>
         </form>
       }
@@ -176,7 +184,7 @@
       @if (step() === 'phone') {
         <div class="text-center mt-4 border-top pt-3">
           <p class="text-muted text-sm mb-0">
-            New to My Farm? Enter your number and PIN — we'll set up your profile.
+            {{ 'login.newHere' | translate }}
           </p>
         </div>
       }

@@ -1,3 +1,4 @@
+import { I18n } from '../../../core/i18n/i18n.service';
 import {
   Component,
   inject,
@@ -31,6 +32,7 @@ import { ToastService } from 'shared';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileEditDialogComponent {
+  private readonly i18n = inject(I18n);
   private readonly authService = inject(AuthService);
   private readonly toast = inject(ToastService);
   private readonly workflowService = inject(WorkflowStateService);
@@ -71,6 +73,11 @@ export class ProfileEditDialogComponent {
   readonly longitude = signal<number | null>(null);
 
   readonly languages = SUPPORTED_LANGUAGES;
+
+  /** Translation key for a crop, role, method, water source or irrigation option. */
+  optionKey(value: string): string {
+    return 'profileEdit.options.' + value.replace(/\s+/g, '');
+  }
 
   readonly cropOptions = [
     { value: 'Wheat', label: 'Wheat', icon: 'bi-flower2', color: 'var(--mf-sun)' },
@@ -443,7 +450,7 @@ export class ProfileEditDialogComponent {
       await this.authService.updateProfile(updates);
     } catch (error) {
       console.error('Failed to save profile', error);
-      this.saveError.set("Couldn't save your changes. Check your connection and try again.");
+      this.saveError.set(this.i18n.t('common.saveFailed'));
       return;
     } finally {
       this.saving.set(false);
@@ -457,7 +464,7 @@ export class ProfileEditDialogComponent {
       this.workflowService.markPhaseComplete('location');
     }
 
-    this.toast.success('Profile updated.');
+    this.toast.success(this.i18n.t('profileEdit.updated'));
     this.close();
   }
 

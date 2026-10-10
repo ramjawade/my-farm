@@ -1,3 +1,4 @@
+import { LocalDatePipe, LocalNumberPipe } from '../../../core/i18n/localized.pipes';
 import {
   Component,
   inject,
@@ -21,7 +22,15 @@ import { ReferenceNamePipe } from '../../../core/i18n/reference-name.pipe';
 @Component({
   standalone: true,
   selector: 'app-crop-activity',
-  imports: [CommonModule, RouterOutlet, ConfirmDialogComponent, TranslatePipe, ReferenceNamePipe],
+  imports: [
+    LocalDatePipe,
+    LocalNumberPipe,
+    CommonModule,
+    RouterOutlet,
+    ConfirmDialogComponent,
+    TranslatePipe,
+    ReferenceNamePipe,
+  ],
   templateUrl: './crop-activity.component.html',
   styleUrl: './crop-activity.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

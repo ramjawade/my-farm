@@ -301,7 +301,7 @@
 
                 <!-- Date & Notes summary -->
                 <p class="text-muted mb-2 small font-sans">
-                  <i class="bi bi-calendar-event me-2"></i>{{ act.date | date: 'dd MMM yyyy' }}
+                  <i class="bi bi-calendar-event me-2"></i>{{ act.date | localDate: 'dd MMM yyyy' }}
                 </p>
 
                 @if (act.notes) {
@@ -317,7 +317,7 @@
               >
                 <span class="mf-meta-label">{{ 'activityList.totalExpense' | translate }}</span>
                 <strong class="mf-meta-value font-monospace fs-5">
-                  ₹{{ getActivityTotalCost(act.id) | number }}
+                  ₹{{ getActivityTotalCost(act.id) | localNumber }}
                 </strong>
               </div>
             </div>
@@ -438,7 +438,7 @@
                     {{ act.season | referenceName: 'season' }}
                   </td>
                   <td class="py-3 text-muted text-xs font-sans">
-                    {{ act.date | date: 'dd MMM yyyy' }}
+                    {{ act.date | localDate: 'dd MMM yyyy' }}
                   </td>
                   <td class="py-3">
                     <span
@@ -454,7 +454,7 @@
                     class="py-3 text-end fw-bold font-monospace text-success-dark text-nowrap"
                     style="font-size: 0.9rem"
                   >
-                    ₹{{ getActivityTotalCost(act.id) | number }}
+                    ₹{{ getActivityTotalCost(act.id) | localNumber }}
                   </td>
                   <td class="py-3 text-center" (click)="$event.stopPropagation()">
                     <div class="d-flex align-items-center justify-content-center gap-2">

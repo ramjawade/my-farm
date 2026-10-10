@@ -1,10 +1,11 @@
+import { LANGUAGE_STORAGE_KEY } from '../i18n/app-language';
 import { THEME_STORAGE_KEY } from '../theme/theme.service';
 
 /** Keys that identify the signed-in session. */
 const SESSION_KEYS = ['my_farm_session_token', 'my_farm_active_user_id', 'my_farm_session_expiry'];
 
-/** Device preferences that must survive a reload (the saved theme choice). */
-const KEPT_KEYS = [THEME_STORAGE_KEY];
+/** Device preferences that must survive a reload (the saved theme and language choices). */
+const KEPT_KEYS = [THEME_STORAGE_KEY, LANGUAGE_STORAGE_KEY];
 
 /** Current per-farmer keys that must survive a reload (everything else with an app prefix is legacy). */
 const KEPT_PREFIXES = ['my_farm_report_generated_'];

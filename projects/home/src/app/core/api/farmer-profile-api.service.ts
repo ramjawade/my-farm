@@ -1,3 +1,4 @@
+import { DEFAULT_LANGUAGE } from '../i18n/app-language';
 import { Injectable, inject } from '@angular/core';
 import { HttpService } from '../http/http.service';
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
@@ -203,7 +204,7 @@ export class FarmerProfileApiService {
       id: 0,
       fullName: '',
       phone: '',
-      preferredLanguage: 'en',
+      preferredLanguage: DEFAULT_LANGUAGE,
       userRole: 'farmer',
       farmName: '',
       farmArea: 0,
@@ -225,7 +226,7 @@ export class FarmerProfileApiService {
       fullName: item.full_name ?? '',
       phone: item.phone ?? '',
       email: item.email ?? undefined,
-      preferredLanguage: item.preferred_language ?? 'en',
+      preferredLanguage: item.preferred_language ?? DEFAULT_LANGUAGE,
       userRole: roleLabel(item.user_role),
       createdAt: new Date(item.created_at).getTime(),
     };

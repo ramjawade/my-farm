@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
 
+// The app defaults to Marathi; these tests find controls by their English labels.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('my_farm_language', 'en'));
+});
+
 /**
  * Profile settings survive a reload (#327): crops chosen in the profile dialog
  * are written to the backend and read back after the app restarts.

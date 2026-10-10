@@ -1,16 +1,17 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { Component, computed, input, signal } from '@angular/core';
 import { NgClass, NgIf, NgForOf } from '@angular/common';
 
 @Component({
   selector: 'app-weather-advisory',
   standalone: true,
-  imports: [NgClass, NgIf, NgForOf],
+  imports: [TranslatePipe, NgClass, NgIf, NgForOf],
   template: `
     <div class="advisory-panel">
       <div class="advisory-header">
         <h5 class="advisory-title">
           <i class="bi bi-lightbulb-fill"></i>
-          Farming Recommendations
+          {{ 'weather.recommendations' | translate }}
         </h5>
         <button class="btn-expand" (click)="toggleExpand()">
           <i [ngClass]="isExpanded() ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
@@ -19,7 +20,7 @@ import { NgClass, NgIf, NgForOf } from '@angular/common';
 
       <div *ngIf="isExpanded()" class="advisory-content">
         <div *ngIf="advisories().length === 0" class="advisory-empty">
-          <p>No specific recommendations at this time.</p>
+          <p>{{ 'weather.noRecommendations' | translate }}</p>
         </div>
 
         <div *ngFor="let advisory of advisories(); let i = index" class="advisory-item">
@@ -30,7 +31,9 @@ import { NgClass, NgIf, NgForOf } from '@angular/common';
 
       <div *ngIf="!isExpanded() && advisories().length > 0" class="advisory-preview">
         <p class="preview-text">{{ advisories()[0] }}</p>
-        <span class="badge bg-info">{{ advisories().length }} tips</span>
+        <span class="badge bg-info">{{
+          'weather.tipsCount' | translate: { count: advisories().length }
+        }}</span>
       </div>
     </div>
   `,

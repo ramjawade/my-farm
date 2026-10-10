@@ -1,3 +1,4 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import {
   Component,
   ElementRef,
@@ -12,18 +13,22 @@ import {
 import { Chart, registerables } from 'chart.js';
 import { cssColor, cssColorAlpha } from '../../../core/theme/css-token';
 import { ThemeService } from '../../../core/theme/theme.service';
+import { I18n } from '../../../core/i18n/i18n.service';
+import { LocaleService } from '../../../core/i18n/locale.service';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-history-trend',
-  imports: [],
+  imports: [TranslatePipe],
   templateUrl: './history-trend.component.html',
   styleUrl: './history-trend.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HistoryTrendComponent {
   private readonly theme = inject(ThemeService);
+  private readonly i18n = inject(I18n);
+  private readonly locale = inject(LocaleService);
 
   readonly chartCanvas = viewChild<ElementRef<HTMLCanvasElement>>('chartCanvas');
 
@@ -124,6 +129,35 @@ export class HistoryTrendComponent {
     return cssColorAlpha(this.temperatureToken(tempValue), alpha);
   }
 
+  /** Demo data is dated like the sample week it stands for; only the names follow the language. */
+  private axisLabel(index: number): string {
+    const year = new Date().getFullYear();
+    switch (this.activeTabSignal()) {
+      case 'weekly':
+        return this.locale.date(new Date(year, 4, 25 + index), 'EEE');
+      case 'monthly':
+        return this.i18n.t('weather.weekN', { n: index + 1 });
+      default:
+        return this.locale.date(new Date(year, index, 1), 'MMM');
+    }
+  }
+
+  private tooltipTitle(index: number): string {
+    const year = new Date().getFullYear();
+    switch (this.activeTabSignal()) {
+      case 'weekly':
+        return this.locale.date(new Date(year, 4, 25 + index), 'EEEE, d MMMM yyyy');
+      case 'monthly': {
+        const from = new Date(year, 4, 1 + index * 7);
+        const to = new Date(year, 4, 7 + index * 7);
+        const range = `${this.locale.date(from, 'd MMM')} - ${this.locale.date(to, 'd MMM yyyy')}`;
+        return `${this.i18n.t('weather.weekN', { n: index + 1 })} (${range})`;
+      }
+      default:
+        return this.locale.date(new Date(year, index, 1), 'MMMM yyyy');
+    }
+  }
+
   constructor() {
     effect((onCleanup) => {
       // Colours are resolved from the tokens when the chart is built, so
@@ -146,10 +180,10 @@ export class HistoryTrendComponent {
       const chart = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: data.map((d) => d.label),
+          labels: data.map((_, i) => this.axisLabel(i)),
           datasets: [
             {
-              label: 'Temp (°C)',
+              label: `${this.i18n.t('weather.temperature')} (°C)`,
               data: data.map((d) => d.temp),
               yAxisID: 'yTemp',
               borderColor: this.getTemperatureColor(this.avgTemp()),
@@ -165,7 +199,7 @@ export class HistoryTrendComponent {
               pointHoverBorderWidth: 2.5,
             },
             {
-              label: 'Rainfall (mm)',
+              label: `${this.i18n.t('weather.rainfall')} (mm)`,
               data: data.map((d) => d.rain),
               yAxisID: 'yRain',
               borderColor: cssColor('--mf-chart-2'),
@@ -181,7 +215,7 @@ export class HistoryTrendComponent {
               pointHoverBorderWidth: 2.5,
             },
             {
-              label: 'Humidity (%)',
+              label: `${this.i18n.t('weather.humidity')} (%)`,
               data: data.map((d) => d.humidity),
               yAxisID: 'yHum',
               borderColor: cssColor('--mf-humidity'),
@@ -242,60 +276,15 @@ export class HistoryTrendComponent {
               boxPadding: 6,
               usePointStyle: true,
               callbacks: {
-                title: (contexts) => {
-                  if (contexts.length === 0) return '';
-                  const label = contexts[0].label;
-                  const currentYear = new Date().getFullYear();
-                  const tab = this.activeTabSignal();
-                  if (tab === 'weekly') {
-                    const dayMap: { [key: string]: string } = {
-                      Mon: `Monday, May 25, ${currentYear}`,
-                      Tue: `Tuesday, May 26, ${currentYear}`,
-                      Wed: `Wednesday, May 27, ${currentYear}`,
-                      Thu: `Thursday, May 28, ${currentYear}`,
-                      Fri: `Friday, May 29, ${currentYear}`,
-                      Sat: `Saturday, May 30, ${currentYear}`,
-                      Sun: `Sunday, May 31, ${currentYear}`,
-                    };
-                    return dayMap[label] || label;
-                  } else if (tab === 'monthly') {
-                    const weekMap: { [key: string]: string } = {
-                      'Week 1': `Week 1 (May 1 - 7, ${currentYear})`,
-                      'Week 2': `Week 2 (May 8 - 14, ${currentYear})`,
-                      'Week 3': `Week 3 (May 15 - 21, ${currentYear})`,
-                      'Week 4': `Week 4 (May 22 - 28, ${currentYear})`,
-                    };
-                    return weekMap[label] || label;
-                  } else {
-                    const monthMap: { [key: string]: string } = {
-                      Jan: `January ${currentYear}`,
-                      Feb: `February ${currentYear}`,
-                      Mar: `March ${currentYear}`,
-                      Apr: `April ${currentYear}`,
-                      May: `May ${currentYear}`,
-                      Jun: `June ${currentYear}`,
-                      Jul: `July ${currentYear}`,
-                      Aug: `August ${currentYear}`,
-                      Sep: `September ${currentYear}`,
-                      Oct: `October ${currentYear}`,
-                      Nov: `November ${currentYear}`,
-                      Dec: `December ${currentYear}`,
-                    };
-                    return monthMap[label] || label;
-                  }
-                },
+                title: (contexts) =>
+                  contexts.length === 0 ? '' : this.tooltipTitle(contexts[0].dataIndex),
                 label: (context) => {
                   const value = context.parsed.y;
                   if (value === null || value === undefined) return '';
-                  const label = context.dataset.label || '';
-                  if (label.includes('Temp')) {
-                    return ` Temp: ${value}°C`;
-                  } else if (label.includes('Rainfall')) {
-                    return ` Rainfall: ${value}mm`;
-                  } else if (label.includes('Humidity')) {
-                    return ` Humidity: ${value}%`;
-                  }
-                  return ` ${label}: ${value}`;
+                  const units = ['°C', 'mm', '%'];
+                  const names = ['weather.temperature', 'weather.rainfall', 'weather.humidity'];
+                  const i = context.datasetIndex;
+                  return ` ${this.i18n.t(names[i] ?? '')}: ${value}${units[i] ?? ''}`;
                 },
               },
             },

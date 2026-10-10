@@ -1,13 +1,18 @@
 import { inject, provideAppInitializer } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
+import { firstValueFrom } from 'rxjs';
 
 import { LanguageService } from './language.service';
 
 /**
- * Ensures `LanguageService` is constructed (and its sync effect starts
- * watching `AuthService.currentUser`) before the app renders.
+ * Constructs `LanguageService` (its effect keeps the language in step with the
+ * farmer and the device) and loads the starting language's strings before the
+ * first render, so the app never flashes English before Marathi.
  */
 export function provideLanguageInitializer() {
   return provideAppInitializer(() => {
-    inject(LanguageService);
+    const translate = inject(TranslateService);
+    const language = inject(LanguageService).language();
+    return firstValueFrom(translate.use(language));
   });
 }

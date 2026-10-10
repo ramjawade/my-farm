@@ -1,3 +1,6 @@
+import { LocaleService } from '../../core/i18n/locale.service';
+import { I18n } from '../../core/i18n/i18n.service';
+import { LocalNumberPipe } from '../../core/i18n/localized.pipes';
 import {
   Component,
   inject,
@@ -22,12 +25,20 @@ import { ToastService } from 'shared';
 @Component({
   standalone: true,
   selector: 'app-profile',
-  imports: [CommonModule, ProfileEditDialogComponent, TranslatePipe, ReferenceNamePipe],
+  imports: [
+    LocalNumberPipe,
+    CommonModule,
+    ProfileEditDialogComponent,
+    TranslatePipe,
+    ReferenceNamePipe,
+  ],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileComponent implements OnInit {
+  private readonly locale = inject(LocaleService);
+  private readonly i18n = inject(I18n);
   private readonly authService = inject(AuthService);
   private readonly farmLookup = inject(FarmLookupService);
   private readonly toast = inject(ToastService);
@@ -99,15 +110,20 @@ export class ProfileComponent implements OnInit {
       .toUpperCase();
   });
 
+  /** The role in the active language ("Farmer" -> "शेतकरी"); unknown roles show as stored. */
+  readonly roleLabel = computed(() => {
+    const role = this.currentUser()?.userRole;
+    if (!role) return this.i18n.t('profile.farmerRole');
+    const key = 'profileEdit.options.' + role.replace(/\s+/g, '');
+    const label = this.i18n.t(key);
+    return label === key ? role : label;
+  });
+
   readonly memberSince = computed(() => {
     const time = this.currentUser()?.createdAt;
     if (!time) return 'N/A';
     try {
-      return new Date(time).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
+      return this.locale.date(time, 'd MMMM yyyy');
     } catch {
       return 'N/A';
     }
@@ -145,7 +161,7 @@ export class ProfileComponent implements OnInit {
       await this.authService.updateProfile(updates);
     } catch (error) {
       console.error('Failed to save profile', error);
-      this.toast.error("Couldn't save your changes. Check your connection and try again.");
+      this.toast.error(this.i18n.t('common.saveFailed'));
     }
   }
 
