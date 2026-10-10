@@ -1,0 +1,963 @@
+<title>MyFarm Design System</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap">
+<style>
+
+/* Layout: one app, two device frames (desktop sidebar app / phone with bottom tabs), each with its own navigation state */
+:root{
+  --bg:#eef1ec; --surface:#ffffff; --surface2:#f4f6f2; --line:#dde3d8;
+  --fg:#18231a; --muted:#5d6b5f;
+  --leaf:#2f7a3f; --leaf-soft:#dcefdf; --leaf-ink:#1d5a2b;
+  --sun:#c98a14; --sun-soft:#faefd2;
+  --sky:#2b74b8; --sky-soft:#dcebf8;
+  --rose:#b83d3d; --rose-soft:#f8dfdf;
+  --shell:#d5dbd0; --shadow:0 12px 40px rgba(24,35,26,.14);
+  --display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --body:'Figtree','Segoe UI',system-ui,sans-serif;
+  --on-leaf:#fff; --on-rose:#fff; --on-sun:#18231a;
+  --clay:#b5483a; --grape:#6a4aa0; --ember:#c4682a;
+  --dim:rgba(0,0,0,.4); --dim-strong:rgba(0,0,0,.5);
+  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:24px; --s-6:32px;
+  --r-xs:3px; --r-sm:8px; --r-md:10px; --r-lg:12px; --r-xl:14px; --r-sheet:18px; --r-pill:999px;
+  --shadow-1:0 2px 8px rgba(0,0,0,.2); --shadow-2:0 6px 18px rgba(0,0,0,.25); --shadow-3:0 20px 50px rgba(0,0,0,.35);
+  --z-float-dim:4; --z-float:5; --z-dim:7; --z-dialog:8; --z-toast:9;
+  --dur-fast:.15s; --dur-base:.22s; --dur-glow:.9s; --ease:ease-out;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1611; --surface:#17211a; --surface2:#1d2a20; --line:#2a3a2d;
+  --fg:#e8efe8; --muted:#9bab9d;
+  --leaf:#5fbf72; --leaf-soft:#1f3a26; --leaf-ink:#a5e0b0;
+  --sun:#e3a93a; --sun-soft:#3a2f14;
+  --sky:#6aaee6; --sky-soft:#17304a;
+  --rose:#e07878; --rose-soft:#3f2020;
+  --shell:#0a0f0b; --on-leaf:#0f1611; --on-rose:#0f1611; --on-sun:#0f1611; --shadow:0 12px 40px rgba(0,0,0,.5);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1611; --surface:#17211a; --surface2:#1d2a20; --line:#2a3a2d;
+  --fg:#e8efe8; --muted:#9bab9d;
+  --leaf:#5fbf72; --leaf-soft:#1f3a26; --leaf-ink:#a5e0b0;
+  --sun:#e3a93a; --sun-soft:#3a2f14;
+  --sky:#6aaee6; --sky-soft:#17304a;
+  --rose:#e07878; --rose-soft:#3f2020;
+  --shell:#0a0f0b; --on-leaf:#0f1611; --on-rose:#0f1611; --on-sun:#0f1611; --shadow:0 12px 40px rgba(0,0,0,.5);
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:14px;line-height:1.45}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--leaf);outline-offset:2px}
+
+.page{max-width:1640px;margin:0 auto;padding-inline:16px;padding-block:20px 40px}
+.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;margin-bottom:20px}
+.top h1{font-family:var(--display);font-size:clamp(1.5rem,3vw,2rem);margin:0;line-height:1.1;text-wrap:balance}
+.top p{margin:4px 0 0;color:var(--muted);max-width:60ch}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--r-pill);background:var(--surface);padding:3px}
+.seg button{border:0;background:none;padding:6px 14px;border-radius:var(--r-pill);color:var(--muted);font-weight:500}
+.seg button[aria-pressed="true"]{background:var(--leaf);color:var(--on-leaf)}
+
+.stage{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start;justify-content:center}
+.col{min-width:0}
+.col.d{flex:1 1 760px}
+.col.m{flex:0 0 auto}
+.stage[data-view="desktop"] .col.m,.stage[data-view="mobile"] .col.d{display:none}
+.stage[data-view="mobile"]{justify-content:center}
+.cap{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:600}
+
+/* Device frames */
+.desk-wrap{width:100%;position:relative}
+.desk{width:1120px;height:720px;transform-origin:top left;border-radius:var(--r-xl);background:var(--shell);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.chrome{height:34px;display:flex;align-items:center;gap:var(--s-2);padding:0 14px;flex:none}
+.chrome i{width:11px;height:11px;border-radius:50%;background:var(--line);display:block}
+.chrome .url{margin-left:14px;flex:1;max-width:380px;background:var(--surface);color:var(--muted);border-radius:var(--r-sm);font-size:12px;padding:3px 10px}
+.phone{width:372px;height:760px;background:var(--shell);border-radius:44px;padding:12px;box-shadow:var(--shadow)}
+.phone .scr{height:100%;border-radius:34px;overflow:hidden;display:flex;flex-direction:column;background:var(--bg);position:relative}
+.status{display:flex;justify-content:space-between;padding:10px 22px 4px;font-size:12px;font-weight:600;flex:none;background:var(--surface)}
+
+/* App shell */
+.app{position:relative;display:flex;flex:1;min-height:0;background:var(--bg)}
+.side{width:204px;flex:none;background:var(--surface);border-right:1px solid var(--line);padding:18px 12px;display:flex;flex-direction:column;gap:var(--s-1)}
+.brand{font-family:var(--display);font-weight:700;font-size:20px;display:flex;align-items:center;gap:var(--s-2);padding:0 8px 14px;color:var(--leaf-ink)}
+.brand svg{color:var(--leaf)}
+.nav{display:flex;align-items:center;gap:10px;border:0;background:none;text-align:left;padding:9px 10px;border-radius:var(--r-sm);color:var(--muted);font-weight:500;width:100%}
+.nav:hover{background:var(--surface2)}
+.nav[aria-current="page"]{background:var(--leaf-soft);color:var(--leaf-ink)}
+.side .who{margin-top:auto;display:flex;gap:10px;align-items:center;padding:10px 8px;border-top:1px solid var(--line)}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--sun-soft);color:var(--sun);display:grid;place-items:center;font-weight:700;flex:none}
+.main{flex:1;min-width:0;overflow-y:auto;padding:var(--s-5) var(--s-5) var(--s-6)}
+.mb .main{padding:var(--s-4) var(--s-4) 90px}
+.tabs{display:flex;background:var(--surface);border-top:1px solid var(--line);padding:6px 4px 14px;flex:none}
+.tabs .nav{flex-direction:column;gap:var(--s-1);font-size:11px;padding:6px 2px;justify-content:center;align-items:center;text-align:center}
+.fab{position:absolute;right:16px;bottom:84px;width:48px;height:48px;border-radius:50%;border:0;background:var(--leaf);color:var(--on-leaf);display:grid;place-items:center;box-shadow:var(--shadow-2)}
+
+/* Content */
+h2.pt{font-family:var(--display);font-size:24px;margin:0;line-height:1.15}
+.mb h2.pt{font-size:21px}
+.sub{color:var(--muted);margin:2px 0 0}
+.head{flex-wrap:wrap;display:flex;justify-content:space-between;align-items:flex-start;gap:var(--s-3);margin-bottom:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px}
+.card h3{font-family:var(--display);font-size:16px;margin:0 0 10px;display:flex;justify-content:space-between;align-items:center;gap:var(--s-2)}
+.grid{display:grid;gap:var(--s-3)}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.mb .g4{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s-3)}
+.g2{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
+.mb .g2{grid-template-columns:minmax(0,1fr)}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.mb .g3{grid-template-columns:minmax(0,1fr)}
+.stack>*+*{margin-top:var(--s-3)}
+.kpi small{color:var(--muted);display:block;font-size:12px}
+.kpi b{font-family:var(--display);font-size:24px;line-height:1.2;font-variant-numeric:tabular-nums}
+.mb .kpi b{font-size:20px}
+.kpi span{font-size:12px;color:var(--muted)}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:var(--r-pill);background:var(--leaf-soft);color:var(--leaf-ink);white-space:nowrap}
+.badge.sun{background:var(--sun-soft);color:var(--sun)}
+.badge.sky{background:var(--sky-soft);color:var(--sky)}
+.badge.rose{background:var(--rose-soft);color:var(--rose)}
+.badge.mute{background:var(--surface2);color:var(--muted);border:1px solid var(--line)}
+button.badge{border:0;cursor:pointer;font-family:inherit}
+button.badge.mute{border:1px solid var(--line)}
+.review{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px;margin-bottom:24px}
+.review .rh{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.review h2{font-family:var(--display);font-size:18px;margin:0}
+.review .meter{display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 220px;max-width:340px}
+.review .meter .bar{flex:1}
+.review .meter span{font-size:12px;color:var(--muted);white-space:nowrap}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.rc{border:1px solid var(--line);border-radius:var(--r-md);padding:10px;display:flex;flex-direction:column;gap:var(--s-2);min-width:0}
+.rc.cur{border-color:var(--leaf)}
+.rc .open{border:0;background:none;text-align:left;font-weight:600;padding:0;display:flex;justify-content:space-between;gap:var(--s-2);align-items:center}
+.rc .seg{display:flex}
+.rc .seg button{flex:1;padding:4px 4px;font-size:12px;white-space:nowrap}
+.rdata{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--muted)}
+.rnote{margin:10px 0 0;font-size:12px;color:var(--muted)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:var(--r-sm);padding:var(--s-2) var(--s-3);font-weight:600;white-space:nowrap}
+.btn.lg{padding:var(--s-3) var(--s-4)}
+.btn.p{background:var(--leaf);border-color:var(--leaf);color:var(--on-leaf)}
+.chips{display:flex;gap:var(--s-2);flex-wrap:wrap;margin-bottom:12px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:var(--r-pill);padding:4px 12px;font-size:13px;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--leaf-soft);color:var(--leaf-ink);border-color:var(--leaf)}
+.row{display:flex;gap:var(--s-3);align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.row .grow{flex:1;min-width:0}
+.row .grow b{display:block}
+.row small{color:var(--muted)}
+.amt{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.bar{height:8px;background:var(--surface2);border-radius:var(--r-pill);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--leaf);border-radius:var(--r-pill)}
+.alert{display:flex;gap:10px;background:var(--sun-soft);color:var(--fg);border-radius:var(--r-md);padding:12px;border:1px solid var(--sun)}
+.alert svg{color:var(--sun);flex:none}
+.brief{background:var(--leaf-soft);border-color:transparent}
+.brief h3{color:var(--leaf-ink)}
+.brief p{margin:0 0 6px}
+.crop{cursor:pointer;text-align:left;width:100%}
+.crop[aria-pressed="true"]{border-color:var(--leaf);box-shadow:0 0 0 1px var(--leaf)}
+.steps{display:flex;gap:var(--s-1);margin:10px 0 6px}
+.steps i{flex:1;height:6px;border-radius:var(--r-xs);background:var(--line)}
+.steps i.on{background:var(--leaf)}
+.steps i.now{background:var(--sun)}
+.stl{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+.tl{border-left:2px solid var(--line);margin-left:6px;padding-left:16px}
+.tl>div{position:relative;padding-bottom:14px}
+.tl>div::before{content:"";position:absolute;left:-23px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--leaf);border:2px solid var(--surface)}
+.tl>div.plan::before{background:var(--surface);border-color:var(--sun);outline:0}
+.map{width:100%;height:auto;border-radius:var(--r-md);background:var(--surface2);display:block}
+.map .land{cursor:pointer;vector-effect:non-scaling-stroke}
+.map .land:hover{fill-opacity:.6!important}
+.map text{font-weight:600;pointer-events:none;font-family:var(--body)}
+.map-live{touch-action:none;cursor:grab;user-select:none}
+.map-live.drawing{cursor:crosshair}
+.mapbox{position:relative;border-radius:var(--r-md);overflow:hidden}
+.mapbox .map{border-radius:0}
+.msearch{position:absolute;top:10px;left:10px;display:flex;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-pill);padding:2px 4px 2px 12px;width:230px;max-width:calc(100% - 140px);box-shadow:var(--shadow-1)}
+.msearch input{flex:1;min-width:0;border:0;background:none;color:var(--fg);font:inherit;padding:6px 0}
+.msearch input:focus-visible{outline:none}
+.msearch button,.ibtn{border:0;background:var(--surface);color:var(--fg);width:34px;height:34px;display:grid;place-items:center;padding:0;border-radius:50%}
+.mtools{position:absolute;top:10px;right:10px;display:flex;gap:6px;align-items:flex-start}
+.mtools .seg button{padding:5px 10px;font-size:12px}
+.mtools .seg,.mtools .ibtn{box-shadow:var(--shadow-1)}
+.mtools .ibtn{border:1px solid var(--line);border-radius:var(--r-md);width:34px;height:34px}
+.mzoom{position:absolute;right:10px;bottom:28px;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;background:var(--surface);box-shadow:var(--shadow-1)}
+.mzoom .ibtn{border-radius:0;width:36px;height:36px}
+.mzoom .ibtn+.ibtn{border-top:1px solid var(--line)}
+.mapbox.mob .msearch{width:min(320px,calc(100% - 66px));max-width:none}
+.mapbox.mob .mzoom{bottom:10px}
+.flow{display:flex;gap:var(--s-2);align-items:center;flex-wrap:wrap;margin:0 4px 8px}
+.fld{display:flex;flex-direction:column;gap:var(--s-1);margin-bottom:10px}
+.fld label{font-size:12px;font-weight:600;color:var(--muted)}
+.fld input,.fld select,.fld textarea{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:var(--r-sm);padding:8px 10px;font:inherit;min-width:0;width:100%}
+.fld .err{color:var(--rose);font-size:12px}
+.req::after{content:" *";color:var(--rose)}
+.frow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 var(--s-4)}
+.mb .frow{grid-template-columns:minmax(0,1fr)}
+.rad{display:flex;gap:var(--s-2) var(--s-4);flex-wrap:wrap}
+.rad label{display:flex;gap:6px;align-items:center;font-size:14px;font-weight:500;color:var(--fg)}
+.rad input{width:auto}
+.areabox{background:var(--surface2);border-radius:var(--r-sm);padding:8px 10px;font-weight:600;font-variant-numeric:tabular-nums}
+.toast{position:absolute;left:50%;transform:translateX(-50%);bottom:18px;z-index:var(--z-toast);max-width:calc(100% - 32px);width:max-content;padding:10px 14px;border-radius:var(--r-md);font-size:13px;font-weight:500;box-shadow:var(--shadow-2);background:var(--leaf-soft);color:var(--leaf-ink);border:1px solid var(--leaf)}
+.toast.warn{background:var(--sun-soft);color:var(--fg);border-color:var(--sun)}
+.mb .toast{bottom:88px}
+.row.sel{background:var(--leaf-soft);border-radius:var(--r-md);box-shadow:inset 0 0 0 1px var(--leaf);padding-inline:10px;margin-inline:-10px;border-top-color:transparent}
+.row.sel+.row{border-top-color:transparent}
+@media (prefers-reduced-motion:no-preference){.row.pulse{animation:selglow var(--dur-glow) var(--ease)}@keyframes selglow{from{box-shadow:inset 0 0 0 1px var(--leaf),0 0 0 7px color-mix(in srgb,var(--leaf) 30%,transparent)}to{box-shadow:inset 0 0 0 1px var(--leaf),0 0 0 0 transparent}}}
+.cropmain{display:block;width:100%;text-align:left;border:0;background:none;padding:16px;border-radius:var(--r-lg);color:inherit}
+.crop.selc{border-color:var(--leaf);box-shadow:0 0 0 1px var(--leaf)}
+.ldh .ren{width:28px;height:28px}
+.rn{display:flex;align-items:center;gap:var(--s-1);flex:1 1 100%;min-width:0}
+.rn input{flex:1;min-width:0;font-family:var(--display);font-weight:700;font-size:16px;border:1px solid var(--leaf);border-radius:var(--r-sm);padding:5px 9px;background:var(--surface);color:var(--fg);box-shadow:0 0 0 3px var(--leaf-soft)}
+.rn input.bad{border-color:var(--rose);box-shadow:0 0 0 3px var(--rose-soft)}
+.ibtn2.ok{color:var(--leaf-ink)}
+.ibtn2.ok:hover{background:var(--leaf-soft);color:var(--leaf-ink)}
+.rnerr{flex:1 1 100%;color:var(--rose);font-size:12px;margin-top:-4px}
+.dial{position:absolute;right:16px;bottom:84px;z-index:var(--z-float);display:flex;flex-direction:column-reverse;align-items:flex-end;gap:var(--s-3)}
+.dial .fab{position:static}
+.fab.mini{width:42px;height:42px}
+.dact{display:flex;align-items:center;gap:10px}
+.dlab{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:var(--r-sm);padding:5px 10px;font-size:13px;font-weight:600;box-shadow:var(--shadow-1);white-space:nowrap}
+.scrim{position:absolute;inset:0;background:var(--dim);z-index:var(--z-float-dim);border:0;padding:0;border-radius:0;cursor:default}
+@media (prefers-reduced-motion:no-preference){.dact{animation:dpop var(--dur-fast) var(--ease)}@keyframes dpop{from{opacity:0;transform:translateY(8px)}}}
+.mscrim{position:absolute;inset:0;background:var(--dim-strong);z-index:var(--z-dim);border:0;padding:0;border-radius:0;cursor:default}
+.modal{position:absolute;z-index:var(--z-dialog);left:50%;top:50%;transform:translate(-50%,-50%);width:min(380px,calc(100% - 32px));background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:var(--r-xl);padding:20px;box-shadow:var(--shadow-3)}
+.modal h3{font-family:var(--display);font-size:18px;margin:0 0 6px}
+.modal p{margin:0 0 18px;color:var(--muted)}
+.modal .mx{position:absolute;top:10px;right:10px}
+.msum{display:flex;align-items:center;gap:10px;background:var(--surface2);border-radius:var(--r-md);padding:10px 12px;margin-bottom:12px}
+.msum b{display:block}.msum small{color:var(--muted)}
+.mlist{margin:0 0 8px;padding-left:18px;color:var(--muted)}
+.mlist li+li{margin-top:2px}
+.modal p.hint{margin:0 0 16px}
+.tundo{margin-left:14px;border:0;background:none;color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:0}
+.mb .modal{top:auto;bottom:0;left:0;right:0;transform:none;width:auto;border-radius:var(--r-sheet) var(--r-sheet) 0 0;border-bottom:0;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+.mb .mact{flex-direction:column-reverse}
+.mb .mact .btn{max-width:none;flex:none;width:100%;padding:var(--s-3) var(--s-4)}
+.mact .btn.danger{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+@media (prefers-reduced-motion:no-preference){.mscrim{animation:cfade var(--dur-fast) var(--ease)}.modal{animation:cpop var(--dur-base) var(--ease)}.mb .modal,.mb .modal.dB{animation:csheet var(--dur-base) var(--ease)}
+@keyframes cfade{from{opacity:0}}@keyframes cpop{from{opacity:0;transform:translate(-50%,-47%) scale(.96)}}@keyframes csheet{from{transform:translateY(100%)}}}
+.t-warn{--tone:var(--sun);--tone-soft:var(--sun-soft);--tone-ink:var(--on-sun)}
+.t-ok{--tone:var(--leaf);--tone-soft:var(--leaf-soft);--tone-ink:var(--on-leaf)}
+.t-danger{--tone:var(--rose);--tone-soft:var(--rose-soft);--tone-ink:var(--on-rose)}
+.tbtn{border:1px solid var(--tone);background:var(--tone);color:var(--tone-ink);border-radius:var(--r-sm);padding:var(--s-2) var(--s-3);font-weight:600;white-space:nowrap}
+.tx{border:0;background:none;color:var(--fg);padding:var(--s-2) var(--s-3);border-radius:var(--r-sm);font-weight:600;white-space:nowrap}
+.tx:hover{background:var(--surface2)}
+.modal.dB{width:min(340px,calc(100% - 32px));padding:26px 22px 18px;text-align:center}
+.dB-i{width:56px;height:56px;border-radius:50%;background:var(--tone-soft);color:var(--tone);display:grid;place-items:center;margin:0 auto 14px}
+.modal.dB h3{font-size:19px;margin:0 0 6px}
+.modal.dB p{margin:0 auto 20px;max-width:30ch}
+.dB-a{display:flex;flex-wrap:wrap;gap:var(--s-2)}
+.dB-a>*{flex:1 1 auto;padding:var(--s-3) var(--s-4)}
+.dB-h{display:none}
+.mb .dB-h{display:block;width:36px;height:4px;border-radius:2px;background:var(--line);margin:-10px auto 16px}
+.mb .modal.dB{width:auto;left:0;right:0;top:auto;bottom:0;transform:none;border-radius:var(--r-sheet) var(--r-sheet) 0 0;border-bottom:0}
+.mb .modal.dB{padding:26px 22px calc(18px + env(safe-area-inset-bottom,0px))}
+.modal.dB{background:var(--surface)}
+.v-warn .mico{background:var(--sun-soft);color:var(--sun)}
+.v-ok .mico{background:var(--leaf-soft);color:var(--leaf-ink)}
+.btn.warn{background:var(--sun);border-color:var(--sun);color:var(--on-sun)}
+.toast.err{background:var(--rose-soft);color:var(--fg);border-color:var(--rose)}
+.toast.static{position:static;transform:none;display:inline-flex;align-items:center;box-shadow:none;max-width:100%}
+.ds{display:grid;grid-template-columns:190px minmax(0,1fr);gap:28px;align-items:start}
+.ds-nav{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);display:flex;flex-direction:column;gap:2px}
+.ds-nav button{border:0;background:none;text-align:left;padding:7px 10px;border-radius:var(--r-sm);color:var(--muted);font-weight:500;white-space:nowrap}
+.ds-nav button:hover{background:var(--surface);color:var(--fg)}
+.ds-nav small{display:block;padding:10px 10px 4px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+@media (max-width:767px){.ds{grid-template-columns:minmax(0,1fr)}.ds-nav{position:static;flex-direction:row;overflow-x:auto;gap:6px;padding-bottom:6px}.ds-nav small{display:none}.ds-nav button{border:1px solid var(--line);border-radius:var(--r-pill)}}
+.ds-main{min-width:0}
+.ds-sec{margin-bottom:44px;scroll-margin-top:16px}
+.ds-sec h2{font-family:var(--display);font-size:22px;margin:0 0 4px}
+.ds-sec>p{color:var(--muted);margin:0 0 16px;max-width:70ch}
+.ds-sec h3{font-family:var(--display);font-size:16px;margin:22px 0 8px}
+.ds-lab{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:16px 0 8px}
+.ds-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.sw{border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;background:var(--surface)}
+.sw i{display:block;height:44px;border-bottom:1px solid var(--line)}
+.sw div{padding:6px 8px;font-size:12px}.sw b{display:block;font-family:ui-monospace,Menlo,monospace;font-size:11px}
+.sw span{color:var(--muted)}
+.ds-demo{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.ds-demo.col{flex-direction:column;align-items:stretch}
+.ds-type div{padding:8px 0;border-top:1px solid var(--line);display:flex;gap:var(--s-4);align-items:baseline;flex-wrap:wrap}
+.ds-type div:first-child{border-top:0}
+.ds-type small{color:var(--muted);min-width:150px}
+.ds-var{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.ds-col{flex:1 1 420px;min-width:0}
+.ds-col.m{flex:0 0 auto;width:min(340px,100%)}
+.ds-col .ds-lab{margin-top:0}
+.ds-stage{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--bg);min-height:400px;flex:1 1 420px;min-width:0}
+.ds-stage.mb{flex:0 0 auto;width:100%;min-height:500px;max-width:100%}
+.ds-stage .skel{padding:16px;display:grid;gap:10px}
+.ds-stage .skel i{display:block;height:12px;border-radius:var(--r-sm);background:var(--line)}
+.ds-res{position:absolute;left:10px;top:10px;font-size:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-pill);padding:3px 10px;color:var(--muted);z-index:9}
+.ds-rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:14px}
+.ds-rules div{border:1px solid var(--line);border-radius:var(--r-md);padding:10px 12px;background:var(--surface);font-size:13px}
+.ds-rules b{display:block;font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px}
+.mico{width:40px;height:40px;border-radius:50%;background:var(--rose-soft);color:var(--rose);display:grid;place-items:center;margin-bottom:12px}
+.mact{display:flex;gap:var(--s-2);justify-content:flex-end}
+.mact .btn{flex:1;max-width:160px;padding:var(--s-2) var(--s-3)}
+.lrow{flex:1;min-width:0;display:flex;gap:var(--s-3);align-items:center;border:0;background:none;text-align:left;padding:0}
+.lrow .grow{flex:1;min-width:0}
+.ibtn2{border:0;background:none;color:var(--muted);width:34px;height:34px;display:grid;place-items:center;border-radius:var(--r-sm);padding:0;flex:none}
+.ibtn2:hover{color:var(--rose);background:var(--rose-soft)}
+.btn.danger{background:var(--rose);border-color:var(--rose);color:var(--on-rose)}
+.cdel{flex-wrap:wrap;background:var(--rose-soft);border-radius:var(--r-sm);padding:8px 10px;margin:4px 0}
+.ldet{border-top:1px solid var(--line);margin-top:10px;padding:10px 4px 2px}
+.ldh{display:flex;align-items:center;gap:var(--s-2);flex-wrap:wrap;margin-bottom:10px}
+.ldh b{font-family:var(--display);font-size:16px}
+.lnk{margin-left:auto;border:0;background:none;padding:4px 0;color:var(--leaf-ink);font-weight:600;display:inline-flex;align-items:center;gap:2px;text-decoration:underline;text-underline-offset:3px}
+.lnk:hover{color:var(--leaf)}
+.ldg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--s-2)}
+.mb .ldg{grid-template-columns:repeat(2,minmax(0,1fr))}
+.ldg small{display:block;color:var(--muted);font-size:12px}
+.ldg b{font-variant-numeric:tabular-nums}
+.mhint{max-width:420px;position:absolute;top:10px;left:10px;right:10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-pill);padding:7px 14px;text-align:center;font-size:13px;box-shadow:var(--shadow-1)}
+.mhint b{font-family:var(--display);color:var(--leaf-ink);margin-left:6px}
+.mbar{max-width:380px;position:absolute;left:10px;right:58px;bottom:10px;display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:6px;box-shadow:var(--shadow-1)}
+.mbar .btn{flex:1;padding:6px 4px}
+.legflat{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted);margin:8px 4px 0}
+.legflat i{display:inline-block;width:9px;height:9px;border-radius:var(--r-xs);margin-right:4px}
+.fc{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;text-align:center}
+.mb .fc{grid-template-columns:repeat(4,minmax(0,1fr))}
+.fc div{background:var(--surface2);border-radius:var(--r-md);padding:8px 2px}
+.fc b{display:block;font-variant-numeric:tabular-nums}
+.fc small{color:var(--muted)}
+.chat{display:flex;flex-direction:column;gap:10px}
+.msg{max-width:86%;padding:9px 12px;border-radius:var(--r-xl);white-space:pre-line}
+.msg.u{align-self:flex-end;background:var(--leaf);color:var(--on-leaf);border-bottom-right-radius:4px}
+.msg.a{align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:4px}
+.ask{display:flex;gap:var(--s-2);margin-top:12px}
+.ask input{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:var(--r-sm);padding:8px 12px;font:inherit}
+.hint{font-size:12px;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);margin-top:8px}
+
+/* Dashboard variants */
+.trow{display:flex;gap:var(--s-3);align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.bar+.trow{border-top:0}
+.trow .grow{flex:1;min-width:0}.trow b{display:block}.trow small{color:var(--muted)}
+.chk{width:28px;height:28px;border-radius:var(--r-sm);border:2px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--on-leaf);flex:none;padding:0}
+.chk[aria-pressed="true"]{background:var(--leaf);border-color:var(--leaf)}
+.dn{text-decoration:line-through;color:var(--muted)}
+.strip{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.strip small{display:block;color:var(--muted);font-size:12px}
+.strip b{font-family:var(--display);font-size:17px}
+.strip .st{flex:1 1 160px;min-width:0}
+.dseg{display:flex;width:100%;max-width:380px;margin-bottom:14px}
+.dseg button{flex:1;white-space:nowrap}
+.wxn{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.wxn b{font-family:var(--display);font-size:38px;line-height:1}
+.wxn .fc{flex:1 1 180px;grid-template-columns:repeat(3,minmax(0,1fr))}
+/* Chat */
+.main.chatpage,.mb .main.chatpage{padding:0;overflow:hidden;display:flex;flex-direction:column}
+.chatpage>*{animation:none!important}
+.cwrap{display:flex;flex:1;min-width:0;min-height:0}
+.cside{width:236px;flex:none;border-right:1px solid var(--line);background:var(--surface);padding:14px 10px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.cside h4{margin:12px 8px 4px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.cside .nav{font-size:13px;padding:7px 8px}
+.cpane{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
+.ch{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--surface);flex:none}
+.ch .grow{flex:1;min-width:0}
+.ch b{display:block;font-family:var(--display);font-size:16px;line-height:1.2}
+.ch small{color:var(--muted);display:flex;align-items:center;gap:var(--s-1)}
+.ch small::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--leaf)}
+.cav{width:34px;height:34px;border-radius:50%;background:var(--leaf-soft);color:var(--leaf-ink);display:grid;place-items:center;flex:none}
+.cm{flex:1;min-height:0;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+.day{align-self:center;font-size:11px;color:var(--muted);background:var(--surface2);border-radius:var(--r-pill);padding:2px 10px}
+.bub{display:flex;gap:var(--s-2);align-items:flex-end;max-width:90%;min-width:0}
+.bub.u{align-self:flex-end;flex-direction:row-reverse}
+.bub .cav{width:28px;height:28px}
+.bub .bd{min-width:0}
+.cb{padding:9px 13px;border-radius:var(--r-xl);white-space:pre-line;overflow-wrap:anywhere}
+.bub.a .cb{background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:4px}
+.bub.u .cb{background:var(--leaf);color:var(--on-leaf);border-bottom-right-radius:4px}
+.ts{font-size:11px;color:var(--muted);margin-top:3px}
+.bub.u .ts{text-align:right}
+.mcard{margin-top:6px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:4px 12px;min-width:220px}
+.mrow{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.mrow:first-child{border-top:0}
+.mrow>div{flex:1;min-width:0}
+.mrow b{display:block}
+.mrow small{color:var(--muted)}
+.dots{display:inline-flex;gap:var(--s-1);padding:4px 2px}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--muted);display:block}
+@media (prefers-reduced-motion:no-preference){.dots i{animation:bl 1s infinite ease-in-out}.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}@keyframes bl{0%,80%,100%{opacity:.25}40%{opacity:1}}}
+.cq{display:flex;gap:6px;overflow-x:auto;padding:8px 16px 0;flex:none;scrollbar-width:none}
+.cq .chip{white-space:nowrap;flex:none}
+.cc{display:flex;gap:var(--s-2);align-items:center;padding:10px 16px 14px;flex:none}
+.cc input{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:var(--r-pill);padding:10px 16px;font:inherit}
+.send{width:40px;height:40px;border-radius:50%;border:0;background:var(--leaf);color:var(--on-leaf);display:grid;place-items:center;flex:none}
+.mb .cside{display:none}
+@media (prefers-reduced-motion:no-preference){.main.enter>*{animation:in var(--dur-base) var(--ease)}@keyframes in{from{opacity:.4;transform:translateY(4px)}}}
+
+.dshead{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;margin-bottom:24px}
+.dshead h1{font-family:var(--display);font-size:clamp(1.5rem,3vw,2rem);margin:0;line-height:1.1}
+.dshead p{margin:4px 0 0;color:var(--muted);max-width:62ch}
+.dslink{display:inline-block;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:var(--r-pill);padding:7px 16px;font-weight:600;text-decoration:none}
+.dslink:hover{border-color:var(--leaf);color:var(--leaf-ink)}
+/* ---- Batch 1: foundations and components ---- */
+.ds-note{font-size:12px;color:var(--muted);margin:8px 0 0;max-width:80ch}
+.ds-dev{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--bg);padding:var(--s-4)}
+.ds-dev.flush{padding:0}
+.ds-scroll{overflow-x:auto}
+.ds-scroll>.ds-dev{min-width:620px}
+.ds-tw{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface)}
+.ds-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.ds-tbl th,.ds-tbl td{text-align:left;padding:8px 12px;border-top:1px solid var(--line);vertical-align:top}
+.ds-tbl th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-top:0;white-space:nowrap}
+.ds-tbl code{font-family:ui-monospace,Menlo,monospace;font-size:12px;white-space:nowrap}
+.ds-tbl td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.ds-fix{margin-top:12px;border:1px solid var(--sun);background:var(--sun-soft);border-radius:var(--r-md);padding:10px 12px;font-size:13px}
+.ds-fix>summary{cursor:pointer;font-weight:600}
+.ds-more{margin-top:12px}
+.ds-more>summary{cursor:pointer;font-weight:600;color:var(--muted);padding:4px 0 8px}
+.ds-fix ul{margin:4px 0 0;padding-left:18px}
+.sk{display:grid;gap:10px}
+.sk i{display:block;height:12px;border-radius:var(--r-sm);background:var(--line)}
+.sp-row{display:flex;align-items:center;gap:var(--s-3);padding:6px 0}
+.sp-row code{min-width:64px;font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.sp-bar{height:12px;background:var(--leaf);border-radius:var(--r-xs)}
+.sp-pad{background:var(--leaf-soft);border:1px dashed var(--leaf)}
+.rd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:var(--s-3)}
+.rd-box{height:64px;background:var(--leaf-soft);border:1px solid var(--leaf);display:grid;place-items:center;font-size:12px;font-weight:600;color:var(--leaf-ink)}
+.sh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--s-4)}
+.sh-box{height:76px;border-radius:var(--r-lg);background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;font-size:12px;font-weight:600}
+.ly{position:relative;height:316px}
+.ly>div{position:absolute;width:64%;padding:10px 12px;border-radius:var(--r-md);border:1px solid var(--line);font-size:12px;font-weight:600;background:var(--surface)}
+.ly small{display:block;font-weight:500;color:var(--muted)}
+.ly .l-dim span,.ly .l-dim2 span{display:inline-block;background:var(--surface);color:var(--fg);border-radius:var(--r-pill);padding:2px 10px}
+.ly .l-dim{background:var(--dim)}
+.ly .l-dim2{background:var(--dim-strong)}
+.bp-now{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);background:var(--surface);border-radius:var(--r-pill);padding:4px 12px;font-size:13px;margin-bottom:var(--s-3)}
+.bp-now b{font-variant-numeric:tabular-nums}
+.bp-frames{display:flex;flex-wrap:wrap;gap:var(--s-4);align-items:flex-end}
+.bp-frames>div{border:1px solid var(--line);background:var(--surface);border-radius:var(--r-md);padding:var(--s-2) var(--s-3);font-size:12px;color:var(--muted)}
+.bp-frames b{display:block;color:var(--fg);font-size:16px;font-family:var(--display);font-variant-numeric:tabular-nums}
+.mo-stage{position:relative;min-height:280px;overflow:hidden;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--bg)}
+.mo-stage.mb{max-width:340px}
+.mo-bar{display:flex;flex-wrap:wrap;gap:var(--s-2);margin-bottom:var(--s-3)}
+.ic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:var(--s-2)}
+.ic-cell{display:flex;gap:var(--s-3);align-items:center;border:1px solid var(--line);background:var(--surface);border-radius:var(--r-md);padding:var(--s-2) var(--s-3);min-width:0}
+.ic-cell>svg{flex:none;color:var(--leaf-ink)}
+.ic-cell div{min-width:0;font-size:12px;color:var(--muted)}
+.ic-cell b{display:block;color:var(--fg);font-family:ui-monospace,Menlo,monospace;font-size:12px;overflow-wrap:anywhere}
+.ic-sizes{display:flex;flex-wrap:wrap;gap:var(--s-4);align-items:flex-end}
+.ic-sizes div{display:flex;flex-direction:column;gap:6px;align-items:center;font-size:12px;color:var(--muted)}
+.ic-sizes svg{color:var(--fg)}
+.fm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:var(--s-3)}
+.fm-out{font-family:var(--display);font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.stl .now{color:var(--fg);font-weight:600}
+.ds-h360{height:400px}
+.ds-h440{height:440px}
+.empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--s-2);padding:var(--s-5) var(--s-4)}
+.empty .ei{width:56px;height:56px;border-radius:50%;background:var(--leaf-soft);color:var(--leaf-ink);display:grid;place-items:center;margin-bottom:var(--s-1)}
+.empty h3{font-family:var(--display);font-size:17px;margin:0;display:block}
+.empty p{margin:0 0 var(--s-3);max-width:34ch;color:var(--muted)}
+.mb .empty .btn{width:100%;padding:var(--s-3) var(--s-4)}
+.mb .brief .pcta{flex-direction:column}
+.pcta{display:flex;gap:var(--s-2);flex-wrap:wrap}
+.mb .pcta .btn{width:100%}
+.fld.is-error input,.fld.is-error select,.fld.is-error textarea{border-color:var(--rose)}
+.fld input:disabled,.fld select:disabled,.fld textarea:disabled{background:var(--surface2);color:var(--muted);cursor:not-allowed}
+.fld .help{font-size:12px;color:var(--muted)}
+.unit{display:flex;gap:var(--s-2)}
+.unit input{flex:1;min-width:0}
+.unit input+input{flex:0 0 40%}
+.unit select{width:auto}
+.rchips{display:flex;flex-wrap:wrap;gap:var(--s-2)}
+.rchips label{position:relative;display:inline-flex;align-items:center;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:var(--r-pill);padding:6px 14px;font-size:13px;font-weight:500;cursor:pointer}
+.rchips input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;cursor:pointer}
+.rchips label:has(input:checked){background:var(--leaf-soft);color:var(--leaf-ink);border-color:var(--leaf)}
+.rchips label:has(input:focus-visible){outline:2px solid var(--leaf);outline-offset:2px}
+.rchips label:has(input:disabled){opacity:.55;cursor:not-allowed}
+.fab-tabs{display:flex;flex-wrap:wrap;gap:var(--s-2);margin-bottom:var(--s-3)}
+.cstat{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s-2);margin:var(--s-3) 0 var(--s-2);padding-top:var(--s-3);border-top:1px solid var(--line)}
+.cstat small{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.cstat b{display:block;font-size:13px;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kmenu{position:absolute;top:42px;right:8px;z-index:var(--z-float);min-width:160px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--shadow-2);padding:var(--s-1)}
+.kmenu button{display:flex;align-items:center;gap:var(--s-2);width:100%;border:0;background:none;padding:var(--s-2) var(--s-3);border-radius:var(--r-sm);text-align:left;font-weight:500;color:var(--fg)}
+.kmenu button:hover,.kmenu button:focus-visible{background:var(--surface2)}
+.kmenu .kdel{color:var(--rose)}
+.kmenu .kdel:hover,.kmenu .kdel:focus-visible{background:var(--rose-soft)}
+.card.crop.mopen,.row.mopen{z-index:var(--z-float)}
+.km-demo{padding-bottom:var(--s-6)}
+.cico{width:32px;height:32px;border-radius:var(--r-md);background:var(--leaf-soft);color:var(--leaf-ink);display:grid;place-items:center;flex:none}
+/* ---- Batch 2: synced from the prototype (Oct 2026) ---- */
+.k-critical{--c:var(--rose);--cs:var(--rose-soft)}
+.k-warning{--c:var(--sun);--cs:var(--sun-soft)}
+.k-info{--c:var(--sky);--cs:var(--sky-soft)}
+.k-new{--c:var(--leaf);--cs:var(--leaf-soft)}
+.bn{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:12px}
+.bn.k-critical{border-color:var(--rose)}
+.bn-i{width:36px;height:36px;border-radius:var(--r-md);display:grid;place-items:center;flex:none;background:var(--cs);color:var(--c)}
+.bn-t{flex:1;min-width:0}.bn-t b{display:block}
+.bn-k{display:block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--c);margin-bottom:1px}
+.bn-m{display:block;font-size:13px;color:var(--muted)}
+.bn .lnk{margin:6px 0 0;padding:0;font-size:13px;text-decoration:none}
+.bn-more{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px dashed var(--line);border-radius:var(--r-lg);padding:8px 12px;color:var(--muted)}
+.pf-av{width:56px;height:56px;border-radius:50%;background:var(--sun-soft);color:var(--sun);display:grid;place-items:center;font:700 22px var(--display);flex:none}
+.pgh{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:16px 4px 6px}
+.pgrp{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
+.prw{display:flex;align-items:center;gap:10px;padding:12px 14px;border:0;border-top:1px solid var(--line);width:100%;background:none;text-align:left;font:inherit;color:inherit}
+.pgrp>.prw:first-child{border-top:0}
+button.prw{cursor:pointer}button.prw:hover{background:var(--surface2)}
+.prw-k{color:var(--muted);flex:0 0 38%;min-width:0}
+.prw-v{flex:1;min-width:0;font-weight:600;text-align:right;overflow-wrap:anywhere}
+.prw-v.add{color:var(--leaf-ink)}
+.prw svg{color:var(--muted);flex:none}
+.mb .prw{flex-wrap:wrap;row-gap:0}.mb .prw-k{flex:1 1 100%;font-size:12px}.mb .prw-v{text-align:left}
+.lfbar{padding:10px 12px}
+.lfbar.act{border-color:var(--leaf);box-shadow:0 0 0 1px var(--leaf)}
+.lfhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.lfhead .hint{margin-left:auto}
+.lftog{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:var(--r-pill);padding:5px 12px;font-weight:600;font-size:13px;color:var(--fg)}
+.lftog.on{background:var(--leaf-soft);border-color:var(--leaf);color:var(--leaf-ink)}
+.lfn{min-width:18px;height:18px;border-radius:var(--r-pill);background:var(--leaf);color:var(--on-leaf);font-size:11px;display:inline-grid;place-items:center;padding:0 5px}
+.lfclr{padding:4px 10px;font-size:13px}
+.lfchips{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+.lfchip{display:inline-flex;align-items:center;gap:4px;background:var(--leaf-soft);color:var(--leaf-ink);border-radius:var(--r-pill);padding:3px 4px 3px 10px;font-size:12px}
+.lfchip button{border:0;background:none;color:inherit;width:20px;height:20px;display:grid;place-items:center;border-radius:50%;padding:0}
+.lfgrid{display:flex;flex-wrap:wrap;gap:8px 10px;margin-top:10px}
+.lf{display:flex;flex-direction:column;gap:3px;flex:1 1 120px;min-width:0}
+.lf span{font-size:11px;font-weight:600;color:var(--muted)}
+.lf select{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:var(--r-sm);padding:6px 8px;font:inherit;font-size:13px;min-width:0;width:100%}
+.mb .lf{flex:1 1 calc(50% - 5px)}
+.fallowcard{border:1.5px dashed var(--line);border-radius:var(--r-lg);background:var(--surface2)}
+.ds-logo{display:flex;flex-wrap:wrap;gap:var(--s-5);align-items:flex-end}
+.ds-logo div{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.ds-logo img{border-radius:50%;display:block}
+.ds-warli{border-radius:var(--r-lg);padding:var(--s-4);background:#9a4426;color:#fbf3e4;display:flex;align-items:center;gap:var(--s-3)}
+.ds-warli span{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:50%;background:#fff;box-shadow:var(--shadow-1)}
+</style>
+<div class="page">
+  <header class="dshead">
+    <div><h1 style="display:flex;align-items:center;gap:12px"><img id="dsLogo" alt="" width="44" height="44" style="border-radius:50%">MyFarm design system</h1><p>Colours, type and components that the MyFarm prototype follows. Every component works on desktop and mobile, in light and dark.</p></div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center"><div class="seg" id="themeSeg" role="group" aria-label="Theme"><button type="button" data-theme-set="system" aria-pressed="true">System</button><button type="button" data-theme-set="light" aria-pressed="false">Light</button><button type="button" data-theme-set="dark" aria-pressed="false">Dark</button></div><a class="dslink" href="https://claude.ai/artifact/MLcySym9oiLSYZy9jrA6Gy" target="_blank" rel="noopener">Open the prototype ↗</a></div>
+  </header>
+  <div id="sys"></div>
+</div>
+<script>
+(function(){
+var IC={
+ home:"<path d=\"M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z\"/>",
+ map:"<path fill-rule=\"evenodd\" d=\"M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.5.5 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103M10 1.91l-4-.8v12.98l4 .8zm1 12.98 4-.8V1.11l-4 .8zm-6-.8V1.11l-4 .8v12.98z\"/>",
+ sprout:"<path d=\"M6.174 1.184a2 2 0 0 1 3.652 0A2 2 0 0 1 12.99 3.01a2 2 0 0 1 1.826 3.164 2 2 0 0 1 0 3.652 2 2 0 0 1-1.826 3.164 2 2 0 0 1-3.164 1.826 2 2 0 0 1-3.652 0A2 2 0 0 1 3.01 12.99a2 2 0 0 1-1.826-3.164 2 2 0 0 1 0-3.652A2 2 0 0 1 3.01 3.01a2 2 0 0 1 3.164-1.826M8 1a1 1 0 0 0-.998 1.03l.01.091q.017.116.054.296c.049.241.122.542.213.887.182.688.428 1.513.676 2.314L8 5.762l.045-.144c.248-.8.494-1.626.676-2.314.091-.345.164-.646.213-.887a5 5 0 0 0 .064-.386L9 2a1 1 0 0 0-1-1M2 9l.03-.002.091-.01a5 5 0 0 0 .296-.054c.241-.049.542-.122.887-.213a61 61 0 0 0 2.314-.676L5.762 8l-.144-.045a61 61 0 0 0-2.314-.676 17 17 0 0 0-.887-.213 5 5 0 0 0-.386-.064L2 7a1 1 0 1 0 0 2m7 5-.002-.03a5 5 0 0 0-.064-.386 16 16 0 0 0-.213-.888 61 61 0 0 0-.676-2.314L8 10.238l-.045.144c-.248.8-.494 1.626-.676 2.314-.091.345-.164.646-.213.887a5 5 0 0 0-.064.386L7 14a1 1 0 1 0 2 0m-5.696-2.134.025-.017a5 5 0 0 0 .303-.248c.184-.164.408-.377.661-.629A61 61 0 0 0 5.96 9.23l.103-.111-.147.033a61 61 0 0 0-2.343.572c-.344.093-.64.18-.874.258a5 5 0 0 0-.367.138l-.027.014a1 1 0 1 0 1 1.732zM4.5 14.062a1 1 0 0 0 1.366-.366l.014-.027q.014-.03.036-.084a5 5 0 0 0 .102-.283c.078-.233.165-.53.258-.874a61 61 0 0 0 .572-2.343l.033-.147-.11.102a61 61 0 0 0-1.743 1.667 17 17 0 0 0-.629.66 5 5 0 0 0-.248.304l-.017.025a1 1 0 0 0 .366 1.366m9.196-8.196a1 1 0 0 0-1-1.732l-.025.017a5 5 0 0 0-.303.248 17 17 0 0 0-.661.629A61 61 0 0 0 10.04 6.77l-.102.111.147-.033a61 61 0 0 0 2.342-.572c.345-.093.642-.18.875-.258a5 5 0 0 0 .367-.138zM11.5 1.938a1 1 0 0 0-1.366.366l-.014.027q-.014.03-.036.084a5 5 0 0 0-.102.283c-.078.233-.165.53-.258.875a61 61 0 0 0-.572 2.342l-.033.147.11-.102a61 61 0 0 0 1.743-1.667c.252-.253.465-.477.629-.66a5 5 0 0 0 .248-.304l.017-.025a1 1 0 0 0-.366-1.366M14 9a1 1 0 0 0 0-2l-.03.002a5 5 0 0 0-.386.064c-.242.049-.543.122-.888.213-.688.182-1.513.428-2.314.676L10.238 8l.144.045c.8.248 1.626.494 2.314.676.345.091.646.164.887.213a5 5 0 0 0 .386.064zM1.938 4.5a1 1 0 0 0 .393 1.38l.084.035q.108.045.283.103c.233.078.53.165.874.258a61 61 0 0 0 2.343.572l.147.033-.103-.111a61 61 0 0 0-1.666-1.742 17 17 0 0 0-.66-.629 5 5 0 0 0-.304-.248l-.025-.017a1 1 0 0 0-1.366.366m2.196-1.196.017.025a5 5 0 0 0 .248.303c.164.184.377.408.629.661A61 61 0 0 0 6.77 5.96l.111.102-.033-.147a61 61 0 0 0-.572-2.342c-.093-.345-.18-.642-.258-.875a5 5 0 0 0-.138-.367l-.014-.027a1 1 0 1 0-1.732 1m9.928 8.196a1 1 0 0 0-.366-1.366l-.027-.014a5 5 0 0 0-.367-.138c-.233-.078-.53-.165-.875-.258a61 61 0 0 0-2.342-.572l-.147-.033.102.111a61 61 0 0 0 1.667 1.742c.253.252.477.465.66.629a5 5 0 0 0 .304.248l.025.017a1 1 0 0 0 1.366-.366m-3.928 2.196a1 1 0 0 0 1.732-1l-.017-.025a5 5 0 0 0-.248-.303 17 17 0 0 0-.629-.661A61 61 0 0 0 9.23 10.04l-.111-.102.033.147a61 61 0 0 0 .572 2.342c.093.345.18.642.258.875a5 5 0 0 0 .138.367zM8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3\"/>",
+ list:"<path fill-rule=\"evenodd\" d=\"M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m-3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2m0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2m0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2\"/>",
+ cloud:"<path d=\"M7 8a3.5 3.5 0 0 1 3.5 3.555.5.5 0 0 0 .624.492A1.503 1.503 0 0 1 13 13.5a1.5 1.5 0 0 1-1.5 1.5H3a2 2 0 1 1 .1-3.998.5.5 0 0 0 .51-.375A3.5 3.5 0 0 1 7 8m4.473 3a4.5 4.5 0 0 0-8.72-.99A3 3 0 0 0 3 16h8.5a2.5 2.5 0 0 0 0-5z\"/> <path d=\"M10.5 1.5a.5.5 0 0 0-1 0v1a.5.5 0 0 0 1 0zm3.743 1.964a.5.5 0 1 0-.707-.707l-.708.707a.5.5 0 0 0 .708.708zm-7.779-.707a.5.5 0 0 0-.707.707l.707.708a.5.5 0 1 0 .708-.708zm1.734 3.374a2 2 0 1 1 3.296 2.198q.3.423.516.898a3 3 0 1 0-4.84-3.225q.529.017 1.028.129m4.484 4.074c.6.215 1.125.59 1.522 1.072a.5.5 0 0 0 .039-.742l-.707-.707a.5.5 0 0 0-.854.377M14.5 6.5a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z\"/>",
+ chat:"<path d=\"M5 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2\"/> <path d=\"m2.165 15.803.02-.004c1.83-.363 2.948-.842 3.468-1.105A9 9 0 0 0 8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6a10.4 10.4 0 0 1-.524 2.318l-.003.011a11 11 0 0 1-.244.637c-.079.186.074.394.273.362a22 22 0 0 0 .693-.125m.8-3.108a1 1 0 0 0-.287-.801C1.618 10.83 1 9.468 1 8c0-3.192 3.004-6 7-6s7 2.808 7 6-3.004 6-7 6a8 8 0 0 1-2.088-.272 1 1 0 0 0-.711.074c-.387.196-1.24.57-2.634.893a11 11 0 0 0 .398-2\"/>",
+ warn:"<path d=\"M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z\"/> <path d=\"M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z\"/>",
+ leaf:"<path d=\"M8.416.223a.5.5 0 0 0-.832 0l-3 4.5A.5.5 0 0 0 5 5.5h.098L3.076 8.735A.5.5 0 0 0 3.5 9.5h.191l-1.638 3.276a.5.5 0 0 0 .447.724H7V16h2v-2.5h4.5a.5.5 0 0 0 .447-.724L12.31 9.5h.191a.5.5 0 0 0 .424-.765L10.902 5.5H11a.5.5 0 0 0 .416-.777zM6.437 4.758A.5.5 0 0 0 6 4.5h-.066L8 1.401 10.066 4.5H10a.5.5 0 0 0-.424.765L11.598 8.5H11.5a.5.5 0 0 0-.447.724L12.69 12.5H3.309l1.638-3.276A.5.5 0 0 0 4.5 8.5h-.098l2.022-3.235a.5.5 0 0 0 .013-.507\"/>",
+ plus:"<path fill-rule=\"evenodd\" d=\"M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2\"/>",
+ minus:"<path fill-rule=\"evenodd\" d=\"M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8\"/>",
+ search:"<path d=\"M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0\"/>",
+ locate:"<path d=\"M8.5.5a.5.5 0 0 0-1 0v.518A7 7 0 0 0 1.018 7.5H.5a.5.5 0 0 0 0 1h.518A7 7 0 0 0 7.5 14.982v.518a.5.5 0 0 0 1 0v-.518A7 7 0 0 0 14.982 8.5h.518a.5.5 0 0 0 0-1h-.518A7 7 0 0 0 8.5 1.018zm-6.48 7A6 6 0 0 1 7.5 2.02v.48a.5.5 0 0 0 1 0v-.48a6 6 0 0 1 5.48 5.48h-.48a.5.5 0 0 0 0 1h.48a6 6 0 0 1-5.48 5.48v-.48a.5.5 0 0 0-1 0v.48A6 6 0 0 1 2.02 8.5h.48a.5.5 0 0 0 0-1zM8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4\"/>",
+ layers:"<path d=\"M8.235 1.559a.5.5 0 0 0-.47 0l-7.5 4a.5.5 0 0 0 0 .882L3.188 8 .264 9.559a.5.5 0 0 0 0 .882l7.5 4a.5.5 0 0 0 .47 0l7.5-4a.5.5 0 0 0 0-.882L12.813 8l2.922-1.559a.5.5 0 0 0 0-.882zm3.515 7.008L14.438 10 8 13.433 1.562 10 4.25 8.567l3.515 1.874a.5.5 0 0 0 .47 0zM8 9.433 1.562 6 8 2.567 14.438 6z\"/>",
+ chev:"<path fill-rule=\"evenodd\" d=\"M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708\"/>",
+ trash:"<path d=\"M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5\"/>",
+ edit:"<path d=\"M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325\"/>",
+ x:"<path d=\"M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z\"/>",
+ sun:"<path d=\"M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708\"/>",
+ cloudsun:"<path d=\"M7 8a3.5 3.5 0 0 1 3.5 3.555.5.5 0 0 0 .624.492A1.503 1.503 0 0 1 13 13.5a1.5 1.5 0 0 1-1.5 1.5H3a2 2 0 1 1 .1-3.998.5.5 0 0 0 .51-.375A3.5 3.5 0 0 1 7 8m4.473 3a4.5 4.5 0 0 0-8.72-.99A3 3 0 0 0 3 16h8.5a2.5 2.5 0 0 0 0-5z\"/> <path d=\"M10.5 1.5a.5.5 0 0 0-1 0v1a.5.5 0 0 0 1 0zm3.743 1.964a.5.5 0 1 0-.707-.707l-.708.707a.5.5 0 0 0 .708.708zm-7.779-.707a.5.5 0 0 0-.707.707l.707.708a.5.5 0 1 0 .708-.708zm1.734 3.374a2 2 0 1 1 3.296 2.198q.3.423.516.898a3 3 0 1 0-4.84-3.225q.529.017 1.028.129m4.484 4.074c.6.215 1.125.59 1.522 1.072a.5.5 0 0 0 .039-.742l-.707-.707a.5.5 0 0 0-.854.377M14.5 6.5a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z\"/>",
+ cloudrain:"<path d=\"M4.158 12.025a.5.5 0 0 1 .316.633l-.5 1.5a.5.5 0 0 1-.948-.316l.5-1.5a.5.5 0 0 1 .632-.317m3 0a.5.5 0 0 1 .316.633l-1 3a.5.5 0 0 1-.948-.316l1-3a.5.5 0 0 1 .632-.317m3 0a.5.5 0 0 1 .316.633l-.5 1.5a.5.5 0 0 1-.948-.316l.5-1.5a.5.5 0 0 1 .632-.317m3 0a.5.5 0 0 1 .316.633l-1 3a.5.5 0 1 1-.948-.316l1-3a.5.5 0 0 1 .632-.317m.247-6.998a5.001 5.001 0 0 0-9.499-1.004A3.5 3.5 0 1 0 3.5 11H13a3 3 0 0 0 .405-5.973M8.5 2a4 4 0 0 1 3.976 3.555.5.5 0 0 0 .5.445H13a2 2 0 0 1 0 4H3.5a2.5 2.5 0 1 1 .605-4.926.5.5 0 0 0 .596-.329A4 4 0 0 1 8.5 2\"/>",
+ check:"<path d=\"M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z\"/>",
+ send:"<path d=\"M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z\"/>",
+ rupee:"<path d=\"M4 3.06h2.726c1.22 0 2.12.575 2.325 1.724H4v1.051h5.051C8.855 7.001 8 7.558 6.788 7.558H4v1.317L8.437 14h2.11L6.095 8.884h.855c2.316-.018 3.465-1.476 3.688-3.049H12V4.784h-1.345c-.08-.778-.357-1.335-.793-1.732H12V2H4z\"/>",
+ more:"<path d=\"M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0\"/>",
+ wheat:"<ellipse cx=\"8\" cy=\"2.9\" rx=\"1.1\" ry=\"1.9\"/><ellipse cx=\"5.7\" cy=\"5.4\" rx=\"1\" ry=\"1.9\" transform=\"rotate(-35 5.7 5.4)\"/><ellipse cx=\"10.3\" cy=\"5.4\" rx=\"1\" ry=\"1.9\" transform=\"rotate(35 10.3 5.4)\"/><ellipse cx=\"5.7\" cy=\"8.6\" rx=\"1\" ry=\"1.9\" transform=\"rotate(-35 5.7 8.6)\"/><ellipse cx=\"10.3\" cy=\"8.6\" rx=\"1\" ry=\"1.9\" transform=\"rotate(35 10.3 8.6)\"/><path d=\"M7.5 7.5h1V15.5h-1z\"/>",
+ corn:"<ellipse cx=\"8\" cy=\"6.3\" rx=\"2.7\" ry=\"5\"/><path d=\"M8 15.6C4.4 14.2 3.4 9.6 4.7 7c.1 3.1 1.6 5.3 3.3 5.9zM8 15.6c3.6-1.4 4.6-6 3.3-8.6-.1 3.1-1.6 5.3-3.3 5.9z\"/><path fill=\"none\" stroke=\"var(--leaf-soft)\" stroke-width=\".7\" stroke-linecap=\"round\" d=\"M8 2v8.6M5.7 4.8h4.6M5.4 7.4h5.2\"/>",
+ veg:"<path d=\"M7.5 8h1v7.5h-1z\"/><path d=\"M8 9.6C8 6.1 5.8 4.2 2.8 4.2 2.8 7.7 4.8 9.6 8 9.6zM8 8.2C8 4.6 10 2.2 13.4 2.2 13.4 5.9 11.2 8.2 8 8.2z\"/>",
+ bell:"<path d=\"M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4 4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5 5 0 0 1 13 6c0 .88.32 4.2 1.22 6\"/>",
+ star:"<path d=\"M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z\"/>",
+ info:"<path d=\"M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16\"/><path d=\"m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0\"/>",
+ fruit:"<path d=\"M8 4.4c3.4 0 5.6 2.1 5.6 4.9S11.4 14.7 8 14.7 2.4 12.1 2.4 9.3 4.6 4.4 8 4.4\"/><path d=\"M7.5 1.6h1V4.6h-1z\"/><path d=\"M9 1.9c1.2-.4 2.4 0 3.1.9-1.3.5-2.4.3-3.1-.4z\"/>"
+};
+function ic(n,s){s=s||18;return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">'+IC[n]+'</svg>'}
+var DTONE='danger';
+var TONES={
+  warn:{cls:'t-warn',ic:'warn',title:'Discard this drawing?',msg:'The 5 points you placed will be removed from the map.',sum:['var(--sun)','Drawing in progress','5 points · 0.54 acres'],cancel:'Keep drawing',alt:'Save draft',act:'Discard',s3:['Keep','Save draft','Discard']},
+  ok:{cls:'t-ok',ic:'check',title:'New land saved',msg:'North Plot is on your map. Add a crop to start tracking it.',sum:['var(--leaf)','North Plot','2.4 acres · no crops'],cancel:'Not now',alt:'View land',act:'Add crop',s3:['Not now','View','Add crop']},
+  danger:{cls:'t-danger',ic:'trash',title:'Delete this land?',msg:'North Plot will be removed from your map and list. You can undo for a few seconds.',sum:['var(--rose)','North Plot','2.4 acres · no crops'],cancel:'Cancel',alt:'Archive',act:'Delete land',s3:['Cancel','Archive','Delete']}
+};
+function dsStage(inner,mob){return '<div class="ds-stage'+(mob?' mb':'')+'" data-stage><div class="skel" aria-hidden="true"><i style="width:40%"></i><i style="width:90%"></i><i style="width:75%"></i><i style="width:60%"></i></div><span class="ds-res" aria-live="polite">Press a button</span><div class="mscrim" style="cursor:default"></div>'+inner+'</div>'}
+var DBTN=2;
+function btns(T,cancelCls,altCls){
+  var L=DBTN===3?T.s3:[T.cancel,'',T.act];
+  var o='<button class="'+cancelCls+'" data-res="'+L[0]+'">'+L[0]+'</button>';
+  if(DBTN===3)o+='<button class="'+altCls+'" data-res="'+L[1]+'">'+L[1]+'</button>';
+  return o+'<button class="tbtn" data-res="'+L[2]+'">'+L[2]+'</button>'
+}
+function dlgB(T){return '<div class="modal dB '+T.cls+'" role="alertdialog" aria-label="'+T.title+'"><span class="dB-h"></span><span class="dB-i">'+ic(T.ic,26)+'</span><h3>'+T.title+'</h3><p>'+T.msg+'</p><div class="dB-a">'+btns(T,'btn','btn')+'</div></div>'}
+function approachesHtml(tone){
+  var T=TONES[tone];
+  return '<div class="ds-var"><div class="ds-col"><div class="ds-lab">Desktop · centred dialog</div>'+dsStage(dlgB(T),false)+'</div><div class="ds-col m"><div class="ds-lab">Mobile · bottom sheet</div>'+dsStage(dlgB(T),true)+'</div></div>'
+}
+/* ---- Batch 1 builders ---- */
+function tbl(head,rows,open){var t='<div class="ds-tw"><table class="ds-tbl"><thead><tr>'+head.map(function(x){return '<th>'+x+'</th>'}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr>'+r.map(function(c){return '<td>'+c+'</td>'}).join('')+'</tr>'}).join('')+'</tbody></table></div>';return '<details class="ds-more"'+(open?' open':'')+'><summary>'+(open?'Rules':'Spec and details')+'</summary>'+t+'</details>'}
+function pair(d,m,dc){return '<div class="ds-var"><div class="ds-col"><div class="ds-lab">Desktop</div><div class="ds-dev'+(dc||'')+'">'+d+'</div></div><div class="ds-col m"><div class="ds-lab">Mobile</div><div class="ds-dev mb">'+m+'</div></div></div>'}
+function fix(title,items){return '<details class="ds-fix"><summary>'+title+' ('+items.length+')</summary><ul>'+items.map(function(x){return '<li>'+x+'</li>'}).join('')+'</ul></details>'}
+function sec(id,title,intro,body){return '<section class="ds-sec" id="'+id+'"><h2>'+title+'</h2><p>'+intro+'</p>'+body+'</section>'}
+function stepper(stage){var S=['Sowing','Growth','Flowering','Harvest'];return '<div class="steps" role="img" aria-label="Stage '+(stage+1)+' of 4: '+S[stage]+'">'+S.map(function(x,i){return '<i class="'+(i<stage?'on':i===stage?'now':'')+'"></i>'}).join('')+'</div><div class="stl">'+S.map(function(x,i){return '<span'+(i===stage?' class="now"':'')+'>'+x+'</span>'}).join('')+'</div>'}
+function inr(n){n=Number(n);return isFinite(n)?'₹'+n.toLocaleString('en-IN'):'₹0'}
+function fmtDate(v){if(!v)return '';var d=new Date(v+'T00:00:00');return String(d.getDate()).padStart(2,'0')+' '+d.toLocaleString('en-US',{month:'short'})}
+function fmtArea(ac){ac=Number(ac)||0;return ac.toFixed(2)+' ac · '+(ac*0.404686).toFixed(2)+' ha'}
+
+function pair2(d,m){return '<div class="ds-var"><div class="ds-col"><div class="ds-lab">Desktop</div><div class="ds-dev flush">'+d+'</div></div><div class="ds-col m"><div class="ds-lab">Mobile</div><div class="ds-dev flush mb">'+m+'</div></div></div>'}
+function secSpace(){
+ var sc=[['--s-1','4px','Tight pairs: icon and label, badge inner gap'],['--s-2','8px','Button rows, field label to input, list item gaps'],['--s-3','12px','Inside a card between blocks, row padding'],['--s-4','16px','Card padding, mobile page gutter'],['--s-5','24px','Desktop page padding, space between sections'],['--s-6','32px','Large separations, empty states']];
+ var bars=sc.map(function(r){return '<div class="sp-row"><code>'+r[0]+'</code><span class="sp-bar" style="width:var('+r[0]+')"></span><span class="num">'+r[1]+'</span> <span class="hint">'+r[2]+'</span></div>'}).join('');
+ var used=tbl(['Value','Where the prototype uses it','Count','System step'],[
+  ['<code>2px</code>','Link action icon gap, chat sidebar list','2','Use <code>--s-1</code> (4px)'],
+  ['<code>4px</code>','Field label gap, stepper gap, tab bar icon to label, chat header dot','7','<code>--s-1</code>'],
+  ['<code>6px</code>','Chip rows, small button rows, row gaps','8','Use <code>--s-2</code> (8px)'],
+  ['<code>8px</code>','Button rows, card inner gaps','18','<code>--s-2</code>'],
+  ['<code>10px</code>','Key-number tiles on mobile, list gaps','12','Use <code>--s-3</code> for tile gaps, <code>--s-2</code> for list gaps'],
+  ['<code>12px</code>','Header rows, card inner blocks','5','<code>--s-3</code>'],
+  ['<code>14px</code>','Card grid gap, stacked cards','3','Use <code>--s-3</code>'],
+  ['<code>16px</code>','Card padding, mobile page padding','many','<code>--s-4</code>'],
+  ['<code>22px 26px</code>','Desktop page padding','1','Now <code>--s-5</code> (24px), <code>--s-6</code> (32px) at the bottom'],['<code>14px 16px</code>','Mobile page padding','1','Use <code>--s-4</code> (16px), keep 90px at the bottom'],
+  ['<code>28px</code>','Gap between the two device frames','1','Page layout only, not a component value']]);
+ var card=function(t){return '<div class="card"><h3>'+t+'</h3><div class="sk"><i style="width:70%"></i><i style="width:45%"></i></div></div>'};
+ var d='<div class="sp-pad" style="padding:var(--s-5) var(--s-5) var(--s-6)"><div class="head" style="margin-bottom:16px"><div><h2 class="pt">Good morning, Ram</h2><p class="sub">Thursday 01 Oct · 29°C, clear</p></div><button class="btn p" tabindex="-1">+ Log activity</button></div><div class="stack">'+card('Today and upcoming')+card('Crop progress')+'</div></div><p class="ds-note">Desktop: page padding 24px, with 32px at the bottom. Cards sit 12px apart. Title block sits 16px above the cards.</p>';
+ var m='<div class="sp-pad" style="padding:var(--s-4) var(--s-4) 90px"><div class="head" style="margin-bottom:16px"><div><h2 class="pt">Good morning, Ram</h2><p class="sub">Thursday 01 Oct · 29°C, clear</p></div></div><div class="stack">'+card('Today and upcoming')+card('Crop progress')+'</div></div><p class="ds-note">Mobile: page padding 16px all round, with 90px at the bottom to clear the tab bar. Cards and key-number tiles sit 12px apart.</p>';
+ return sec('ds-space','Spacing scale','Six steps on a 4px base. Use a step, not a loose number. Components read these tokens, so changing a step changes it everywhere. The shaded band in the examples is the page padding.',
+  '<div class="ds-lab">Scale</div><div class="ds-demo col">'+bars+'</div>'+
+  '<div class="ds-lab">Page padding on each device</div>'+pair2(d,m)+
+  '<div class="ds-lab">Values in use today</div>'+used)
+}
+function secRadius(){
+ var L=[['--r-xs','3px','Stepper segments, legend dots. The sheet grab handle is 2px','',''],['--r-sm','8px','Buttons, inputs, nav items, icon buttons','12 uses',''],['--r-md','10px','Inner tiles, alerts, map controls, summary rows','10 uses',''],['--r-lg','12px','Cards, review panel','5 uses',''],['--r-xl','14px','Confirmation dialog','3 uses',''],['--r-sheet','18px','Bottom sheet, top corners only','',''],['--r-pill','999px','Badges, chips, segmented controls, search','9 uses','']];
+ var boxes='<div class="rd-grid">'+L.map(function(r){var rad=r[0]==='--r-sheet'?'var(--r-sheet) var(--r-sheet) 0 0':'var('+r[0]+')';return '<div><div class="rd-box" style="border-radius:'+rad+'">'+r[1]+'</div><div class="hint" style="margin-top:6px"><code>'+r[0]+'</code><br>'+r[2]+'</div></div>'}).join('')+'</div>';
+ return sec('ds-radius','Corner radius','Six levels plus the pill. Every component reads these tokens, so changing one changes it everywhere. The dialog is 14px on desktop and the sheet is 18px on the top corners on mobile.',
+  '<div class="ds-lab">Levels</div>'+boxes
+ )
+}
+function secShadow(){
+ var S=[['--shadow-1','0 2px 8px · 20%','Floating map controls, search, hints, quick-action labels'],['--shadow-2','0 6px 18px · 25%','Floating button, toast'],['--shadow-3','0 20px 50px · 35%','Dialog and bottom sheet'],['--shadow','0 12px 40px · themed','Device frames on the prototype page only']];
+ var boxes='<div class="sh-grid">'+S.map(function(r){return '<div><div class="sh-box" style="box-shadow:var('+r[0]+')">'+r[0]+'</div><div class="hint" style="margin-top:6px">'+r[1]+'<br>'+r[2]+'</div></div>'}).join('')+'</div>';
+ return sec('ds-shadow','Shadow levels','Three levels for things that float above the page. Every floating thing also keeps a 1px border, so its edge still shows in dark where shadows fade. Shadows are the same on desktop and mobile.',
+  '<div class="ds-lab">Levels</div><div class="ds-demo col">'+boxes+'</div>'+
+  fix('Two values for the same thing',['Floating button shadow is <code>0 6px 16px</code> at 25% and the toast shadow is <code>0 6px 18px</code> at 25%. Both now use <code>--shadow-2</code>.','The device-frame shadow changes with the theme, the other three do not. Use the toggle at the top of the page to compare.']))
+}
+function secLayers(){
+ var d='<div class="ly"><div style="left:0;top:0;z-index:0">Content <small>--z-content · auto</small></div><div class="l-dim" style="left:6%;top:56px;z-index:var(--z-float-dim)"><span>Dim behind the menu · 4</span><small style="margin-top:4px;color:var(--fg)">--dim, 40% black</small></div><div style="left:12%;top:108px;z-index:var(--z-float);box-shadow:var(--shadow-2)">Floating button and menu <small>--z-float · 5</small></div><div class="l-dim2" style="left:18%;top:160px;z-index:var(--z-dim)"><span>Dim behind the dialog · 7</span><small style="margin-top:4px;color:var(--fg)">--dim-strong, 50% black</small></div><div style="left:24%;top:212px;z-index:var(--z-dialog);box-shadow:var(--shadow-3)">Dialog <small>--z-dialog · 8</small></div><div style="left:30%;top:262px;width:64%;z-index:var(--z-toast);box-shadow:var(--shadow-2);background:var(--leaf-soft);border-color:var(--leaf);color:var(--leaf-ink)">Toast <small style="color:var(--leaf-ink)">--z-toast · 9</small></div></div>';
+ return sec('ds-layers','Layers','Five layers from the page up. A layer only goes above another when this order says so.',
+  '<div class="ds-lab">Stack, bottom to top</div><div class="ds-dev">'+d+'</div><p class="ds-note">Same order on desktop and mobile.</p>'+
+  tbl(['Layer','Token','Value','Prototype today'],[['Content','<code>--z-content</code>','auto','No z-index'],['Dim behind the menu','<code>--z-float-dim</code>','4','4 (<code>.scrim</code>)'],['Floating button and menu','<code>--z-float</code>','5','5 (<code>.dial</code>)'],['Dim behind the dialog','<code>--z-dim</code>','7','7 (<code>.mscrim</code>)'],['Dialog','<code>--z-dialog</code>','8','8 (<code>.modal</code>)'],['Toast','<code>--z-toast</code>','9','9 (<code>.toast</code>)']])
+ )
+}
+function secBreak(){
+ return sec('ds-bp','Breakpoints','Two layouts: phone and desktop. The prototype does not use media queries for this. It shows two fixed frames, a phone at 372px and a desktop at 1120px. The switch width below is proposed, using the Bootstrap md width from the repo.',
+  '<div class="bp-now" aria-live="polite">This page is <b id="bpW">0</b> px wide, so it shows the <b id="bpL">desktop</b> layout.</div>'+
+  '<div class="bp-frames"><div><b>372px</b>Phone frame, 348px screen</div><div><b>1120px</b>Desktop frame</div><div><b>204px</b>Sidebar width</div><div><b>768px</b>Switch point (proposed)</div></div>'+
+  '<div class="ds-lab" style="margin-top:var(--s-4)">What changes at the switch</div>'+
+  tbl(['Part','Desktop, 768px and up','Phone, under 768px'],[['Navigation','Sidebar, 204px','Tab bar, five items'],['Create actions','Buttons in the page header','Floating button with a menu'],['Assistant','In the sidebar','In the floating button menu'],['Confirmation','Centred dialog, 14px radius','Bottom sheet with grab handle, 18px top radius'],['Key-number tiles','Four across','Two across'],['Forms','Two columns','One column'],['Page padding','24px, 32px at the bottom','16px, 90px at the bottom']])+
+  fix('Two values for the same thing',['This design system page switches its own menu at 860px. It now switches at 768px.','The prototype has no switch. Phone styles hang off a <code>.mb</code> class that the phone frame sets. A real app needs a media query at 768px.']))
+}
+function secMotion(){
+ var T=tbl(['Motion','Where','Time','Token'],[['Fade in dim','Dim behind a dialog','0.15s ease-out','<code>--dur-fast</code>'],['Pop in','Centred dialog, from 96% scale with a slight rise','0.18s ease-out','<code>--dur-base</code> (0.22s)'],['Slide up','Bottom sheet','0.22s ease-out','<code>--dur-base</code>'],['Pop in','Quick-action labels','0.15s ease-out','<code>--dur-fast</code>'],['Fade and rise','Plays only when you move to another screen, never on clicks inside a screen (<code>.main.enter</code>)','0.25s ease-out','<code>--dur-base</code>'],['Glow','Selected list row','0.9s ease-out','<code>--dur-glow</code>'],['Typing dots','Assistant is replying','1s loop, 0.15s stagger','none']]);
+ return sec('ds-motion','Motion','Short, ease-out, and only when the device allows motion. Each example plays the real component.',
+  '<div class="ds-lab">Try it</div><div class="mo-bar"><button class="btn" data-replay="dlg">Dialog open</button><button class="btn" data-replay="sheet">Bottom sheet</button><button class="btn" data-replay="glow">Selection glow</button></div>'+
+  '<div class="ds-var"><div class="ds-col"><div class="ds-lab">Desktop · dialog</div><div class="mo-stage" id="moD"></div></div><div class="ds-col m"><div class="ds-lab">Mobile · bottom sheet</div><div class="mo-stage mb" id="moM"></div></div></div>'+
+  '<div class="ds-lab">Selection glow</div><div class="card" style="max-width:460px"><div class="row" id="moRow"><button class="lrow" tabindex="-1"><span class="dot" style="background:var(--clay)"></span><div class="grow"><b>North Plot</b><small>Onion</small></div><span class="amt">2.40 ac</span></button></div></div>'+
+  '<div class="ds-lab">Typing dots</div><div class="ds-demo"><span class="dots" aria-label="Assistant is typing"><i></i><i></i><i></i></span></div>'+
+  '<div class="ds-lab">Timings</div>'+T+
+  '<div class="ds-fix"><b>Reduced motion</b><ul><li>Every animation sits inside <code>@media (prefers-reduced-motion: no-preference)</code>. When the device asks for less motion, things appear with no animation.</li><li id="rmNow">Your device: checking.</li><li>The mobile bottom sheet was animating even with reduced motion on. That is fixed here. Fix it in the prototype too.</li></ul></div>'+
+  fix('Two values for the same thing',['Dialog pop is 0.18s, sheet slide is 0.22s and screen change is 0.25s. They now share <code>--dur-base</code> at 0.22s.']))
+}
+var ICMAP=[['home','house','Home'],['map','map','Lands, Draw land'],['sprout','flower1','Crops nav, Add crop'],['list','list-ul','Activity, Log activity'],['cloud','cloud-sun','Weather, partly cloudy forecast'],['chat','chat-dots','Assistant'],['warn','exclamation-triangle','Alerts, warning popup'],['leaf','tree','Brand, daily brief'],['plus','plus-lg','Floating button, zoom in'],['minus','dash-lg','Zoom out'],['search','search','Map search'],['locate','crosshair','My location'],['layers','layers','Map layers'],['chev','chevron-right','Link actions'],['trash','trash3','Delete'],['edit','pencil','Rename'],['x','x-lg','Close'],['check','check-lg','Done, success popup'],['send','send','Chat send'],['rupee','currency-rupee','Add expense'],['more','three-dots-vertical','Row actions menu trigger'],['sun','sun','Forecast: clear'],['cloudrain','cloud-rain','Forecast: rain']];
+function secIcons(){
+ var grid='<div class="ic-grid">'+ICMAP.map(function(r){return '<div class="ic-cell">'+ic(r[0],24)+'<div><b>bi-'+r[1]+'</b>'+r[2]+'</div></div>'}).join('')+'</div>';
+ var cgrid='<div class="ic-grid">'+[['wheat','Cereals','wheat, rice, paddy, bajra, jowar, barley, millet, sugarcane, cane'],['corn','Maize','maize, corn'],['fruit','Fruit','grape, pomegranate, banana, mango, orange, lemon, guava, papaya, apple, fig, sapota'],['veg','Everything else','Onion, tomato and any other crop']].map(function(r){return '<div class="ic-cell"><span class="cico" aria-hidden="true">'+ic(r[0],20)+'</span><div><b>'+r[0]+'</b>'+r[1]+'<br>'+r[2]+'</div></div>'}).join('')+'</div>';
+ var sizes='<div class="ic-sizes"><div>'+ic('chev',14)+'14<br>link</div><div>'+ic('trash',16)+'16<br>inline button</div><div>'+ic('home',18)+'18<br>sidebar, default</div><div>'+ic('home',20)+'20<br>tab bar, menu action</div><div>'+ic('leaf',22)+'22<br>brand</div><div>'+ic('plus',24)+'24<br>floating button</div><div>'+ic('trash',26)+'26<br>popup</div></div>';
+ return sec('ds-icons','Icons','One icon set: Bootstrap Icons 1.13.1, the set the repo uses. Icons take the text colour and the size from the scale. The tiles draw the real Bootstrap paths.',
+  '<div class="ds-lab">Icons in use</div>'+grid+
+  '<div class="ds-lab">Sizes</div><div class="ds-demo">'+sizes+'</div>'+
+  '<div class="ds-lab">Custom crop icons (not in Bootstrap Icons)</div>'+cgrid+
+  '<p class="ds-note">Crops use these on a green tile (<code>.cico</code>, 32px tile, 20px icon). Icons are by crop type, not by exact crop. Add a new type only when a crop type has none. They follow the Bootstrap look: filled, 16px grid, one colour. Details are cut out with the tile colour (<code>--leaf-soft</code>), so they must sit on <code>.cico</code>. No emoji. The icon is picked from the crop name, first match wins, in the order corn, wheat, fruit. Anything else uses the leafy sprout. Today Onion and Tomato show the leafy sprout, Grapes and Pomegranate show the fruit.</p>'+
+  '<p class="ds-note">In the app, use <code>&lt;i class="bi bi-house"&gt;</code> for Bootstrap icons. Here the paths are inlined, because this page cannot load the icon font. The brand mark is the MyFarm logo image (see Brand).</p>')
+}
+function secFormats(){
+ var T=tbl(['Thing','Format','Example','Prototype today'],[['Money','₹ then Indian grouping, no decimals','<span class="num">₹1,24,500</span>','Correct (<code>toLocaleString("en-IN")</code>)'],['Area','2 decimals. <code>ac</code> in tiles and rows. <code>ac · ha</code> where area is the main figure: drawing and land details','<span class="num">2.40 ac · 0.97 ha</span>','Matches'],['Date','Two-digit day, short month','<span class="num">02 Oct</span>','Matches'],['Long area unit','Full word only inside a sentence','Drag to draw. 0.54 acres so far.','—']],true);
+ var live='<div class="card" style="max-width:640px"><h3>Try it</h3><div class="fm-grid"><div class="fld"><label for="fm-amt">Amount in rupees</label><input id="fm-amt" type="number" min="0" step="any" value="124500"></div><div class="fld"><label for="fm-ac">Area in acres</label><input id="fm-ac" type="number" min="0" step="0.01" value="2.4"></div><div class="fld"><label for="fm-date">Date</label><input id="fm-date" type="date" value="2026-10-02"></div></div><div class="fm-grid"><div><small class="hint">Money</small><div class="fm-out" id="fm-o1">₹1,24,500</div></div><div><small class="hint">Area</small><div class="fm-out" id="fm-o2">2.40 ac · 0.97 ha</div></div><div><small class="hint">Date</small><div class="fm-out" id="fm-o3">02 Oct</div></div></div></div>';
+ return sec('ds-formats','Formats','How money, area and dates are written. The same format is used on desktop and mobile. Only the unit word changes: <code>ac</code> and <code>ha</code> in tiles, rows and badges, full words in sentences.',
+  '<div class="ds-lab">Rules</div>'+T+'<div class="ds-lab">Live</div>'+live
+ )
+}
+function secCards(){
+ var kpi=function(two){return '<div class="grid'+(two?'':' g4')+'"'+(two?' style="grid-template-columns:repeat(2,minmax(0,1fr))"':'')+'><div class="card kpi"><small>Active crops</small><b>4</b><br><span>across 4 lands</span></div><div class="card kpi"><small>Total area</small><b>9.60 ac</b><br><span>Nashik, MH</span></div><div class="card kpi"><small>Season spend</small><b>₹1,24,500</b><br><span>since 01 Jun</span></div><div class="card kpi"><small>Next harvest</small><b>6 days</b><br><span>Tomato</span></div></div>'};
+ var card='<div class="card"><h3>Crop progress <button class="btn" tabindex="-1">Open</button></h3><div class="row"><span class="dot" style="background:var(--clay)"></span><div class="grow"><b>Onion</b><small>North Plot · Flowering</small><div class="bar" style="margin-top:6px"><i style="width:62%"></i></div></div><span class="badge">62%</span></div><div class="row"><span class="dot" style="background:var(--ember)"></span><div class="grow"><b>Tomato</b><small>Tank Side · Harvest</small><div class="bar" style="margin-top:6px"><i style="width:85%"></i></div></div><span class="badge sun">85%</span></div></div>';
+ var brief='<div class="card brief"><h3>'+ic('leaf',16)+' Daily brief</h3><p>Spray Tank Side before rain arrives on Saturday.</p><p>Tomato is 6 days from picking. Line up labour.</p></div>';
+ var det='<div class="card"><div class="ldet" style="border-top:0;margin-top:0;padding-top:0"><div class="ldh"><b>Tank Side</b><button class="ibtn2 ren" tabindex="-1" aria-label="Rename Tank Side">'+ic('edit',15)+'</button><span class="badge">Tomato</span><button class="lnk" tabindex="-1">View crop details '+ic('chev',14)+'</button></div><div class="ldg"><div><small>Area</small><b>1.60 ac</b></div><div><small>Stage</small><b>Harvest</b></div><div><small>Season cost</small><b>₹18,900</b></div><div><small>Harvest in</small><b>6 days</b></div></div></div></div>';
+ var D='<div class="stack">'+kpi(false)+'<div class="grid g2"><div class="stack">'+cropCardHtml(false,'')+card+det+'</div><div class="stack">'+brief+'</div></div></div>';
+ var M='<div class="stack">'+kpi(true)+brief+cropCardHtml(false,'')+card+det+'</div>';
+ return sec('ds-cards','Cards and key-number tiles','Five card types. A plain card holds a list or a form. A key-number tile shows one figure. The brief card has a green fill for one short message. The land details strip sits under the map.',
+  pair(D,M)+
+  tbl(['Card','Class','Use'],[['Default card','<code>.card</code>','Title row with one optional action, then content. 16px padding, 12px radius, 1px border'],['Key-number tile','<code>.card.kpi</code>','Markup: <code>small</code> label, <code>b</code> figure in Bricolage Grotesque, a <code>br</code>, then a <code>span</code> caption, so the caption sits on its own line under the figure. The same markup is used on Home, the crop detail page and the Activity page. Four across on desktop, two on mobile'],['Highlighted brief card','<code>.card.brief</code>','Green fill, no border. One or two short sentences. At most one per screen'],['Crop card header','<code>.cico</code>','Icon tile (20px icon, aria-hidden), crop name, 10px apart, on the left, then on the right, before the actions menu button, a muted badge (<code>.badge.mute</code>) with the activity count: "No activity", "1 activity" or "N activities". The header keeps 34px of right padding so the badge never sits under the menu. No stage badge: the stepper shows the stage with its bold current label. The icon is chosen by crop type (cereal, maize, fruit, or the leafy sprout for everything else)'],['Crop card stats','<code>.cstat</code>','Under the header: a hairline, then three columns, each with a small capital label and a value: Plot (land name), Age ("122 days", "1 day", "Today" when sown today, "–" if not yet sown) and Area ("1.60 ac"). The stepper comes last. An activity counts for a crop if it carries that crop id. Older sample activities without a crop id are matched by land name. New activities from the Log activity form store the crop id. The sowing date is not on the card. It is on the crop detail page. Tapping a crop card opens the crop detail page. In the Crops list, cards sit in two columns on desktop (about 400px each) and one on mobile'],['Land details strip','<code>.ldet</code>','Name, rename button, crop badge and a link on one row, then four figures. Two figures per row on mobile']])
+ )
+}
+function secProgress(){
+ var rows=function(){return [0,1,2,3].map(function(i){var S=['Sowing','Growth','Flowering','Harvest'],P=[8,38,62,85];return '<div class="card crop" style="cursor:default"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b style="font-family:var(--display);font-size:16px">'+['Pomegranate','Grapes','Onion','Tomato'][i]+'</b><span class="badge'+(i===3?' sun':'')+'">'+P[i]+'%</span></div><div class="bar" style="margin:10px 0 6px"><i style="width:'+P[i]+'%"></i></div>'+stepper(i)+'</div>'}).join('')};
+ var D='<div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr))">'+rows()+'</div>';
+ var M='<div class="stack">'+rows()+'</div>';
+ var legend='<div class="ds-demo" style="gap:var(--s-5)"><div style="flex:1 1 180px"><div class="steps" style="margin:0 0 6px"><i class="on"></i></div><b>Done</b><div class="hint">Green fill</div></div><div style="flex:1 1 180px"><div class="steps" style="margin:0 0 6px"><i class="now"></i></div><b>Current</b><div class="hint">Amber fill, label in bold</div></div><div style="flex:1 1 180px"><div class="steps" style="margin:0 0 6px"><i></i></div><b>Upcoming</b><div class="hint">Grey fill</div></div></div>';
+ return sec('ds-progress','Progress bar and crop-stage stepper','The bar shows how far along something is, as a percentage. The stepper shows which of the four crop stages is current. Use the bar for a number and the stepper for a stage.',
+  '<div class="ds-lab">States of one stepper segment</div>'+legend+'<div class="ds-lab">In a crop card</div>'+pair(D,M)+
+  tbl(['Part','Spec'],[['Bar','8px high, pill track in <code>--surface2</code>, fill in <code>--leaf</code>. Show the percentage as a badge beside it. Bars that compare categories, such as spend by category, may use the category colour'],['Stepper','Four equal segments, 6px high, 4px gap. Stages in order: Sowing, Growth, Flowering, Harvest'],['Labels','11px, under the segments. The current label is bold and in the text colour'],['Accessibility','The stepper has role "img" and a label such as "Stage 2 of 4: Growth". Colour is never the only signal']])
+ )
+}
+var FABS={draw:['Draw land','map'],addcrop:['Add crop','sprout'],addact:['Log activity','list'],addexp:['Add expense','$'],chat:['Ask assistant','chat']};
+var FABORDER={home:['addact','addexp','addcrop','draw','chat'],lands:['draw','addcrop','chat'],crops:['addcrop','addact','chat'],log:['addact','addexp','chat'],weather:['chat'],cropdetail:['addact'],none:[]};
+var FABSCR=[['home','Home'],['lands','Lands'],['crops','Crops'],['log','Activity'],['weather','Weather'],['cropdetail','Crop detail'],['none','Assistant, forms, activity detail']];
+var FAB={screen:'home',open:false};
+function fabIcon(k,s){return FABS[k][1]==='$'?'<b style="font-size:17px;line-height:1">₹</b>':ic(FABS[k][1],s)}
+function fabInner(){
+ var acts=FABORDER[FAB.screen],h='<main class="main" style="flex:1;min-height:0"><div class="sk"><i style="width:55%;height:16px"></i><i style="width:80%"></i><i style="width:65%"></i><div class="card"><div class="sk"><i style="width:70%"></i><i style="width:40%"></i></div></div></div></main><nav class="tabs">'+[['home','Home','home'],['lands','Lands','map'],['crops','Crops','sprout'],['log','Activity','list'],['weather','Weather','cloud']].map(function(n){return '<button class="nav" tabindex="-1"'+((FAB.screen===n[0]||(FAB.screen==='cropdetail'&&n[0]==='crops'))?' aria-current="page"':'')+'>'+ic(n[2],20)+n[1]+'</button>'}).join('')+'</nav>';
+ if(!acts.length)return h;
+ if(acts.length===1)return h+'<div class="dial"><button class="fab" aria-label="'+FABS[acts[0]][0]+'" title="'+FABS[acts[0]][0]+'">'+(acts[0]==='addact'?ic('plus',22):fabIcon(acts[0],20))+'</button></div>';
+ var o=FAB.open;
+ return h+(o?'<button class="scrim" data-fabtoggle aria-label="Close quick actions"></button>':'')+'<div class="dial"><button class="fab" data-fabtoggle aria-expanded="'+o+'" aria-label="'+(o?'Close quick actions':'Open quick actions')+'">'+ic(o?'x':'plus',24)+'</button>'+(o?acts.map(function(k){return '<div class="dact"><span class="dlab">'+FABS[k][0]+'</span><button class="fab mini" data-fabtoggle aria-label="'+FABS[k][0]+'">'+fabIcon(k,20)+'</button></div>'}).join(''):'')+'</div>'
+}
+function secFab(){
+ var seg='<div class="fab-tabs" role="group" aria-label="Screen">'+FABSCR.map(function(s){return '<button type="button" class="chip" data-fabscreen="'+s[0]+'" aria-pressed="'+(FAB.screen===s[0])+'">'+s[1]+'</button>'}).join('')+'</div>';
+ var desk='<div class="head" style="margin-bottom:0"><div><h2 class="pt">All activities</h2><p class="sub">Everything done in the field, with what it cost.</p></div><div style="display:flex;gap:8px"><button class="btn" tabindex="-1">+ Expense</button><button class="btn p" tabindex="-1">+ Log</button></div></div>';
+ var rows=FABSCR.filter(function(x){return x[0]!=='none'}).map(function(s){return [s[1],FABORDER[s[0]].map(function(k){return FABS[k][0]}).join(', ')]}).concat([['Assistant, forms, activity detail, drawing a land','None']]);
+ return sec('ds-fab','Floating buttons and quick-actions menu','On mobile, create actions live in a green round button above the tab bar. One action shows that action directly. Two or more open a menu. On desktop the same actions are buttons in the page header.',
+  '<div class="ds-lab">Pick a screen, then tap the button</div>'+seg+
+  '<div class="ds-var"><div class="ds-col"><div class="ds-lab">Desktop · header buttons, no floating button</div><div class="ds-dev">'+desk+'</div></div><div class="ds-col m"><div class="ds-lab">Mobile · '+(FAB.open?'open':'closed')+'</div><div class="ds-dev flush"><div class="app mb ds-h440" id="fabDemo" style="flex-direction:column;position:relative">'+fabInner()+'</div></div></div></div>'+
+  '<div class="ds-lab">Which screen shows which actions</div>'+tbl(['Screen','Menu actions, top of the menu first'],rows)+
+  tbl(['Part','Spec'],[['Floating button','48px circle, <code>--leaf</code>, 24px icon, 16px from the right and 84px from the bottom so it clears the tab bar. Plus when closed, close icon when open. When a screen has a single action, the button shows that action directly: the Log activity button uses the plus icon at 22px, any other single action uses its own icon at 20px. The list icon stays on the Activity tab and in the menu on other screens'],['Mini action','42px circle with a 20px icon and a label to its left. Labels use <code>--shadow-1</code>'],['Dim behind the menu','<code>--dim</code>, tapping it closes the menu. Menu sits at <code>--z-float</code>, dim at <code>--z-float-dim</code>'],['Order','Most likely action first. It is nearest the thumb, at the bottom'],['Opening','Actions pop in over 0.15s, none with reduced motion']])
+ )
+}
+var NAVITEMS=[['home','Home','home'],['lands','Lands','map'],['crops','Crops','sprout'],['log','Activity','list'],['weather','Weather','cloud'],['chat','Assistant','chat']];
+function secNav(){
+ var side='<aside class="side"><div class="brand">'+logoImg(32)+'MyFarm</div>'+NAVITEMS.map(function(n,i){return '<button class="nav" data-navgo="'+n[0]+'"'+(i===0?' aria-current="page"':'')+'>'+ic(n[2])+n[1]+'</button>'}).join('')+'<div class="who"><span class="avatar">R</span><span><b style="display:block">Ram Jawade</b><small class="hint">Nashik · 9.60 ac</small></span></div></aside><main class="main"><div class="head"><div><h2 class="pt">Good morning, Ram</h2><p class="sub">Thursday 01 Oct · 29°C, clear</p></div><button class="btn p" tabindex="-1">+ Log activity</button></div><div class="sk"><i style="width:60%"></i><i style="width:85%"></i><i style="width:45%"></i></div></main>';
+ var mob='<main class="main" style="flex:1;min-height:0"><div class="head"><div><h2 class="pt">Good morning, Ram</h2><p class="sub">Thursday 01 Oct · 29°C, clear</p></div></div><div class="sk"><i style="width:80%"></i><i style="width:55%"></i></div></main><nav class="tabs">'+NAVITEMS.slice(0,5).map(function(n,i){return '<button class="nav" data-navgo="'+n[0]+'"'+(i===0?' aria-current="page"':'')+'>'+ic(n[2],20)+n[1]+'</button>'}).join('')+'</nav>';
+ return sec('ds-nav-sec','Navigation','Six destinations. Desktop shows all six in a sidebar. Phone shows five in a tab bar and moves the sixth, Assistant, into the floating button menu. Tap an item to move the highlight.',
+  '<div class="ds-var"><div class="ds-col"><div class="ds-lab">Desktop · sidebar and top toolbar</div><div class="ds-scroll"><div class="ds-dev flush"><div class="app ds-h360" id="navDesk">'+side+'</div></div></div></div><div class="ds-col m"><div class="ds-lab">Mobile · tab bar</div><div class="ds-dev flush"><div class="app mb ds-h440" id="navMob" style="flex-direction:column">'+mob+'</div></div></div></div>'+
+  '<div class="ds-lab">How navigation changes</div>'+tbl(['','Desktop','Mobile'],[['Main menu','Sidebar, 204px, icon and label side by side','Tab bar, icon above a 11px label'],['Top toolbar','Page title, one line of text, and the main action buttons on the right (<code>.head</code>). Every screen uses it, except the Assistant, which has a chat header (<code>.ch</code>: avatar, name, online dot)','Page title and text only. Main actions move to the floating button'],['Assistant','Sidebar item','Floating button menu action'],['Current item','Green tint, green text, <code>aria-current="page"</code>','Same'],['Forms and detail pages','The parent item stays current. Add crop and Crop detail keep Crops lit. Activity detail keeps Activity lit','Same'],['Account','Name and area at the bottom of the sidebar. Tapping it opens Profile','Round avatar to the left of the greeting on Home. Tapping it opens Profile']])
+ )
+}
+function secAlerts(){
+ var alert='<div class="alert">'+ic('warn',20)+'<div><b>Rain Sat–Sun, about 8 mm</b><div class="hint" style="color:var(--fg)">Finish spraying by Friday so it is not washed off.</div></div></div>';
+ var em=function(i,t,p,b){return '<div class="card"><div class="empty"><span class="ei">'+ic(i,26)+'</span><h3>'+t+'</h3><p>'+p+'</p><button class="btn p" tabindex="-1">'+b+'</button></div></div>'};
+ var empty=em('map','No lands yet','Draw the boundary of your first field on the map. You add crops to it afterwards.','Draw your first land')+em('sprout','No crops yet','Add a crop and link it to a saved land to start tracking it.','Add your first crop')+em('list','No activity yet','Log work done in the field, or plan what comes next.','Log your first activity');
+ var fallow='<div class="card"><div class="ldh"><b>Well Corner</b></div><div class="fallowcard"><div class="empty"><span class="ei">'+ic('sprout',26)+'</span><h3>Nothing growing on Well Corner</h3><p>Plant a crop to start tracking its work and costs.</p><button class="btn p" tabindex="-1">Add crop</button></div></div><p class="hint" style="margin:8px 2px 0">0.90 ac · Borewell · Kept fallow this season</p></div>';
+ var prompt='<div class="card brief"><h3>North Plot saved</h3><p>It is on your map. Add a crop to start tracking it.</p><div class="pcta"><button class="btn p" tabindex="-1">Add crop</button><button class="btn" tabindex="-1">Not now</button></div></div>';
+ var S='<div class="stack">'+alert+empty+fallow+prompt+'</div>';
+ return sec('ds-alerts','Alert banner and prompt cards','A banner warns about something in the world, such as weather. A prompt card suggests the next step. An empty state tells a new person what to do first, with one main button.',
+  pair(S,S)+
+  tbl(['Pattern','Spec'],[['Alert banner','<code>.alert</code>: amber tint, amber border, 20px warning icon, bold headline and one line of advice. Not dismissible. Use for weather, not for errors'],['Empty state','Centred. 56px icon circle, title, one sentence of at most 34 characters per line, one main button named for the action. One per screen: Lands, Crops, Activity. Full-width button on mobile'],['Empty land','For a land with no crop: a dashed <code>.fallowcard</code> holding the empty state, "Nothing growing on &lt;land&gt;" and one Add crop button, in place of the land figures. The land facts follow in one muted line. In the lands list the land shows a grey <code>.badge.mute</code> "Fallow" and the map draws it with a dashed outline. Lands that have crops get a small "+ Add another crop" link instead'],['Prompt card','<code>.card.brief</code> with a title, one sentence and two buttons: the next step first, then "Not now". "Not now" hides the card until the next save']])
+ )
+}
+function formFields(x){
+ var cl=function(a){return a};
+ return '<div class="frow">'+
+ '<div class="fld"><label class="req" for="ff-name-'+x+'">Land name</label><input id="ff-name-'+x+'" value="North Plot" autocomplete="off"></div>'+
+ '<div class="fld is-error"><label class="req" for="ff-crop-'+x+'">Crop name</label><input id="ff-crop-'+x+'" list="ff-crops-'+x+'" placeholder="e.g. Onion" aria-invalid="true" aria-describedby="ff-crop-e-'+x+'" autocomplete="off"><datalist id="ff-crops-'+x+'"><option value="Onion"><option value="Grapes"><option value="Tomato"></datalist><span class="err" id="ff-crop-e-'+x+'">Enter a crop name.</span></div>'+
+ '<div class="fld"><label class="req" for="ff-season-'+x+'">Season</label><select id="ff-season-'+x+'"><option>Kharif (Jun–Oct)</option><option>Rabi (Nov–Mar)</option><option>Zaid (Apr–May)</option></select></div>'+
+ '<div class="fld"><label for="ff-land-'+x+'">Link to saved land</label><select id="ff-land-'+x+'" disabled aria-describedby="ff-land-h-'+x+'"><option>No saved lands yet</option></select><span class="help" id="ff-land-h-'+x+'">Draw a land first.</span></div>'+
+ '<div class="fld"><label class="req" id="ff-area-l-'+x+'" for="ff-area-'+x+'">Total surface area</label><div class="unit"><input id="ff-area-'+x+'" type="number" min="0" step="0.01" value="2.40" aria-labelledby="ff-area-l-'+x+'"><select aria-label="Area unit"><option>Acres</option><option>Hectares</option></select></div></div>'+
+ '<div class="fld is-error"><label class="req" for="ff-date-'+x+'">Sowing date</label><input id="ff-date-'+x+'" type="date" aria-invalid="true" aria-describedby="ff-date-e-'+x+'"><span class="err" id="ff-date-e-'+x+'">Pick a sowing date.</span></div>'+
+ '<div class="fld"><label class="req" id="ff-st-l-'+x+'">Status</label><div class="rchips" role="radiogroup" aria-labelledby="ff-st-l-'+x+'"><label><input type="radio" name="ff-st-'+x+'" checked>Scheduled</label><label><input type="radio" name="ff-st-'+x+'">Completed</label><label><input type="radio" name="ff-st-'+x+'" disabled>Cancelled</label></div></div>'+
+ '<div class="fld"><label for="ff-notes-'+x+'">Notes</label><textarea id="ff-notes-'+x+'" rows="2" placeholder="Optional"></textarea></div>'+
+ '</div>'
+}
+function secForm(){
+ return sec('ds-form','Form fields','Label above, a star on required fields, error text under the field in the danger colour. Two columns on desktop, one on mobile. Each field has the states it needs: required, error and disabled.',
+  pair(formFields('d'),formFields('m'))+
+  tbl(['Field','Spec'],[['Input','One line. 8px radius, 1px border, 8px 10px padding'],['Select','Same box as the input. Always has a "Select …" first option'],['Combobox','Input with a list of suggestions. The user can type a value that is not in the list. Use the repo shared combobox and match this box'],['Date','Native date input. Shows the device date picker'],['Number with unit','Number input on the left, unit select on the right, 8px apart (<code>.unit</code>)'],['Radio chips','Pill chips, 8px apart, one selected (<code>.rchips</code>). The radio stays in the page for keyboards and screen readers'],['Textarea','Same box as the input, 2 to 3 rows. Optional by default']])+
+  tbl(['State','How it looks'],[['Required','Red star after the label'],['Error','Red border, red message under the field, <code>aria-invalid</code> on the field. The message id is the field id plus <code>-e</code>, linked with <code>aria-describedby</code>'],['Disabled','Grey fill, grey text, not-allowed cursor, and a help line saying why. The help id is the field id plus <code>-h</code>, linked with <code>aria-describedby</code>. Example: Link to saved land says "No saved lands yet" with the help "Draw a land first."'],['Focus','2px green outline, 2px offset']])
+ )
+}
+
+
+var KM={d:'crop',m:'crop'};
+var ACTTAB={d:'all',m:'all'},DETAIL={};
+function cropCardHtml(open,key){
+ return '<div class="card crop'+(open?' mopen':'')+'" style="position:relative;padding:0;cursor:default"><div class="cropmain" style="cursor:default"><div style="display:flex;justify-content:space-between;gap:8px;padding-right:34px;align-items:center"><span style="display:flex;align-items:center;gap:10px;min-width:0"><span class="cico" aria-hidden="true">'+ic('veg',20)+'</span><b style="font-family:var(--display);font-size:17px">Onion</b></span><span class="badge mute">2 activities</span></div><div class="cstat"><div><small>Plot</small><b>North Plot</b></div><div><small>Age</small><b>80 days</b></div><div><small>Area</small><b>2.40 ac</b></div></div>'+stepper(2)+'</div>'+
+ '<button class="ibtn2" '+(key?'data-kmenu="'+key+'" ':'tabindex="-1" ')+'aria-label="Actions for Onion" aria-haspopup="menu" aria-expanded="'+!!open+'" title="Actions" style="position:absolute;top:8px;right:8px">'+ic('more',16)+'</button>'+
+ (open?'<div class="kmenu" role="menu" aria-label="Onion actions"><button role="menuitem" tabindex="-1">'+ic('edit',16)+' Edit crop</button><button role="menuitem" class="kdel" tabindex="-1">'+ic('trash',16)+' Delete crop</button></div>':'')+'</div>'
+}
+function landRowHtml(open,key){
+ return '<div class="card" style="padding:var(--s-2) var(--s-4)"><div class="row'+(open?' mopen':'')+'" style="position:relative"><button class="lrow" tabindex="-1"><span class="dot" style="background:var(--clay)"></span><div class="grow"><b>North Plot</b><small>Onion</small></div><span class="amt">2.40 ac</span></button><button class="ibtn2" data-kmenu="'+key+'" aria-label="Actions for North Plot" aria-haspopup="menu" aria-expanded="'+!!open+'" title="Actions">'+ic('more',16)+'</button>'+
+ (open?'<div class="kmenu" role="menu" aria-label="North Plot actions" style="top:40px;right:0"><button role="menuitem">'+ic('edit',16)+' Rename land</button><button role="menuitem" class="kdel">'+ic('trash',16)+' Delete land</button></div>':'')+'</div></div>'
+}
+function menuDemoHtml(sfx){return '<div class="stack">'+cropCardHtml(KM[sfx]==='crop',sfx+'-crop')+landRowHtml(KM[sfx]==='land',sfx+'-land')+'</div>'}
+function renderMenus(){['d','m'].forEach(function(x){var el=document.getElementById('menuDemo-'+x);if(el)el.innerHTML=menuDemoHtml(x)})}
+function secMenu(){
+ var D='<div class="km-demo" id="menuDemo-d">'+menuDemoHtml('d')+'</div>',M='<div class="km-demo" id="menuDemo-m">'+menuDemoHtml('m')+'</div>';
+ return sec('ds-menu','Row actions menu','One menu button on a card or row that has two or more actions. It opens a small menu under the button. A single action stays as its own icon button. Tap the buttons to try it. Esc closes it.',
+  pair(D,M)+
+  tbl(['Part','Spec'],[['Trigger','34px icon button (<code>.ibtn2</code>) with the <code>bi-three-dots-vertical</code> icon. <code>aria-label</code> "Actions for &lt;name&gt;", <code>aria-haspopup="menu"</code> and <code>aria-expanded</code>'],['Menu','<code>.kmenu</code>, <code>role="menu"</code>. Under the trigger, right-aligned, 160px minimum width, surface fill, 1px border, <code>--r-md</code> radius, <code>--shadow-2</code>, <code>--s-1</code> padding, layer <code>--z-float</code>. The card or row that owns it gets <code>.mopen</code> with the same layer, so it sits above its neighbours'],['Items','<code>role="menuitem"</code>. 16px icon and a label, 8px 12px padding. Hover and keyboard focus fill <code>--surface2</code>'],['Delete item','Last in the menu. <code>.kdel</code>: danger text, danger tint on hover. It still opens the confirmation popup'],['Items today','Crop card: Edit crop, Delete crop. Land row: Rename land, Delete land'],['Behaviour','Opens with the first item focused. Closes on Esc (focus returns to the trigger), a click outside, picking an item, or changing screen. One menu open at a time']]))
+}
+
+function secDetail(){
+ var back='<button class="lnk" tabindex="-1" style="margin:0 0 var(--s-2);text-decoration:none"><span style="display:inline-flex;transform:rotate(180deg)">'+ic('chev',14)+'</span> All crops</button>';
+ var title='<span style="display:inline-flex;align-items:center;gap:10px"><span class="cico" aria-hidden="true">'+ic('veg',20)+'</span>Onion</span>';
+ var cell=function(k,v){return '<div><small>'+k+'</small><b>'+v+'</b></div>'};
+ var plot='<button class="lnk" tabindex="-1" style="margin:0;padding:0;font-size:inherit;white-space:nowrap;text-align:left">North Plot</button>';
+ var tiles='<div class="grid g4"><div class="card kpi"><small>Age</small><b>82 days</b><br><span>since 12 Jul</span></div><div class="card kpi"><small>Activities</small><b>3</b><br><span>2 done · 1 planned</span></div><div class="card kpi"><small>Crop cost</small><b>₹34,200</b><br><span>so far</span></div><div class="card kpi"><small>Area</small><b>2.40 ac</b><br><span>under crop</span></div></div>';
+ var stp='<div class="card"><h3>Stage</h3>'+stepper(2)+'</div>';
+ var small='<div class="card"><h3>Timeline</h3><div class="tl"><div class="plan"><b>Harvest</b> <small class="hint">expected in 18 days</small></div><div class="plan"><b>Irrigation</b> <small class="hint">05 Oct · scheduled</small><div class="hint">Drip, 4 hours</div></div><div><b>Irrigation</b> <small class="hint">26 Sep</small><div class="hint">Drip, 3 hours</div></div><div><b>Fertilizer Application</b> <small class="hint">24 Sep</small><div class="hint">NPK 19:19:19, 12 bags</div></div><div><b>Planting</b> <small class="hint">12 Jul</small></div></div></div>';
+ var chip=function(top,bot,hot){return '<div style="flex:none;width:44px;text-align:center;border-radius:var(--r-md);padding:4px 0;line-height:1.15;background:var(--'+(hot?'sun':'leaf')+'-soft);color:var(--'+(hot?'sun':'leaf-ink')+')"><b style="display:block;font-size:16px">'+top+'</b><small style="color:inherit;font-size:11px">'+bot+'</small></div>'};
+ var actRow=function(d,name,line,right,hot){var p=d.split(' ');return '<button type="button" class="row" tabindex="-1" style="width:100%;background:none;border:0;border-top:1px solid var(--line);text-align:left;font:inherit;color:inherit;cursor:pointer">'+chip(p[0],p[1]||'',hot)+'<div class="grow"><b>'+name+'</b><small>'+line+'</small></div>'+(right||'')+'<span aria-hidden="true" style="flex:none;display:inline-flex;color:var(--muted)">'+ic('chev',14)+'</span></button>'};
+ var actCard=function(sfx){var tab=ACTTAB[sfx];
+  var up=actRow('05 Oct','Irrigation','Drip, 4 hours','<span class="badge sun">Scheduled</span>',true)+'<div class="row">'+chip('18','days',false)+'<div class="grow"><b>Harvest</b><small>Expected</small></div><span class="badge">Expected</span><span aria-hidden="true" style="flex:none;width:14px"></span></div>';
+  var done=actRow('26 Sep','Irrigation','No expenses','<span class="amt">–</span>')+actRow('24 Sep','Fertilizer Application','3 expenses'+(sfx==='d'?' · mostly Fertilizer':''),'<span class="amt">₹14,400</span>');
+  return '<div class="card"><h3>Activities<button class="lnk" tabindex="-1" style="margin:0;padding:0;font-size:14px;text-decoration:none">View all '+ic('chev',14)+'</button></h3><div class="chips" role="group" aria-label="Filter activities" style="gap:6px">'+[['all','All',4],['up','Upcoming',2],['rc','Recent',2]].map(function(x){return '<button type="button" class="chip" style="padding:4px 10px" data-acttab="'+sfx+'-'+x[0]+'" aria-pressed="'+(tab===x[0])+'">'+x[1]+' · '+x[2]+'</button>'}).join('')+'</div>'+(tab==='rc'?done:tab==='up'?up:up+done)+'</div>'};
+ var hd=function(act){return '<div class="head"><div><h2 class="pt">'+title+'</h2><p class="sub">'+plot+' · Flowering</p></div><div style="display:flex;gap:8px;align-items:center">'+act+'</div></div>'};
+ var D=function(){return back+hd('<button class="btn p" tabindex="-1">+ Log activity</button>')+'<div class="stack">'+stp+tiles+'<div class="grid g2">'+actCard('d')+small+'</div></div>'};
+ var M=function(){return back+hd('')+'<div class="stack">'+stp+tiles+actCard('m')+small+'</div>'};
+ DETAIL={d:D,m:M};
+ return sec('ds-detail','Detail page','A page for one item, opened from its card or row. A back link, a header with the main action, the stage, four key-number tiles, then the activities and the timeline.',
+  '<div class="ds-var"><div class="ds-col"><div class="ds-lab">Desktop</div><div class="ds-scroll"><div class="ds-dev" id="detailDemo-d">'+D()+'</div></div></div><div class="ds-col m"><div class="ds-lab">Mobile</div><div class="ds-dev mb" id="detailDemo-m">'+M()+'</div></div></div>'+
+  tbl(['Part','Spec'],[['Opening','Tap a crop card in the Crops list, or the "View crop details" link in the land details strip on Lands'],['Back link','<code>.lnk</code> above the title with the chevron rotated 180°, the text "All crops", no underline, <code>margin: 0 0 var(--s-2)</code>. Goes to the Crops list'],['Header','<code>.head</code>. Title is the crop type icon on <code>.cico</code> plus the crop name. Subtitle: "&lt;land&gt; · &lt;stage&gt;", for example "Orchard Strip · Growth". The land name is a <code>.lnk</code> button (no margin or padding, inherited size, no wrap, left aligned) that opens Lands with that land selected. Keep the subtitle on one line on a phone. Desktop: only "+ Log activity" (<code>.btn.p</code>) on the right. Mobile: no header buttons, and the floating button is a single Log activity button'],['Stage card','<code>.card</code>. Title "Stage" and the stepper only. It comes first, above the tiles. No bar and no percentage: the detail page does not show the percentage'],['Key-number tiles','<code>.grid.g4</code> of <code>.card.kpi</code>. Four across on desktop, two on mobile. Each tile has a label, the value, a line break and a caption under the value. In order: Age ("82 days", caption "since 12 Jul", "Today" if sown today), Activities (the total number, caption "&lt;N&gt; done · &lt;M&gt; planned", for example "6 done · 1 planned". Done is the activities with status Completed. Planned is the activities that are not Completed and not Cancelled), Crop cost (the amount, caption "so far"), Area (the area of the plot, caption "under crop")'],['Timeline card','<code>.card</code>. Title "Timeline", then a <code>.tl</code> list. The expected harvest comes first (hollow dot, <code>.plan</code>, only if no Harvest is planned), then the planned items (hollow), then the completed items (solid), ending with "Planting &lt;sown date&gt;"'],['Activities card','<code>.card</code>. The rows are the shared activity row (see Activity row). Title "Activities", then a filter chip group (<code>.chips</code>, <code>role="group"</code>, <code>aria-label="Filter activities"</code>, 6px gap) holding three <code>button.chip</code> buttons: "All · N" (selected by default), "Upcoming · N" and "Recent · N". The selected chip has <code>aria-pressed="true"</code> and the others <code>aria-pressed="false"</code>. Each chip has <code>padding: 4px 10px</code> so all three fit on one row at 400px. There is no tab list here. Rows are led by a date chip: 44px wide, day over month (for example 03 / Oct), <code>--r-md</code> radius, 4px 0 padding, line height 1.15, day in bold 16px, month 11px. Each row is a full-width <code>button.row</code> (left aligned, inherits font and colour, no background or border except the hairline on top) with a muted 14px chevron at the right edge. It will open an activity page later. Then the name with a small line under it. Upcoming rows show the notes (or the status if there are none). Completed rows show the expenses: more than one gives "N expenses", with " · mostly &lt;top category&gt;" on desktop only. One gives its category (or the notes if it has no category). None gives "No expenses". On the right, before the chevron: a <code>.badge.sun</code> status for upcoming rows, the total as <code>.amt</code> for completed rows (a dash if there is no cost). An activity can carry a list of expense lines (category and amount) and its total is their sum. The soonest upcoming row has a <code>--sun-soft</code> chip with <code>--sun</code> text. Every other row has a <code>--leaf-soft</code> chip with <code>--leaf-ink</code> text. The expected harvest row (left out when a Harvest activity is already planned) shows the days left on the chip (for example 18 / days), the name "Harvest" with the line "Expected", and a <code>.badge</code> "Expected" on the right, followed by a 14px empty spacer so the badge lines up with the other rows. All: the upcoming rows including the expected harvest, then all completed rows. Upcoming: the planned rows (status not Completed or Cancelled) and the expected harvest. Recent: the last 5 completed activities, newest first. Empty text for Recent: "No completed activity yet." Heading row: the title "Activities" on the left and a "View all" link at the top right (<code>button.lnk</code> inside the <code>.card h3</code>, which is already flex with space between; inline <code>margin: 0; padding: 0; font-size: 14px; text-decoration: none</code>) with a 14px chevron. It opens the Activity page. Order in the card: heading row, filter chips, rows. Nothing below the rows. There is no "+ Log" button in the card: logging is the page header button on desktop and the floating button on mobile'],['Layout','Same order on both: back link, header, Stage card, key-number tiles, then the rest. Desktop: Activities on the left and Timeline on the right (<code>.grid.g2</code>). Mobile: Activities first, then Timeline, all stacked'],['Behaviour','The sidebar and tab bar keep Crops highlighted. Edit crop and Delete crop are not on this page: they are only in the actions menu on crop cards in the Crops list. Log activity opens the activity form with this crop and its land selected']]))
+}
+
+function dateChip(top,bot,hot){return '<div style="flex:none;width:44px;text-align:center;border-radius:var(--r-md);padding:4px 0;line-height:1.15;background:var(--'+(hot?'sun':'leaf')+'-soft);color:var(--'+(hot?'sun':'leaf-ink')+')"><b style="display:block;font-size:16px">'+top+'</b><small style="color:inherit;font-size:11px">'+bot+'</small></div>'}
+function actRowHtml(d,name,sub,right){var p=d.split(' ');return '<button type="button" class="row" tabindex="-1" style="width:100%;background:none;border:0;border-top:1px solid var(--line);text-align:left;font:inherit;color:inherit;cursor:pointer">'+dateChip(p[0],p[1]||'',right.hot)+'<div class="grow"><b>'+name+'</b><small>'+sub+'</small></div>'+right.html+'<span aria-hidden="true" style="flex:none;display:inline-flex;color:var(--muted)">'+ic('chev',14)+'</span></button>'}
+function secActRow(){
+ var amt=function(t){return {html:'<span class="amt">'+t+'</span>'}},up={html:'<span class="badge sun">Scheduled</span>',hot:true};
+ var page=function(desk){
+  var rows=actRowHtml('05 Oct','Irrigation','River Field · Drip, 4 hours',up)+actRowHtml('28 Sep','Spray Application','Tank Side · 2 expenses'+(desk?' · mostly Pesticide':''),amt('₹1,850'))+actRowHtml('24 Sep','Fertilizer Application','River Field · 3 expenses'+(desk?' · mostly Fertilizer':''),amt('₹14,400'))+actRowHtml('21 Sep','Labour Activity','Orchard Strip · Labour',amt('₹3,600'));
+  var chips='<div class="chips">'+['All','Irrigation','Spray Application','Fertilizer Application','Labour Activity','Harvest'].map(function(x,i){return '<button type="button" class="chip" tabindex="-1" aria-pressed="'+(i===0)+'">'+x+'</button>'}).join('')+'</div>';
+  return '<div class="head"><div><h2 class="pt">All activities</h2><p class="sub">Everything done in the field, with what it cost.</p></div>'+(desk?'<div style="display:flex;gap:8px"><button class="btn" tabindex="-1">+ Expense</button><button class="btn p" tabindex="-1">+ Log</button></div>':'')+'</div><div class="stack"><div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="card kpi"><small>Total expenses</small><b>₹1,24,500</b><br><span>this season</span></div><div class="card kpi"><small>Activities</small><b>4</b><br><span>3 done · 1 planned</span></div></div><div class="card"><h3>Activities</h3>'+chips+rows+'</div></div>'};
+ return sec('ds-actrow','Activity row','One row for an activity, used on the Activity page and in the Activities card on the crop detail page. It is a button that opens the activity detail page.',
+  '<div class="ds-var"><div class="ds-col"><div class="ds-lab">Activity page · desktop</div><div class="ds-dev">'+page(true)+'</div></div><div class="ds-col m"><div class="ds-lab">Activity page · mobile</div><div class="ds-dev mb">'+page(false)+'</div></div></div>'+
+  tbl(['Part','Spec'],[['Row','Full-width <code>button.row</code>: left aligned, inherits font and colour, no background or border except the hairline on top. Date chip, name with a small line under it, a right-hand element, then a muted 14px chevron'],['Date chip','44px wide, day over month, <code>--r-md</code> radius, 4px 0 padding. The soonest upcoming row uses <code>--sun-soft</code> with <code>--sun</code> text. Every other row uses <code>--leaf-soft</code> with <code>--leaf-ink</code> text'],['Right element','A <code>.badge.sun</code> status for activities that are not completed. For completed activities, the total as <code>.amt</code>, or a dash if there is no cost'],['Second line','Upcoming: the notes (or the status if there are none). Completed: more than one expense gives "N expenses", with " · mostly &lt;top category&gt;" on desktop only. One expense gives its category (or the notes if it has no category). None gives "No expenses"'],['On the Activity page','The second line starts with the plot name: "Tank Side · 3 expenses · mostly Fertilizer", or "&lt;plot&gt; · &lt;notes&gt;" for upcoming rows. No plot shows "No field". Rows sit under the collapsible filter bar (see Filter bar)'],['On the crop detail page','The same row without the plot name, because the page is already about one crop'],['Key-number tiles','Between the header and the content: two <code>.card.kpi</code> tiles in a <code>.grid</code> with <code>grid-template-columns: repeat(2, minmax(0, 1fr))</code>, two equal columns on desktop and mobile. Tile 1: "Total expenses", the season total, a line break, "this season". Tile 2: "Activities", the total number of activities, a line break, then "&lt;N&gt; done · &lt;M&gt; planned" (for example "6 done · 1 planned"; done is Completed, planned is not Completed and not Cancelled). Same tile markup as the crop detail page'],['Page layout','Header with "+ Expense" and "+ Log" on desktop only (the floating button on mobile), then the two tiles, then the content. Desktop: the Activities card on the left and the Season expenses card on the right (<code>.grid.g2</code>). Mobile: Season expenses first, then Activities']]))
+}
+
+function secActDetail(){
+ var back='<button class="lnk" tabindex="-1" style="margin:0 0 var(--s-2);text-decoration:none"><span style="display:inline-flex;transform:rotate(180deg)">'+ic('chev',14)+'</span> All activities</button>';
+ var done=function(cls){return '<button class="btn'+cls+'" tabindex="-1">Mark done</button>'};
+ var hd=function(mob){var bt=done(' p')+'<button class="btn" tabindex="-1">Edit</button><button class="btn" tabindex="-1" style="color:var(--rose)">Delete</button>',wr='display:flex;flex-wrap:wrap;gap:var(--s-2)';return back+'<div class="head"><div><h2 class="pt"><span style="display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap">Irrigation<span class="badge sun">Scheduled</span></span></h2><p class="sub">05 Oct · River Field · <button class="lnk" tabindex="-1" style="margin:0;padding:0;font-size:inherit;text-decoration:none;white-space:nowrap">Grapes</button></p></div>'+(mob?'':'<div style="'+wr+'">'+bt+'</div>')+'</div>'+(mob?'<div style="'+wr+';margin:0 0 var(--s-3)">'+bt+'</div>':'')};
+ var xrow=function(n,a,p,c,open){return '<div style="position:relative;display:flex;justify-content:space-between;align-items:center;gap:var(--s-2);padding:var(--s-2) 0;border-top:1px solid var(--line)"><span style="display:inline-flex;align-items:center;gap:var(--s-2)"><i aria-hidden="true" style="width:10px;height:10px;border-radius:50%;background:var('+c+')"></i><b>'+n+'</b> <small class="hint">'+p+'%</small></span><span style="display:inline-flex;align-items:center;gap:var(--s-1)"><span class="amt">'+a+'</span><button type="button" class="ibtn2" tabindex="-1" aria-label="Actions for '+n+' expense" aria-haspopup="menu" aria-expanded="'+!!open+'" title="Actions">'+ic('more',16)+'</button></span>'+(open?'<div class="kmenu" role="menu" aria-label="'+n+' expense actions" style="top:44px;right:0"><button role="menuitem" tabindex="-1">'+ic('edit',16)+' Edit expense</button><button role="menuitem" class="kdel" tabindex="-1">'+ic('trash',16)+' Delete expense</button></div>':'')+'</div>'};
+ var exp=function(open){return '<div class="card"><h3>Expenses<button class="btn p" tabindex="-1" style="font-size:14px;font-family:inherit">+ Add expense</button></h3><div style="font-family:var(--display);font-size:28px;font-weight:700;line-height:1.1">₹800</div><small class="hint">across 2 expenses</small><div style="display:flex;height:12px;border-radius:var(--r-pill);overflow:hidden;gap:2px;margin:var(--s-2) 0 var(--s-4)" role="img" aria-label="Expense split"><i style="width:65%;background:var(--grape)"></i><i style="width:35%;background:var(--sun)"></i></div>'+xrow('Water','₹520',65,'--grape',open)+xrow('Labour','₹280',35,'--sun',false)+'</div>'};
+ var det='<div class="card"><h3>Notes</h3><p style="margin:0">Drip, 4 hours</p></div>';
+ var D=hd(false)+'<div class="stack"><div class="grid g2">'+exp(true)+det+'</div></div>';
+ var M=hd(true)+'<div class="stack">'+exp(false)+det+'</div>';
+ return sec('ds-actdetail','Activity detail page','A page for one activity, opened by tapping an activity row on the Activity page or on the crop detail page. The sidebar and tab bar keep Activity highlighted. There is no floating button here.',
+  '<div class="ds-var"><div class="ds-col"><div class="ds-lab">Desktop</div><div class="ds-scroll"><div class="ds-dev">'+D+'</div></div></div><div class="ds-col m"><div class="ds-lab">Mobile</div><div class="ds-dev mb">'+M+'</div></div></div>'+
+  tbl(['Part','Spec'],[['Back link','<code>.lnk</code> with the chevron rotated 180°, no underline, <code>margin: 0 0 var(--s-2)</code>. The text is "All activities", or the crop name when the page was opened from a crop page. It goes back to where it came from'],['Header','<code>.head</code>. The title holds the activity type and a status badge beside it (inline flex, 10px gap, wraps): <code>.badge</code> when completed, <code>.badge.sun</code> otherwise. Subtitle: "&lt;date&gt; · &lt;plot&gt; · &lt;crop&gt;", where the crop is a <code>button.lnk</code> (margin 0, padding 0, inherited font size, no underline, no wrap) that opens the crop page'],
+['Action buttons','Depend on the status (see Activity types and statuses). Mark done is <code>.btn.p</code> and comes first when shown. Start, Restore, Edit and Cancel activity are <code>.btn</code>. Delete is <code>.btn</code> with <code>color: var(--rose)</code> and comes last. Desktop: in the right side of the header, in a flex row that wraps, gap <code>var(--s-2)</code>. Mobile: the same row between the header and the cards, <code>margin-bottom: var(--s-3)</code>'],
+['Edit activity','The Edit button opens the Log activity form in edit mode: page title "Edit activity", subtitle "Update the details of this activity.", fields filled in (name, date, season worked out from the date, linked crop, linked field, status, notes), primary button "Save changes", and Cancel, which returns to the activity. If the status is not Draft, In Progress or Completed (for example Scheduled), it shows as an extra status chip. Saving updates the activity, returns to its page, and shows the toast "Activity updated." with no Undo. The expense lines are kept'],
+['Delete activity','The Delete button opens the danger confirmation popup (same one as the other deletes): title "Delete this activity?", message "&lt;activity&gt; on &lt;date&gt; and its N expenses (&lt;total&gt;) will be removed. Season expenses update." (the expenses part is left out when there are none), buttons Delete activity and Cancel. On confirm the activity goes, the Season expenses categories go down by its expense lines, and the page returns to where the user came from (the crop page or the Activity list). The toast "Activity deleted." has Undo for 6 seconds, and Undo puts the activity back in its position with its expenses and the Season totals'],
+['Layout','Desktop: Expenses on the left and Notes on the right (<code>.grid.g2</code>). Mobile: Expenses, then Notes, stacked. With no notes there is no Notes card and Expenses is full width (no <code>.grid.g2</code>)'],['Expenses card','<code>.card</code>. Title "Expenses" (the heading is already flex with space between) with a primary <code>.btn.p</code> "+ Add expense" on the right, 14px, font inherited. It opens the Add expense form with this activity selected. Cancel or Save returns here. There is no total in the heading. Then a hero total in the display font, 28px, bold, line-height 1.1, and under it <code>small.hint</code> "across N expenses" ("across 1 expense" when there is one). Then a split bar: flex, 12px high, <code>var(--r-pill)</code>, overflow hidden, 2px gap, margin <code>var(--s-2) 0 var(--s-4)</code>, <code>role="img"</code> with <code>aria-label="Expense split"</code>, holding one <code>i</code> per expense as wide as its share of the total, in its category colour. Then a legend with one row per expense: flex, space between, centred, gap <code>var(--s-2)</code>, padding <code>var(--s-2) 0</code>, hairline top border. Left: a 10px round dot in the category colour (from Season expenses, or <code>var(--muted)</code> if unknown), the category in <code>b</code> and its percent in <code>small.hint</code>. Right: an inline flex group (gap <code>var(--s-1)</code>) with the amount as <code>.amt</code> and a row menu button (<code>.ibtn2</code>, three-dots icon at 16px, <code>aria-label="Actions for &lt;category&gt; expense"</code>, <code>aria-haspopup="menu"</code>, <code>aria-expanded</code>, <code>title="Actions"</code>). The row is <code>position: relative</code>. See Row actions menu for how the menu behaves. With no expenses, only the hint "No expenses recorded for this activity." (no total or bar). The card ends with the legend rows (or the empty hint)'],['Notes card','<code>.card</code>. Title "Notes" with the text below it. Only shown when the activity has notes'],['Mark done','The first action button, when the activity is not completed. Sets the status to Completed and shows the toast "Marked as done."'],['Row menu','Same pattern as the crop card menu. Tapping the button opens <code>.kmenu</code> (<code>role="menu"</code>, <code>aria-label="&lt;category&gt; expense actions"</code>, <code>top: 44px; right: 0</code> under the row) with two <code>role="menuitem"</code> items: Edit expense, then Delete expense. Focus moves to the first item. Esc closes it and returns focus to the button. A tap outside closes it, and so does choosing an item'],
+['Edit expense','"Edit expense" is the first item in the row menu (edit icon at 16px). It opens the Add expense form in edit mode: page title "Edit expense", subtitle "Update the category or amount of this expense.", the Activity select disabled, category and amount filled in, primary button "Save changes", and Cancel, which returns to the activity. Saving updates that line, the activity total, the bar and the percentages. If the category changed, the amount moves between Season expenses categories. The toast is "Expense updated." with no Undo'],
+['Delete expense','"Delete expense" is the second item in the row menu (<code>.kdel</code>, trash icon at 16px). It opens the danger confirmation popup (same one as delete crop and delete land): title "Delete this expense?", message "&lt;category&gt; &lt;amount&gt; will be removed from &lt;activity&gt;. The activity total and season expenses update.", buttons Delete expense and Cancel. On confirm the line goes, the hero total, split bar and percentages update, and the same amount comes off that category in Season expenses. The toast "Expense deleted." has Undo for 6 seconds, and Undo puts the line back in its position with the totals. Deleting the last line shows the empty hint'],['Expense lines','An activity keeps a list of expense lines (category and amount). Adding an expense appends a line. An activity with a cost but no lines shows one "Other" line']]))
+}
+var LOGO='data:image/webp;base64,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';
+function logoImg(px){return '<img src="'+LOGO+'" alt="" width="'+px+'" height="'+px+'" style="border-radius:50%;flex:none;display:block">'}
+function secBrand(){
+ return sec('ds-brand','Brand','The MyFarm logo: a sprout with its roots in the soil, a rising sun and the field behind, inside a green ring. It replaces the leaf icon that stood in for the brand.',
+  '<div class="ds-lab">Logo sizes</div><div class="ds-demo"><div class="ds-logo"><div>'+logoImg(96)+'96 · splash, about</div><div>'+logoImg(44)+'44 · page header</div><div>'+logoImg(32)+'32 · sidebar</div><div>'+logoImg(24)+'24 · too small</div></div></div>'+
+  '<div class="ds-lab">On the Warli sign-in hero</div><div class="ds-warli"><span>'+logoImg(36)+'</span><b style="font-size:18px">MyFarm</b></div>'+
+  tbl(['Use','Rule'],[['Sidebar','32px, round, beside the word MyFarm in Bricolage Grotesque'],['Sign-in hero','36px inside a 40px white circle with <code>--shadow-1</code>, so it stands out on the mud-brown background'],['Small sizes','Under 32px the roots and leaf ring blur. Browser tab, app icon and anything under 32px need a simplified mark: sprout, sun and ring only'],['Source','Embedded at 128px as WebP. Keep the full artwork for 96px and up']]))
+}
+function secBanner(){
+ var K=[['warning','Price alert','bell','Onion reached your ₹2,100 alert','Now ₹2,150 per quintal at Lasalgaon APMC.','View price history',1],['critical','Problem','warn','Your last 3 changes were not saved','Check your connection. We will keep trying.','Try now',0],['info','Update','info','New version available','Version 2.4 adds sale tracking and mandi prices.','Update now',1],['new','New','star','New: record your sales','See profit per acre for every crop.','Take a look',1]];
+ var bn=function(k){return '<div class="bn k-'+k[0]+'" role="'+(k[0]==='critical'?'alert':'status')+'"><span class="bn-i">'+ic(k[2],18)+'</span><div class="bn-t"><span class="bn-k">'+k[1]+'</span><b>'+k[3]+'</b><span class="bn-m">'+k[4]+'</span><button class="lnk" tabindex="-1">'+k[5]+' '+ic('chev',12)+'</button></div>'+(k[6]?'<button class="ibtn2" tabindex="-1" aria-label="Dismiss" style="width:28px;height:28px">'+ic('x',14)+'</button>':'')+'</div>'};
+ var S='<div class="stack">'+K.map(bn).join('')+'</div>',T='<div class="stack">'+bn(K[1])+bn(K[0])+'<div class="bn-more"><span>3 more notifications</span><button class="lnk" tabindex="-1" style="margin:0;padding:0;text-decoration:none">View all '+ic('chev',12)+'</button></div></div>';
+ return sec('ds-banner','Banners','One banner for everything the app tells the farmer: price alerts, problems, updates and news. A white card like the rest of the app. The kind sets only the icon chip and a small label, so different banners still look like one family. Only a problem gets a coloured border.',
+  pair(S,S)+'<div class="ds-lab">When several are active</div>'+pair(T,T)+
+  tbl(['Kind','Class','Dismiss','Use'],[['Problem','<code>.bn.k-critical</code>, rose','Cannot dismiss','Something is broken or data may be lost. Stays until fixed. Always on top'],['Warning','<code>.bn.k-warning</code>, amber','Can dismiss','Needs action soon: price alert reached, rain coming, activity overdue. A falling price alert uses the rose chip'],['Info and update','<code>.bn.k-info</code>, sky','Can dismiss, or Later','A new version, a service notice, delayed prices'],['New','<code>.bn.k-new</code>, green','Dismiss, shown once','A new feature or a tip']])+
+  tbl(['Part','Spec'],[['Card','<code>.bn</code>: surface, 1px border, <code>--r-lg</code>, 12px padding, 12px gap'],['Chip','36px, <code>--r-md</code>, kind tint with the kind colour, 18px icon'],['Text','Kind label (11px caps, kind colour), bold title, one muted line, then one link action'],['Stacking','At most two banners at the top of a screen, problem first, then warning, update, news. The rest collapse into one dashed "N more notifications" row. A dismissed banner stays gone until its content changes'],['Where','Home and the screen it is about (a price alert also shows on Prices)']]))
+}
+function secAStatus(){
+ var ST=[['Draft','mute'],['Scheduled','sky'],['In Progress','sun'],['Completed',''],['Cancelled','rose']];
+ var badges='<div class="ds-demo">'+ST.map(function(x){return '<span class="badge'+(x[1]?' '+x[1]:'')+'">'+x[0]+'</span>'}).join('')+'<span style="text-decoration:line-through;color:var(--muted);font-weight:600">Spray Application</span></div>';
+ var TY=[['Sowing','sprout'],['Irrigation','cloudrain'],['Fertilizer Application','layers'],['Spray Application','cloud'],['Weeding','leaf'],['Field Inspection','search'],['Labour Activity','list'],['Harvest','wheat'],['Sale','rupee'],['Weather Incident','warn'],['Maintenance','edit'],['Custom','plus']];
+ var chips=function(x){return '<div class="fld"><label class="req">Activity type</label><div class="rchips" role="radiogroup" aria-label="Activity type">'+TY.map(function(t,i){return '<label><input type="radio" name="ty-'+x+'"'+(i===1?' checked':'')+'><span style="display:inline-flex;align-items:center;gap:6px">'+ic(t[1],14)+t[0]+'</span></label>'}).join('')+'</div></div>'};
+ return sec('ds-astatus','Activity types and statuses','The twelve activity types from the repo, picked as chips with an icon, and the five statuses with one colour each. The same colours are used on every list and page.',
+  '<div class="ds-lab">Statuses</div>'+badges+'<div class="ds-lab">Type picker</div>'+pair(chips('d'),chips('m'))+
+  tbl(['Status','Badge','Actions on the detail page'],[['Draft','<code>.badge.mute</code>','Mark done, Start, Edit, Cancel activity, Delete'],['Scheduled','<code>.badge.sky</code>','Mark done, Start, Edit, Cancel activity, Delete'],['In Progress','<code>.badge.sun</code>','Mark done, Edit, Cancel activity, Delete'],['Completed','<code>.badge</code> (green)','Edit, Delete'],['Cancelled','<code>.badge.rose</code>, title struck through in lists','Restore (back to Scheduled), Edit, Delete']])+
+  tbl(['Rule','Spec'],[['Default status','Follows the date: a future date is Scheduled, today or earlier is Completed. Once the farmer picks a status, it stays'],['Custom type','Picking Custom shows a required "Custom activity name" field'],['Status chips','All five as <code>.rchips</code> under the type picker, with the help line "Set from the date"']]))
+}
+function secFilter(){
+ var sel=function(l,v){return '<label class="lf"><span>'+l+'</span><select tabindex="-1"><option>'+v+'</option></select></label>'};
+ var head=function(open,chips){return '<div class="card lfbar act"><div class="lfhead"><button type="button" class="lftog on" tabindex="-1" aria-expanded="'+open+'"><svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M1.5 2.5h13l-5 6v5l-3-1.5V8.5z"/></svg>Filters<span class="lfn">2</span><span aria-hidden="true" style="display:inline-flex;transform:rotate('+(open?-90:90)+'deg)">'+ic('chev',12)+'</span></button>'+(chips?'<div class="lfchips"><span class="lfchip">Field: <b>Tank Side</b><button tabindex="-1" aria-label="Remove Field filter">'+ic('x',12)+'</button></span><span class="lfchip">Status: <b>Scheduled</b><button tabindex="-1" aria-label="Remove Status filter">'+ic('x',12)+'</button></span></div>':'')+'<span class="hint">Showing 2 of 13</span><button class="btn lfclr" tabindex="-1">Clear</button></div>'+(open?'<div class="lfgrid">'+sel('Season','All seasons')+sel('Crop','All crops')+sel('Field','Tank Side')+sel('Type','All types')+sel('Status','Scheduled')+sel('Sort by','Latest first')+'</div>':'')+'</div>'};
+ return sec('ds-filter','Filter bar','Filters for a long list, collapsed by default. When any filter is on, the bar shows it: the button turns green with a count, the card gets a green outline, and each active filter shows as a removable chip in the same row.',
+  '<div class="ds-lab">Collapsed with filters on</div>'+pair(head(false,true),head(false,true))+'<div class="ds-lab">Open</div>'+pair(head(true,false),head(true,false))+
+  tbl(['Part','Spec'],[['Place','Right after the key-number tiles, before the list'],['Filters button','Pill. Funnel icon, "Filters", a green count badge when filters are on, and a chevron. Toggles the panel'],['Active chips','Same row as the button. "Field: Tank Side ×". × removes just that filter'],['Count and Clear','"Showing N of M" on the right. Clear (<code>.btn</code>) only when a filter is on. It keeps the sort order'],['Panel','Six selects: Season, Crop, Field, Type, Status, Sort by. One row on desktop, two per row on a phone'],['Empty result','"No activities match these filters." inside the list card']]))
+}
+function secSettings(){
+ var rows=function(){return '<div style="display:flex;gap:14px;align-items:center"><span class="pf-av" aria-hidden="true">R</span><div><b style="font-size:18px;display:block">Ram Jawade</b><span class="hint">+91 98765 43210 · Farmer</span></div></div>'+
+  '<div class="pgh">Account</div><div class="pgrp"><button class="prw" tabindex="-1"><span class="prw-k">Full name</span><span class="prw-v">Ram Jawade</span>'+ic('chev',12)+'</button><div class="prw"><span class="prw-k">Phone number</span><span class="prw-v">+91 98765 43210</span></div><button class="prw" tabindex="-1"><span class="prw-k">Email address</span><span class="prw-v add">Add</span>'+ic('chev',12)+'</button></div>'};
+ var dlg='<div class="mscrim"></div><div class="modal" role="dialog" aria-label="Add email address"><h3>Add email address</h3><p class="hint">Optional. Used only for account notices.</p><div class="fld"><label for="sd-email">Email address</label><input id="sd-email" type="email" placeholder="name@example.com"></div><div class="mact"><button class="btn" tabindex="-1">Cancel</button><button class="btn p" tabindex="-1">Save</button></div></div>';
+ return sec('ds-settings','Settings rows and edit dialog','The Profile screen is a list of rows grouped under small headings, like the settings of a phone. Tapping a row opens one focused dialog for that value: centred on desktop, a bottom sheet on a phone.',
+  '<div class="ds-var"><div class="ds-col"><div class="ds-lab">Desktop</div><div class="ds-dev" style="min-height:380px">'+rows()+dlg+'</div></div><div class="ds-col m"><div class="ds-lab">Mobile</div><div class="ds-dev mb" style="min-height:440px">'+rows()+dlg+'</div></div></div>'+
+  tbl(['Part','Spec'],[['Group heading','<code>.pgh</code>: 11px caps, muted'],['Group','<code>.pgrp</code>: one card, rows divided by hairlines'],['Row','<code>button.prw</code>: label on the left (38%), value on the right in bold, chevron. On a phone the label sits above the value. An empty value shows "Add" in green'],['Read-only row','Plain <code>div.prw</code>, no chevron (phone number, the sign-in)'],['Edit dialog','<code>.modal</code>: title "Edit &lt;field&gt;" or "Add &lt;field&gt;", one line on why we ask, the field with its error message, then Cancel and Save. Esc and the dimmed background cancel'],['Nudge','When details are missing, a warning banner at the top: "Add your email address · One detail left", with an Add link that opens the same dialog']]))
+}
+function buildSystem(){
+  var T=[['--bg','Page background'],['--surface','Cards, dialogs'],['--surface2','Quiet fills'],['--line','Borders'],['--fg','Text'],['--muted','Secondary text'],['--leaf','Primary action'],['--leaf-soft','Primary tint'],['--leaf-ink','Primary text'],['--sun','Warning'],['--sun-soft','Warning tint'],['--sky','Info, water'],['--rose','Danger'],['--rose-soft','Danger tint'],['--sky-soft','Info tint'],['--on-leaf','Text on green, red'],['--on-sun','Text on amber'],['--clay','Land colour'],['--ember','Land colour'],['--grape','Land colour, spend'],['--dim','Dim behind a menu'],['--dim-strong','Dim behind a dialog']];
+  var NAV=[['Foundations',null],['Colour','ds-colour'],['Type','ds-type'],['Spacing scale','ds-space'],['Corner radius','ds-radius'],['Shadow levels','ds-shadow'],['Layers','ds-layers'],['Breakpoints','ds-bp'],['Motion','ds-motion'],['Icons','ds-icons'],['Brand','ds-brand'],['Formats','ds-formats'],['Components',null],['Buttons and badges','ds-btn'],['Cards and tiles','ds-cards'],['Row actions menu','ds-menu'],['Detail page','ds-detail'],['Activity row','ds-actrow'],['Activity detail','ds-actdetail'],['Activity types and statuses','ds-astatus'],['Progress and stepper','ds-progress'],['Floating buttons','ds-fab'],['Navigation','ds-nav-sec'],['Alerts and prompts','ds-alerts'],['Banners','ds-banner'],['Form fields','ds-form'],['Filter bar','ds-filter'],['Settings rows','ds-settings'],['Toasts','ds-toast'],['List rows','ds-rows'],['Confirmation popups','ds-dlg']];
+  var h='<div class="ds"><nav class="ds-nav" aria-label="Design system sections">'+NAV.map(function(n){return n[1]?'<button type="button" data-goto="'+n[1]+'">'+n[0]+'</button>':'<small>'+n[0]+'</small>'}).join('')+'</nav><div class="ds-main">';
+  h+='<section class="ds-sec" id="ds-colour"><h2>Colour</h2><p>Every colour is a token, defined for light and dark. Components use tokens only, so both themes stay consistent.</p><div class="ds-grid">'+T.map(function(t){return '<div class="sw"><i style="background:var('+t[0]+')"></i><div><b>'+t[0]+'</b><span>'+t[1]+'</span></div></div>'}).join('')+'</div></section>';
+  h+='<section class="ds-sec" id="ds-type"><h2>Type</h2><p>Bricolage Grotesque for titles and key numbers, Figtree for everything else.</p><div class="ds-demo col ds-type"><div><small>Page title · 24</small><span style="font-family:var(--display);font-size:24px;font-weight:700">Good morning, Ram</span></div><div><small>Section title · 18</small><span style="font-family:var(--display);font-size:18px;font-weight:700">Season expenses</span></div><div><small>Card title · 16</small><span style="font-family:var(--display);font-size:16px;font-weight:700">Crop progress</span></div><div><small>Body · 14</small><span>Spray Tank Side before rain arrives on Saturday.</span></div><div><small>Caption · 12</small><span style="font-size:12px;color:var(--muted)">Tank Side · 1.6 ac · 6 days to harvest</span></div><div><small>Figures · tabular</small><span style="font-variant-numeric:tabular-nums;font-family:var(--display);font-size:20px;font-weight:700">₹1,24,500</span></div></div></section>';
+  h+=secSpace();
+  h+=secRadius();
+  h+=secShadow();
+  h+=secLayers();
+  h+=secBreak();
+  h+=secMotion();
+  h+=secIcons();
+  h+=secBrand();
+  h+=secFormats();
+  h+='<section class="ds-sec" id="ds-btn"><h2>Buttons and badges</h2><p>One main action per screen. Two sizes: default (8px 12px) and large (12px 16px) for dialogs and full-width mobile buttons. Danger is only for destructive actions. On mobile, create actions live in the floating menu.</p><div class="ds-lab">Buttons</div><div class="ds-demo"><button class="btn p">Primary</button><button class="btn">Default</button><button class="btn warn">Warning</button><button class="btn danger">Danger</button><button class="btn" disabled>Disabled</button><button class="btn p lg">Large primary</button><button class="lnk" style="margin-left:0">Link action '+ic('chev',14)+'</button><button class="ibtn2" aria-label="Edit">'+ic('edit',16)+'</button><button class="ibtn2" aria-label="Delete">'+ic('trash',16)+'</button><button class="fab" style="position:static" aria-label="Quick actions">'+ic('plus',24)+'</button></div><div class="ds-lab">Badges</div><div class="ds-demo"><span class="badge">Planted</span><span class="badge sun">Harvest</span><span class="badge sky">Today</span><span class="badge rose">Overdue</span><span class="badge mute">Fallow</span></div></section>';
+  h+=secCards();
+  h+=secMenu();
+  h+=secDetail();
+  h+=secActRow();
+  h+=secActDetail();
+  h+=secAStatus();
+  h+=secProgress();
+  h+=secFab();
+  h+=secNav();
+  h+=secAlerts();
+  h+=secBanner();
+  h+=secForm();
+  h+=secFilter();
+  h+=secSettings();
+  h+='<section class="ds-sec" id="ds-toast"><h2>Toasts</h2><p>Short messages that clear on their own after 4 seconds. Toasts with Undo stay for 6 seconds.</p><div class="ds-demo col" style="align-items:flex-start"><div class="toast static">North Plot saved.</div><div class="toast static warn">North Plot has 1 crop. Remove it before deleting the land.</div><div class="toast static err">Could not save. Check your connection and try again.</div><div class="toast static">Onion deleted.<button class="tundo">Undo</button></div></div></section>';
+  h+='<section class="ds-sec" id="ds-rows"><h2>List rows</h2><p>Rows select on tap. The selected row gets a tint, an outline and a short glow.</p><div class="card" style="max-width:460px"><div class="row"><button class="lrow" tabindex="-1"><span class="dot" style="background:var(--clay)"></span><div class="grow"><b>North Plot</b><small>Onion</small></div><span class="amt">2.4 ac</span></button><button class="ibtn2" aria-label="Delete North Plot">'+ic('trash',16)+'</button></div><div class="row sel"><button class="lrow" tabindex="-1"><span class="dot" style="background:var(--grape)"></span><div class="grow"><b>River Field</b><small>Grapes</small></div><span class="amt">3.1 ac</span></button><button class="ibtn2" aria-label="Delete River Field">'+ic('trash',16)+'</button></div><div class="row"><button class="lrow" tabindex="-1"><span class="dot" style="background:var(--ember)"></span><div class="grow"><b>Tank Side</b><small>Tomato</small></div><span class="amt">1.6 ac</span></button><button class="ibtn2" aria-label="Delete Tank Side">'+ic('trash',16)+'</button></div></div></section>';
+  h+='<section class="ds-sec" id="ds-dlg"><h2>Confirmation popups</h2><p>One confirmation popup in three tones: warning, success and danger. Pick a tone and two or three buttons, then press the buttons in the previews.</p><div class="seg" id="toneSeg" role="group" aria-label="Tone" style="margin-bottom:6px"><button type="button" data-tone="warn" aria-pressed="false">Warning</button><button type="button" data-tone="ok" aria-pressed="false">Success</button><button type="button" data-tone="danger" aria-pressed="true">Danger</button></div> <div class="seg" id="btnSeg" role="group" aria-label="Number of buttons" style="margin-bottom:6px;margin-left:8px"><button type="button" data-btns="2" aria-pressed="true">Two buttons</button><button type="button" data-btns="3" aria-pressed="false">Three buttons</button></div><div id="appr">'+approachesHtml(DTONE)+'</div>'+
+    '<h3>Shared rules</h3><div class="ds-rules"><div><b>Focus</b>Warning and danger focus the Cancel side. Success focuses the main action.</div><div><b>Layout</b>A centred dialog on desktop. A bottom sheet with a grab handle on mobile.</div><div><b>Closing</b>Esc, the close button and the dimmed background cancel.</div><div><b>Buttons</b>Two or three in one row, never more. Cancel first, the main action last. They share the width and wrap on narrow screens.</div><div><b>Wording</b>Name the object: Delete land, not OK. Warning and danger titles ask a question. Success states what happened.</div><div><b>Undo</b>Where possible, skip the long warning and offer Undo in the toast.</div></div></section>';
+  h+='</div></div>';
+  document.getElementById('sys').innerHTML=h;
+}
+buildSystem();
+document.getElementById('dsLogo').src=LOGO;
+document.getElementById('sys').addEventListener('click',function(e){
+  var g=e.target.closest('[data-goto]');if(g){var t=document.getElementById(g.dataset.goto);if(t&&t.scrollIntoView)t.scrollIntoView({behavior:'smooth',block:'start'});return}
+  var nb=e.target.closest('[data-btns]');if(nb){DBTN=+nb.dataset.btns;document.getElementById('appr').innerHTML=approachesHtml(DTONE);document.querySelectorAll('#btnSeg button').forEach(function(x){x.setAttribute('aria-pressed',x===nb)});return}
+  var tb=e.target.closest('[data-tone]');if(tb){DTONE=tb.dataset.tone;document.getElementById('appr').innerHTML=approachesHtml(DTONE);document.querySelectorAll('#toneSeg button').forEach(function(x){x.setAttribute('aria-pressed',x===tb)});return}
+  var r=e.target.closest('[data-res]');if(r){var st=r.closest('[data-stage]'),lab=st&&st.querySelector('.ds-res');if(lab)lab.textContent='Pressed: '+r.dataset.res}
+});
+
+/* ---- Batch 1 interactions ---- */
+function moDialog(){document.getElementById('moD').innerHTML='<div class="mscrim"></div><div class="modal dB t-danger" role="alertdialog" aria-label="Delete this land?"><span class="dB-i">'+ic('trash',26)+'</span><h3>Delete this land?</h3><p>North Plot will be removed from your map and list.</p><div class="dB-a"><button class="btn" tabindex="-1">Cancel</button><button class="tbtn" tabindex="-1">Delete land</button></div></div>'}
+function moSheet(){document.getElementById('moM').innerHTML='<div class="mscrim"></div><div class="modal dB t-danger" role="alertdialog" aria-label="Delete this land?"><span class="dB-h"></span><span class="dB-i">'+ic('trash',26)+'</span><h3>Delete this land?</h3><p>North Plot will be removed from your map and list.</p><div class="dB-a"><button class="btn" tabindex="-1">Cancel</button><button class="tbtn" tabindex="-1">Delete land</button></div></div>'}
+function moGlow(){var r=document.getElementById('moRow');r.classList.remove('sel','pulse');void r.offsetWidth;r.classList.add('sel','pulse')}
+function bpUpdate(){var w=window.innerWidth,a=document.getElementById('bpW'),b=document.getElementById('bpL');if(a)a.textContent=w;if(b)b.textContent=w>=768?'desktop':'phone'}
+function fmUpdate(){var g=function(i){return document.getElementById(i)};if(!g('fm-amt'))return;g('fm-o1').textContent=inr(g('fm-amt').value);g('fm-o2').textContent=fmtArea(g('fm-ac').value);g('fm-o3').textContent=g('fm-date').value?fmtDate(g('fm-date').value):'—'}
+moDialog();moSheet();moGlow();bpUpdate();fmUpdate();
+(function(){var r=document.getElementById('rmNow');if(r&&window.matchMedia){var m=window.matchMedia('(prefers-reduced-motion: reduce)');r.textContent='Your device: reduced motion is '+(m.matches?'on, so the examples above do not animate.':'off, so the examples above animate.')}})();
+window.addEventListener('resize',bpUpdate);
+document.getElementById('sys').addEventListener('input',function(e){if(e.target.closest('.fm-grid'))fmUpdate()});
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-theme-set]');
+  if(t){var v=t.dataset.themeSet,root=document.documentElement;if(v==='system')root.removeAttribute('data-theme');else root.setAttribute('data-theme',v);document.querySelectorAll('#themeSeg button').forEach(function(x){x.setAttribute('aria-pressed',x===t)});return}
+  var rp=e.target.closest('[data-replay]');
+  if(rp){var k=rp.dataset.replay;if(k==='dlg')moDialog();else if(k==='sheet')moSheet();else moGlow();return}
+  var fs=e.target.closest('[data-fabscreen]');
+  if(fs){FAB.screen=fs.dataset.fabscreen;FAB.open=false;document.querySelectorAll('[data-fabscreen]').forEach(function(x){x.setAttribute('aria-pressed',x===fs)});document.getElementById('fabDemo').innerHTML=fabInner();return}
+  var ft=e.target.closest('[data-fabtoggle]');
+  if(ft){FAB.open=!FAB.open;document.getElementById('fabDemo').innerHTML=fabInner();return}
+  var ng=e.target.closest('[data-navgo]');
+  if(ng){var k2=ng.dataset.navgo;['navDesk','navMob'].forEach(function(id){var box=document.getElementById(id);var mn=box.querySelector('.main');if(mn){mn.classList.remove('enter');void mn.offsetWidth;mn.classList.add('enter')}box.querySelectorAll('[data-navgo]').forEach(function(b){if(b.dataset.navgo===k2)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')})})}
+});
+
+document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;['d','m'].forEach(function(x){if(KM[x]){var k=x+'-'+KM[x];KM[x]=null;renderMenus();var t=document.querySelector('[data-kmenu="'+k+'"]');if(t)t.focus()}})});
+document.addEventListener('click',function(e){
+  var km=e.target.closest('[data-kmenu]');
+  if(km){var id=km.dataset.kmenu,x=id.charAt(0),k=id.slice(2),was=KM[x]===k;KM.d=null;KM.m=null;if(!was)KM[x]=k;renderMenus();if(!was){var f=document.querySelector('#menuDemo-'+x+' .kmenu button');if(f)f.focus()}else{var t=document.querySelector('[data-kmenu="'+id+'"]');if(t)t.focus()}return}
+  if((KM.d||KM.m)&&e.target.closest('.kmenu')){KM.d=null;KM.m=null;renderMenus();return}
+  if((KM.d||KM.m)&&!e.target.closest('.kmenu')){KM.d=null;KM.m=null;renderMenus()}
+});
+
+document.addEventListener('click',function(e){var t=e.target.closest('[data-acttab]');if(!t)return;var v=t.dataset.acttab.split('-');ACTTAB[v[0]]=v[1];var el=document.getElementById('detailDemo-'+v[0]);if(el&&DETAIL[v[0]])el.innerHTML=DETAIL[v[0]]();var f=document.querySelector('#detailDemo-'+v[0]+' [data-acttab="'+t.dataset.acttab+'"]');if(f)f.focus()});
+
+})();
+</script>

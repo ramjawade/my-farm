@@ -1,0 +1,861 @@
+<!doctype html>
+<html lang="mr" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MyFarm Logo Concepts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600;700&family=Mukta:wght@400;500;600;700&family=Baloo+2:wght@700;800&display=swap" />
+<style>
+:root{
+  --r-sm:8px; --r-md:10px; --r-lg:12px; --r-xl:14px; --r-pill:999px;
+  --bg:#eef1ec; --surface:#ffffff; --surface2:#f4f6f2; --line:#dde3d8;
+  --fg:#18231a; --muted:#5d6b5f;
+  --leaf:#2f7a3f; --leaf-soft:#dcefdf; --leaf-ink:#1d5a2b;
+  --sun:#c98a14; --sun-soft:#faefd2;
+  --rose:#b83d3d; --rose-soft:#f8dfdf;
+  --shadow:0 12px 40px rgba(24,35,26,.14);
+  --display:'Bricolage Grotesque','Mukta','Segoe UI',system-ui,sans-serif;
+  --body:'Figtree','Mukta','Segoe UI',system-ui,sans-serif;
+  --deva:'Mukta','Figtree',sans-serif;
+}
+:root[data-theme="dark"]{
+  --bg:#0f1611; --surface:#17211a; --surface2:#1d2a20; --line:#2a3a2d;
+  --fg:#e8efe8; --muted:#9bab9d;
+  --leaf:#5fbf72; --leaf-soft:#1f3a26; --leaf-ink:#a5e0b0;
+  --sun:#e3a93a; --sun-soft:#3a2f14;
+  --rose:#e07878; --rose-soft:#3f2020;
+  --shadow:0 12px 40px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:400 15px/1.5 var(--body);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:24px 16px 64px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:24px}
+h1{font:700 30px/1.15 var(--display);margin:0 0 6px}
+.lede{color:var(--muted);margin:0;max-width:60ch}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.seg{display:inline-flex;background:var(--surface2);border:1px solid var(--line);border-radius:var(--r-pill);padding:3px}
+.seg button{border:0;background:transparent;color:var(--muted);font:600 13px var(--body);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;min-height:32px}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-xl);padding:20px;display:flex;flex-direction:column;gap:16px}
+.card.pick{border-color:var(--leaf);box-shadow:0 0 0 2px var(--leaf-soft)}
+.card-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.card-h h2{font:700 20px/1.2 var(--display);margin:0}
+.card-h .mr{font:600 15px var(--deva);color:var(--muted)}
+.badge{font:600 12px var(--body);padding:2px 10px;border-radius:var(--r-pill);background:var(--leaf-soft);color:var(--leaf-ink);white-space:nowrap}
+.hero{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.hero .big{width:144px;height:144px;filter:drop-shadow(0 8px 18px rgba(24,35,26,.18));flex:none}
+.sizes{display:flex;align-items:flex-end;gap:14px}
+.sizes figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px}
+.sizes figcaption{font:500 11px var(--body);color:var(--muted)}
+p.why{margin:0;color:var(--fg)}
+p.why b{font-weight:600}
+ul.notes{margin:0;padding-left:18px;color:var(--muted);font-size:14px}
+.lockup{display:flex;align-items:center;gap:10px;background:var(--surface2);border-radius:var(--r-lg);padding:12px 14px}
+.lockup svg{width:40px;height:40px;flex:none}
+.word{display:flex;flex-direction:column;line-height:1.1}
+.word .en{font:700 20px var(--display);letter-spacing:-.01em}
+.word .dv{font:600 15px var(--deva);color:var(--muted)}
+.word.mr-first .en{order:2;font:600 14px var(--display);color:var(--muted)}
+.word.mr-first .dv{order:1;font:700 21px var(--deva);color:var(--fg)}
+.context{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:420px){.context{grid-template-columns:1fr}}
+.tab{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--line);border-radius:var(--r-md) var(--r-md) 0 0;padding:8px 10px;font:500 13px var(--body);color:var(--muted);overflow:hidden;white-space:nowrap}
+.tab svg{width:16px;height:16px;flex:none}
+.phone{display:flex;align-items:center;gap:10px;border-radius:var(--r-md);padding:10px;background:linear-gradient(160deg,#355e3f,#18231a)}
+.phone .app{display:flex;flex-direction:column;align-items:center;gap:4px;font:500 11px var(--deva);color:#fff}
+.phone .app svg{width:48px;height:48px}
+.phone .ghost{width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,.18)}
+.toolbar{grid-column:1/-1;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:8px 12px}
+.toolbar svg{width:28px;height:28px}
+.toolbar .tb-name{font:700 17px var(--display);color:var(--leaf)}
+.toolbar .tb-sp{flex:1}
+.toolbar .tb-av{width:28px;height:28px;border-radius:50%;background:var(--leaf-soft)}
+.set{margin-top:28px}
+.set:first-of-type{margin-top:0}
+.set-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin-bottom:12px}
+.set-h h2{font:700 22px/1.2 var(--display);margin:0}
+.set-h p{margin:0;color:var(--muted)}
+.compare{margin-top:28px}
+details.earlier{margin-top:40px;padding-top:20px;border-top:1px solid var(--line)}
+details.earlier summary{font:700 16px var(--body);color:var(--muted);text-transform:uppercase;letter-spacing:.06em;cursor:pointer;min-height:32px}
+details.earlier[open] summary{margin-bottom:20px}
+.compare h2{font:700 20px var(--display);margin:0 0 12px}
+.strip{display:flex;flex-wrap:wrap;gap:12px}
+.strip .cell{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:12px;display:flex;align-items:center;gap:10px;flex:1 1 220px}
+.strip .cell svg{width:56px;height:56px;flex:none}
+.strip .cell .t{font:600 14px var(--body)}
+.strip .cell .s{font:400 13px var(--muted)}
+footer{margin-top:28px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+
+<!-- Logo masters: 100x100 artboard, rounded-square app tile (rx 22). Brand colours are fixed; they do not follow the page theme. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <clipPath id="tile-clip"><rect width="100" height="100" rx="22" /></clipPath>
+  </defs>
+
+  <!-- A. Sunrise furrows -->
+  <symbol id="logo-a" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <rect width="100" height="100" fill="#faefd2" />
+      <circle cx="50" cy="50" r="25" fill="none" stroke="#c98a14" stroke-width="5.5" pathLength="24" stroke-dasharray=".42 .58" />
+      <circle cx="50" cy="50" r="15" fill="#c98a14" />
+      <path d="M0 58 Q50 48 100 58 V100 H0 Z" fill="#2f7a3f" />
+      <g stroke="#1d5a2b" stroke-width="4" stroke-linecap="round">
+        <path d="M38 60 L-30 100" /><path d="M43 60 L5 100" /><path d="M48 60 L35 100" />
+        <path d="M52 60 L65 100" /><path d="M57 60 L95 100" /><path d="M62 60 L130 100" />
+      </g>
+    </g>
+  </symbol>
+
+  <!-- B. Warli farmer on red mud -->
+  <symbol id="logo-b" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <rect width="100" height="100" fill="#b83d3d" />
+      <g fill="#fff8ee">
+        <circle cx="76" cy="24" r="6" />
+        <circle cx="42" cy="28" r="6.5" />
+        <path d="M30 38 H54 L42 54 Z" />
+        <path d="M42 54 L32 69 H52 Z" />
+      </g>
+      <circle cx="76" cy="24" r="11" fill="none" stroke="#fff8ee" stroke-width="3.2" pathLength="16" stroke-dasharray=".45 .55" />
+      <g fill="none" stroke="#fff8ee" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M37 69 L33 81" /><path d="M47 69 L52 81" />
+        <path d="M31 40 L24 51 L29 59" />
+        <path d="M53 40 L61 48 L66 55" />
+        <path d="M14 82 H86" />
+        <path d="M72 82 Q71 70 66 61" /><path d="M72 82 Q73 67 76 57" /><path d="M72 82 Q75 72 83 65" />
+      </g>
+      <g fill="#fff8ee">
+        <ellipse cx="65" cy="59" rx="1.8" ry="3" transform="rotate(-30 65 59)" />
+        <ellipse cx="76" cy="54.5" rx="1.8" ry="3" />
+        <ellipse cx="84.5" cy="63.5" rx="1.8" ry="3" transform="rotate(45 84.5 63.5)" />
+      </g>
+    </g>
+  </symbol>
+
+  <!-- C. Sprout in a map pin -->
+  <symbol id="logo-c" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <rect width="100" height="100" fill="#2f7a3f" />
+      <path d="M50 85 C50 85 25 61 25 42 A25 25 0 0 1 75 42 C75 61 50 85 50 85 Z" fill="#ffffff" />
+      <g fill="#2f7a3f">
+        <path d="M50 45 C43 45 37 40 36 31 C44 31 49 36 50 45 Z" />
+        <path d="M50 40 C51 32 57 27 65 27 C64 35 58 40 50 40 Z" />
+      </g>
+      <g fill="none" stroke="#2f7a3f" stroke-width="3.6" stroke-linecap="round">
+        <path d="M50 56 V38" />
+        <path d="M39 57 Q50 51 61 57" />
+      </g>
+      <circle cx="78" cy="22" r="6" fill="#c98a14" />
+    </g>
+  </symbol>
+
+  <!-- D. Leaf made of field plots -->
+  <symbol id="logo-d" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <rect width="100" height="100" fill="#dcefdf" />
+      <path d="M22 78 C18 46 40 22 78 22 C82 60 54 82 22 78 Z" fill="#2f7a3f" />
+      <path d="M40 60 L27 48 Q33 37 44 31 L54 46 Z" fill="#c98a14" />
+      <g fill="none" stroke="#dcefdf" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M26 74 L72 28" />
+        <path d="M40 60 L27 48" /><path d="M54 46 L44 31" />
+        <path d="M40 60 L52 73" /><path d="M54 46 L69 56" />
+      </g>
+    </g>
+  </symbol>
+
+  <!-- E. Circuit sun: Warli sun whose rays end in circuit nodes, over furrows -->
+  <symbol id="logo-e" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <rect width="100" height="100" fill="#1d5a2b" />
+      <path d="M0 64 Q50 56 100 64 V100 H0 Z" fill="#2f7a3f" />
+      <g stroke="#1d5a2b" stroke-width="3.5" stroke-linecap="round">
+        <path d="M39 66 L-25 100" /><path d="M44 66 L8 100" /><path d="M48 66 L36 100" />
+        <path d="M52 66 L64 100" /><path d="M56 66 L92 100" /><path d="M61 66 L125 100" />
+      </g>
+      <circle cx="50" cy="44" r="12" fill="#c98a14" />
+      <g fill="none" stroke="#c98a14" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M33 44 H21" /><path d="M67 44 H79" />
+        <path d="M41.5 29.3 L36.5 20.6 V14" /><path d="M58.5 29.3 L63.5 20.6 V14" />
+        <path d="M35.3 35.5 L31 33" /><path d="M64.7 35.5 L69 33" /><path d="M50 27 V22" />
+      </g>
+      <g fill="#1d5a2b" stroke="#c98a14" stroke-width="2.2">
+        <circle cx="18" cy="44" r="3" /><circle cx="82" cy="44" r="3" />
+        <circle cx="36.5" cy="11" r="3" /><circle cx="63.5" cy="11" r="3" />
+      </g>
+      <g fill="#c98a14">
+        <circle cx="29" cy="32" r="2.4" /><circle cx="71" cy="32" r="2.4" /><circle cx="50" cy="19.5" r="2.4" />
+      </g>
+    </g>
+  </symbol>
+
+  <!-- F. Sprout spark: a sprout that blooms into the AI sparkle, on a Warli border -->
+  <symbol id="logo-f" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <rect width="100" height="100" fill="#fff8ee" />
+      <g fill="#2f7a3f">
+        <path d="M18 85 L22 78 L26 85 Z" /><path d="M28 85 L32 78 L36 85 Z" /><path d="M38 85 L42 78 L46 85 Z" />
+        <path d="M54 85 L58 78 L62 85 Z" /><path d="M64 85 L68 78 L72 85 Z" /><path d="M74 85 L78 78 L82 85 Z" />
+        <path d="M50 64 C42 64 33 59 31 49 C41 49 48 54 50 64 Z" />
+        <path d="M50 57 C52 47 60 41 70 41 C69 51 61 57 50 57 Z" />
+      </g>
+      <g fill="none" stroke="#2f7a3f" stroke-linecap="round">
+        <path d="M50 86 V45" stroke-width="4.5" />
+        <path d="M14 88 H86" stroke-width="3" />
+      </g>
+      <g fill="#c98a14">
+        <path d="M50 12 C51.6 24 55 27.4 67 29 C55 30.6 51.6 34 50 46 C48.4 34 45 30.6 33 29 C45 27.4 48.4 24 50 12 Z" />
+        <path d="M71 10 C71.6 15 73 16.4 78 17 C73 17.6 71.6 19 71 24 C70.4 19 69 17.6 64 17 C69 16.4 70.4 15 71 10 Z" />
+      </g>
+    </g>
+  </symbol>
+
+  <!-- G. Neural paddy: a paddy ear whose grains are network nodes -->
+  <symbol id="logo-g" viewBox="0 0 100 100">
+    <defs>
+      <linearGradient id="grad-g" x1="0" y1="1" x2="1" y2="0">
+        <stop offset="0" stop-color="#2f7a3f" /><stop offset="1" stop-color="#2b74b8" />
+      </linearGradient>
+    </defs>
+    <g clip-path="url(#tile-clip)">
+      <rect width="100" height="100" fill="url(#grad-g)" />
+      <g transform="translate(50 52) rotate(10) scale(.92) translate(-50 -52)">
+        <g fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round">
+          <g stroke-width="2" opacity=".75">
+            <path d="M50 56 L38 48 M50 56 L62 48 M50 44 L38 36 M50 44 L62 36 M50 32 L38 24 M50 32 L62 24" />
+            <path d="M38 48 V24 L50 14 L62 24 V48" />
+          </g>
+          <path d="M50 90 V18" stroke-width="3.4" />
+          <path d="M50 80 C40 76 33 70 30 60" stroke-width="3.4" />
+        </g>
+        <g fill="#ffffff">
+          <circle cx="38" cy="48" r="4.2" /><circle cx="62" cy="48" r="4.2" />
+          <circle cx="38" cy="36" r="4.2" /><circle cx="62" cy="36" r="4.2" />
+          <circle cx="38" cy="24" r="4.2" /><circle cx="62" cy="24" r="4.2" />
+        </g>
+        <circle cx="50" cy="14" r="5.2" fill="#e3a93a" />
+      </g>
+    </g>
+  </symbol>
+
+  <!-- I. Pheta farmer: a smiling farmer in a red pheta, rising over his own field -->
+  <symbol id="logo-i" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <rect width="100" height="100" fill="#faefd2" />
+      <circle cx="50" cy="46" r="33" fill="#c98a14" opacity=".18" />
+      <circle cx="50" cy="46" r="41" fill="none" stroke="#c98a14" stroke-width="3" pathLength="32" stroke-dasharray=".4 .6" opacity=".55" />
+      <path d="M0 86 Q50 76 100 86 V100 H0 Z" fill="#2f7a3f" />
+      <path d="M37 40 C29 48 27 62 29 80 L35 80 C34 64 36 52 41 44 Z" fill="#8f2d2d" />
+      <path d="M16 100 C17 82 31 74 50 74 C69 74 83 82 84 100 Z" fill="#ffffff" />
+      <path d="M45 74 L50 83 L55 74" fill="none" stroke="#dde3d8" stroke-width="2" />
+      <rect x="44" y="62" width="12" height="14" fill="#9c6239" />
+      <circle cx="36.5" cy="53" r="3.6" fill="#b8794a" /><circle cx="63.5" cy="53" r="3.6" fill="#b8794a" />
+      <ellipse cx="50" cy="52" rx="13.5" ry="15.5" fill="#b8794a" />
+      <circle cx="45" cy="50" r="1.6" fill="#18231a" /><circle cx="55" cy="50" r="1.6" fill="#18231a" />
+      <path d="M38.5 60 Q44 55.5 50 58.6 Q56 55.5 61.5 60 Q56 62.2 50 60.6 Q44 62.2 38.5 60 Z" fill="#18231a" />
+      <path d="M46 64.2 Q50 66.8 54 64.2" fill="none" stroke="#7a4426" stroke-width="1.4" stroke-linecap="round" />
+      <path d="M57 25 C57 14 63 7 70 7 C68 12 65 18 61 26 Z" fill="#c98a14" />
+      <path d="M59 26 C63 16 71 12 77 15 C72 18 67 22 62 28 Z" fill="#e3a93a" />
+      <path d="M32.5 47 C29 33 36 20 50 19 C64 18 72 30 67.5 47 C60 41.5 40 41.5 32.5 47 Z" fill="#b83d3d" />
+      <g fill="none" stroke="#8f2d2d" stroke-width="1.7" stroke-linecap="round">
+        <path d="M34 42 C42 34 55 29 67 30" /><path d="M33 35 C40 27 51 22 62 22" /><path d="M39 45 C49 38 60 36 68 39" />
+      </g>
+    </g>
+  </symbol>
+
+  <!-- J. Sarja: a white Khillari bull dressed for Pola -->
+  <symbol id="logo-j" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <rect width="100" height="100" fill="#2f7a3f" />
+      <circle cx="50" cy="44" r="30" fill="#1d5a2b" />
+      <path d="M42 33 C36 27 32 18 35 9 C38 16 42 22 47 28 Z" fill="#c98a14" />
+      <path d="M58 33 C64 27 68 18 65 9 C62 16 58 22 53 28 Z" fill="#c98a14" />
+      <circle cx="35" cy="9" r="3.2" fill="#b83d3d" /><circle cx="65" cy="9" r="3.2" fill="#b83d3d" />
+      <ellipse cx="33" cy="41" rx="8" ry="3.6" transform="rotate(-18 33 41)" fill="#e6eae3" />
+      <ellipse cx="67" cy="41" rx="8" ry="3.6" transform="rotate(18 67 41)" fill="#e6eae3" />
+      <path d="M38 38 C38 31 44 27 50 27 C56 27 62 31 62 38 L60.5 64 C59.5 73 55.5 78 50 78 C44.5 78 40.5 73 39.5 64 Z" fill="#f4f6f2" />
+      <path d="M50 31 L53.5 36 L50 41 L46.5 36 Z" fill="#b83d3d" />
+      <circle cx="43.5" cy="47" r="2.2" fill="#18231a" /><circle cx="56.5" cy="47" r="2.2" fill="#18231a" />
+      <ellipse cx="50" cy="71" rx="9.5" ry="6.5" fill="#dde3d8" />
+      <ellipse cx="46.5" cy="72" rx="1.4" ry="2" fill="#5d6b5f" /><ellipse cx="53.5" cy="72" rx="1.4" ry="2" fill="#5d6b5f" />
+      <path d="M34 80 Q50 92 66 80" fill="none" stroke="#c98a14" stroke-width="3" stroke-linecap="round" />
+      <circle cx="50" cy="89" r="3.8" fill="#c98a14" />
+    </g>
+  </symbol>
+
+  <!-- K. Soil in my hands: cupped hands holding soil and a sprout -->
+  <symbol id="logo-k" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <rect width="100" height="100" fill="#faefd2" />
+      <circle cx="50" cy="38" r="22" fill="#c98a14" opacity=".22" />
+      <path d="M16 58 C14 66 17 72 22 74 C21 80 25 84 30 85 C31 89 37 92 42 91 C45 93 48 93 50 91 C52 93 55 93 58 91 C63 92 69 89 70 85 C75 84 79 80 78 74 C83 72 86 66 84 58 C76 63 62 66 50 66 C38 66 24 63 16 58 Z" fill="#b8794a" />
+      <path d="M16 58 C14 52 18 48 23 51 C26 53 26 58 24 61 Z" fill="#b8794a" />
+      <path d="M84 58 C86 52 82 48 77 51 C74 53 74 58 76 61 Z" fill="#b8794a" />
+      <g fill="none" stroke="#9c6239" stroke-width="1.6" stroke-linecap="round">
+        <path d="M22 74 C28 72 32 70 34 67" /><path d="M30 85 C35 80 38 74 40 67" /><path d="M42 91 C44 84 45 76 45 67" />
+        <path d="M78 74 C72 72 68 70 66 67" /><path d="M70 85 C65 80 62 74 60 67" /><path d="M58 91 C56 84 55 76 55 67" />
+        <path d="M50 91 V68" />
+      </g>
+      <path d="M24 62 C30 50 70 50 76 62 C66 66 34 66 24 62 Z" fill="#5a361d" />
+      <g fill="#7a4a2a"><circle cx="36" cy="59" r="1.4" /><circle cx="63" cy="58" r="1.6" /><circle cx="44" cy="62" r="1.1" /><circle cx="58" cy="62" r="1.2" /></g>
+      <path d="M50 56 V35" stroke="#2f7a3f" stroke-width="3.4" stroke-linecap="round" />
+      <path d="M50 45 C42 45 35 40 34 31 C43 31 49 36 50 45 Z" fill="#2f7a3f" />
+      <path d="M50 39 C51 30 58 25 67 25 C66 34 59 39 50 39 Z" fill="#2f7a3f" />
+    </g>
+  </symbol>
+
+  <!-- L. Majha shet: tiled-roof farmhouse, mango tree and furrows under the sun -->
+  <symbol id="logo-l" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <rect width="100" height="100" fill="#faefd2" />
+      <circle cx="54" cy="30" r="9" fill="#c98a14" />
+      <circle cx="54" cy="30" r="15" fill="none" stroke="#c98a14" stroke-width="3" pathLength="18" stroke-dasharray=".4 .6" />
+      <path d="M0 64 Q50 56 100 64 V100 H0 Z" fill="#2f7a3f" />
+      <g stroke="#1d5a2b" stroke-width="3.5" stroke-linecap="round">
+        <path d="M39 66 L-25 100" /><path d="M44 66 L8 100" /><path d="M48 66 L36 100" />
+        <path d="M52 66 L64 100" /><path d="M56 66 L92 100" /><path d="M61 66 L125 100" />
+      </g>
+      <rect x="18" y="46" width="26" height="16" fill="#fff8ee" />
+      <path d="M14 48 L31 34 L48 48 Z" fill="#b83d3d" />
+      <g stroke="#8f2d2d" stroke-width="1.2"><path d="M19.5 44 H42.5" /><path d="M24.5 40 H37.5" /></g>
+      <rect x="27" y="51" width="8" height="11" rx="1" fill="#6b4226" />
+      <rect x="75" y="46" width="4" height="15" fill="#6b4226" />
+      <g fill="#1d5a2b"><circle cx="77" cy="40" r="10" /><circle cx="69.5" cy="45" r="6" /><circle cx="84.5" cy="45" r="6" /></g>
+    </g>
+  </symbol>
+
+  <!-- M. Marathi monogram: श with a sprout as its e-matra (शे = शेती) -->
+  <symbol id="logo-m" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <rect width="100" height="100" fill="#2f7a3f" />
+      <path d="M0 86 Q50 80 100 86 V100 H0 Z" fill="#1d5a2b" />
+      <text x="50" y="80" text-anchor="middle" font-family="'Baloo 2','Mukta',sans-serif" font-weight="800" font-size="60" fill="#fff8ee">श</text>
+      <path d="M66 41 C64 31 58 24 47 21 C49 31 55 38 66 41 Z" fill="#e3a93a" />
+      <path d="M66 41 C61 35 56 29 50 24" fill="none" stroke="#2f7a3f" stroke-width="1.3" stroke-linecap="round" />
+    </g>
+  </symbol>
+
+
+  <!-- ===== Set 4: leaf marks ===== -->
+  <!-- N. Bold leaf: rice-white leaf on a leaf-green tile -->
+  <symbol id="logo-n" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <rect width="100" height="100" fill="#2f7a3f" />
+      <path d="M26 76 C22 46 42 24 78 22 C80 56 58 78 26 76 Z" fill="#fff8ee" />
+      <path d="M30 72 L70 31" stroke="#2f7a3f" stroke-width="3.6" stroke-linecap="round" />
+      <path d="M19 83 L30 72" stroke="#fff8ee" stroke-width="5" stroke-linecap="round" />
+    </g>
+  </symbol>
+
+  <!-- O. Veined leaf: classic upright leaf with side veins on cream -->
+  <symbol id="logo-o" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <rect width="100" height="100" fill="#faefd2" />
+      <path d="M50 12 C72 28 76 56 50 84 C24 56 28 28 50 12 Z" fill="#2f7a3f" />
+      <g fill="none" stroke="#faefd2" stroke-width="2.8" stroke-linecap="round">
+        <path d="M50 22 V82" />
+        <path d="M50 40 L61 31" /><path d="M50 40 L39 31" />
+        <path d="M50 54 L64 44" /><path d="M50 54 L36 44" />
+        <path d="M50 68 L60 60" /><path d="M50 68 L40 60" />
+      </g>
+      <path d="M50 82 V92" stroke="#2f7a3f" stroke-width="4.5" stroke-linecap="round" />
+    </g>
+  </symbol>
+
+  <!-- P. Sprout: two leaves on a stem over a soil line -->
+  <symbol id="logo-p" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <rect width="100" height="100" fill="#dcefdf" />
+      <path d="M50 81 V50" stroke="#2f7a3f" stroke-width="5" stroke-linecap="round" />
+      <path d="M50 61 C37 61 25 53 23 38 C38 38 48 46 50 61 Z" fill="#2f7a3f" />
+      <path d="M50 53 C52 36 64 25 81 25 C79 42 67 53 50 53 Z" fill="#2f7a3f" />
+      <path d="M29 84 Q50 76 71 84" fill="none" stroke="#1d5a2b" stroke-width="4.5" stroke-linecap="round" />
+    </g>
+  </symbol>
+
+  <!-- Q. Sun leaf: green leaf with the gold sun behind it -->
+  <symbol id="logo-q" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <rect width="100" height="100" fill="#faefd2" />
+      <circle cx="64" cy="36" r="20" fill="#c98a14" />
+      <path d="M24 78 C20 48 40 26 74 24 C76 56 56 80 24 78 Z" fill="#2f7a3f" />
+      <path d="M28 74 L66 33" stroke="#faefd2" stroke-width="3.2" stroke-linecap="round" />
+      <g stroke="#faefd2" stroke-width="2.4" stroke-linecap="round">
+        <path d="M40 61 L38 48" /><path d="M51 49 L50 37" /><path d="M40 61 L53 60" /><path d="M51 49 L63 47" />
+      </g>
+    </g>
+  </symbol>
+
+  <!-- R. Rain-drop leaf: a leaf in the shape of a water drop -->
+  <symbol id="logo-r" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <rect width="100" height="100" fill="#faefd2" />
+      <path d="M50 12 C50 12 23 44 23 63 A27 27 0 0 0 77 63 C77 44 50 12 50 12 Z" fill="#2f7a3f" />
+      <g fill="none" stroke="#faefd2" stroke-linecap="round">
+        <path d="M50 86 C46 66 47 44 50 26" stroke-width="3.2" />
+        <path d="M48.5 56 L36 47" stroke-width="2.4" /><path d="M48 70 L35 62" stroke-width="2.4" />
+        <path d="M49 48 L60 40" stroke-width="2.4" /><path d="M48.5 63 L63 55" stroke-width="2.4" />
+      </g>
+      <circle cx="74" cy="22" r="5" fill="#2b74b8" />
+    </g>
+  </symbol>
+
+  <!-- S. Field leaf: a leaf filled with ploughed rows -->
+  <symbol id="logo-s" viewBox="0 0 100 100">
+    <defs><clipPath id="clip-s-leaf"><path d="M24 78 C20 46 42 22 78 22 C80 56 56 80 24 78 Z" /></clipPath></defs>
+    <g clip-path="url(#tile-clip)">
+      <rect width="100" height="100" fill="#faefd2" />
+      <path d="M24 78 C20 46 42 22 78 22 C80 56 56 80 24 78 Z" fill="#2f7a3f" />
+      <g clip-path="url(#clip-s-leaf)" stroke="#1d5a2b" stroke-width="3.6" stroke-linecap="round">
+        <path d="M20 54 L46 80" /><path d="M24 44 L56 76" /><path d="M30 36 L64 70" /><path d="M38 28 L72 62" /><path d="M48 22 L78 52" /><path d="M60 18 L84 42" />
+      </g>
+      <path d="M26 76 L76 24" stroke="#c98a14" stroke-width="3.4" stroke-linecap="round" />
+      <path d="M18 84 L26 76" stroke="#2f7a3f" stroke-width="4.5" stroke-linecap="round" />
+    </g>
+  </symbol>
+
+  <!-- T. Three leaves: growth crown in green, deep green and harvest gold -->
+  <symbol id="logo-t" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <rect width="100" height="100" fill="#faefd2" />
+      <path d="M50 18 C61 31 63 50 50 72 C37 50 39 31 50 18 Z" fill="#1d5a2b" transform="rotate(-44 50 72)" />
+      <path d="M50 18 C61 31 63 50 50 72 C37 50 39 31 50 18 Z" fill="#c98a14" transform="rotate(44 50 72)" />
+      <path d="M50 12 C62 27 64 48 50 72 C36 48 38 27 50 12 Z" fill="#2f7a3f" />
+      <path d="M50 72 V88" stroke="#2f7a3f" stroke-width="5" stroke-linecap="round" />
+    </g>
+  </symbol>
+
+  <!-- U. Line leaf: one continuous monoline leaf, modern and light -->
+  <symbol id="logo-u" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <rect width="100" height="100" fill="#ffffff" />
+      <g fill="none" stroke="#2f7a3f" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M28 76 C24 48 44 27 76 25 C78 55 58 78 28 76 Z" />
+        <path d="M18 86 L62 40" />
+      </g>
+      <circle cx="73" cy="73" r="6" fill="#c98a14" />
+    </g>
+  </symbol>
+
+  <!-- V. Warli ring leaf: green leaf inside the dotted Warli sun ring -->
+  <symbol id="logo-v" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <rect width="100" height="100" fill="#faefd2" />
+      <circle cx="50" cy="50" r="37" fill="none" stroke="#c98a14" stroke-width="4.5" pathLength="36" stroke-dasharray=".42 .58" />
+      <path d="M32 68 C29 46 44 30 70 29 C71 54 56 70 32 68 Z" fill="#2f7a3f" />
+      <path d="M35 65 L64 35" stroke="#faefd2" stroke-width="3" stroke-linecap="round" />
+    </g>
+  </symbol>
+
+
+  <!-- ===== Set 5: modern farming inside the leaf ===== -->
+  <g id="leaf5-base"></g>
+  <!-- W1. Tractor -->
+  <symbol id="logo-w1" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <use href="#leaf5-base" />
+      <g fill="#faefd2">
+        <rect x="37" y="35" width="13" height="16" rx="2" />
+        <rect x="49" y="45" width="19" height="10" rx="2" />
+        <rect x="60" y="39" width="2.6" height="7" rx="1" />
+        <circle cx="43" cy="57" r="9" /><circle cx="63" cy="59" r="5.5" />
+      </g>
+      <rect x="40" y="38" width="7" height="6" rx="1" fill="#2f7a3f" />
+      <circle cx="43" cy="57" r="3.6" fill="#c98a14" /><circle cx="63" cy="59" r="2.2" fill="#c98a14" />
+    </g>
+  </symbol>
+  <!-- W2. Agri drone spraying a crop row -->
+  <symbol id="logo-w2" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <use href="#leaf5-base" />
+      <g fill="#faefd2">
+        <rect x="45" y="38" width="12" height="6.5" rx="3" />
+        <ellipse cx="38.5" cy="34" rx="6" ry="1.8" /><ellipse cx="63.5" cy="34" rx="6" ry="1.8" />
+      </g>
+      <g stroke="#faefd2" stroke-width="2.4" stroke-linecap="round" fill="none">
+        <path d="M38.5 35 V39 H63.5 V35" />
+        <path d="M43 66 V60 M43 62 Q40 61 39 58 M43 61 Q46 60 47 57" />
+        <path d="M51 66 V60 M51 62 Q48 61 47 58 M51 61 Q54 60 55 57" />
+        <path d="M59 66 V60 M59 62 Q56 61 55 58 M59 61 Q62 60 63 57" />
+      </g>
+      <g fill="#c98a14"><circle cx="47" cy="49" r="1.5" /><circle cx="51" cy="50" r="1.5" /><circle cx="55" cy="49" r="1.5" /><circle cx="44.5" cy="53.5" r="1.5" /><circle cx="51" cy="54.5" r="1.5" /><circle cx="57.5" cy="53.5" r="1.5" /></g>
+    </g>
+  </symbol>
+  <!-- W3. Drip irrigation: the midrib is the drip line -->
+  <symbol id="logo-w3" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <use href="#leaf5-base" />
+      <path d="M24 76 L77 23" stroke="#faefd2" stroke-width="4.2" stroke-linecap="round" />
+      <g fill="#c98a14"><circle cx="36" cy="64" r="2.6" /><circle cx="48" cy="52" r="2.6" /><circle cx="60" cy="40" r="2.6" /></g>
+      <g fill="#faefd2"><path d="M36 68.4 C38.6 72 38.6 75 36 75 C33.4 75 33.4 72 36 68.4 Z" /><path d="M48 56.4 C50.6 60 50.6 63 48 63 C45.4 63 45.4 60 48 56.4 Z" /><path d="M60 44.4 C62.6 48 62.6 51 60 51 C57.4 51 57.4 48 60 44.4 Z" /><path d="M48 64.9 C50.6 68.5 50.6 71.5 48 71.5 C45.4 71.5 45.4 68.5 48 64.9 Z" /><path d="M60 52.9 C62.6 56.5 62.6 59.5 60 59.5 C57.4 59.5 57.4 56.5 60 52.9 Z" /></g>
+    </g>
+  </symbol>
+  <!-- W4. Land map: surveyed plots with a location pin -->
+  <symbol id="logo-w4" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <use href="#leaf5-base" />
+      <path d="M47 46 L59 48 L52 55 L40 52 Z" fill="#c98a14" />
+      <g fill="none" stroke="#faefd2" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+        <path d="M32 58 L47 46 L70 50 L57 66 Z" />
+        <path d="M40 52 L63.5 58" /><path d="M59 48 L45 62" />
+      </g>
+      <path d="M52 49 C52 49 45.5 42.5 45.5 38 A6.5 6.5 0 0 1 58.5 38 C58.5 42.5 52 49 52 49 Z" fill="#faefd2" />
+      <circle cx="52" cy="38" r="2.4" fill="#2f7a3f" />
+    </g>
+  </symbol>
+  <!-- W5. Polyhouse with the sun -->
+  <symbol id="logo-w5" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <use href="#leaf5-base" />
+      <g fill="none" stroke="#faefd2" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round">
+        <path d="M37 60 V47 Q37 35 50 35 Q63 35 63 47 V60" />
+        <path d="M43.5 37 V60" /><path d="M50 35 V60" /><path d="M56.5 37 V60" />
+        <path d="M37 48 H63" />
+        <path d="M33 60 H66" />
+      </g>
+      <circle cx="64" cy="29" r="4.5" fill="#c98a14" />
+    </g>
+  </symbol>
+  <!-- W6. Solar pump: panel, sun and water -->
+  <symbol id="logo-w6" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <use href="#leaf5-base" />
+      <path d="M36 58 L44 42 H68 L60 58 Z" fill="#faefd2" />
+      <g stroke="#2f7a3f" stroke-width="1.6"><path d="M44 58 L52 42" /><path d="M52 58 L60 42" /><path d="M40 50 H64" /></g>
+      <path d="M48 58 V66" stroke="#faefd2" stroke-width="2.6" stroke-linecap="round" />
+      <circle cx="61" cy="31" r="5" fill="#c98a14" />
+      <g fill="#faefd2"><path d="M40 62.4 C42.6 66 42.6 69 40 69 C37.4 69 37.4 66 40 62.4 Z" /></g>
+    </g>
+  </symbol>
+  <!-- W7. Growth chart: rising yield and income -->
+  <symbol id="logo-w7" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <use href="#leaf5-base" />
+      <g fill="#faefd2">
+        <rect x="36" y="56" width="6" height="10" rx="1" /><rect x="45" y="50" width="6" height="16" rx="1" /><rect x="54" y="43" width="6" height="23" rx="1" />
+      </g>
+      <g fill="none" stroke="#c98a14" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M33 50 L43 42 L51 45 L65 31" /><path d="M58.5 31 H65 V37.5" />
+      </g>
+    </g>
+  </symbol>
+  <!-- W8. Smart sensor: a sprout sending data -->
+  <symbol id="logo-w8" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <use href="#leaf5-base" />
+      <path d="M51 67 V52" stroke="#faefd2" stroke-width="3.2" stroke-linecap="round" />
+      <g fill="#faefd2">
+        <path d="M51 58 C45 58 40 54 39 47 C46 47 50 51 51 58 Z" />
+        <path d="M51 54 C52 47 57 43 63 43 C62 50 57 54 51 54 Z" />
+      </g>
+      <g fill="none" stroke="#c98a14" stroke-width="2.6" stroke-linecap="round">
+        <path d="M55 37 Q59 33 63 37" /><path d="M51.5 33 Q59 26 66.5 33" />
+      </g>
+      <circle cx="59" cy="40" r="1.9" fill="#c98a14" />
+    </g>
+  </symbol>
+  <!-- W9. Circuit veins: a smart leaf -->
+  <symbol id="logo-w9" viewBox="0 0 100 100">
+    <g clip-path="url(#tile-clip)">
+      <use href="#leaf5-base" />
+      <g fill="none" stroke="#faefd2" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M24 76 L74 26" />
+        <path d="M38 62 V50 H33" /><path d="M50 50 V38 H45" /><path d="M62 38 V30" />
+        <path d="M38 62 H50 V67" /><path d="M50 50 H62 V55" />
+      </g>
+      <g fill="#2f7a3f" stroke="#c98a14" stroke-width="2"><circle cx="31" cy="50" r="2.4" /><circle cx="43" cy="38" r="2.4" /><circle cx="62" cy="27.5" r="2.4" /><circle cx="50" cy="69.5" r="2.4" /><circle cx="62" cy="57.5" r="2.4" /></g>
+    </g>
+  </symbol>
+  <!-- Optional AI touch: four-point sparkle -->
+  <symbol id="ai-spark" viewBox="0 0 100 100">
+    <path d="M50 0 C54 38 62 46 100 50 C62 54 54 62 50 100 C46 62 38 54 0 50 C38 46 46 38 50 0 Z" fill="#c98a14" stroke="#fff8ee" stroke-width="6" paint-order="stroke" />
+  </symbol>
+
+  <!-- H. Rangoli pixel leaf: rangoli dots (ठिपके) that turn into pixels toward the tip. Filled by script below. -->
+  <symbol id="logo-h" viewBox="0 0 100 100"></symbol>
+</svg>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>MyFarm लोगो — शेतकऱ्याला "माझं" वाटेल असा</h1>
+      <p class="lede">New at the top: <b>Set 5 · पानात आधुनिक शेती</b>, now with a real-looking leaf (natural shape, light and dark halves, veins, stem). Use <b>Real leaf / Flat leaf</b> to compare. The same leaf every time, with a modern-farming element drawn inside it. Set 4 (plain leaves) follows; older directions are folded at the bottom. Each logo is shown as an app icon, down to the 16&nbsp;px favicon, with the name, in a browser tab, on a phone and in the toolbar.</p>
+    </div>
+    <div class="tools">
+      <div class="seg" role="group" aria-label="Wordmark language">
+        <button type="button" data-lang="mr" aria-pressed="true">मराठी आधी</button>
+        <button type="button" data-lang="en" aria-pressed="false">English first</button>
+      </div>
+      <div class="seg" role="group" aria-label="Leaf style">
+        <button type="button" data-leaf="real" aria-pressed="true">Real leaf</button>
+        <button type="button" data-leaf="flat" aria-pressed="false">Flat leaf</button>
+      </div>
+      <div class="seg" role="group" aria-label="AI touch">
+        <button type="button" data-ai="off" aria-pressed="true">No AI mark</button>
+        <button type="button" data-ai="on" aria-pressed="false">✦ AI touch</button>
+      </div>
+      <div class="seg" role="group" aria-label="Theme">
+        <button type="button" data-theme-btn="light" aria-pressed="true">Light</button>
+        <button type="button" data-theme-btn="dark" aria-pressed="false">Dark</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="set">
+    <div class="set-h"><h2>Set 5 · पानात आधुनिक शेती</h2><p>Modern farming inside the leaf</p></div>
+    <div class="grid" id="cards-5"></div>
+  </section>
+  <section class="compare">
+    <h2>Set 5 side by side at 56 px</h2>
+    <div class="strip" id="strip"></div>
+  </section>
+  <section class="set" style="margin-top:28px">
+    <div class="set-h"><h2>Set 4 · पान</h2><p>Leaf logos: simple, natural and clear at every size</p></div>
+    <div class="grid" id="cards-4"></div>
+  </section>
+  <details class="earlier">
+  <summary>Earlier directions (A–M)</summary>
+  <section class="set">
+    <div class="set-h"><h2>Set 3 · शेतकऱ्याचं आपलं</h2><p>From the farmer's own life: the pheta, the bull, the soil, the farmhouse, their own language</p></div>
+    <div class="grid" id="cards-3"></div>
+  </section>
+  <section class="set">
+    <div class="set-h"><h2>Set 1 · परंपरा</h2><p>Traditional roots</p></div>
+    <div class="grid" id="cards-1"></div>
+  </section>
+  <section class="set">
+    <div class="set-h"><h2>Set 2 · परंपरा + तंत्रज्ञान + AI</h2><p>Tradition meets modern design and AI: the farm of the future</p></div>
+    <div class="grid" id="cards-2"></div>
+  </section>
+
+  </details>
+
+  <footer>Master artwork: 100×100 SVG, rounded tile rx 22. For PWA "maskable" icons, the key shape stays inside the centre 80% safe zone. Once a direction is picked, the next step is a board issue to export the SVG master to favicon.ico, the 72–512 px PNGs, the manifest theme colour, and the toolbar and login brand.</footer>
+</div>
+
+<script>
+const CONCEPTS = [
+  { id:'w1', label:'W1', set:5, name:'Tractor Leaf', mr:'पानात ट्रॅक्टर', pick:true, spark:[78,6],
+    why:'<b>A tractor inside the leaf.</b> The clearest sign of modern farming that every farmer knows, with gold wheel hubs.',
+    notes:['Instantly reads as "farming", even to first-time users','Solid shapes stay clear at 32 px','At 16 px it is a green leaf with a light shape inside'] },
+  { id:'w2', label:'W2', set:5, name:'Drone Leaf', mr:'पानात ड्रोन', spark:[78,6],
+    why:'<b>An agri-drone spraying a row of young crops</b>, with gold spray drops. Kisan drones are the face of new farming in India today.',
+    notes:['The most "modern farming" image of the set','Tells a story: technology looking after the crop','Fine details soften below 32 px; the leaf stays strong'] },
+  { id:'w3', label:'W3', set:5, name:'Drip Leaf', mr:'पानात ठिबक सिंचन', spark:[78,70],
+    why:'<b>The midrib is a drip line</b>: gold emitters with water drops falling from them. Drip irrigation is how Maharashtra saves water.',
+    notes:['Very familiar to sugarcane, grape and pomegranate farmers','Simple and clean; almost as bold as a plain leaf','Clear at 32 px; reads as a veined leaf at 16 px'] },
+  { id:'w4', label:'W4', set:5, name:'Land Map Leaf', mr:'पानात शेत-नकाशा', spark:[78,6],
+    why:'<b>Surveyed field plots with a location pin</b>, one plot in gold. It shows the app\'s own land-mapping feature.',
+    notes:['Ties directly to what the app does','Gold plot = your selected land','Plot lines blur below 32 px'] },
+  { id:'w5', label:'W5', set:5, name:'Polyhouse Leaf', mr:'पानात पॉलीहाऊस', spark:[6,6],
+    why:'<b>A polyhouse (greenhouse) under the sun</b>, drawn in light lines. Protected farming, as around Nashik and Pune.',
+    notes:['Modern and aspirational','Line art feels light and premium','Needs a bolder favicon version'] },
+  { id:'w6', label:'W6', set:5, name:'Solar Pump Leaf', mr:'पानात सौर पंप', spark:[6,6],
+    why:'<b>A solar panel with the sun and a water drop</b>: the solar pump that runs on free sunlight.',
+    notes:['Speaks to energy savings and PM-KUSUM pumps','Gold sun + cream panel read well on green','Panel grid fades below 32 px'] },
+  { id:'w7', label:'W7', set:5, name:'Growth Leaf', mr:'पानात वाढीचा आलेख', spark:[6,6],
+    why:'<b>Rising bars with a gold arrow going up.</b> Better yield and better income, tracked in the app.',
+    notes:['Says "profit" and "progress" without words','Bold bars stay clear at small sizes','More "business app" than "farm" in feel'] },
+  { id:'w8', label:'W8', set:5, name:'Smart Sprout Leaf', mr:'पानात स्मार्ट अंकुर', spark:[6,6],
+    why:'<b>A sprout sending a gold signal</b>: sensors and phone alerts that watch the crop for you.',
+    notes:['Smart farming in a friendly way','Sprout inside a leaf doubles the growth message','The signal arcs are small at 16 px'] },
+  { id:'w9', label:'W9', set:5, name:'Circuit Leaf', mr:'पानात सर्किट', spark:[78,70],
+    why:'<b>The veins are circuit traces ending in gold nodes.</b> A smart leaf: nature and technology in one shape.',
+    notes:['The most "tech" of the set','Strong graphic pattern','Feels less like a farm and more like a tech brand'] },
+  { id:'n', set:4, name:'Bold Leaf', mr:'ठळक पान', pick:true, spark:[78,6],
+    why:'<b>A single rice-white leaf on a green tile.</b> The simplest and strongest app icon of all: one shape, two colours, readable at any size.',
+    notes:['Looks at home next to any app on a phone','Perfect at 16 px: a white leaf on green','Easy to stamp on receipts, reports and the splash screen'] },
+  { id:'o', set:4, name:'Veined Leaf', mr:'शिरा असलेलं पान', spark:[78,6],
+    why:'<b>A classic upright leaf with its veins</b> on warm cream. Natural and calm, like a leaf from the farm.',
+    notes:['Most "botanical" and honest','Symmetric, so it centres well everywhere','Veins soften below 24 px, but the leaf stays clear'] },
+  { id:'p', set:4, name:'Sprout', mr:'अंकुर', spark:[76,6],
+    why:'<b>Two leaves on a young stem over the soil line.</b> New growth, a new season, a fresh start.',
+    notes:['Friendly and hopeful','Soft green tile; quiet but clean','Works well as an empty-state illustration too'] },
+  { id:'q', set:4, name:'Sun Leaf', mr:'सूर्य आणि पान', spark:[80,70],
+    why:'<b>A green leaf in front of the gold sun.</b> Crop and weather together: the two things the app tracks every day.',
+    notes:['Warm and rich in colour','Gold + green is the prototype palette exactly','The sun gives a bright accent on a home screen'] },
+  { id:'r', set:4, name:'Rain-drop Leaf', mr:'थेंबाचं पान', spark:[66,8],
+    why:'<b>A leaf in the shape of a rain drop</b>, with a small blue drop beside it. Water and crop in one mark.',
+    notes:['Speaks to rain and irrigation','Unusual silhouette, easy to remember','The blue dot adds the sky token sparingly'] },
+  { id:'s', set:4, name:'Field Leaf', mr:'शेताचं पान', spark:[6,6],
+    why:'<b>A leaf filled with ploughed rows</b> and a gold midrib. The leaf is the field.',
+    notes:['Leaf and farmland in one shape','Gold midrib catches the eye','Rows merge into solid green at 16 px'] },
+  { id:'t', set:4, name:'Three Leaves', mr:'तीन पानं', spark:[78,6],
+    why:'<b>Three leaves opening from one stem</b>: deep green, green and harvest gold. Growth from sowing to harvest.',
+    notes:['Lively and balanced','The gold leaf says "harvest" without words','Clear silhouette at every size'] },
+  { id:'u', set:4, name:'Line Leaf', mr:'रेषेचं पान', spark:[78,6],
+    why:'<b>One continuous green line draws the leaf and its stem</b>, with a gold seed below. Light, modern and minimal.',
+    notes:['The most modern of the set','White tile; great for the toolbar and website','Thin line needs care at 16 px (use a bolder favicon version)'] },
+  { id:'v', set:4, name:'Warli Ring Leaf', mr:'वारली वर्तुळातलं पान', spark:[78,6],
+    why:'<b>A green leaf inside the dotted Warli sun ring</b>, the same ring used on the login page.',
+    notes:['Links the logo to the existing Warli login art','Feels like a seal or badge','The dots become a soft gold halo at small sizes'] },
+  { id:'a', name:'Sunrise Furrows', mr:'उगवता सूर्य, नांगरलेलं शेत', pick:true,
+    why:'<b>Field rows running toward a rising Warli sun.</b> It is simple and warm, and it reads as "farm" at any size. The dotted ring is the Warli sun mark already used on the login page.',
+    notes:['Strongest at 16 px: a gold dot over a green band','Uses only the sun and leaf tokens; no text in the mark','Furrows bleed to the edge, so it works as a maskable PWA icon'] },
+  { id:'b', name:'Warli Farmer', mr:'वारली शेतकरी',
+    why:'<b>A Warli farmer tending paddy on a red-mud wall.</b> This is the most culturally direct option and matches the accepted Warli login art.',
+    notes:['Very recognisable to Maharashtrian users','At 16 px it shrinks to an "hourglass" shape, still distinct','Rose tile stands out on a home screen full of blue and green'] },
+  { id:'c', name:'Sprout Pin', mr:'नकाशावरचं रोपटं',
+    why:'<b>A sprout growing inside a map pin.</b> It points at what the app does: map your land and track your crops on it.',
+    notes:['Clean and modern; closest to a "product" feel','Ties to the land-mapping feature','Less cultural than A or B'] },
+  { id:'d', name:'Plot Leaf', mr:'शेतजमिनीचं पान',
+    why:'<b>A leaf whose veins are field boundaries</b>, with one plot in gold for "ready to harvest". It mixes crops and land plots in one shape.',
+    notes:['Distinctive silhouette','Inner plots blur below 24 px','Soft green tile is quieter on a home screen'] },
+  { id:'e', set:2, name:'Circuit Sun', mr:'सर्किट सूर्य', pick:true,
+    why:'<b>The sunrise from A, but its rays are circuit traces ending in nodes.</b> The short rays keep the solid Warli dots and the long ones become circuit "vias". Same field, same sun, now with a mind of its own.',
+    notes:['A natural next step from A, so the brand can grow into AI features','Dark leaf tile looks premium and modern','At 16 px it is a gold sun over green, like A'] },
+  { id:'f', set:2, name:'Sprout Spark', mr:'अंकुरातून ठिणगी',
+    why:'<b>A sprout whose bud blooms into the AI sparkle ✦</b>, growing from a Warli triangle border on rice-white. The seed is tradition; the flower is intelligence.',
+    notes:['The sparkle is the most widely understood "AI" sign today','Rice-white tile echoes Warli wall paint','Very clear at 16 px: green stem, gold star'] },
+  { id:'g', set:2, name:'Neural Paddy', mr:'न्यूरल भाताचं कणीस',
+    why:'<b>A paddy ear where every grain is a node</b> in a small neural network, on a leaf-to-sky gradient. Crops and data are the same shape here.',
+    notes:['Most "future"-looking of the set','Leaf→sky gradient says growth and technology','Network lines thin out below 32 px; the grain silhouette survives'] },
+  { id:'h', set:2, name:'Rangoli Pixel Leaf', mr:'ठिपक्यांची रांगोळी',
+    why:'<b>A leaf drawn on a rangoli dot grid (ठिपके).</b> Round rangoli dots at the stem turn into green, then gold, pixels toward the tip: a doorstep tradition becoming digital.',
+    notes:['Deeply familiar in Maharashtrian homes','Dot-to-pixel shift tells the "tradition → digital" story without words','Dot grid becomes texture at 16 px; the leaf shape still reads'] },
+  { id:'i', set:3, name:'Pheta Farmer', mr:'फेटेवाला शेतकरी', pick:true, spark:[78,6],
+    why:'<b>A smiling farmer in a red pheta, rising over his field like the morning sun.</b> He sees himself on his phone: same pheta, same mustache, same white kurta.',
+    notes:['The most personal option: the app has a face, and it is his','Warli dotted ring behind the head links it to the login art','At 16 px it still reads as a red pheta over a face'] },
+  { id:'j', set:3, name:'Sarja (Pola Bull)', mr:'सर्जा — पोळ्याचा बैल', spark:[43,1],
+    why:'<b>A white Khillari bull dressed for Pola</b>: painted horns, red tassels, a forehead tikka and a bell. The pride of a Maharashtrian farmer.',
+    notes:['Instantly Maharashtrian; Khillari is the local breed','The bull is family to many farmers, not "livestock"','Tall horns give a strong silhouette even at 16 px'] },
+  { id:'k', set:3, name:'Matit Haat', mr:'हातातली माती', spark:[74,8],
+    why:'<b>Two hands holding soil with a sprout in it.</b> "My land, my care." The emotional promise of the app: it looks after what you grow.',
+    notes:['Warm and human; works for every crop and region','Strong story for the login and onboarding screens','The hands blur into a brown bowl below 24 px'] },
+  { id:'l', set:3, name:'Majha Shet', mr:'माझं शेत', spark:[70,4],
+    why:'<b>The farm in one picture</b>: a tiled-roof (कौलारू) farmhouse, the mango tree, ploughed rows and the Warli sun. Literally "माझी शेती".',
+    notes:['Says "my farm" with no words at all','Builds on A, so the furrows and sun carry over','Busiest of the set; simplify the tree for the favicon'] },
+  { id:'m', set:3, name:'शे Monogram', mr:'मराठी अक्षर', spark:[74,6],
+    why:'<b>The letter श with a sprout in place of its matra</b>, which reads as शे for शेती. His own script, made into a mark.',
+    notes:['Marathi-first, like the rest of the app','The letter needs to be outlined from Baloo 2 for the final file','Bold and clear at every size'] },
+];
+CONCEPTS.forEach(c => { c.set = c.set || 1; });
+const state = { lang:'mr', ai:false };
+const BY_ID = Object.fromEntries(CONCEPTS.map(c => [c.id, c]));
+
+// H: rangoli dot grid clipped to a lens-shaped leaf; dots become pixels along the leaf axis.
+(function buildRangoliLeaf(){
+  const A=[20,80], B=[80,20], c1=[75,75], c2=[25,25], R=53;
+  const dist = (x,y,c) => Math.hypot(x-c[0], y-c[1]);
+  let s = '<g clip-path="url(#tile-clip)"><rect width="100" height="100" fill="#18231a"/>';
+  s += '<path d="M12 88 L21 79" stroke="#fff8ee" stroke-width="3" stroke-linecap="round"/>';
+  for (let y = 17; y <= 83; y += 6) for (let x = 17; x <= 83; x += 6) {
+    const t = ((x-A[0])*(B[0]-A[0]) + (y-A[1])*(B[1]-A[1])) / ((B[0]-A[0])**2 + (B[1]-A[1])**2);
+    if (dist(x,y,c1) <= R && dist(x,y,c2) <= R) {
+      if (t > .76) s += `<rect x="${x-2.4}" y="${y-2.4}" width="4.8" height="4.8" rx="1" fill="#e3a93a"/>`;
+      else if (t > .52) s += `<rect x="${x-2.2}" y="${y-2.2}" width="4.4" height="4.4" rx="1.3" fill="#5fbf72"/>`;
+      else s += `<circle cx="${x}" cy="${y}" r="2.3" fill="#fff8ee"/>`;
+    } else s += `<circle cx="${x}" cy="${y}" r=".9" fill="#fff8ee" opacity=".22"/>`;
+  }
+  document.getElementById('logo-h').innerHTML = s + '</g>';
+})();
+const use = (id, size, extra='') => {
+  const sp = state.ai && BY_ID[id].spark;
+  const spark = sp ? `<svg x="${sp[0]}" y="${sp[1]}" width="15" height="15" viewBox="0 0 100 100"><use href="#ai-spark"/></svg>` : '';
+  return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" ${extra} aria-hidden="true"><use href="#logo-${id}"/>${spark}</svg>`;
+};
+
+function render(){
+  const mrFirst = state.lang === 'mr';
+  const word = `<div class="word ${mrFirst?'mr-first':''}"><span class="en">MyFarm</span><span class="dv">माझी शेती</span></div>`;
+  const card = c => `
+    <article class="card ${c.pick?'pick':''}" aria-labelledby="h-${c.id}">
+      <div class="card-h">
+        <div><h2 id="h-${c.id}">${c.label || c.id.toUpperCase()}. ${c.name}</h2><div class="mr">${c.mr}</div></div>
+        ${c.pick?`<span class="badge">${({1:'Pick · roots',2:'Pick · roots + AI',3:'Pick · feels like mine',4:'Pick · plain leaf',5:'Recommended'})[c.set]}</span>`:''}
+      </div>
+      <div class="hero">
+        ${use(c.id,144,'class="big"')}
+        <div class="sizes">
+          <figure>${use(c.id,64)}<figcaption>64</figcaption></figure>
+          <figure>${use(c.id,32)}<figcaption>32</figcaption></figure>
+          <figure>${use(c.id,16)}<figcaption>16</figcaption></figure>
+        </div>
+      </div>
+      <p class="why">${c.why}</p>
+      <ul class="notes">${c.notes.map(n=>`<li>${n}</li>`).join('')}</ul>
+      <div class="lockup">${use(c.id,40)}${word}</div>
+      <div class="context">
+        <div class="tab">${use(c.id,16)}<span>${mrFirst?'माझी शेती':'My Farm'} — Home</span></div>
+        <div class="phone"><div class="ghost"></div><div class="app">${use(c.id,48)}<span>माझी शेती</span></div><div class="ghost"></div></div>
+        <div class="toolbar">${use(c.id,28)}<span class="tb-name">${mrFirst?'माझी शेती':'My Farm'}</span><span class="tb-sp"></span><span class="tb-av"></span></div>
+      </div>
+    </article>`;
+  for (const n of [5, 4, 3, 1, 2]) document.getElementById(`cards-${n}`).innerHTML = CONCEPTS.filter(c => c.set === n).map(card).join('');
+  document.getElementById('strip').innerHTML = CONCEPTS.filter(c => c.set === 5).map(c => `
+    <div class="cell">${use(c.id,56)}<div><div class="t">${c.label || c.id.toUpperCase()}. ${c.name}</div><div class="s">${c.mr}</div></div></div>`).join('');
+}
+
+document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-lang]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  state.lang = b.dataset.lang; render();
+}));
+document.querySelectorAll('[data-ai]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-ai]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  state.ai = b.dataset.ai === 'on'; render();
+}));
+document.querySelectorAll('[data-theme-btn]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-theme-btn]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  document.documentElement.dataset.theme = b.dataset.themeBtn;
+}));
+
+// Set 5 shared leaf base. "real": natural outline with a drip tip, two-tone halves, curved veins, stem and soft shadow.
+const LEAF5_OUT = 'M22 80 C14 62 18 40 34 28 C48 18 66 16 80 15 C84 14.5 87 13 89 11 C87.5 14 86.5 17 86 20 C85 36 80 54 66 68 C54 79 38 84 22 80 Z';
+const LEAF5_UPPER = 'M22 80 C14 62 18 40 34 28 C48 18 66 16 80 15 C84 14.5 87 13 89 11 C60 36 40 60 22 80 Z';
+function leaf5Real(){
+  const P = [[22,80],[40,60],[60,36],[89,11]];
+  const at = t => { const u = 1 - t; return [0,1].map(i => u*u*u*P[0][i] + 3*u*u*t*P[1][i] + 3*u*t*t*P[2][i] + t*t*t*P[3][i]); };
+  const tan = t => { const u = 1 - t; const d = [0,1].map(i => 3*u*u*(P[1][i]-P[0][i]) + 6*u*t*(P[2][i]-P[1][i]) + 3*t*t*(P[3][i]-P[2][i])); const l = Math.hypot(d[0], d[1]); return [d[0]/l, d[1]/l]; };
+  const f = v => v.toFixed(1);
+  let veins = '';
+  for (const t of [.1, .2, .3, .4, .5, .6, .7, .8]) {
+    const S = at(t), T = tan(t), N = [T[1], -T[0]];
+    for (const [side, peak] of [[1, 27], [-1, 23]]) {
+      const h = peak * Math.pow(Math.sin(Math.PI * Math.min(t + .05, 1)), .7);
+      const C = [S[0] + side*N[0]*h*.62 + T[0]*h*.22, S[1] + side*N[1]*h*.62 + T[1]*h*.22];
+      const E = [S[0] + side*N[0]*h*.86 + T[0]*h*1.0, S[1] + side*N[1]*h*.86 + T[1]*h*1.0];
+      veins += '<path d="M' + f(S[0]) + ' ' + f(S[1]) + ' Q' + f(C[0]) + ' ' + f(C[1]) + ' ' + f(E[0]) + ' ' + f(E[1]) + '" stroke-width="' + (1.5 - t).toFixed(2) + '"/>';
+    }
+  }
+  const G = at(.48), T = tan(.48), N = [T[1], -T[0]];
+  const ang = Math.atan2(T[1], T[0]) * 180 / Math.PI;
+  return '<defs>'
+    + '<linearGradient id="l5-light" gradientUnits="userSpaceOnUse" x1="30" y1="26" x2="54" y2="52"><stop offset="0" stop-color="#5aa866"/><stop offset="1" stop-color="#3b8a49"/></linearGradient>'
+    + '<linearGradient id="l5-dark" gradientUnits="userSpaceOnUse" x1="66" y1="40" x2="40" y2="80"><stop offset="0" stop-color="#2f7a3f"/><stop offset="1" stop-color="#1d5a2b"/></linearGradient>'
+    + '<linearGradient id="l5-stem" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b8a49"/><stop offset="1" stop-color="#1d5a2b"/></linearGradient>'
+    + '<clipPath id="l5-clip"><path d="' + LEAF5_OUT + '"/></clipPath>'
+    + '<filter id="l5-shadow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.2"/></filter>'
+    + '</defs>'
+    + '<rect width="100" height="100" fill="#faefd2"/>'
+    + '<path d="' + LEAF5_OUT + '" transform="translate(1.8 2.8)" fill="#18231a" opacity=".2" filter="url(#l5-shadow)"/>'
+    + '<path d="M24 78.5 C20 84 15 87.5 8 91 L6.8 88.6 C13 85.5 17.5 82 20.5 77.5 Z" fill="url(#l5-stem)"/>'
+    + '<path d="' + LEAF5_OUT + '" fill="url(#l5-dark)"/>'
+    + '<path d="' + LEAF5_UPPER + '" fill="url(#l5-light)"/>'
+    + '<g clip-path="url(#l5-clip)">'
+    +   '<g fill="none" stroke="#d6ecd0" stroke-linecap="round" opacity=".34">' + veins + '</g>'
+    +   '<ellipse cx="' + f(G[0] + N[0]*13) + '" cy="' + f(G[1] + N[1]*13) + '" rx="20" ry="6" transform="rotate(' + f(ang) + ' ' + f(G[0] + N[0]*13) + ' ' + f(G[1] + N[1]*13) + ')" fill="#ffffff" opacity=".06"/>'
+    + '</g>'
+    + '<path d="M22 80 C40 60 60 36 89 11" fill="none" stroke="#e3f1da" stroke-width="1.7" stroke-linecap="round" opacity=".6"/>'
+    + '<path d="' + LEAF5_OUT + '" fill="none" stroke="#1d5a2b" stroke-width=".8" opacity=".45"/>';
+}
+const LEAF5_FLAT = '<rect width="100" height="100" fill="#faefd2"/>'
+  + '<path d="M18 82 C14 44 40 16 84 16 C86 60 56 86 18 82 Z" fill="#2f7a3f"/>'
+  + '<path d="M11 89 L19 81" stroke="#2f7a3f" stroke-width="5" stroke-linecap="round"/>';
+function setLeaf5(mode){ document.getElementById('leaf5-base').innerHTML = mode === 'flat' ? LEAF5_FLAT : leaf5Real(); }
+setLeaf5('real');
+document.querySelectorAll('[data-leaf]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-leaf]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  setLeaf5(b.dataset.leaf);
+}));
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="mr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#dcefdf" />
+<title>MyFarm Sign In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<!-- Prototype fonts + Mukta as the Devanagari fallback (Bricolage/Figtree have no Devanagari) -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600;700&family=Mukta:wght@400;500;600;700&display=swap" />
+<style>
+/* ===== Tokens: MyFarm design system (design/prototype/myfarm-prototype.html) ===== */
+:root {
+  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:24px; --s-6:32px;
+  --r-sm:8px; --r-md:10px; --r-lg:12px; --r-xl:14px; --r-sheet:18px; --r-pill:999px;
+  --dur-base:.22s;
+  --bg:#eef1ec; --surface:#ffffff; --surface2:#f4f6f2; --line:#dde3d8;
+  --fg:#18231a; --muted:#5d6b5f;
+  --leaf:#2f7a3f; --leaf-soft:#dcefdf; --leaf-ink:#1d5a2b;
+  --sun:#c98a14; --sun-soft:#faefd2;
+  --sky:#2b74b8; --sky-soft:#dcebf8;
+  --rose:#b83d3d; --rose-soft:#f8dfdf;
+  --shadow:0 12px 40px rgba(24,35,26,.14);
+  --on-leaf:#fff;
+  --display:'Bricolage Grotesque','Mukta','Segoe UI',system-ui,sans-serif;
+  --body:'Figtree','Mukta','Segoe UI',system-ui,sans-serif;
+  color-scheme: light;
+}
+/* Light by default; dark only via the toggle */
+:root[data-theme="dark"] {
+  --bg:#0f1611; --surface:#17211a; --surface2:#1d2a20; --line:#2a3a2d;
+  --fg:#e8efe8; --muted:#9bab9d;
+  --leaf:#5fbf72; --leaf-soft:#1f3a26; --leaf-ink:#a5e0b0;
+  --sun:#e3a93a; --sun-soft:#3a2f14;
+  --sky:#6aaee6; --sky-soft:#17304a;
+  --rose:#e07878; --rose-soft:#3f2020;
+  --shadow:0 12px 40px rgba(0,0,0,.5);
+  --on-leaf:#0f1611;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { min-height: 100dvh; background: var(--bg); color: var(--fg); font: 500 16px/1.45 var(--body); -webkit-font-smoothing: antialiased; }
+h1, h2 { font-family: var(--display); margin: 0; line-height: 1.15; text-wrap: balance; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--leaf); outline-offset: 2px; }
+[hidden] { display: none !important; }
+
+.app { min-height: 100dvh; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
+
+/* ===== Hero: Warli line-art in leaf tones ===== */
+.hero {
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column;
+  padding: var(--s-6) 44px 0;
+  background: radial-gradient(120% 80% at 85% 0%, var(--surface) 0%, transparent 55%), var(--leaf-soft);
+  color: var(--leaf-ink);
+}
+.brand { display: flex; align-items: center; gap: var(--s-2); font: 700 22px var(--display); color: var(--leaf-ink); }
+.brand svg { color: var(--leaf); }
+.copy { margin: auto 0; padding: var(--s-5) 0; }
+.copy h1 { font-size: clamp(2.4rem, 4.2vw, 3.5rem); font-weight: 700; color: var(--fg); }
+.copy p { margin: var(--s-3) 0 var(--s-5); font-size: 1.15rem; color: var(--muted); max-width: 28rem; }
+.chips { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--surface); border-radius: var(--r-pill); padding: 6px 14px; font-size: 14px; font-weight: 600; color: var(--leaf-ink); }
+.chip svg { color: var(--leaf); }
+
+.scene { display: block; width: calc(100% + 88px); margin: 0 -44px; height: auto; color: var(--leaf-ink); fill: currentColor; }
+.scene .limb { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.scene .sun { color: var(--sun); }
+.scene .crops { color: var(--leaf); }
+.scene .rays { transform-box: fill-box; transform-origin: center; animation: turn 60s linear infinite; }
+.scene .birds { animation: drift 7s ease-in-out infinite alternate; }
+.scene .walk { animation: bob 1.6s ease-in-out infinite; }
+.ground { height: var(--s-2); margin: 0 -44px; background: var(--leaf); opacity: .85; }
+
+/* ===== Panel ===== */
+.panel { display: flex; flex-direction: column; padding: var(--s-5) var(--s-6); }
+.top { display: flex; justify-content: flex-end; align-items: center; gap: var(--s-2); }
+
+/* .seg — segmented control from the prototype */
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: var(--r-pill); background: var(--surface); padding: 3px; }
+.seg button { border: 0; background: none; padding: 6px 14px; border-radius: var(--r-pill); color: var(--muted); font-weight: 600; }
+.seg button[aria-pressed="true"] { background: var(--leaf); color: var(--on-leaf); }
+
+/* .btn — buttons from the prototype */
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: var(--r-sm); padding: var(--s-2) var(--s-3); font-weight: 600; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2); }
+.btn.lg { padding: var(--s-3) var(--s-4); }
+.btn.p { background: var(--leaf); border-color: var(--leaf); color: var(--on-leaf); }
+.btn.icon { width: 40px; height: 40px; padding: 0; color: var(--muted); }
+.btn.block { width: 100%; min-height: 54px; font-size: 1.05rem; border-radius: var(--r-md); }
+.btn:active { transform: translateY(1px); }
+
+.body { flex: 1; display: grid; place-items: center; padding: var(--s-6) 0 var(--s-2); }
+/* .card — card from the prototype */
+.card { width: 100%; max-width: 400px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: var(--s-5); box-shadow: var(--shadow); }
+
+/* .steps — progress bars from the prototype */
+.steps { display: flex; gap: var(--s-1); margin: 0 0 var(--s-4); }
+.steps i { flex: 1; height: 6px; border-radius: 3px; background: var(--line); transition: background var(--dur-base); }
+.steps i.on { background: var(--leaf); }
+.steps i.now { background: var(--sun); }
+
+.card h2 { font-size: 26px; }
+.sub { color: var(--muted); margin: var(--s-1) 0 var(--s-4); }
+.sub b { color: var(--fg); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.link { border: 0; background: none; padding: 0; color: var(--leaf); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+
+/* phone number field (prototype .fld input, scaled up for thumbs) */
+.num { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-3) var(--s-4); border-radius: var(--r-md); background: var(--surface); border: 1px solid var(--line); box-shadow: 0 0 0 3px var(--leaf-soft); border-color: var(--leaf); }
+.num.bad { border-color: var(--rose); box-shadow: 0 0 0 3px var(--rose-soft); }
+.cc { padding-right: var(--s-3); border-right: 1px solid var(--line); font-weight: 600; color: var(--muted); white-space: nowrap; }
+.digits { display: flex; font: 700 26px/1.1 var(--display); font-variant-numeric: tabular-nums; }
+.digits span { position: relative; width: .62em; text-align: center; }
+.digits span.empty { color: transparent; }
+.digits span.empty::after, .digits span.cur::after { content: ''; position: absolute; left: 18%; right: 18%; bottom: .06em; height: 2px; border-radius: 2px; background: var(--line); }
+.digits span.cur::after { background: var(--leaf); animation: blink 1s steps(1) infinite; }
+.digits .gap { width: 10px; }
+
+/* PIN dots */
+.dots { display: flex; justify-content: center; gap: var(--s-3); padding: var(--s-2) 0 0; }
+.dots span {
+  width: 52px; height: 58px; border-radius: var(--r-md);
+  border: 1px solid var(--line); background: var(--surface2);
+  display: grid; place-items: center;
+  font: 700 26px/1 var(--display); color: var(--fg);
+  transition: background .15s, border-color .15s;
+}
+.dots span.on { background: var(--leaf-soft); border-color: var(--leaf); color: var(--leaf-ink); }
+.dots span.cur { border-color: var(--leaf); box-shadow: 0 0 0 3px var(--leaf-soft); }
+.dots.bad span { border-color: var(--rose); }
+.eye { display: flex; align-items: center; gap: 6px; margin: var(--s-2) auto 0; border: 0; background: none; padding: 6px 10px; border-radius: var(--r-sm); color: var(--leaf); font-weight: 600; }
+.eye:hover { background: var(--leaf-soft); }
+
+/* keypad */
+.pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-2); margin-top: var(--s-4); }
+.key {
+  height: clamp(52px, 7vh, 60px);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border-radius: var(--r-md); border: 1px solid var(--line); background: var(--surface2);
+  font: 700 24px/1 var(--display);
+  transition: background .12s, transform .08s;
+  -webkit-tap-highlight-color: transparent;
+}
+.key small { font: 500 12px/1 Mukta, sans-serif; color: var(--muted); margin-top: 3px; }
+.key:hover { background: var(--leaf-soft); }
+.key:active { transform: scale(.97); background: var(--leaf-soft); }
+.key.del { background: none; border-color: transparent; color: var(--muted); }
+.key.ok { background: var(--leaf); border-color: var(--leaf); color: var(--on-leaf); }
+.key:disabled { opacity: .6; cursor: progress; }
+
+/* name field (prototype .fld) */
+.fld label { display: block; font-weight: 600; margin-bottom: 6px; }
+.fld input { width: 100%; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: var(--r-md); padding: 14px 14px; font: 600 18px var(--body); outline: none; }
+.fld input:focus { border-color: var(--leaf); box-shadow: 0 0 0 3px var(--leaf-soft); }
+.fld input.bad { border-color: var(--rose); box-shadow: 0 0 0 3px var(--rose-soft); }
+#nameForm .btn { margin-top: var(--s-4); }
+
+/* .alert — from the prototype; rose variant for errors */
+.alert { display: flex; gap: 10px; align-items: flex-start; background: var(--sun-soft); color: var(--fg); border-radius: var(--r-md); padding: var(--s-3); border: 1px solid var(--sun); margin-top: var(--s-3); font-size: 15px; }
+.alert svg { color: var(--sun); flex: none; margin-top: 2px; }
+.alert.rose { background: var(--rose-soft); border-color: var(--rose); color: var(--rose); font-weight: 600; }
+.alert.rose svg { color: var(--rose); }
+
+.done { text-align: center; padding: var(--s-2) 0 0; }
+.tick { width: 84px; height: 84px; margin: 0 auto var(--s-4); border-radius: 50%; display: grid; place-items: center; background: var(--leaf-soft); color: var(--leaf); animation: pop .45s cubic-bezier(.2,1.6,.4,1); }
+
+.safe { margin: var(--s-4) 0 0; display: flex; justify-content: center; align-items: center; gap: 6px; color: var(--muted); font-size: 14px; }
+.safe svg { color: var(--leaf); }
+.demo { margin: var(--s-3) 0 0; text-align: center; font: 400 12px var(--body); color: var(--muted); }
+.demo code { background: var(--surface2); border: 1px solid var(--line); padding: 1px 6px; border-radius: 6px; }
+
+.spinner { width: 22px; height: 22px; border-radius: 50%; border: 3px solid currentColor; border-right-color: transparent; animation: turn .7s linear infinite; }
+.shake { animation: shake .4s; }
+.fade { animation: rise var(--dur-base) ease-out; }
+
+@keyframes turn { to { transform: rotate(360deg); } }
+@keyframes drift { to { transform: translateX(18px); } }
+@keyframes bob { 50% { transform: translateY(-1.5px); } }
+@keyframes blink { 50% { opacity: 0; } }
+@keyframes shake { 20%,60% { transform: translateX(-7px); } 40%,80% { transform: translateX(7px); } }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes pop { from { transform: scale(.3); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* ===== Phone: app-like, keypad pinned to the bottom ===== */
+@media (max-width: 860px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .hero { padding: calc(var(--s-3) + env(safe-area-inset-top)) var(--s-4) 0; }
+  .brand { font-size: 19px; }
+  .copy { margin: 0; padding: var(--s-2) 0 0; }
+  .copy h1 { font-size: 28px; }
+  .copy p { font-size: 15px; margin: 2px 0 0; }
+  .chips { display: none; }
+  .scene, .ground { width: calc(100% + 32px); margin: 0 calc(-1 * var(--s-4)); }
+  .scene { margin-top: -4px; }
+  .ground { height: 6px; }
+
+  .panel { padding: 0 var(--s-4) calc(var(--s-3) + env(safe-area-inset-bottom)); }
+  .top { position: absolute; top: calc(var(--s-3) + env(safe-area-inset-top)); right: var(--s-4); }
+  .top .seg button { padding: 4px 10px; font-size: 14px; }
+  .top .btn.icon { display: none; }
+
+  .body { padding: var(--s-4) 0 0; display: flex; }
+  .card { flex: 1; max-width: none; display: flex; flex-direction: column; background: none; border: 0; border-radius: 0; padding: 0; box-shadow: none; }
+  .card h2 { font-size: 22px; }
+  .sub { margin: 2px 0 var(--s-3); font-size: 15px; }
+  .num { padding: 10px var(--s-3); }
+  .digits { font-size: 24px; }
+  .alert { margin-top: 10px; padding: 10px; font-size: 14px; }
+  .pad { margin-top: auto; padding-top: var(--s-3); }
+  .key { background: var(--surface); }
+  .safe { margin-top: 10px; font-size: 13px; }
+  .demo { display: none; }
+  .done { margin-top: var(--s-5); }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===== Hero ===== -->
+  <aside class="hero">
+    <div class="brand">
+      <svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8.416.223a.5.5 0 0 0-.832 0l-3 4.5A.5.5 0 0 0 5 5.5h.098L3.076 8.735A.5.5 0 0 0 3.5 9.5h.191l-1.638 3.276a.5.5 0 0 0 .447.724H7V16h2v-2.5h4.5a.5.5 0 0 0 .447-.724L12.310 9.5h.191a.5.5 0 0 0 .424-.765L10.902 5.5H11a.5.5 0 0 0 .416-.777zM6.437 4.758A.5.5 0 0 0 6 4.5h-.066L8 1.401 10.066 4.5H10a.5.5 0 0 0-.424.765L11.598 8.5H11.5a.5.5 0 0 0-.447.724L12.69 12.5H3.309l1.638-3.276A.5.5 0 0 0 4.5 8.5h-.098l2.022-3.235a.5.5 0 0 0 .013-.507"/></svg>
+      <span>MyFarm</span>
+    </div>
+
+    <div class="copy">
+      <h1 data-i18n="greet"></h1>
+      <p data-i18n="tagline"></p>
+      <div class="chips">
+        <span class="chip"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.5.5 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103M10 1.91l-4-.8v12.98l4 .8zm1 12.98 4-.8V1.11l-4 .8zm-6-.8V1.11l-4 .8v12.98z"/></svg><span data-i18n="f1"></span></span>
+        <span class="chip"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1z"/></svg><span data-i18n="f2"></span></span>
+        <span class="chip"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 3.06h2.726c1.22 0 2.12.575 2.325 1.724H4v1.051h5.051C8.855 7.001 8 7.558 6.788 7.558H4v1.317L8.437 14h2.11L6.095 8.884h.855c2.316-.018 3.465-1.476 3.688-3.049H12V4.784h-1.345c-.08-.778-.357-1.335-.793-1.732H12V2H4z"/></svg><span data-i18n="f3"></span></span>
+        <span class="chip"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M7 8a3.5 3.5 0 0 1 3.5 3.555.5.5 0 0 0 .624.492A1.503 1.503 0 0 1 13 13.5a1.5 1.5 0 0 1-1.5 1.5H3a2 2 0 1 1 .1-3.998.5.5 0 0 0 .51-.375A3.5 3.5 0 0 1 7 8m4.473 3a4.5 4.5 0 0 0-8.72-.99A3 3 0 0 0 3 16h8.5a2.5 2.5 0 0 0 0-5zM10.5 1.5a.5.5 0 0 0-1 0v1a.5.5 0 0 0 1 0zm3.743 1.964a.5.5 0 1 0-.707-.707l-.708.707a.5.5 0 0 0 .708.708zm-7.779-.707a.5.5 0 0 0-.707.707l.707.708a.5.5 0 1 0 .708-.708zm1.734 3.374a2 2 0 1 1 3.296 2.198q.3.423.516.898a3 3 0 1 0-4.84-3.225q.529.017 1.028.129m4.484 4.074c.6.215 1.125.59 1.522 1.072a.5.5 0 0 0 .039-.742l-.707-.707a.5.5 0 0 0-.854.377M14.5 6.5a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"/></svg><span data-i18n="f4"></span></span>
+      </div>
+    </div>
+
+    <svg class="scene" viewBox="0 0 600 300" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+      <defs>
+        <pattern id="dots" width="7" height="7" patternUnits="userSpaceOnUse"><circle cx="3.5" cy="3.5" r="1.7" fill="currentColor"/></pattern>
+        <pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="currentColor" stroke-width="1.6"/></pattern>
+        <pattern id="sprouts" width="20" height="16" patternUnits="userSpaceOnUse"><path d="M10 14V7M10 10L6 6M10 10L14 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></pattern>
+        <g id="fig">
+          <circle cy="-50" r="5.5"/>
+          <path d="M-8 -43L8 -43L0 -29ZM0 -29L-8 -15L8 -15Z"/>
+          <path class="limb" d="M-4 -15L-9 0M4 -15L9 0"/>
+        </g>
+      </defs>
+
+      <g class="sun" transform="translate(522 128)">
+        <circle r="18"/>
+        <circle class="rays" r="29" fill="none" stroke="currentColor" stroke-width="9" stroke-dasharray="2.6 8.79"/>
+      </g>
+      <path class="limb birds" d="M352 124q5-6 10 0q5-6 10 0M382 106q4-5 8 0q4-5 8 0M398 134q4-5 8 0q4-5 8 0"/>
+
+      <path d="M32 217L66 186L100 217Z" fill="url(#hatch)" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      <path class="limb" d="M40 250V217H92V250"/>
+      <rect x="60" y="229" width="12" height="21"/>
+
+      <circle class="crops" cx="150" cy="150" r="46" fill="url(#dots)"/>
+      <path class="limb" d="M150 250V160M150 205L128 184M150 195L172 172M150 180L134 160M150 175L166 152"/>
+
+      <g class="walk">
+        <g transform="translate(250 250) scale(1.15)">
+          <use href="#fig"/>
+          <path d="M-6 -54L6 -54L4 -59L-4 -59Z"/>
+          <path class="limb" d="M-8 -42L4 -36L22 -31M8 -42L16 -34L22 -31"/>
+        </g>
+        <path class="limb" style="stroke-width:2.6" d="M275 214L292 249M286 237L318 228"/>
+        <path d="M288 247L299 250L290 252Z"/>
+        <g transform="translate(345 250) scale(1.15)">
+          <path d="M-22 -30L-22 -12L0 -21ZM22 -30L22 -12L0 -21ZM14 -30Q18 -37 22 -30Z"/>
+          <ellipse cx="33" cy="-35" rx="6" ry="3.6" transform="rotate(-25 33 -35)"/>
+          <path class="limb" d="M22 -28L29 -33M-19 -12L-21 0M-14 -12L-13 0M14 -12L13 0M19 -12L21 0M-22 -28Q-31 -22 -28 -9M30 -38Q26 -47 32 -50M35 -38Q37 -46 42 -46"/>
+        </g>
+      </g>
+
+      <g transform="translate(445 250) scale(1.15)">
+        <use href="#fig"/>
+        <circle cx="-5.5" cy="-52" r="2.6"/>
+        <circle class="sun" cy="-62" r="6" fill="currentColor"/>
+        <path class="limb" d="M-8 -42L-12 -52L-6 -60M8 -42L13 -33L7 -29"/>
+      </g>
+
+      <g transform="translate(515 250) scale(1.15)">
+        <use href="#fig"/>
+        <circle cx="-5.5" cy="-52" r="2.6"/>
+        <path class="limb" d="M-8 -42L-15 -33L-9 -28M8 -42L18 -37L25 -40"/>
+        <path d="M-17 -31A7 7 0 0 0 -3 -31Z"/>
+      </g>
+      <g class="sun"><circle cx="547" cy="212" r="1.8"/><circle cx="551" cy="221" r="1.8"/><circle cx="546" cy="229" r="1.8"/><circle cx="553" cy="236" r="1.8"/><circle cx="549" cy="244" r="1.8"/></g>
+
+      <path class="limb" d="M0 250H600"/>
+      <rect class="crops" x="0" y="256" width="600" height="44" fill="url(#sprouts)"/>
+    </svg>
+    <div class="ground"></div>
+  </aside>
+
+  <!-- ===== Sign-in panel ===== -->
+  <main class="panel">
+    <div class="top">
+      <div class="seg" role="group" aria-label="Language / भाषा">
+        <button type="button" data-lang="mr" aria-pressed="true">मराठी</button>
+        <button type="button" data-lang="hi" aria-pressed="false">हिंदी</button>
+        <button type="button" data-lang="en" aria-pressed="false">English</button>
+      </div>
+      <button type="button" class="btn icon" id="themeBtn" aria-label="Toggle dark mode"></button>
+    </div>
+
+    <div class="body">
+      <div class="card">
+        <div class="steps" id="steps" aria-hidden="true"></div>
+
+        <div id="head" class="fade">
+          <h2 id="title"></h2>
+          <p class="sub" id="sub"></p>
+        </div>
+
+        <div class="num" id="numBox" aria-live="polite">
+          <span class="cc">+91</span>
+          <span class="digits" id="digits"></span>
+        </div>
+
+        <div class="dots" id="pinBoxes" aria-live="polite"></div>
+        <button type="button" class="eye" id="eyeBtn" aria-pressed="false"></button>
+
+        <form id="nameForm" novalidate>
+          <div class="fld">
+            <label for="nameInput" data-i18n="nameLabel"></label>
+            <input id="nameInput" type="text" autocomplete="name" data-i18n-ph="namePh" />
+          </div>
+          <button class="btn p block" type="submit"><span data-i18n="next"></span><span aria-hidden="true">→</span></button>
+        </form>
+
+        <div class="done" id="doneBox">
+          <div class="tick"><svg width="44" height="44" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/></svg></div>
+          <button type="button" class="btn" id="restart" data-i18n="again"></button>
+        </div>
+
+        <div class="alert rose" id="err" role="alert">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4m.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>
+          <span></span>
+        </div>
+
+        <div class="alert" id="newHere">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/></svg>
+          <span data-i18n="newHere"></span>
+        </div>
+
+        <div class="pad" id="pad" role="group" aria-label="Number keypad"></div>
+
+        <p class="safe">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0c-.69 0-1.843.265-2.928.56-1.11.3-2.229.655-2.887.87a1.54 1.54 0 0 0-1.044 1.262c-.596 4.477.787 7.795 2.465 9.99a11.8 11.8 0 0 0 2.517 2.453c.386.273.744.482 1.048.625.28.132.581.24.829.24s.548-.108.829-.24a7 7 0 0 0 1.048-.625 11.8 11.8 0 0 0 2.517-2.453c1.678-2.195 3.061-5.513 2.465-9.99a1.54 1.54 0 0 0-1.044-1.263 63 63 0 0 0-2.887-.87C9.843.266 8.69 0 8 0m2.146 5.146a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793z"/></svg>
+          <span data-i18n="safe"></span>
+        </p>
+        <p class="demo">Mockup demo: number ending in <code>0</code> → new farmer · PIN <code>1234</code> signs in</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+(() => {
+  const T = {
+    mr: {
+      greet: 'राम राम 🙏', tagline: 'आपली शेती, आपला हिशोब — आता मोबाईलवर.',
+      f1: 'शेताचा नकाशा', f2: 'कामांची नोंद', f3: 'खर्चाचा हिशोब', f4: 'हवामान',
+      phoneTitle: 'तुमचा मोबाईल नंबर', phoneHint: 'लॉगिन करण्यासाठी 10 अंकी नंबर टाका',
+      newHere: 'नवीन आहात? फक्त नंबर टाका — आम्ही खाते तयार करू.',
+      pinTitle: 'तुमचा PIN टाका', number: 'नंबर', change: 'बदला',
+      createTitle: 'नवीन PIN निवडा', confirmTitle: 'PIN पुन्हा टाका', pinHint: '4 अंकी PIN — लक्षात राहील असा',
+      nameTitle: 'नवीन शेतकरी, स्वागत आहे!', nameHint: 'हा नंबर नवीन आहे. तुमचे नाव सांगा.',
+      nameLabel: 'तुमचे पूर्ण नाव', namePh: 'उदा. राजेश पाटील', next: 'पुढे चला',
+      doneTitle: 'स्वागत आहे', opening: 'तुमची शेती उघडत आहे…', again: 'पुन्हा सुरू करा',
+      safe: 'तुमची माहिती सुरक्षित आहे', showPin: 'PIN दाखवा', hidePin: 'PIN लपवा',
+      badPhone: 'कृपया 10 अंकी नंबर टाका', shortPin: 'PIN 4 अंकी असावा', wrongPin: 'चुकीचा PIN. पुन्हा प्रयत्न करा.',
+      mismatch: 'दोन्ही PIN जुळत नाहीत. पुन्हा निवडा.', shortName: 'कृपया पूर्ण नाव लिहा',
+    },
+    hi: {
+      greet: 'राम राम 🙏', tagline: 'आपकी खेती, आपका हिसाब — अब मोबाइल पर।',
+      f1: 'खेत का नक्शा', f2: 'कामों का रिकॉर्ड', f3: 'खर्च का हिसाब', f4: 'मौसम',
+      phoneTitle: 'आपका मोबाइल नंबर', phoneHint: 'लॉगिन के लिए 10 अंकों का नंबर डालें',
+      newHere: 'नए हैं? बस नंबर डालें — हम खाता बना देंगे।',
+      pinTitle: 'अपना PIN डालें', number: 'नंबर', change: 'बदलें',
+      createTitle: 'नया PIN चुनें', confirmTitle: 'PIN दोबारा डालें', pinHint: '4 अंकों का PIN — जो याद रहे',
+      nameTitle: 'नए किसान, स्वागत है!', nameHint: 'यह नंबर नया है। अपना नाम बताएं।',
+      nameLabel: 'आपका पूरा नाम', namePh: 'जैसे: राजेश पाटिल', next: 'आगे बढ़ें',
+      doneTitle: 'स्वागत है', opening: 'आपकी खेती खुल रही है…', again: 'फिर से शुरू करें',
+      safe: 'आपकी जानकारी सुरक्षित है', showPin: 'PIN दिखाएं', hidePin: 'PIN छिपाएं',
+      badPhone: 'कृपया 10 अंकों का नंबर डालें', shortPin: 'PIN 4 अंकों का होना चाहिए', wrongPin: 'गलत PIN। फिर से कोशिश करें।',
+      mismatch: 'दोनों PIN मेल नहीं खाते। फिर से चुनें।', shortName: 'कृपया पूरा नाम लिखें',
+    },
+    en: {
+      greet: 'Namaste 🙏', tagline: 'Your farm and your accounts — now on your phone.',
+      f1: 'Field map', f2: 'Work diary', f3: 'Expenses', f4: 'Weather',
+      phoneTitle: 'Your mobile number', phoneHint: 'Enter your 10-digit number to sign in',
+      newHere: 'New here? Just enter your number — we’ll set up your account.',
+      pinTitle: 'Enter your PIN', number: 'Number', change: 'Change',
+      createTitle: 'Choose a new PIN', confirmTitle: 'Enter the PIN again', pinHint: '4 digits — one you’ll remember',
+      nameTitle: 'Welcome, new farmer!', nameHint: 'This number is new. Tell us your name.',
+      nameLabel: 'Your full name', namePh: 'e.g. Rajesh Patil', next: 'Next',
+      doneTitle: 'Welcome', opening: 'Opening your farm…', again: 'Start again',
+      safe: 'Your information is safe with us', showPin: 'Show PIN', hidePin: 'Hide PIN',
+      badPhone: 'Please enter a 10-digit number', shortPin: 'PIN must be 4 digits', wrongPin: 'Wrong PIN. Please try again.',
+      mismatch: 'The PINs don’t match. Choose again.', shortName: 'Please write your full name',
+    },
+  };
+  const DEV = '०१२३४५६७८९';
+  const TITLE = { phone: 'phoneTitle', pin: 'pinTitle', create: 'createTitle', confirm: 'confirmTitle', name: 'nameTitle' };
+  const BUF = { phone: 'phone', pin: 'pin', create: 'newPin', confirm: 'confirm' };
+  const FLOW_SIGNIN = ['phone', 'pin'], FLOW_NEW = ['phone', 'name', 'create', 'confirm'];
+  const ICON_DEL = '<svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M5.83 5.146a.5.5 0 0 0 0 .708L7.975 8l-2.147 2.146a.5.5 0 0 0 .707.708l2.147-2.147 2.146 2.147a.5.5 0 0 0 .707-.708L9.39 8l2.146-2.146a.5.5 0 0 0-.707-.708L8.683 7.293 6.536 5.146a.5.5 0 0 0-.707 0z"/><path d="M13.683 1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-7.08a2 2 0 0 1-1.519-.698L.241 8.65a1 1 0 0 1 0-1.302L5.084 1.7A2 2 0 0 1 6.603 1zm-7.08 1a1 1 0 0 0-.76.35L1 8l4.844 5.65a1 1 0 0 0 .759.35h7.08a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"/></svg>';
+  const ICON_GO = '<svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/></svg>';
+  const ICON_MOON = '<svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277q.792-.001 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278"/></svg>';
+  const ICON_SUN = '<svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708"/></svg>';
+
+  const $ = (sel) => document.querySelector(sel);
+  const ICON_EYE = '<svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/></svg>';
+  const ICON_EYE_OFF = '<svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7 7 0 0 0-2.79.588l.77.771A6 6 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755q-.247.248-.517.486z"/><path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829"/><path d="M3.35 5.47q-.27.24-.518.487A13 13 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7 7 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12z"/></svg>';
+  const s = { lang: 'mr', step: 'phone', isNew: false, phone: '', pin: '', newPin: '', confirm: '', name: '', busy: false, err: null, reveal: false, flash: -1 };
+  let flashTimer;
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const echo = () => '+91 ' + s.phone.slice(0, 5) + ' ' + s.phone.slice(5);
+
+  const pad = $('#pad');
+  ['1','2','3','4','5','6','7','8','9','del','0','ok'].forEach((k) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'key' + (k === 'del' ? ' del' : k === 'ok' ? ' ok' : ''); b.dataset.k = k;
+    if (k === 'del') b.setAttribute('aria-label', 'Delete');
+    if (k === 'ok') b.setAttribute('aria-label', 'Next');
+    pad.appendChild(b);
+  });
+  pad.addEventListener('click', (e) => { const b = e.target.closest('.key'); if (b) press(b.dataset.k); });
+  document.addEventListener('keydown', (e) => {
+    if (!(s.step in BUF) || e.target.tagName === 'INPUT') return;
+    if (/^\d$/.test(e.key)) press(e.key);
+    else if (e.key === 'Backspace') press('del');
+    else if (e.key === 'Enter') { e.preventDefault(); press('ok'); }
+  });
+
+  function press(k) {
+    if (s.busy) return;
+    const key = BUF[s.step], max = s.step === 'phone' ? 10 : 4;
+    if (k === 'ok') return submit();
+    clearTimeout(flashTimer); s.flash = -1;
+    if (k === 'del') s[key] = s[key].slice(0, -1);
+    else if (s[key].length < max) {
+      s[key] += k;
+      // Briefly show the digit just typed, then mask it (like Android password fields)
+      if (s.step !== 'phone') { s.flash = s[key].length - 1; flashTimer = setTimeout(() => { s.flash = -1; render(); }, 900); }
+    }
+    s.err = null; render();
+  }
+  function fail(errKey, sel) {
+    s.err = errKey; render();
+    const el = $(sel); el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake', 'bad');
+  }
+  async function fake(ms) { s.busy = true; render(); await wait(ms); s.busy = false; }
+  function go(step) { s.step = step; s.err = null; render(true); }
+
+  async function submit() {
+    switch (s.step) {
+      case 'phone':
+        if (s.phone.length !== 10) return fail('badPhone', '#numBox');
+        s.pin = ''; s.isNew = false; return go('pin');
+      case 'pin':
+        if (s.pin.length !== 4) return fail('shortPin', '#pinBoxes');
+        await fake(900);
+        if (s.phone.endsWith('0')) { s.isNew = true; s.name = ''; $('#nameInput').value = ''; return go('name'); }
+        if (s.pin === '1234') return go('done');
+        s.pin = ''; return fail('wrongPin', '#pinBoxes');
+      case 'create':
+        if (s.newPin.length !== 4) return fail('shortPin', '#pinBoxes');
+        s.confirm = ''; return go('confirm');
+      case 'confirm':
+        if (s.confirm !== s.newPin) { s.newPin = ''; s.confirm = ''; s.step = 'create'; return fail('mismatch', '#pinBoxes'); }
+        await fake(1000); return go('done');
+    }
+  }
+
+  $('#nameForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    s.name = $('#nameInput').value.trim();
+    if (s.name.length < 3) return fail('shortName', '#nameInput');
+    s.newPin = ''; go('create');
+  });
+  $('#nameInput').addEventListener('input', () => { $('#nameInput').classList.remove('bad'); if (s.err) { s.err = null; render(); } });
+  $('#eyeBtn').addEventListener('click', () => { s.reveal = !s.reveal; render(); });
+  $('#sub').addEventListener('click', (e) => { if (e.target.id === 'changeBtn') go('phone'); });
+  $('#restart').addEventListener('click', () => { Object.assign(s, { phone: '', pin: '', newPin: '', confirm: '', name: '', isNew: false }); go('phone'); });
+
+  function render(stepChanged) {
+    const L = T[s.lang], st = s.step;
+    document.documentElement.lang = s.lang;
+    document.querySelectorAll('[data-i18n]').forEach((el) => (el.textContent = L[el.dataset.i18n]));
+    document.querySelectorAll('[data-i18n-ph]').forEach((el) => (el.placeholder = L[el.dataset.i18nPh]));
+
+    // progress (prototype .steps: on = done, now = current)
+    const flow = s.isNew ? FLOW_NEW : FLOW_SIGNIN;
+    const at = st === 'done' ? flow.length : flow.indexOf(st);
+    $('#steps').innerHTML = flow.map((_, i) => `<i class="${i < at ? 'on' : i === at ? 'now' : ''}"></i>`).join('');
+
+    $('#title').textContent = st === 'done' ? `${L.doneTitle}${s.name ? ', ' + s.name.split(' ')[0] : ''}!` : L[TITLE[st]];
+    $('#sub').innerHTML =
+      st === 'phone' ? L.phoneHint :
+      st === 'pin' ? `${L.number} <b>${echo()}</b> · <button type="button" class="link" id="changeBtn">${L.change}</button>` :
+      st === 'name' ? L.nameHint :
+      st === 'done' ? L.opening : L.pinHint;
+
+    $('#numBox').hidden = st !== 'phone';
+    $('#newHere').hidden = st !== 'phone';
+    $('#pinBoxes').hidden = !['pin', 'create', 'confirm'].includes(st);
+    $('#nameForm').hidden = st !== 'name';
+    $('#doneBox').hidden = st !== 'done';
+    pad.hidden = !(st in BUF);
+
+    const d = $('#digits'); d.innerHTML = '';
+    for (let i = 0; i < 10; i++) {
+      if (i === 5) d.appendChild(Object.assign(document.createElement('span'), { className: 'gap' }));
+      const c = document.createElement('span');
+      c.textContent = s.phone[i] ?? '0';
+      if (i >= s.phone.length) c.className = i === s.phone.length ? 'empty cur' : 'empty';
+      d.appendChild(c);
+    }
+    $('#numBox').setAttribute('aria-label', `${L.phoneTitle}: ${s.phone}`);
+
+    const buf = st in BUF && st !== 'phone' ? s[BUF[st]] : '';
+    $('#pinBoxes').innerHTML = Array.from({ length: 4 }, (_, i) => {
+      const ch = i < buf.length ? (s.reveal || i === s.flash ? buf[i] : '•') : '';
+      return `<span class="${i < buf.length ? 'on' : i === buf.length ? 'cur' : ''}">${ch}</span>`;
+    }).join('');
+    $('#pinBoxes').setAttribute('aria-label', `${buf.length} / 4`);
+    $('#eyeBtn').hidden = $('#pinBoxes').hidden;
+    $('#eyeBtn').setAttribute('aria-pressed', String(s.reveal));
+    $('#eyeBtn').innerHTML = (s.reveal ? ICON_EYE_OFF : ICON_EYE) + `<span>${s.reveal ? L.hidePin : L.showPin}</span>`;
+
+    pad.querySelectorAll('.key').forEach((b) => {
+      const k = b.dataset.k;
+      b.disabled = s.busy;
+      if (k === 'del') b.innerHTML = ICON_DEL;
+      else if (k === 'ok') b.innerHTML = s.busy ? '<span class="spinner"></span>' : ICON_GO;
+      else b.innerHTML = s.lang === 'en' ? k : `${k}<small>${DEV[k]}</small>`;
+    });
+
+    const err = $('#err'); err.hidden = !s.err; if (s.err) err.querySelector('span').textContent = L[s.err];
+    if (!s.err) document.querySelectorAll('.bad').forEach((el) => el.classList.remove('bad'));
+
+    if (stepChanged) {
+      const h = $('#head'); h.classList.remove('fade'); void h.offsetWidth; h.classList.add('fade');
+      if (st === 'name') setTimeout(() => $('#nameInput').focus(), 60);
+    }
+  }
+
+  document.querySelectorAll('.seg button').forEach((b) => b.addEventListener('click', () => {
+    s.lang = b.dataset.lang;
+    document.querySelectorAll('.seg button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    render();
+  }));
+
+  const root = document.documentElement;
+  const isDark = () => root.dataset.theme === 'dark';
+  const icon = () => { $('#themeBtn').innerHTML = isDark() ? ICON_SUN : ICON_MOON; document.querySelector('meta[name=theme-color]').content = isDark() ? '#1f3a26' : '#dcefdf'; };
+  $('#themeBtn').addEventListener('click', () => { root.dataset.theme = isDark() ? 'light' : 'dark'; icon(); });
+
+  // Phone: crop the scene to the figures band so the keypad fits on screen
+  const scene = $('.scene'), mq = matchMedia('(max-width: 860px)');
+  const fitScene = () => scene.setAttribute('viewBox', mq.matches ? '0 92 600 208' : '0 0 600 300');
+  mq.addEventListener('change', fitScene); fitScene();
+
+  // Preview hooks: ?lang=hi&theme=dark&step=pin
+  const q = new URLSearchParams(window.__PREVIEW || location.search);
+  if (T[q.get('lang')]) document.querySelector(`.seg [data-lang="${q.get('lang')}"]`).click();
+  if (q.get('theme')) root.dataset.theme = q.get('theme');
+  icon();
+  const st = q.get('step');
+  if (st && st !== 'phone') {
+    s.phone = '9876543210';
+    if (st === 'pin') s.pin = '12';
+    if (['name', 'create', 'confirm'].includes(st)) { s.isNew = true; s.phone = '9876543210'; }
+    if (st === 'create') { s.name = 'Rajesh Patil'; s.newPin = '1'; }
+    if (st === 'done') s.name = 'Rajesh Patil';
+    if (TITLE[st] || st === 'done') s.step = st;
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
