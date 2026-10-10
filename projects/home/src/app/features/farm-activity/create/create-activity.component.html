@@ -29,7 +29,7 @@
           style="white-space: nowrap"
           (click)="onCancel()"
         >
-          <i class="bi bi-arrow-left"></i> {{ 'common.back' | translate }}
+          {{ 'common.cancel' | translate }}
         </button>
       </div>
     </header>
@@ -44,18 +44,55 @@
             <label class="form-label required-label" for="type">{{
               'createActivity.activityNameType' | translate
             }}</label>
-            <lib-combobox
-              id="type"
-              formControlName="type"
-              [options]="activityTypeNames()"
-              (itemAdded)="onTypeAdded($event)"
-            />
+            <div
+              class="d-flex flex-wrap gap-2 mt-1"
+              role="radiogroup"
+              [attr.aria-label]="'createActivity.activityNameType' | translate"
+            >
+              @for (t of typeChips(); track t.id) {
+                <input
+                  type="radio"
+                  class="btn-check"
+                  name="type"
+                  formControlName="type"
+                  [id]="'type-' + t.id"
+                  [value]="t.name"
+                />
+                <label
+                  class="btn btn-outline-success btn-sm d-inline-flex align-items-center"
+                  style="gap: 6px"
+                  [for]="'type-' + t.id"
+                >
+                  <i class="bi {{ iconFor(t.name) }}" aria-hidden="true"></i>
+                  {{ t.name | referenceName: 'activity' }}
+                </label>
+              }
+            </div>
             @if (form.get('type')?.invalid && form.get('type')?.touched) {
               <div class="invalid-feedback d-block">
                 {{ 'createActivity.nameRequired' | translate }}
               </div>
             }
           </div>
+
+          @if (isCustomType()) {
+            <div>
+              <label class="form-label required-label" for="customName">{{
+                'createActivity.customName' | translate
+              }}</label>
+              <input
+                id="customName"
+                class="form-control"
+                formControlName="customName"
+                autocomplete="off"
+                [placeholder]="'createActivity.customNamePlaceholder' | translate"
+                [class.is-invalid]="form.get('customName')?.touched && !form.get('customName')?.value?.trim()"
+              />
+              @if (form.get('customName')?.touched && !form.get('customName')?.value?.trim()) {
+                <div class="invalid-feedback">{{ 'createActivity.customNameRequired' | translate }}</div>
+              }
+            </div>
+          }
 
           <div class="row g-3">
             <!-- Date of Activity -->
@@ -159,39 +196,25 @@
             <label class="form-label required-label">{{
               'createActivity.currentStatus' | translate
             }}</label>
-            <div class="d-flex flex-wrap gap-2 gap-md-3 mt-1">
-              <div class="form-check-custom">
-                <input type="radio" id="statusDraft" value="Draft" formControlName="status" />
-                <label for="statusDraft" class="radio-label">
-                  <span class="status-indicator bg-secondary"></span>
-                  {{ 'status.draft' | translate }}
-                </label>
-              </div>
-              <div class="form-check-custom">
+            <div class="d-flex flex-wrap gap-2 mt-1" role="radiogroup">
+              @for (s of statusOptions; track s.value) {
                 <input
                   type="radio"
-                  id="statusInProgress"
-                  value="In Progress"
+                  class="btn-check"
+                  name="status"
                   formControlName="status"
+                  [id]="'status-' + s.value"
+                  [value]="s.value"
+                  (change)="onStatusPicked()"
                 />
-                <label for="statusInProgress" class="radio-label">
-                  <span class="status-indicator bg-warning"></span>
-                  {{ 'status.in_progress' | translate }}
+                <label class="btn btn-outline-success btn-sm" [for]="'status-' + s.value">
+                  {{ statusKey(s.value) | translate }}
                 </label>
-              </div>
-              <div class="form-check-custom">
-                <input
-                  type="radio"
-                  id="statusCompleted"
-                  value="Completed"
-                  formControlName="status"
-                />
-                <label for="statusCompleted" class="radio-label">
-                  <span class="status-indicator bg-success"></span>
-                  {{ 'status.completed' | translate }}
-                </label>
-              </div>
+              }
             </div>
+            <span class="text-muted mt-1 d-block" style="font-size: 0.75rem">{{
+              'createActivity.statusFromDateHint' | translate
+            }}</span>
           </div>
 
           <!-- Notes -->

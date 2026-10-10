@@ -129,7 +129,7 @@ test.describe('Golden path', () => {
     await test.step('log a farm activity for the crop', async () => {
       await page.goto('/activities/create');
 
-      await fillCombobox(page.locator('#type'), 'Sowing');
+      await page.locator('label[for^="type-"]', { hasText: 'Sowing' }).click();
       // Only one crop and one land exist, so both auto-select via the form's
       // reactive effect (create-activity.component.ts) — nothing to pick.
 
@@ -141,7 +141,7 @@ test.describe('Golden path', () => {
       // Desktop and mobile each render their own "Add Expense" trigger, only
       // one visible at a time via Bootstrap's d-none/d-md-* utilities
       // (activity-detail.component.html) — the mobile one is an icon-only
-      // FAB among a stack of three (Back/Add Expense/Delete), so target it
+      // FAB among a stack of two (Back/Add Expense), so target it
       // by its distinguishing "success" color class rather than accessible
       // name, and not just `.fab-soft` (shared by all three, which would be
       // a strict-mode multi-match).

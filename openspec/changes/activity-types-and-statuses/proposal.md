@@ -6,7 +6,7 @@ Logging an activity and opening one are the farmer's most common actions, and bo
 
 - **Log / Edit activity form:** the 12 activity types become radio chips with icons (Custom shows a "Custom activity name" field). All five statuses (Draft, Scheduled, In Progress, Completed, Cancelled) show as radio chips. The status follows the date until the farmer picks one: a future date is Scheduled, today or earlier is Completed. The same form edits an activity ("Edit activity", "Save changes"), with a Cancel button in the header.
 - **Activity page:** the title carries a status badge (Draft grey, Scheduled blue, In Progress amber, Completed green, Cancelled red). The buttons depend on the status: Mark done (open activities), Start (Draft or Scheduled), Restore (Cancelled), Edit, Cancel activity (open activities) and Delete (always, after a confirmation). On a phone the buttons sit under the title.
-- **Expenses on the activity page:** a card with the total, the number of expenses, a split bar by category and a row per expense with Edit and Delete, plus "+ Add expense".
+- **Expenses on the activity page:** a card with the total, the number of expenses, a split bar by category and a row per expense with Delete, plus "+ Add expense". Editing an expense arrives with `expenses-redesign`, since no edit-expense flow exists yet.
 - Notes show in their own card. On desktop expenses and notes sit side by side.
 - Out of scope: the activity list and its filter bar (`activity-list-and-filters`), the add/edit expense form (`expenses-redesign`), image attachments, backend changes.
 

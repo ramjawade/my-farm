@@ -1,70 +1,66 @@
-<div class="d-flex flex-column gap-3">
-  @if (loading) {
-    <div class="text-center text-muted py-4">
-      <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-      {{ 'expenseList.loading' | translate }}
-    </div>
-  } @else if (error) {
-    <div class="alert alert-danger mb-0">{{ error }}</div>
-  } @else {
-    @for (exp of expenses; track exp.id) {
-      <div class="card card-interactive shadow-sm border-0 mb-2">
-        <div class="card-body">
-          <div
-            class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3"
-          >
-            <div class="d-flex align-items-center">
-              <div class="icon-box d-flex align-items-center justify-content-center">
-                <i class="bi {{ getCategoryIcon(exp.expenseCategoryId) }}"></i>
-              </div>
-              <div class="ms-3">
-                <h6 class="mb-1 font-sans fw-bold text-soil text-wrap-break">
-                  {{
-                    exp.itemId || (categoryName(exp.expenseCategoryId) | referenceName: 'expense')
-                  }}
-                </h6>
-                <div class="text-secondary small font-sans text-wrap-break">
-                  @if (exp.quantity && exp.rate) {
-                    {{ 'expenseList.qty' | translate }}: {{ exp.quantity }}
-                    {{ exp.unit || ('expenseList.units' | translate) }} @ ₹{{
-                      exp.rate | localNumber
-                    }}/{{ exp.unit || ('expenseList.unit' | translate) }}
-                  } @else {
-                    {{ 'expenseList.category' | translate }}:
-                    {{ categoryName(exp.expenseCategoryId) | referenceName: 'expense' }}
-                  }
-                  @if (exp.remarks) {
-                    • {{ exp.remarks }}
-                  }
-                </div>
-              </div>
-            </div>
-
-            <div
-              class="d-flex align-items-center justify-content-between justify-content-sm-end gap-3 w-100 w-sm-auto border-top-mobile pt-2 pt-sm-0"
-            >
-              <div class="amount font-monospace text-success-dark">
-                ₹{{ exp.amount | localNumber }}
-              </div>
-              <button
-                class="btn btn-link text-danger p-0"
-                (click)="deleteExpense(exp.id)"
-                [title]="'expenseList.deleteEntry' | translate"
-              >
-                <i class="bi bi-trash fs-5"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    } @empty {
-      <div class="card border-0 shadow-sm p-5 text-center text-muted font-sans rounded">
-        <i class="bi bi-card-checklist display-6 text-muted"></i>
-        <p class="mb-0 mt-2">{{ 'expenseList.noExpenses' | translate }}</p>
-      </div>
+@if (loading) {
+  <div class="text-center text-muted py-4">
+    <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+    {{ 'expenseList.loading' | translate }}
+  </div>
+} @else if (error) {
+  <div class="alert alert-danger mb-0">{{ error }}</div>
+} @else if (expenses.length) {
+  <div class="fs-2 fw-bold lh-1" style="font-family: var(--mf-font-display)">
+    ₹{{ total() | localNumber }}
+  </div>
+  <small class="text-body-secondary">{{
+    (expenses.length === 1 ? 'expenseList.acrossOne' : 'expenseList.acrossMany')
+      | translate: { count: expenses.length }
+  }}</small>
+  <div
+    class="d-flex rounded-pill overflow-hidden my-2 mb-3"
+    style="height: 12px; gap: 2px"
+    role="img"
+    [attr.aria-label]="'expenseList.splitLabel' | translate"
+  >
+    @for (exp of expenses; track exp.id; let i = $index) {
+      <i class="bg-{{ tone(i) }}" [style.width.%]="percent(exp)"></i>
     }
+  </div>
+  @for (exp of expenses; track exp.id; let i = $index) {
+    <div
+      class="d-flex justify-content-between align-items-center border-top py-2"
+      style="gap: 8px"
+    >
+      <span class="d-flex align-items-center min-w-0" style="gap: 8px">
+        <i
+          class="rounded-circle flex-shrink-0 bg-{{ tone(i) }}"
+          style="width: 10px; height: 10px"
+          aria-hidden="true"
+        ></i>
+        <span class="min-w-0">
+          <strong class="text-break">{{
+            exp.itemId || (categoryName(exp.expenseCategoryId) | referenceName: 'expense')
+          }}</strong>
+          <small class="text-body-secondary ms-1">{{ percent(exp) | localNumber: '1.0-0' }}%</small>
+          @if (exp.remarks) {
+            <small class="d-block text-body-secondary text-break">{{ exp.remarks }}</small>
+          }
+        </span>
+      </span>
+      <span class="d-inline-flex align-items-center flex-shrink-0" style="gap: 4px">
+        <strong>₹{{ exp.amount | localNumber }}</strong>
+        <button
+          type="button"
+          class="btn btn-link text-danger p-1"
+          (click)="deleteExpense(exp.id)"
+          [title]="'expenseList.deleteEntry' | translate"
+          [attr.aria-label]="'expenseList.deleteEntry' | translate"
+        >
+          <i class="bi bi-trash" aria-hidden="true"></i>
+        </button>
+      </span>
+    </div>
   }
-</div>
+} @else {
+  <p class="text-body-secondary mb-0">{{ 'expenseList.noExpenses' | translate }}</p>
+}
 
 <lib-confirm-dialog
   [title]="'expenseList.removeEntryTitle' | translate"

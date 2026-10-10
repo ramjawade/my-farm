@@ -460,7 +460,11 @@
     "updatedToast": "Activity updated.",
     "saveError": "Could not save the activity. Please try again.",
     "loggedToast": "{{type}} logged.",
-    "thumbnailAlt": "Uploaded thumbnail"
+    "thumbnailAlt": "Uploaded thumbnail",
+    "customName": "Custom activity name",
+    "customNamePlaceholder": "e.g. Mulching",
+    "customNameRequired": "Enter a name for this activity.",
+    "statusFromDateHint": "Set from the date: a future date is Scheduled. Change it if needed."
   },
   "historyEvent": {
     "created": "Activity created",
@@ -495,7 +499,12 @@
     "refreshError": "Could not refresh the activity summary.",
     "statusUpdateError": "Could not update the status. Please try again.",
     "deleteError": "Could not delete the activity. Please try again.",
-    "loadFailed": "Could not load this activity. Please try again."
+    "loadFailed": "Could not load this activity. Please try again.",
+    "markDone": "Mark done",
+    "start": "Start",
+    "restore": "Restore",
+    "edit": "Edit",
+    "cancelActivity": "Cancel activity"
   },
   "addExpense": {
     "category": "Category",
@@ -527,7 +536,10 @@
     "removeEntryConfirm": "Are you sure you want to remove this expense entry?",
     "remove": "Remove",
     "removedToast": "Expense removed.",
-    "removeError": "Could not remove the expense. Please try again."
+    "removeError": "Could not remove the expense. Please try again.",
+    "acrossOne": "across {{count}} expense",
+    "acrossMany": "across {{count}} expenses",
+    "splitLabel": "Expense split"
   },
   "mapMyFarm": {
     "mapAriaLabel": "Map",

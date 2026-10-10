@@ -1,5 +1,5 @@
 import { I18n } from '../../../core/i18n/i18n.service';
-import { LocalDatePipe, LocalNumberPipe } from '../../../core/i18n/localized.pipes';
+import { LocalDatePipe } from '../../../core/i18n/localized.pipes';
 import {
   Component,
   inject,
@@ -30,13 +30,17 @@ import {
   ActivityStatus,
 } from '../../activity/activity.models';
 import { parseId } from '../../../core/models/entity-id';
+import {
+  activityStatusKey,
+  activityStatusTone,
+  allowedActions,
+} from '../../activity/activity-status';
 
 @Component({
   selector: 'app-activity-detail',
   standalone: true,
   imports: [
     LocalDatePipe,
-    LocalNumberPipe,
     RouterLink,
     ConfirmDialogComponent,
     ExpenseListComponent,
@@ -90,6 +94,15 @@ export class ActivityDetailComponent implements OnInit {
     const farm = this.savedFarms().find((f) => f.id === act.fieldId);
     return farm ? farm.name : String(act.fieldId);
   });
+
+  readonly actions = computed(() => allowedActions(this.activity()?.status ?? 'Completed'));
+  readonly statusTone = computed(() => activityStatusTone(this.activity()?.status ?? 'Draft'));
+  readonly statusKey = computed(() => activityStatusKey(this.activity()?.status ?? 'Draft'));
+
+  editActivity(): void {
+    const id = this.activityId();
+    if (id) void this.router.navigate(['/activities/create'], { queryParams: { activityId: id } });
+  }
 
   async ngOnInit(): Promise<void> {
     const user = this.authService.currentUser();

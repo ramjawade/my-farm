@@ -124,6 +124,65 @@ describe('ActivityDetailComponent', () => {
     expect(component.error()).toBe('activityDetail.loadFailed');
   });
 
+  describe('status badge and actions', () => {
+    const el = () => fixture.nativeElement as HTMLElement;
+    const buttons = () =>
+      Array.from(el().querySelectorAll('header button')).map((b) => b.textContent?.trim());
+
+    async function open(status: Activity['status']): Promise<void> {
+      getActivitySpy.and.resolveTo({ ...mockActivity, status });
+      await component.ngOnInit();
+      fixture.detectChanges();
+    }
+
+    it('offers Mark done, Start, Edit, Cancel and Delete on a Scheduled activity', async () => {
+      await open('Scheduled');
+
+      expect(el().querySelector('h1 .badge')?.classList).toContain('text-bg-info');
+      expect(buttons()).toEqual([
+        'activityDetail.markDone',
+        'activityDetail.start',
+        'activityDetail.edit',
+        'activityDetail.cancelActivity',
+        'activityList.deleteActivity',
+      ]);
+    });
+
+    it('offers Restore, Edit and Delete on a Cancelled activity', async () => {
+      await open('Cancelled');
+
+      expect(el().querySelector('h1 .badge')?.classList).toContain('text-bg-danger');
+      expect(buttons()).toEqual([
+        'activityDetail.restore',
+        'activityDetail.edit',
+        'activityList.deleteActivity',
+      ]);
+    });
+
+    it('offers only Edit and Delete on a Completed activity', async () => {
+      await open('Completed');
+
+      expect(buttons()).toEqual(['activityDetail.edit', 'activityList.deleteActivity']);
+    });
+
+    it('marks an activity done', async () => {
+      await open('In Progress');
+      const markDone = el().querySelector<HTMLButtonElement>('header button.btn-primary')!;
+      markDone.click();
+
+      expect(updateStatusSpy).toHaveBeenCalledWith(5, 'Completed');
+    });
+
+    it('opens the edit form for the activity', async () => {
+      spyOn(router, 'navigate');
+      component.editActivity();
+
+      expect(router.navigate).toHaveBeenCalledWith(['/activities/create'], {
+        queryParams: { activityId: 5 },
+      });
+    });
+  });
+
   describe('notes', () => {
     const text = () => (fixture.nativeElement as HTMLElement).textContent ?? '';
 
