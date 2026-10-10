@@ -1,0 +1,44 @@
+<div class="lifecycle-stepper-container">
+  <ol class="lifecycle-track list-unstyled mb-0" [attr.aria-label]="label() || null">
+    @for (step of steps(); track $index; let idx = $index; let last = $last) {
+      <li
+        class="lifecycle-step"
+        [class.completed]="currentIndex() >= idx"
+        [class.active]="currentIndex() === idx"
+        [attr.aria-current]="currentIndex() === idx ? 'step' : null"
+      >
+        <div
+          class="step-content step-content-top"
+          [style.visibility]="idx % 2 === 1 ? 'visible' : 'hidden'"
+          [attr.aria-hidden]="idx % 2 === 1 ? null : 'true'"
+        >
+          <span class="step-label">{{ step.caption }}</span>
+          <span class="step-name">{{ step.name }}</span>
+        </div>
+
+        <div class="step-circle-wrapper">
+          <span class="step-circle">
+            @if (currentIndex() > idx) {
+              <i class="bi bi-check-lg" aria-hidden="true"></i>
+            } @else {
+              {{ idx + 1 }}
+            }
+          </span>
+        </div>
+
+        <div
+          class="step-content step-content-bottom"
+          [style.visibility]="idx % 2 === 0 ? 'visible' : 'hidden'"
+          [attr.aria-hidden]="idx % 2 === 0 ? null : 'true'"
+        >
+          <span class="step-label">{{ step.caption }}</span>
+          <span class="step-name">{{ step.name }}</span>
+        </div>
+
+        @if (!last) {
+          <div class="step-line" [class.completed]="currentIndex() > idx"></div>
+        }
+      </li>
+    }
+  </ol>
+</div>

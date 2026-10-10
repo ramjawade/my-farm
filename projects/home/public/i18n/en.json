@@ -320,7 +320,15 @@
     "sowingDate": "Sowing Date",
     "createProfile": "Create Profile",
     "savedToast": "{{name}} added with its growth-stage timeline.",
-    "saveError": "Could not save the crop. Please try again."
+    "saveError": "Could not save the crop. Please try again.",
+    "editTitle": "Edit Crop",
+    "saveChanges": "Save changes",
+    "updatedToast": "{{name}} updated.",
+    "noSavedLands": "No saved lands yet",
+    "drawLandFirst": "Draw a land first.",
+    "irrigationType": "Irrigation type (optional)",
+    "farmingMethod": "Farming method (optional)",
+    "notSet": "Not set"
   },
   "cropActivity": {
     "timeline": "Timeline",
@@ -335,7 +343,26 @@
     "active": "Active",
     "stageOrdinal": "Stage {{n}}",
     "addDailyActivity": "Add Daily Activity",
-    "deletedToast": "Crop and its activities deleted."
+    "deletedToast": "Crop and its activities deleted.",
+    "allCrops": "All crops",
+    "stage": "Stage",
+    "advanceStage": "Advance stage",
+    "activities": "Activities",
+    "since": "since",
+    "doneAndPlanned": "{{done}} done · {{planned}} planned",
+    "cropCost": "Crop cost",
+    "soFar": "so far",
+    "underCrop": "under crop",
+    "viewAll": "View all",
+    "filterActivities": "Filter activities",
+    "tab": {
+      "all": "All",
+      "upcoming": "Upcoming",
+      "recent": "Recent"
+    },
+    "noActivities": "No activities yet.",
+    "planting": "Planting",
+    "irrigationLine": "{{type}} irrigation"
   },
   "activityList": {
     "title": "Activity Logs",
@@ -668,7 +695,8 @@
       "activity": "Activity",
       "activityDetail": "Activity detail",
       "reports": "Reports",
-      "notFound": "Page not found"
+      "notFound": "Page not found",
+      "editCrop": "Edit crop"
     }
   },
   "login": {
@@ -937,6 +965,36 @@
       "River": "River",
       "FarmPond": "Farm Pond",
       "Rainfed": "Rainfed"
+    }
+  },
+  "crops": {
+    "title": "Crops",
+    "subtitle": "Track each crop from sowing to harvest.",
+    "openDetails": "Open {{name}} details",
+    "activityOne": "{{count}} activity",
+    "activityCount": "{{count}} activities",
+    "actionsFor": "Actions for {{name}}",
+    "editCrop": "Edit crop"
+  },
+  "cropStages": {
+    "sowing": "Sowing",
+    "growth": "Growth",
+    "flowering": "Flowering",
+    "harvest": "Harvest",
+    "ariaLabel": "Stage {{n}} of {{total}}: {{name}}"
+  },
+  "cropOptions": {
+    "irrigation": {
+      "Drip": "Drip",
+      "Sprinkler": "Sprinkler",
+      "Flood": "Flood",
+      "Manual": "Manual"
+    },
+    "method": {
+      "Organic": "Organic",
+      "Conventional": "Conventional",
+      "ConservationFarming": "Conservation Farming",
+      "NaturalFarming": "Natural Farming"
     }
   }
 }

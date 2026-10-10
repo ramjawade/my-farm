@@ -1,38 +1,32 @@
-<div
-  class="dashboard-header mf-header-pacing sticky-header d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 mb-4 border-bottom pb-3"
+<header
+  class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3"
 >
-  <!-- Title on the Left -->
-  <div class="text-start">
-    <h2 class="mf-crop-dashboard__page-title">{{ 'cropDashboard.title' | translate }}</h2>
+  <div>
+    <h1 class="h4 mb-1">{{ 'crops.title' | translate }}</h1>
+    <p class="text-body-secondary mb-0">{{ 'crops.subtitle' | translate }}</p>
   </div>
-
-  <!-- Search Bar in the Center -->
-  <div class="d-flex justify-content-center flex-grow-1 mx-md-4 w-100">
-    <div class="search-wrapper position-relative w-100" style="max-width: 380px">
-      <span class="search-icon position-absolute top-50 start-0 translate-middle-y ms-3 text-muted">
-        <i class="bi bi-search"></i>
-      </span>
+  <div class="d-flex gap-2 align-items-center">
+    <div class="position-relative flex-grow-1" style="min-width: 12rem; max-width: 22rem">
+      <i
+        class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-body-secondary"
+        aria-hidden="true"
+      ></i>
       <input
-        type="text"
-        class="form-control ps-5 w-100"
+        type="search"
+        class="form-control ps-5"
+        [attr.aria-label]="'cropDashboard.searchPlaceholder' | translate"
         [placeholder]="'cropDashboard.searchPlaceholder' | translate"
         [ngModel]="searchTerm()"
         (ngModelChange)="onSearchTermChange($event)"
       />
     </div>
+    @if (!hasNoCropsAtAll()) {
+      <button type="button" class="btn btn-primary text-nowrap" (click)="onAddCropClicked()">
+        + {{ 'cropDashboard.addCrop' | translate }}
+      </button>
+    }
   </div>
-
-  <!-- Add Crop Button on the Right -->
-  <div class="text-end d-none d-md-block">
-    <button
-      class="btn btn-success d-flex align-items-center px-3 py-2 ms-auto"
-      style="white-space: nowrap"
-      (click)="onAddCropClicked()"
-    >
-      <i class="bi bi-plus-lg me-2"></i>{{ 'cropDashboard.addCrop' | translate }}
-    </button>
-  </div>
-</div>
+</header>
 
 @if (loading()) {
   <div class="d-flex flex-column align-items-center justify-content-center py-5 text-muted">
@@ -42,124 +36,135 @@
     <p class="mb-0">{{ 'cropDashboard.loadingCrops' | translate }}</p>
   </div>
 } @else if (error()) {
-  <div class="card card-glass p-5 text-center">
-    <i class="bi bi-exclamation-triangle text-danger fs-1 d-block mb-3"></i>
-    <h5 class="text-dark font-semibold">{{ error() }}</h5>
-    <button class="btn btn-outline-success mx-auto mt-2" (click)="load()">
-      <i class="bi bi-arrow-clockwise me-2"></i>{{ 'cropDashboard.tryAgain' | translate }}
+  <div class="card p-5 text-center">
+    <i class="bi bi-exclamation-triangle text-danger fs-1 d-block mb-3" aria-hidden="true"></i>
+    <h2 class="h5">{{ error() }}</h2>
+    <button type="button" class="btn btn-outline-success mx-auto mt-2" (click)="load()">
+      <i class="bi bi-arrow-clockwise me-2" aria-hidden="true"></i
+      >{{ 'cropDashboard.tryAgain' | translate }}
     </button>
   </div>
 } @else {
-  <!-- Active Crops Grid -->
   <div class="row g-3">
     @for (crop of filteredCrops(); track crop.id) {
-      <div class="col-12 col-sm-6 col-lg-4">
-        <div
-          class="card card-glass card-interactive p-4 text-start h-100 position-relative d-flex flex-column justify-content-between"
-          (click)="onCropSelected(crop)"
-        >
-          <div>
-            <div class="d-flex justify-content-between align-items-start mb-3">
-              <div>
-                <h4 class="mf-card-title m-0">{{ crop.name | referenceName: 'crop' }}</h4>
-                @if (landName(crop.fieldId); as land) {
-                  <span class="badge bg-success mt-1.5">
-                    <i class="bi bi-pin-map-fill me-1"></i>{{ land }}
-                  </span>
-                }
-              </div>
-              <!-- Circular/Radial Stage Progress Widget -->
-              <div
-                class="progress-ring-widget d-flex flex-column align-items-center justify-content-center"
-                [style.--stage-percent]="getStagePercent(crop.currentStage)"
-              >
-                <div
-                  class="progress-circle-inner d-flex flex-column align-items-center justify-content-center text-success"
+      <div class="col-12 col-md-6">
+        <div class="card h-100 position-relative">
+          <button
+            type="button"
+            class="btn text-start border-0 p-3 w-100 h-100"
+            [attr.aria-label]="'crops.openDetails' | translate: { name: crop.name }"
+            (click)="onCropSelected(crop)"
+          >
+            <span class="d-flex justify-content-between align-items-center gap-2 pe-5 mb-3">
+              <span class="d-flex align-items-center gap-2 min-w-0">
+                <span
+                  class="d-inline-flex align-items-center justify-content-center rounded-circle bg-success-subtle text-success flex-shrink-0"
+                  style="width: 40px; height: 40px"
+                  aria-hidden="true"
                 >
-                  <span class="font-monospace fw-bold text-success" style="font-size: 0.8rem">
-                    {{ getStageIndex(crop.currentStage) + 1 }}/8
-                  </span>
-                  <span class="text-muted" style="font-size: 0.6rem; font-weight: 500">{{
-                    'cropDashboard.stageLabel' | translate
-                  }}</span>
-                </div>
-              </div>
-            </div>
+                  <i class="bi {{ iconClass(crop) }}"></i>
+                </span>
+                <strong class="fs-5 text-truncate">{{ crop.name | referenceName: 'crop' }}</strong>
+              </span>
+              <span class="badge text-bg-secondary text-nowrap">
+                {{
+                  (activityCount(crop.id) === 1 ? 'crops.activityOne' : 'crops.activityCount')
+                    | translate: { count: activityCount(crop.id) }
+                }}
+              </span>
+            </span>
+            <span class="d-flex justify-content-between text-center mb-3">
+              <span class="flex-fill">
+                <small class="text-body-secondary d-block">{{
+                  'cropDashboard.plot' | translate
+                }}</small>
+                <strong>{{ landName(crop.fieldId) || '–' }}</strong>
+              </span>
+              <span class="flex-fill">
+                <small class="text-body-secondary d-block">{{
+                  'cropDashboard.age' | translate
+                }}</small>
+                <strong>
+                  @if (age(crop) !== null) {
+                    {{ 'cropDashboard.daysCount' | translate: { days: age(crop) } }}
+                  } @else {
+                    –
+                  }
+                </strong>
+              </span>
+              <span class="flex-fill">
+                <small class="text-body-secondary d-block">{{
+                  'lands.kpi.area' | translate
+                }}</small>
+                <strong>
+                  {{ crop.area | localNumber: '1.0-2' }}
+                  {{
+                    (crop.areaUnit === 'hectares'
+                      ? 'cropDashboard.hectaresShort'
+                      : 'cropDashboard.acresShort'
+                    ) | translate
+                  }}
+                </strong>
+              </span>
+            </span>
+            <app-stage-bar [stage]="crop.currentStage" />
+          </button>
 
-            <!-- Growth Details List -->
-            <div class="py-3 border-top my-3 px-2 bg-light-green rounded flex-grow-1">
-              <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
-                <li class="d-flex justify-content-between align-items-center">
-                  <span class="mf-meta-label">{{ 'cropDashboard.age' | translate }}</span>
-                  <strong class="mf-meta-value font-monospace" style="font-size: 0.95rem">{{
-                    'cropDashboard.daysCount'
-                      | translate: { days: getDaysAfterSowing(crop.sowingDate) }
-                  }}</strong>
-                </li>
-                <li class="d-flex justify-content-between align-items-center">
-                  <span class="mf-meta-label">{{ 'cropDashboard.plot' | translate }}</span>
-                  <strong class="mf-meta-value" style="font-size: 0.9rem"
-                    >{{ crop.area }}
-                    {{
-                      (crop.areaUnit === 'hectares'
-                        ? 'cropDashboard.hectaresShort'
-                        : 'cropDashboard.acresShort'
-                      ) | translate
-                    }}</strong
-                  >
-                </li>
-                <li class="d-flex justify-content-between align-items-center">
-                  <span class="mf-meta-label">{{ 'cropDashboard.lastActivity' | translate }}</span>
-                  <strong class="mf-meta-value" style="font-size: 0.9rem">{{
-                    getDaysSinceLastActivity(crop.id)
-                  }}</strong>
-                </li>
-                <li class="d-flex justify-content-between align-items-center">
-                  <span class="mf-meta-label">{{ 'cropDashboard.nextActivity' | translate }}</span>
-                  <strong
-                    class="mf-meta-value text-success"
-                    style="
-                      font-size: 0.9rem;
-                      max-width: 60%;
-                      white-space: nowrap;
-                      overflow: hidden;
-                      text-overflow: ellipsis;
-                    "
-                    [title]="
-                      (crop.upcomingActivity | referenceName: 'activity') ||
-                      ('cropDashboard.noneScheduled' | translate)
-                    "
-                  >
-                    {{
-                      (crop.upcomingActivity | referenceName: 'activity') ||
-                        ('cropDashboard.noneScheduled' | translate)
-                    }}
-                  </strong>
-                </li>
-              </ul>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-secondary border-0 position-absolute top-0 end-0 m-2"
+            aria-haspopup="menu"
+            [attr.aria-expanded]="menuId() === crop.id"
+            [attr.aria-label]="'crops.actionsFor' | translate: { name: crop.name }"
+            (click)="toggleMenu(crop.id)"
+          >
+            <i class="bi bi-three-dots-vertical" aria-hidden="true"></i>
+          </button>
+          @if (menuId() === crop.id) {
+            <div
+              class="dropdown-menu show position-absolute end-0 mt-1"
+              style="top: 2.75rem; z-index: 5"
+              role="menu"
+            >
+              <button
+                type="button"
+                class="dropdown-item"
+                role="menuitem"
+                (click)="onEditCrop(crop)"
+              >
+                <i class="bi bi-pencil me-2" aria-hidden="true"></i
+                >{{ 'crops.editCrop' | translate }}
+              </button>
+              <button
+                type="button"
+                class="dropdown-item text-danger"
+                role="menuitem"
+                (click)="onDeleteCrop(crop)"
+              >
+                <i class="bi bi-trash me-2" aria-hidden="true"></i
+                >{{ 'cropActivity.deleteCrop' | translate }}
+              </button>
             </div>
-          </div>
+          }
         </div>
       </div>
     }
     @if (filteredCrops().length === 0) {
       <div class="col-12">
-        <div class="card card-glass p-5 text-center">
-          <i class="bi bi-folder-x text-muted fs-1 d-block mb-3"></i>
-          @if (hasNoCropsAtAll()) {
-            <h5 class="text-dark font-semibold">{{ 'cropDashboard.noCropsYet' | translate }}</h5>
-            <p class="text-muted mb-3">
-              {{ 'cropDashboard.addFirstCropHint' | translate }}
-            </p>
-            <button class="btn btn-success mx-auto" (click)="onAddCropClicked()">
-              <i class="bi bi-plus-lg me-2"></i>{{ 'cropDashboard.addCrop' | translate }}
-            </button>
-          } @else {
-            <h5 class="text-dark font-semibold">{{ 'cropDashboard.noMatchTitle' | translate }}</h5>
-            <p class="text-muted mb-0">
-              {{ 'cropDashboard.noMatchHint' | translate }}
-            </p>
-          }
+        <div class="card">
+          <div class="card-body empty-state">
+            <span class="empty-state__icon" aria-hidden="true"><i class="bi bi-flower1"></i></span>
+            @if (hasNoCropsAtAll()) {
+              <h2 class="empty-state__title">{{ 'cropDashboard.noCropsYet' | translate }}</h2>
+              <p class="empty-state__text">{{ 'cropDashboard.addFirstCropHint' | translate }}</p>
+              <button type="button" class="btn btn-primary" (click)="onAddCropClicked()">
+                {{ 'cropDashboard.addCrop' | translate }}
+              </button>
+            } @else {
+              <h2 class="empty-state__title">{{ 'cropDashboard.noMatchTitle' | translate }}</h2>
+              <p class="empty-state__text">{{ 'cropDashboard.noMatchHint' | translate }}</p>
+            }
+          </div>
         </div>
       </div>
     }
@@ -176,12 +181,12 @@
   <i class="bi bi-arrow-left"></i>
 </button>
 
-<!-- FLOATING ACTION BUTTON (FAB) FOR ADDING CROP - MOBILE ONLY -->
-<button
-  type="button"
-  class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-success fab-stack-2"
-  (click)="onAddCropClicked()"
-  [title]="'cropDashboard.addCrop' | translate"
->
-  <i class="bi bi-plus-lg"></i>
-</button>
+<lib-confirm-dialog
+  [(isOpen)]="showDeleteConfirm"
+  [title]="'cropActivity.deleteCrop' | translate"
+  [message]="'cropActivity.deleteCropConfirm' | translate"
+  [confirmText]="'common.delete' | translate"
+  [cancelText]="'common.cancel' | translate"
+  [isDestructive]="true"
+  (confirm)="confirmDelete()"
+/>

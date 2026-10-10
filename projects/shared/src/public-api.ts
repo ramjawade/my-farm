@@ -9,3 +9,4 @@ export * from './lib/toast/toast-outlet.component';
 export * from './lib/combobox/combobox.component';
 export * from './lib/loader/loader.service';
 export * from './lib/loader/loader-outlet.component';
+export * from './lib/lifecycle-stepper/lifecycle-stepper.component';

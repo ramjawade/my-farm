@@ -1,154 +1,244 @@
-<div
-  class="timeline-header-premium mf-header-pacing sticky-header mb-4 text-start border-bottom pb-3"
->
-  <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-    <div>
-      <h2 class="mf-page-title">
-        {{ crop()?.name | referenceName: 'crop' }} {{ 'cropActivity.timeline' | translate }}
-      </h2>
-      <p class="text-muted small mt-1.5 mb-1">
-        @if (crop()?.sowingDate) {
-          {{ 'cropActivity.sownOn' | translate }}
-          {{ crop()?.sowingDate | localDate: 'mediumDate' }} ·
-          <strong>{{
-            'cropActivity.daysAfterSowing'
-              | translate: { days: getDaysAfterSowing(crop()?.sowingDate) }
-          }}</strong>
-        } @else {
-          {{ 'cropActivity.sowingDateNotSet' | translate }}
-        }
-      </p>
-      <p class="text-success fw-bold mb-0">
-        <i class="bi bi-currency-rupee"></i> {{ 'cropActivity.totalCost' | translate }}: ₹{{
-          cropCost() | localNumber: '1.0-0'
-        }}
-      </p>
-    </div>
-    <div class="d-flex gap-2">
-      <!-- Delete Crop Button on Desktop/Laptop only -->
-      <button
-        class="btn btn-outline-danger d-none d-md-inline-flex align-items-center px-3 py-2"
-        (click)="onDeleteCropClicked()"
+@if (crop(); as crop) {
+  @if (!hasChild()) {
+    <div class="container-fluid px-0">
+      <a
+        routerLink="/crops"
+        class="d-inline-flex align-items-center gap-1 mb-2 text-decoration-none"
       >
-        <i class="bi bi-trash me-1.5"></i>{{ 'cropActivity.deleteCrop' | translate }}
-      </button>
-      <!-- Log Activity (Create) Button on Desktop/Laptop only -->
-      <button
-        class="btn btn-success d-none d-md-inline-flex align-items-center px-3 py-2"
-        (click)="onAddActivityClicked()"
+        <i class="bi bi-chevron-left" aria-hidden="true"></i
+        >{{ 'cropActivity.allCrops' | translate }}
+      </a>
+
+      <header
+        class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3 mb-3"
       >
-        <i class="bi bi-plus-lg me-1.5"></i>{{ 'home.logActivity' | translate }}
-      </button>
-      <!-- Back to Dashboard Button on Desktop/Laptop only -->
-      <button
-        class="btn btn-outline-secondary d-none d-md-inline-flex align-items-center px-3 py-2"
-        (click)="onBackClicked()"
-      >
-        <i class="bi bi-arrow-left me-1.5"></i>{{ 'cropActivity.backToDashboard' | translate }}
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- HORIZONTAL GROWTH STAGE STEPPER -->
-<div class="card shadow-sm border rounded bg-white p-4 mb-4 text-start">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="text-success font-semibold m-0">
-      <i class="bi bi-bar-chart-steps me-2"></i>{{ 'cropActivity.lifecycleProgress' | translate }}
-    </h5>
-    <span
-      class="badge bg-success-light text-success-dark font-monospace px-2.5 py-1 rounded-pill small"
-    >
-      {{ 'cropActivity.active' | translate }}: {{ crop()?.currentStage | referenceName: 'stage' }}
-    </span>
-  </div>
-
-  <div class="lifecycle-stepper-container">
-    <div class="lifecycle-track">
-      @for (stg of stages; track stg; let idx = $index) {
-        <!-- Static display only — activity completion no longer drives stage (#167) -->
-        <div
-          class="lifecycle-step"
-          [class.completed]="getStageIndex(crop()?.currentStage || 'Land Preparation') >= idx"
-          [class.active]="crop()?.currentStage === stg"
-        >
-          <!-- Top Label Row (visible only for odd steps, keeps DOM space for even steps) -->
-          <div
-            class="step-content step-content-top"
-            [style.visibility]="idx % 2 === 1 ? 'visible' : 'hidden'"
-          >
-            <span class="step-label">{{
-              'cropActivity.stageOrdinal' | translate: { n: idx + 1 }
-            }}</span>
-            <span class="step-name">{{ stg | referenceName: 'stage' }}</span>
-          </div>
-
-          <!-- Middle Circle Node Wrapper -->
-          <div class="step-circle-wrapper">
-            <span class="step-circle">
-              @if (getStageIndex(crop()?.currentStage || 'Land Preparation') > idx) {
-                <i class="bi bi-check-lg"></i>
-              } @else {
-                {{ idx + 1 }}
-              }
-            </span>
-          </div>
-
-          <!-- Bottom Label Row (visible only for even steps, keeps DOM space for odd steps) -->
-          <div
-            class="step-content step-content-bottom"
-            [style.visibility]="idx % 2 === 0 ? 'visible' : 'hidden'"
-          >
-            <span class="step-label">{{
-              'cropActivity.stageOrdinal' | translate: { n: idx + 1 }
-            }}</span>
-            <span class="step-name">{{ stg | referenceName: 'stage' }}</span>
-          </div>
-
-          <!-- Connecting Line to next step (direct absolute child aligned perfectly at top: 75px) -->
-          @if (idx < stages.length - 1) {
-            <div
-              class="step-line"
-              [class.completed]="getStageIndex(crop()?.currentStage || 'Land Preparation') > idx"
-            ></div>
-          }
+        <div class="min-w-0">
+          <h1 class="h4 d-flex align-items-center gap-2 mb-1">
+            <i class="bi {{ iconClass() }} text-success" aria-hidden="true"></i>
+            {{ crop.name | referenceName: 'crop' }}
+          </h1>
+          <p class="text-body-secondary mb-0">
+            @if (land(); as land) {
+              <a routerLink="/map">{{ land.name }}</a>
+            }
+            · {{ stageName() }}
+            @if (irrigationLabel()) {
+              · {{ 'cropActivity.irrigationLine' | translate: { type: irrigationLabel() } }}
+            }
+            @if (methodLabel()) {
+              · {{ methodLabel() }}
+            }
+          </p>
         </div>
-      }
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-outline-secondary" (click)="onEditClicked()">
+            <i class="bi bi-pencil me-1" aria-hidden="true"></i>{{ 'common.edit' | translate }}
+          </button>
+          <button type="button" class="btn btn-outline-danger" (click)="onDeleteCropClicked()">
+            <i class="bi bi-trash me-1" aria-hidden="true"></i>{{ 'common.delete' | translate }}
+          </button>
+          <button type="button" class="btn btn-primary" (click)="onAddActivityClicked()">
+            + {{ 'home.logActivity' | translate }}
+          </button>
+        </div>
+      </header>
+
+      <div class="d-flex flex-column gap-3">
+        <section class="card">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h2 class="h6 mb-0">{{ 'cropActivity.stage' | translate }}</h2>
+              @if (canAdvance()) {
+                <button type="button" class="btn btn-sm btn-outline-success" (click)="advance()">
+                  {{ 'cropActivity.advanceStage' | translate }}
+                </button>
+              }
+            </div>
+            <app-stage-bar [stage]="crop.currentStage" />
+          </div>
+        </section>
+
+        <div class="row row-cols-2 row-cols-md-4 g-3">
+          <div class="col">
+            <div class="card h-100">
+              <div class="card-body">
+                <small class="text-body-secondary d-block">{{
+                  'cropDashboard.age' | translate
+                }}</small>
+                <strong class="fs-5">
+                  @if (age() !== null) {
+                    {{ 'cropDashboard.daysCount' | translate: { days: age() } }}
+                  } @else {
+                    –
+                  }
+                </strong>
+                @if (crop.sowingDate) {
+                  <small class="text-body-secondary d-block">
+                    {{ 'cropActivity.since' | translate }}
+                    {{ crop.sowingDate | localDate: 'mediumDate' }}
+                  </small>
+                }
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card h-100">
+              <div class="card-body">
+                <small class="text-body-secondary d-block">{{
+                  'cropActivity.activities' | translate
+                }}</small>
+                <strong class="fs-5">{{ done().length + planned().length | localNumber }}</strong>
+                <small class="text-body-secondary d-block">
+                  {{
+                    'cropActivity.doneAndPlanned'
+                      | translate: { done: done().length, planned: planned().length }
+                  }}
+                </small>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card h-100">
+              <div class="card-body">
+                <small class="text-body-secondary d-block">{{
+                  'cropActivity.cropCost' | translate
+                }}</small>
+                <strong class="fs-5">₹{{ cropCost() | localNumber: '1.0-0' }}</strong>
+                <small class="text-body-secondary d-block">{{
+                  'cropActivity.soFar' | translate
+                }}</small>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card h-100">
+              <div class="card-body">
+                <small class="text-body-secondary d-block">{{
+                  'lands.kpi.area' | translate
+                }}</small>
+                <strong class="fs-5">
+                  {{ crop.area | localNumber: '1.0-2' }}
+                  {{
+                    (crop.areaUnit === 'hectares'
+                      ? 'cropDashboard.hectaresShort'
+                      : 'cropDashboard.acresShort'
+                    ) | translate
+                  }}
+                </strong>
+                <small class="text-body-secondary d-block">{{
+                  'cropActivity.underCrop' | translate
+                }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-12 col-lg-6">
+            <section class="card h-100">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h2 class="h6 mb-0">{{ 'cropActivity.activities' | translate }}</h2>
+                  <a routerLink="list" class="small">{{ 'cropActivity.viewAll' | translate }}</a>
+                </div>
+                <div
+                  class="d-flex flex-wrap gap-2 mb-3"
+                  role="group"
+                  [attr.aria-label]="'cropActivity.filterActivities' | translate"
+                >
+                  @for (t of tabs(); track t.key) {
+                    <button
+                      type="button"
+                      class="btn btn-sm rounded-pill"
+                      [class.btn-success]="tab() === t.key"
+                      [class.btn-outline-secondary]="tab() !== t.key"
+                      [attr.aria-pressed]="tab() === t.key"
+                      (click)="tab.set(t.key)"
+                    >
+                      {{ 'cropActivity.tab.' + t.key | translate }} · {{ t.count }}
+                    </button>
+                  }
+                </div>
+                <ul class="list-unstyled d-flex flex-column gap-2 mb-0">
+                  @for (activity of visibleActivities(); track activity.id) {
+                    <li>
+                      <a
+                        class="d-flex justify-content-between align-items-center gap-2 border rounded-3 p-2 text-reset text-decoration-none"
+                        [routerLink]="['/activities', activity.id]"
+                      >
+                        <span class="min-w-0">
+                          <strong class="d-block text-truncate">
+                            {{
+                              activity.customActivityName ||
+                                (activity.activityTypeId | referenceName: 'activity')
+                            }}
+                          </strong>
+                          <small class="text-body-secondary">
+                            @if (activity.date) {
+                              {{ activity.date | localDate: 'mediumDate' }}
+                            }
+                          </small>
+                        </span>
+                        <span
+                          class="badge"
+                          [class.text-bg-success]="activity.status === 'Completed'"
+                          [class.text-bg-secondary]="activity.status !== 'Completed'"
+                          >{{ activity.status }}</span
+                        >
+                      </a>
+                    </li>
+                  } @empty {
+                    <li class="text-body-secondary small">
+                      {{ 'cropActivity.noActivities' | translate }}
+                    </li>
+                  }
+                </ul>
+              </div>
+            </section>
+          </div>
+          <div class="col-12 col-lg-6">
+            <section class="card h-100">
+              <div class="card-body">
+                <h2 class="h6 mb-3">{{ 'cropActivity.timeline' | translate }}</h2>
+                <ol class="list-unstyled d-flex flex-column gap-2 mb-0">
+                  @for (activity of timeline(); track activity.id) {
+                    <li>
+                      <strong>{{
+                        activity.customActivityName ||
+                          (activity.activityTypeId | referenceName: 'activity')
+                      }}</strong>
+                      <small class="text-body-secondary">
+                        @if (activity.date) {
+                          · {{ activity.date | localDate: 'mediumDate' }}
+                        }
+                        @if (activity.status !== 'Completed') {
+                          · {{ activity.status }}
+                        }
+                      </small>
+                      @if (activity.notes) {
+                        <div class="small text-body-secondary">{{ activity.notes }}</div>
+                      }
+                    </li>
+                  }
+                  @if (crop.sowingDate) {
+                    <li>
+                      <strong>{{ 'cropActivity.planting' | translate }}</strong>
+                      <small class="text-body-secondary">
+                        · {{ crop.sowingDate | localDate: 'mediumDate' }}
+                      </small>
+                    </li>
+                  }
+                </ol>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
+  }
+}
 
 <router-outlet></router-outlet>
-
-<!-- Back to Dashboard FAB - MOBILE ONLY -->
-<button
-  type="button"
-  class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-tertiary fab-stack-1"
-  (click)="onBackClicked()"
-  [title]="'cropActivity.backToDashboard' | translate"
->
-  <i class="bi bi-arrow-left"></i>
-</button>
-
-<!-- Create (Add Activity) FAB - MOBILE ONLY -->
-<button
-  type="button"
-  class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-success fab-stack-2"
-  (click)="onAddActivityClicked()"
-  [title]="'cropActivity.addDailyActivity' | translate"
->
-  <i class="bi bi-plus-lg"></i>
-</button>
-
-<!-- Delete Crop FAB - MOBILE ONLY -->
-<button
-  type="button"
-  class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-danger fab-stack-3"
-  (click)="onDeleteCropClicked()"
-  [title]="'cropActivity.deleteCrop' | translate"
->
-  <i class="bi bi-trash"></i>
-</button>
 
 <lib-confirm-dialog
   [title]="'cropActivity.deleteCrop' | translate"

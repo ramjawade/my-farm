@@ -320,7 +320,15 @@
     "sowingDate": "बुवाई की तारीख",
     "createProfile": "प्रोफाइल बनाएं",
     "savedToast": "{{name}} इसकी वृद्धि-चरण टाइमलाइन के साथ जोड़ा गया।",
-    "saveError": "फसल सहेजी नहीं जा सकी। कृपया पुनः प्रयास करें।"
+    "saveError": "फसल सहेजी नहीं जा सकी। कृपया पुनः प्रयास करें।",
+    "editTitle": "फसल संपादित करें",
+    "saveChanges": "बदलाव सहेजें",
+    "updatedToast": "{{name}} अपडेट हुई।",
+    "noSavedLands": "अभी कोई सहेजी ज़मीन नहीं",
+    "drawLandFirst": "पहले ज़मीन बनाएँ।",
+    "irrigationType": "सिंचाई का प्रकार (वैकल्पिक)",
+    "farmingMethod": "खेती का तरीका (वैकल्पिक)",
+    "notSet": "चुना नहीं गया"
   },
   "cropActivity": {
     "timeline": "टाइमलाइन",
@@ -335,7 +343,26 @@
     "active": "सक्रिय",
     "stageOrdinal": "चरण {{n}}",
     "addDailyActivity": "दैनिक गतिविधि जोड़ें",
-    "deletedToast": "फसल और उसकी गतिविधियां हटाई गईं।"
+    "deletedToast": "फसल और उसकी गतिविधियां हटाई गईं।",
+    "allCrops": "सभी फसलें",
+    "stage": "चरण",
+    "advanceStage": "अगला चरण",
+    "activities": "गतिविधियाँ",
+    "since": "से",
+    "doneAndPlanned": "{{done}} पूरी · {{planned}} नियोजित",
+    "cropCost": "फसल की लागत",
+    "soFar": "अब तक",
+    "underCrop": "फसल के अंतर्गत",
+    "viewAll": "सभी देखें",
+    "filterActivities": "गतिविधियाँ छानें",
+    "tab": {
+      "all": "सभी",
+      "upcoming": "आगामी",
+      "recent": "हाल की"
+    },
+    "noActivities": "अभी कोई गतिविधि नहीं।",
+    "planting": "रोपण",
+    "irrigationLine": "{{type}} सिंचाई"
   },
   "activityList": {
     "title": "गतिविधि लॉग",
@@ -668,7 +695,8 @@
       "activity": "गतिविधि",
       "activityDetail": "गतिविधि का विवरण",
       "reports": "रिपोर्ट",
-      "notFound": "पृष्ठ नहीं मिला"
+      "notFound": "पृष्ठ नहीं मिला",
+      "editCrop": "फसल संपादित करें"
     }
   },
   "login": {
@@ -937,6 +965,36 @@
       "River": "नदी",
       "FarmPond": "खेत तालाब",
       "Rainfed": "वर्षा आधारित"
+    }
+  },
+  "crops": {
+    "title": "फसलें",
+    "subtitle": "हर फसल को बुवाई से कटाई तक ट्रैक करें।",
+    "openDetails": "{{name}} का विवरण खोलें",
+    "activityOne": "{{count}} गतिविधि",
+    "activityCount": "{{count}} गतिविधियाँ",
+    "actionsFor": "{{name}} के लिए कार्रवाई",
+    "editCrop": "फसल संपादित करें"
+  },
+  "cropStages": {
+    "sowing": "बुवाई",
+    "growth": "वृद्धि",
+    "flowering": "फूल आना",
+    "harvest": "कटाई",
+    "ariaLabel": "चरण {{n}} में से {{total}}: {{name}}"
+  },
+  "cropOptions": {
+    "irrigation": {
+      "Drip": "ड्रिप",
+      "Sprinkler": "स्प्रिंकलर",
+      "Flood": "सतही सिंचाई",
+      "Manual": "हाथ से"
+    },
+    "method": {
+      "Organic": "जैविक",
+      "Conventional": "पारंपरिक",
+      "ConservationFarming": "संरक्षण खेती",
+      "NaturalFarming": "प्राकृतिक खेती"
     }
   }
 }
