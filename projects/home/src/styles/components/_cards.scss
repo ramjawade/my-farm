@@ -1,40 +1,41 @@
-// 1. General Card Component Override
+// Cards — flat surfaces: surface fill, 1px line border, 12px corners,
+// 16px padding, display-font titles. No glass, no hover lift.
+// `.card-glass` / `.glass-card` / `.card-box` stay as aliases so existing
+// templates keep rendering; they are plain cards now.
+
 .card,
 .card-box,
 .glass-card,
-.activity-card {
-  background: #ffffff;
-  border-radius: 16px !important;
-  border: 1px solid rgba(0, 0, 0, 0.03) !important;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.04);
-  transition:
-    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.25s ease;
-  padding: 20px;
-
-  // Outer anchor elements should not have underlines
-  text-decoration: none;
-  color: inherit;
-}
-
-// 2. Glassmorphism Card Modifier
 .card-glass,
-.glass-card {
-  background: rgba(255, 255, 255, 0.85) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+.activity-card {
+  background: var(--mf-surface);
+  color: var(--mf-fg);
+  border: 1px solid var(--mf-line);
+  border-radius: var(--mf-r-lg);
+  padding: var(--mf-s-4);
+  box-shadow: none;
+  text-decoration: none;
 }
 
-// 3. Interactive Card Modifier (Lift on Hover)
+.card-title,
+.card h3 {
+  font-family: var(--mf-font-display);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+// Clickable card: no movement, a border tint shows it is interactive
 .card-interactive,
 .activity-card {
   cursor: pointer;
+  transition: border-color var(--mf-dur-fast) var(--mf-ease);
 
   &:hover {
-    transform: translateY(-5px) !important;
-    box-shadow: 0 16px 36px rgba(46, 125, 50, 0.08) !important;
-    border-color: rgba($farm-green-primary, 0.3) !important;
+    border-color: var(--mf-leaf);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--mf-leaf);
+    outline-offset: 2px;
   }
 }

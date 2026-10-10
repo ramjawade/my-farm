@@ -1,0 +1,45 @@
+// Chips — filter and choice pills. Selection is carried by aria-pressed
+// (toggle buttons) or aria-checked (radio-style), which also styles them.
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mf-s-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mf-s-1);
+  border: 1px solid var(--mf-line);
+  background: var(--mf-surface);
+  color: var(--mf-muted);
+  border-radius: var(--mf-r-pill);
+  padding: var(--mf-s-1) var(--mf-s-3);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.4;
+  cursor: pointer;
+  transition:
+    background-color var(--mf-dur-fast) var(--mf-ease),
+    border-color var(--mf-dur-fast) var(--mf-ease),
+    color var(--mf-dur-fast) var(--mf-ease);
+
+  &:hover {
+    border-color: var(--mf-leaf);
+    color: var(--mf-fg);
+  }
+
+  &[aria-pressed='true'],
+  &[aria-checked='true'],
+  &.active {
+    background: var(--mf-leaf-soft);
+    color: var(--mf-leaf-ink);
+    border-color: var(--mf-leaf);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--mf-leaf);
+    outline-offset: 2px;
+  }
+}

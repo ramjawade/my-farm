@@ -208,7 +208,7 @@ export class HistoryTrendComponent {
                 usePointStyle: false,
                 padding: 15,
                 font: {
-                  family: 'Outfit, sans-serif',
+                  family: 'Figtree, Mukta, sans-serif',
                   size: 11,
                   weight: 'bold',
                 },
@@ -219,13 +219,13 @@ export class HistoryTrendComponent {
               backgroundColor: 'rgba(255, 255, 255, 0.96)',
               titleColor: '#5c4033',
               titleFont: {
-                family: 'Outfit, sans-serif',
+                family: 'Figtree, Mukta, sans-serif',
                 weight: 'bold',
                 size: 13,
               },
               bodyColor: '#4a5568',
               bodyFont: {
-                family: 'Outfit, sans-serif',
+                family: 'Figtree, Mukta, sans-serif',
                 size: 12,
               },
               borderColor: 'rgba(42, 111, 71, 0.15)',
@@ -299,7 +299,7 @@ export class HistoryTrendComponent {
               },
               ticks: {
                 font: {
-                  family: 'Outfit, sans-serif',
+                  family: 'Figtree, Mukta, sans-serif',
                   size: 10,
                   weight: 'bold',
                 },
@@ -314,7 +314,7 @@ export class HistoryTrendComponent {
                 text: 'Temp (°C)',
                 color: this.getTemperatureColor(this.avgTemp()),
                 font: {
-                  family: 'Outfit, sans-serif',
+                  family: 'Figtree, Mukta, sans-serif',
                   weight: 'bold',
                   size: 11,
                 },
@@ -325,7 +325,7 @@ export class HistoryTrendComponent {
               ticks: {
                 color: this.getTemperatureColor(this.avgTemp()),
                 font: {
-                  family: 'Outfit, sans-serif',
+                  family: 'Figtree, Mukta, sans-serif',
                   size: 10,
                 },
                 callback: (value) => `${value}°C`,
@@ -339,7 +339,7 @@ export class HistoryTrendComponent {
                 text: 'Humidity (%)',
                 color: '#26a69a',
                 font: {
-                  family: 'Outfit, sans-serif',
+                  family: 'Figtree, Mukta, sans-serif',
                   weight: 'bold',
                   size: 11,
                 },
@@ -350,7 +350,7 @@ export class HistoryTrendComponent {
               ticks: {
                 color: '#26a69a',
                 font: {
-                  family: 'Outfit, sans-serif',
+                  family: 'Figtree, Mukta, sans-serif',
                   size: 10,
                 },
                 callback: (value) => `${value}%`,

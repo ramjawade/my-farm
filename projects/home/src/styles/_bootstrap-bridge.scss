@@ -1,0 +1,136 @@
+// Points Bootstrap's runtime custom properties at the MyFarm tokens, so
+// Bootstrap utilities and components follow the tokens (and, later, the
+// theme). Must load AFTER Bootstrap's own :root / [data-bs-theme] output,
+// because both blocks have the same specificity and the later one wins.
+
+:root,
+[data-bs-theme='light'],
+[data-bs-theme='dark'] {
+  --bs-body-bg: var(--mf-bg);
+  --bs-body-bg-rgb: var(--mf-bg-rgb);
+  --bs-body-color: var(--mf-fg);
+  --bs-body-color-rgb: var(--mf-fg-rgb);
+  --bs-emphasis-color: var(--mf-fg);
+  --bs-emphasis-color-rgb: var(--mf-fg-rgb);
+  --bs-heading-color: var(--mf-fg);
+  --bs-secondary-color: var(--mf-muted);
+  --bs-secondary-bg: var(--mf-surface2);
+  --bs-tertiary-color: var(--mf-muted);
+  --bs-tertiary-bg: var(--mf-surface2);
+  --bs-border-color: var(--mf-line);
+  --bs-border-color-translucent: var(--mf-line);
+
+  --bs-primary: var(--mf-leaf);
+  --bs-primary-rgb: var(--mf-leaf-rgb);
+  --bs-success: var(--mf-leaf);
+  --bs-success-rgb: var(--mf-leaf-rgb);
+  --bs-warning: var(--mf-sun);
+  --bs-warning-rgb: var(--mf-sun-rgb);
+  --bs-info: var(--mf-sky);
+  --bs-info-rgb: var(--mf-sky-rgb);
+  --bs-danger: var(--mf-rose);
+  --bs-danger-rgb: var(--mf-rose-rgb);
+
+  --bs-primary-bg-subtle: var(--mf-leaf-soft);
+  --bs-primary-text-emphasis: var(--mf-leaf-ink);
+  --bs-primary-border-subtle: var(--mf-leaf);
+  --bs-success-bg-subtle: var(--mf-leaf-soft);
+  --bs-success-text-emphasis: var(--mf-leaf-ink);
+  --bs-success-border-subtle: var(--mf-leaf);
+  --bs-warning-bg-subtle: var(--mf-sun-soft);
+  --bs-warning-text-emphasis: var(--mf-sun-ink);
+  --bs-warning-border-subtle: var(--mf-sun);
+  --bs-info-bg-subtle: var(--mf-sky-soft);
+  --bs-info-text-emphasis: var(--mf-sky-ink);
+  --bs-info-border-subtle: var(--mf-sky);
+  --bs-danger-bg-subtle: var(--mf-rose-soft);
+  --bs-danger-text-emphasis: var(--mf-rose-ink);
+  --bs-danger-border-subtle: var(--mf-rose);
+
+  --bs-link-color: var(--mf-leaf-ink);
+  --bs-link-color-rgb: var(--mf-leaf-rgb);
+  --bs-link-hover-color: var(--mf-leaf);
+  --bs-link-hover-color-rgb: var(--mf-leaf-rgb);
+  --bs-focus-ring-color: rgba(var(--mf-leaf-rgb), 0.25);
+  --bs-form-valid-color: var(--mf-leaf);
+  --bs-form-valid-border-color: var(--mf-leaf);
+  --bs-form-invalid-color: var(--mf-rose);
+  --bs-form-invalid-border-color: var(--mf-rose);
+
+  --bs-body-font-family: var(--mf-font-body);
+  --bs-font-sans-serif: var(--mf-font-body);
+  --bs-border-radius: var(--mf-r-sm);
+  --bs-border-radius-lg: var(--mf-r-lg);
+  --bs-border-radius-xl: var(--mf-r-xl);
+  --bs-border-radius-pill: var(--mf-r-pill);
+  --bs-box-shadow: var(--mf-shadow-2);
+  --bs-box-shadow-sm: var(--mf-shadow-1);
+  --bs-box-shadow-lg: var(--mf-shadow-3);
+}
+
+// Bootstrap bakes these from Sass at build time; re-point them per component.
+.card {
+  --bs-card-bg: var(--mf-surface);
+  --bs-card-border-color: var(--mf-line);
+  --bs-card-cap-bg: var(--mf-surface2);
+  --bs-card-color: var(--mf-fg);
+}
+
+.modal {
+  --bs-modal-bg: var(--mf-surface);
+  --bs-modal-color: var(--mf-fg);
+  --bs-modal-border-color: var(--mf-line);
+  --bs-modal-border-radius: var(--mf-r-xl);
+}
+
+.modal-backdrop {
+  --bs-backdrop-bg: var(--mf-scrim);
+  --bs-backdrop-opacity: 1;
+}
+
+.dropdown-menu {
+  --bs-dropdown-bg: var(--mf-surface);
+  --bs-dropdown-color: var(--mf-fg);
+  --bs-dropdown-border-color: var(--mf-line);
+  --bs-dropdown-link-color: var(--mf-fg);
+  --bs-dropdown-link-hover-bg: var(--mf-surface2);
+  --bs-dropdown-link-active-bg: var(--mf-leaf);
+  --bs-dropdown-link-active-color: var(--mf-on-leaf);
+}
+
+.list-group {
+  --bs-list-group-bg: var(--mf-surface);
+  --bs-list-group-color: var(--mf-fg);
+  --bs-list-group-border-color: var(--mf-line);
+  --bs-list-group-action-hover-bg: var(--mf-surface2);
+  --bs-list-group-active-bg: var(--mf-leaf);
+  --bs-list-group-active-border-color: var(--mf-leaf);
+}
+
+.table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--mf-fg);
+  --bs-table-border-color: var(--mf-line);
+  --bs-table-striped-bg: var(--mf-surface2);
+  --bs-table-hover-bg: var(--mf-surface2);
+}
+
+.offcanvas,
+.offcanvas-lg,
+.offcanvas-md {
+  --bs-offcanvas-bg: var(--mf-surface);
+  --bs-offcanvas-color: var(--mf-fg);
+  --bs-offcanvas-border-color: var(--mf-line);
+}
+
+.nav-pills {
+  --bs-nav-pills-link-active-bg: var(--mf-leaf);
+  --bs-nav-pills-link-active-color: var(--mf-on-leaf);
+}
+
+.progress,
+.progress-stacked {
+  --bs-progress-bg: var(--mf-surface2);
+  --bs-progress-bar-bg: var(--mf-leaf);
+}
+

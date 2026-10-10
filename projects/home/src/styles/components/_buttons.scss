@@ -1,83 +1,171 @@
-// 1. General Button Customization
+// Buttons — design system: default (surface + line), primary (leaf),
+// warning (sun), danger (rose), link. 8px corners, semibold, no gradients,
+// no hover lift. Bootstrap bakes --bs-btn-* from Sass, so each variant
+// re-points them at the tokens here.
+
 .btn {
-  font-family: 'Outfit', sans-serif;
-  font-weight: 600;
-  border-radius: 8px;
-  padding: 0.6rem 1.4rem;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --bs-btn-font-family: var(--mf-font-body);
+  --bs-btn-font-weight: 600;
+  --bs-btn-border-radius: var(--mf-r-sm);
+  --bs-btn-padding-x: var(--mf-s-3);
+  --bs-btn-padding-y: var(--mf-s-2);
+  --bs-btn-focus-box-shadow: 0 0 0 3px rgba(var(--mf-leaf-rgb), 0.35);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: var(--mf-s-2);
+  white-space: nowrap;
+  transition:
+    background-color var(--mf-dur-fast) var(--mf-ease),
+    border-color var(--mf-dur-fast) var(--mf-ease),
+    color var(--mf-dur-fast) var(--mf-ease);
 
-  &:active {
-    transform: scale(0.98);
+  &:focus-visible {
+    outline: 2px solid var(--mf-leaf);
+    outline-offset: 2px;
+    box-shadow: none;
   }
 }
 
-// 2. Primary / Success Button Override (Agricultural Green Gradient)
+.btn-lg {
+  --bs-btn-padding-x: var(--mf-s-4);
+  --bs-btn-padding-y: var(--mf-s-3);
+  --bs-btn-border-radius: var(--mf-r-md);
+}
+
+.btn-sm {
+  --bs-btn-padding-x: var(--mf-s-2);
+  --bs-btn-padding-y: var(--mf-s-1);
+  --bs-btn-border-radius: var(--mf-r-sm);
+}
+
+// Default: surface with a line border
+.btn-light,
+.btn-secondary,
+.btn-secondary-custom,
+.btn-outline-secondary {
+  --bs-btn-color: var(--mf-fg);
+  --bs-btn-bg: var(--mf-surface);
+  --bs-btn-border-color: var(--mf-line);
+  --bs-btn-hover-color: var(--mf-fg);
+  --bs-btn-hover-bg: var(--mf-surface2);
+  --bs-btn-hover-border-color: var(--mf-line);
+  --bs-btn-active-color: var(--mf-fg);
+  --bs-btn-active-bg: var(--mf-surface2);
+  --bs-btn-active-border-color: var(--mf-muted);
+  --bs-btn-disabled-color: var(--mf-muted);
+  --bs-btn-disabled-bg: var(--mf-surface2);
+  --bs-btn-disabled-border-color: var(--mf-line);
+}
+
+// Primary: leaf fill
 .btn-primary,
 .btn-success,
 .btn-primary-custom {
-  background: linear-gradient(135deg, $farm-green-primary, $farm-green-dark) !important;
-  color: #ffffff !important;
-  border: none !important;
-  box-shadow: 0 4px 10px rgba($farm-green-primary, 0.2);
-
-  &:hover {
-    background: linear-gradient(135deg, $farm-green-light, $farm-green-primary) !important;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba($farm-green-primary, 0.3);
-    color: #ffffff !important;
-  }
+  --bs-btn-color: var(--mf-on-leaf);
+  --bs-btn-bg: var(--mf-leaf);
+  --bs-btn-border-color: var(--mf-leaf);
+  --bs-btn-hover-color: var(--mf-on-leaf);
+  --bs-btn-hover-bg: var(--mf-leaf-ink);
+  --bs-btn-hover-border-color: var(--mf-leaf-ink);
+  --bs-btn-active-color: var(--mf-on-leaf);
+  --bs-btn-active-bg: var(--mf-leaf-ink);
+  --bs-btn-active-border-color: var(--mf-leaf-ink);
+  --bs-btn-disabled-color: var(--mf-on-leaf);
+  --bs-btn-disabled-bg: var(--mf-leaf);
+  --bs-btn-disabled-border-color: var(--mf-leaf);
 }
 
-// 3. Secondary Button Override (White Bordered Slate)
-.btn-secondary,
-.btn-secondary-custom {
-  background-color: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  color: $body-dark-slate !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-
-  &:hover {
-    background-color: #f8fafc !important;
-    border-color: #cbd5e1 !important;
-    transform: translateY(-2px);
-    color: $farm-green-dark !important;
-  }
+// Warning: sun fill
+.btn-warning {
+  --bs-btn-color: var(--mf-on-sun);
+  --bs-btn-bg: var(--mf-sun);
+  --bs-btn-border-color: var(--mf-sun);
+  --bs-btn-hover-color: var(--mf-on-sun);
+  --bs-btn-hover-bg: var(--mf-sun);
+  --bs-btn-hover-border-color: var(--mf-sun-ink);
+  --bs-btn-active-color: var(--mf-on-sun);
+  --bs-btn-active-bg: var(--mf-sun);
+  --bs-btn-active-border-color: var(--mf-sun-ink);
+  --bs-btn-disabled-color: var(--mf-on-sun);
+  --bs-btn-disabled-bg: var(--mf-sun);
+  --bs-btn-disabled-border-color: var(--mf-sun);
 }
 
-// 4. Outline Danger Override
+// Danger: rose fill
+.btn-danger {
+  --bs-btn-color: var(--mf-on-rose);
+  --bs-btn-bg: var(--mf-rose);
+  --bs-btn-border-color: var(--mf-rose);
+  --bs-btn-hover-color: var(--mf-on-rose);
+  --bs-btn-hover-bg: var(--mf-rose-ink);
+  --bs-btn-hover-border-color: var(--mf-rose-ink);
+  --bs-btn-active-color: var(--mf-on-rose);
+  --bs-btn-active-bg: var(--mf-rose-ink);
+  --bs-btn-active-border-color: var(--mf-rose-ink);
+  --bs-btn-disabled-color: var(--mf-on-rose);
+  --bs-btn-disabled-bg: var(--mf-rose);
+  --bs-btn-disabled-border-color: var(--mf-rose);
+}
+
+// Outline variants: surface with a tinted border and text
+@mixin mf-btn-outline($hue, $soft, $ink) {
+  --bs-btn-color: var(#{$ink});
+  --bs-btn-bg: var(--mf-surface);
+  --bs-btn-border-color: var(#{$hue});
+  --bs-btn-hover-color: var(#{$ink});
+  --bs-btn-hover-bg: var(#{$soft});
+  --bs-btn-hover-border-color: var(#{$hue});
+  --bs-btn-active-color: var(#{$ink});
+  --bs-btn-active-bg: var(#{$soft});
+  --bs-btn-active-border-color: var(#{$hue});
+  --bs-btn-disabled-color: var(--mf-muted);
+  --bs-btn-disabled-bg: var(--mf-surface);
+  --bs-btn-disabled-border-color: var(--mf-line);
+}
+
+.btn-outline-primary,
+.btn-outline-success {
+  @include mf-btn-outline(--mf-leaf, --mf-leaf-soft, --mf-leaf-ink);
+}
+
+.btn-outline-warning {
+  @include mf-btn-outline(--mf-sun, --mf-sun-soft, --mf-sun-ink);
+}
+
 .btn-outline-danger {
-  border: 1px solid $farm-danger-primary !important;
-  color: $farm-danger-primary !important;
-  background-color: transparent !important;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: $farm-danger-primary !important;
-    color: #ffffff !important;
-    box-shadow: 0 4px 10px rgba($farm-danger-primary, 0.15);
-    transform: translateY(-1px);
-  }
+  @include mf-btn-outline(--mf-rose, --mf-rose-soft, --mf-rose-ink);
 }
 
-// 5. Floating Action Buttons (FAB)
+.btn-outline-info {
+  @include mf-btn-outline(--mf-sky, --mf-sky-soft, --mf-sky-ink);
+}
+
+// Link
+.btn-link {
+  --bs-btn-color: var(--mf-leaf-ink);
+  --bs-btn-hover-color: var(--mf-leaf);
+  --bs-btn-active-color: var(--mf-leaf);
+  --bs-btn-disabled-color: var(--mf-muted);
+  --bs-btn-padding-x: 0;
+  font-weight: 600;
+}
+
+// Floating action buttons (FAB)
 .fab,
 .fab-button {
   position: fixed !important;
-  right: 25px !important;
-  bottom: 25px !important;
-  width: 65px !important;
-  height: 65px !important;
+  right: 24px !important;
+  bottom: 24px !important;
+  width: 56px !important;
+  height: 56px !important;
   border-radius: 50% !important;
   font-size: 24px !important;
-  background: linear-gradient(135deg, $farm-green-primary, $farm-green-dark) !important;
-  color: #ffffff !important;
+  background: var(--mf-leaf) !important;
+  color: var(--mf-on-leaf) !important;
   border: none !important;
-  box-shadow: 0 8px 25px rgba($farm-green-primary, 0.35) !important;
-  z-index: 1050;
+  box-shadow: var(--mf-shadow-2) !important;
+  z-index: var(--mf-z-float);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -85,77 +173,64 @@
   padding: 0 !important;
 
   &:hover {
-    transform: scale(1.08) translateY(-2px) !important;
-    box-shadow: 0 12px 30px rgba($farm-green-primary, 0.45) !important;
-    background: linear-gradient(135deg, $farm-green-light, $farm-green-primary) !important;
-    color: #ffffff !important;
-  }
-
-  &:active {
-    transform: scale(0.95) !important;
+    background: var(--mf-leaf-ink) !important;
+    color: var(--mf-on-leaf) !important;
   }
 }
 
 .fab-back {
-  left: 25px !important;
+  left: 24px !important;
   right: auto !important;
-  background: rgba(255, 255, 255, 0.9) !important;
-  color: $farm-green-dark !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+  background: var(--mf-surface) !important;
+  color: var(--mf-leaf-ink) !important;
+  border: 1px solid var(--mf-line) !important;
 
   &:hover {
-    background: #ffffff !important;
-    color: $farm-green-dark !important;
-    transform: scale(1.08) translateY(-2px) !important;
+    background: var(--mf-surface2) !important;
+    color: var(--mf-leaf-ink) !important;
   }
 }
 
-// 5b. Soft (translucent) FAB — used where several FABs stack on one screen
-// (e.g. Back/Add/Delete on crop-activity, activity-detail) and a single
-// solid-green FAB per page would be visually too heavy/ambiguous.
+// Soft FAB — where several FABs stack on one screen
 .fab-soft {
   position: fixed !important;
-  right: 29px !important;
-  width: 50px !important;
-  height: 50px !important;
-  z-index: 1030;
-  background-color: rgba(255, 255, 255, 0.95) !important;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  font-size: 1.5rem; // matches Bootstrap's fs-4
+  right: 28px !important;
+  width: 48px !important;
+  height: 48px !important;
+  z-index: var(--mf-z-float);
+  background-color: var(--mf-surface) !important;
+  box-shadow: var(--mf-shadow-1);
+  font-size: 1.5rem;
 
   &.fab-soft-success {
-    border: 1.5px solid rgba(42, 111, 71, 0.18) !important;
-    color: #2a6f47 !important;
+    border: 1px solid var(--mf-leaf) !important;
+    color: var(--mf-leaf-ink) !important;
   }
 
   &.fab-soft-tertiary {
-    border: 1.5px solid rgba($soil-primary, 0.18) !important;
-    color: $soil-primary !important;
+    border: 1px solid var(--mf-line) !important;
+    color: var(--mf-muted) !important;
   }
 
   &.fab-soft-danger {
-    border: 1.5px solid rgba(220, 53, 69, 0.18) !important;
-    color: #dc3545 !important;
+    border: 1px solid var(--mf-rose) !important;
+    color: var(--mf-rose) !important;
   }
 }
 
-// Stack offsets — bottom-to-top: stack-1, stack-2, stack-3
+// Stack offsets — bottom-to-top
 .fab-stack-1 {
-  bottom: 25px !important;
+  bottom: 24px !important;
 }
 .fab-stack-2 {
-  bottom: 85px !important;
+  bottom: 84px !important;
 }
 .fab-stack-3 {
-  bottom: 145px !important;
+  bottom: 144px !important;
 }
 
-// 5c. Chat-bot FAB — mounted once at the app layout level, visible on every
-// authenticated page and every viewport (unlike .fab-soft, which is
-// mobile-only and per-page). Anchored bottom-LEFT, opposite every other FAB
-// above, so it never collides with a page's own bottom-right stack.
+// Chat-bot FAB — mounted once at the app layout level, bottom-LEFT so it
+// never collides with a page's own bottom-right stack.
 .chat-fab {
   position: fixed !important;
   left: 20px !important;
@@ -164,33 +239,26 @@
   height: 56px !important;
   border-radius: 50% !important;
   font-size: 1.4rem !important;
-  background: linear-gradient(135deg, $farm-green-primary, $farm-green-dark) !important;
-  color: #ffffff !important;
+  background: var(--mf-leaf) !important;
+  color: var(--mf-on-leaf) !important;
   border: none !important;
-  box-shadow: 0 8px 25px rgba($farm-green-primary, 0.35) !important;
-  z-index: 1040;
+  box-shadow: var(--mf-shadow-2) !important;
+  z-index: var(--mf-z-float);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-// 6. Mobile Action Row convention
+// Mobile action row convention
 //
 // App-wide rule for a form/dialog's trailing action row (Cancel next to a
 // primary Save/Submit, or a warning/destructive confirm): on phones, keep
-// them full-width and stacked instead of squeezed side by side. Markup
-// order stays [Cancel/Back, ..., primary-or-warning-action] — the same
-// left-to-right order the row already reads in on desktop — and
-// `column-reverse` puts that last (primary/warning) button visually on
-// top with Cancel/Back below it, matching native mobile action-sheet
-// conventions. Color stays on the buttons themselves via the existing
-// semantic classes (btn-success/btn-primary = primary, btn-outline-warning
-// = warning, btn-danger/btn-outline-danger = destructive, btn-secondary/
-// btn-outline-secondary = cancel or back) — this class only governs layout.
+// them full-width and stacked. Markup order stays [Cancel/Back, ...,
+// primary-or-warning-action]; `column-reverse` puts the primary on top.
 .mf-action-row {
   display: flex;
   justify-content: flex-end;
-  gap: 0.5rem;
+  gap: var(--mf-s-2);
 
   @media (max-width: 575.98px) {
     flex-direction: column-reverse;
@@ -201,24 +269,24 @@
   }
 }
 
-// 6. Interactive Suggestion Capsule / Tag Pills
+// Suggestion pill (chat quick replies)
 .btn-outline-suggestion {
-  font-family: 'Outfit', sans-serif;
-  background-color: #f8fafc;
-  color: $soil-primary;
-  border: 1px solid #e2e8f0;
-  font-weight: 600;
-  transition: all 0.2s ease;
-  border-radius: 20px;
-  padding: 0.25rem 0.75rem;
-  font-size: 0.8rem;
+  background-color: var(--mf-surface);
+  color: var(--mf-fg);
+  border: 1px solid var(--mf-line);
+  font-weight: 500;
+  border-radius: var(--mf-r-pill);
+  padding: var(--mf-s-1) var(--mf-s-3);
+  font-size: 0.8125rem;
   display: inline-flex;
   align-items: center;
+  transition:
+    background-color var(--mf-dur-fast) var(--mf-ease),
+    border-color var(--mf-dur-fast) var(--mf-ease);
 
   &:hover {
-    background-color: rgba($farm-green-primary, 0.08);
-    color: $farm-green-dark;
-    border-color: $farm-green-light;
-    transform: scale(1.04);
+    background-color: var(--mf-leaf-soft);
+    color: var(--mf-leaf-ink);
+    border-color: var(--mf-leaf);
   }
 }

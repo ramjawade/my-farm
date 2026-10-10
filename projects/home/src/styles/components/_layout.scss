@@ -29,22 +29,20 @@
   @extend .pb-sm-3 !optional;
   @extend .border-bottom !optional;
 
-  border-bottom-color: rgba(42, 111, 71, 0.12) !important;
+  border-bottom-color: var(--mf-line) !important;
 }
 
 // 3. Typography Extensions
 .mf-heading {
   @extend .h1;
   @extend .fw-bold;
-  color: $headings-color;
-  font-family: $headings-font-family;
+  color: var(--mf-fg);
+  font-family: var(--mf-font-display);
   letter-spacing: -0.02em;
   margin-bottom: 0.5rem;
-  text-shadow: 0 2px 4px rgba($primary, 0.05);
 
   &.text-light-override {
-    color: #ffffff !important;
-    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    color: var(--mf-on-leaf) !important;
   }
 }
 
@@ -56,18 +54,19 @@
   line-height: 1.5;
 
   &.text-light-override {
-    color: rgba(255, 255, 255, 0.8) !important;
+    color: var(--mf-on-leaf) !important;
+    opacity: 0.85;
   }
 }
 
 .mf-section-heading {
   @extend .h3;
   @extend .fw-bold;
-  color: $headings-color;
+  color: var(--mf-fg);
   position: relative;
   padding-bottom: 0.75rem;
   margin-bottom: 1rem;
-  font-family: $headings-font-family;
+  font-family: var(--mf-font-display);
   letter-spacing: -0.01em;
 
   @media (min-width: 576px) {
@@ -81,7 +80,7 @@
     left: 0;
     width: 38px;
     height: 3.5px;
-    background: linear-gradient(to right, $primary, $farm-green-light);
+    background: var(--mf-leaf);
     border-radius: 4px;
     transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   }
@@ -91,10 +90,10 @@
   }
 
   &.text-light-override {
-    color: #ffffff !important;
+    color: var(--mf-on-leaf) !important;
 
     &::after {
-      background: linear-gradient(to right, #ffffff, #ffecb3);
+      background: var(--mf-on-leaf);
     }
   }
 }
@@ -104,8 +103,8 @@
   @extend .fw-bold !optional;
   @extend .m-0 !optional;
 
-  color: $headings-color !important;
-  font-family: 'Outfit', 'Inter', sans-serif !important;
+  color: var(--mf-fg) !important;
+  font-family: var(--mf-font-display) !important;
   letter-spacing: -0.025em !important;
   line-height: 1.25 !important;
   white-space: nowrap !important;
@@ -123,8 +122,8 @@
   @extend .h6;
   @extend .fw-bold;
   @extend .m-0;
-  font-family: 'Outfit', sans-serif;
-  color: $headings-color;
+  font-family: var(--mf-font-display);
+  color: var(--mf-fg);
   letter-spacing: -0.015em;
   line-height: 1.35;
 }
@@ -134,7 +133,6 @@
   @extend .text-muted;
   @extend .text-uppercase;
   @extend .fw-bold;
-  font-family: 'Outfit', sans-serif;
   font-size: 0.72rem;
   letter-spacing: 0.04em;
   display: block;
@@ -142,25 +140,18 @@
 
 .mf-meta-value {
   @extend .fw-bold;
-  font-family: 'Outfit', sans-serif;
-  color: $soil-dark;
+  color: var(--mf-fg);
 }
 
 .font-sans {
-  font-family:
-    'Outfit',
-    'Segoe UI',
-    -apple-system,
-    BlinkMacSystemFont,
-    Roboto,
-    sans-serif !important;
+  font-family: var(--mf-font-body) !important;
 }
 
 // 4. Farmer registration custom layout labels
 .field-label {
   @extend .form-label;
   font-size: 0.98rem;
-  color: $headings-color;
+  color: var(--mf-fg);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -171,9 +162,7 @@
   position: sticky;
   top: 0;
   z-index: 1010;
-  background: rgba(243, 248, 245, 0.94);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: var(--mf-bg);
 
   // Pull up to overlay the container's top padding (py-4 is 1.5rem)
   margin-top: -1.5rem;
@@ -193,21 +182,21 @@
   }
 }
 
-// Premium Brand Colors Text Utilities
+// Tone text utilities
 .text-success-dark {
-  color: $farm-green-dark !important;
+  color: var(--mf-leaf-ink) !important;
 }
 
 .text-warning-dark {
-  color: $farm-warning-dark !important;
+  color: var(--mf-sun-ink) !important;
 }
 
 .text-danger-dark {
-  color: $farm-danger-dark !important;
+  color: var(--mf-rose-ink) !important;
 }
 
 .text-info-dark {
-  color: $farm-info-dark !important;
+  color: var(--mf-sky-ink) !important;
 }
 
 // 6. Fractional Spacing Utility Overrides for Template Compatibility

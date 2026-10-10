@@ -1,16 +1,15 @@
 @if (isOpen()) {
-  <div
-    class="confirm-modal-backdrop position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-    style="z-index: 1050"
-    (click)="onCancel()"
-  >
+  <div class="confirm-scrim" (click)="onCancel()" aria-hidden="true"></div>
+  <div class="confirm-layer">
     <div
-      class="confirm-modal-card card font-sans border-0 p-4"
-      style="max-width: 440px; width: 90%"
-      (click)="$event.stopPropagation()"
+      class="confirm-dialog"
+      role="alertdialog"
+      aria-modal="true"
+      [attr.aria-labelledby]="titleId"
+      [attr.aria-describedby]="messageId"
     >
       <div class="d-flex gap-3 align-items-start">
-        <div class="confirm-icon-box" [class.confirm-icon-danger]="isDestructive()">
+        <div class="confirm-icon" [class.confirm-icon--danger]="isDestructive()" aria-hidden="true">
           @if (isDestructive()) {
             <i class="bi bi-exclamation-triangle-fill"></i>
           } @else {
@@ -18,19 +17,28 @@
           }
         </div>
         <div class="flex-grow-1">
-          <h5 class="card-title text-soil fw-bold mb-2">{{ title() }}</h5>
-          <p class="card-text text-muted small mb-0">{{ message() }}</p>
+          <h2 class="confirm-title" [id]="titleId">{{ title() }}</h2>
+          <p class="confirm-message" [id]="messageId">{{ message() }}</p>
         </div>
       </div>
       <div class="mf-action-row mt-4">
-        <button class="btn btn-secondary-custom py-2 px-3 text-sm" (click)="onCancel()">
+        <button
+          #cancelBtn
+          type="button"
+          class="btn btn-secondary"
+          (click)="onCancel()"
+          (keydown.shift.tab)="wrapFocus($event, confirmBtn)"
+        >
           {{ cancelText() }}
         </button>
         <button
-          class="btn py-2 px-3 text-sm"
-          [class.btn-danger-custom]="isDestructive()"
-          [class.btn-primary-custom]="!isDestructive()"
+          #confirmBtn
+          type="button"
+          class="btn"
+          [class.btn-danger]="isDestructive()"
+          [class.btn-primary]="!isDestructive()"
           (click)="onConfirm()"
+          (keydown.tab)="wrapFocus($event, cancelBtn)"
         >
           {{ confirmText() }}
         </button>

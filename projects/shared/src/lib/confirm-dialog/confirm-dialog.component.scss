@@ -1,96 +1,102 @@
-.confirm-modal-backdrop {
-  background-color: rgba(15, 23, 42, 0.45) !important;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+// Confirm dialog — reads the app's --mf-* tokens (defined globally by the
+// home app, the only consumer of this library).
+
+.confirm-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  background: var(--mf-scrim);
 }
 
-.confirm-modal-card {
-  border: 1px solid rgba(255, 255, 255, 0.7) !important;
-  border-radius: 16px !important;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12) !important;
-  animation: modalPop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-@keyframes modalPop {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-.confirm-icon-box {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+.confirm-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1055;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
+  pointer-events: none;
+}
+
+.confirm-dialog {
+  pointer-events: auto;
+  width: min(420px, calc(100% - 32px));
+  padding: 20px;
+  background: var(--mf-surface);
+  color: var(--mf-fg);
+  border: 1px solid var(--mf-line);
+  border-radius: var(--mf-r-xl);
+  box-shadow: var(--mf-shadow-3);
+  font-family: var(--mf-font-body);
+  animation: confirm-pop var(--mf-dur-base) var(--mf-ease);
+}
+
+.confirm-title {
+  font-family: var(--mf-font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+
+.confirm-message {
+  margin: 0;
+  color: var(--mf-muted);
+}
+
+.confirm-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--mf-r-md);
+  display: grid;
+  place-items: center;
   flex-shrink: 0;
-  background-color: rgba(59, 130, 246, 0.1);
-  color: #1d4ed8;
+  font-size: 1.25rem;
+  background: var(--mf-sky-soft);
+  color: var(--mf-sky-ink);
 
-  &.confirm-icon-danger {
-    background-color: rgba(239, 68, 68, 0.1);
-    color: #dc2626;
+  &--danger {
+    background: var(--mf-rose-soft);
+    color: var(--mf-rose);
   }
 }
 
-.btn-secondary-custom {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  color: #334155;
-  font-weight: 600;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: #f8fafc;
-    border-color: #cbd5e1;
-    transform: translateY(-1px);
+@keyframes confirm-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
-.btn-danger-custom {
-  background-color: #dc2626;
-  color: #ffffff;
-  border: none;
-  font-weight: 600;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.2);
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: #b91c1c;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 15px rgba(220, 38, 38, 0.3);
+@keyframes confirm-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
   }
 }
 
-.btn-primary-custom {
-  background: linear-gradient(135deg, #2e7d32, #1b5e20);
-  color: #ffffff;
-  border: none;
-  font-weight: 600;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(46, 125, 80, 0.2);
-  transition: all 0.2s ease;
+// Phones: bottom sheet
+@media (max-width: 575.98px) {
+  .confirm-layer {
+    align-items: flex-end;
+  }
 
-  &:hover {
-    background: linear-gradient(135deg, #388e3c, #2e7d32);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 15px rgba(46, 125, 80, 0.3);
+  .confirm-dialog {
+    width: 100%;
+    border-radius: var(--mf-r-sheet) var(--mf-r-sheet) 0 0;
+    border-bottom: 0;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    animation-name: confirm-sheet-up;
   }
 }
 
-.font-sans {
-  font-family: 'Outfit', sans-serif !important;
-}
-
-.text-soil {
-  color: #2b3a30 !important;
+@media (prefers-reduced-motion: reduce) {
+  .confirm-dialog {
+    animation: none;
+  }
 }

@@ -1,0 +1,166 @@
+// MyFarm design tokens — the single source of every colour, space, radius,
+// shadow, layer and motion value. Values come from the prototype design
+// system (design/prototype/myfarm-design-system.html).
+//
+// Light is active on :root. The dark set sits on [data-bs-theme='dark'] and
+// stays inactive until the light-dark-theme change sets that attribute.
+// Colour literals belong here (and in _bootstrap-variables.scss) only —
+// everything else uses var(--mf-*).
+
+:root,
+[data-bs-theme='light'] {
+  // Surfaces and text
+  --mf-bg: #eef1ec;
+  --mf-bg-rgb: 238, 241, 236;
+  --mf-surface: #ffffff;
+  --mf-surface2: #f4f6f2;
+  --mf-line: #dde3d8;
+  --mf-fg: #18231a;
+  --mf-fg-rgb: 24, 35, 26;
+  --mf-muted: #5d6b5f;
+
+  // Brand and status hues: base, soft (tint background), ink (text on soft)
+  --mf-leaf: #2f7a3f;
+  --mf-leaf-rgb: 47, 122, 63;
+  --mf-leaf-soft: #dcefdf;
+  --mf-leaf-ink: #1d5a2b;
+  --mf-sun: #c98a14;
+  --mf-sun-rgb: 201, 138, 20;
+  --mf-sun-soft: #faefd2;
+  --mf-sun-ink: #8a5d0b;
+  --mf-sky: #2b74b8;
+  --mf-sky-rgb: 43, 116, 184;
+  --mf-sky-soft: #dcebf8;
+  --mf-sky-ink: #1f5a91;
+  --mf-rose: #b83d3d;
+  --mf-rose-rgb: 184, 61, 61;
+  --mf-rose-soft: #f8dfdf;
+  --mf-rose-ink: #8f2c2c;
+
+  // Text on a solid hue fill
+  --mf-on-leaf: #ffffff;
+  --mf-on-sun: #18231a;
+  --mf-on-sky: #ffffff;
+  --mf-on-rose: #ffffff;
+
+  // Accent hues for data (activity types, charts)
+  --mf-clay: #b5483a;
+  --mf-grape: #6a4aa0;
+  --mf-ember: #c4682a;
+  --mf-teal: #2f8f88;
+
+  // Activity types
+  --mf-type-sowing: var(--mf-leaf);
+  --mf-type-irrigation: var(--mf-sky);
+  --mf-type-fertilizer: var(--mf-grape);
+  --mf-type-spray: var(--mf-clay);
+  --mf-type-weeding: var(--mf-ember);
+  --mf-type-inspection: var(--mf-teal);
+  --mf-type-labour: var(--mf-muted);
+  --mf-type-harvest: var(--mf-sun);
+  --mf-type-sale: var(--mf-leaf);
+  --mf-type-weather: var(--mf-rose);
+  --mf-type-maintenance: var(--mf-muted);
+  --mf-type-custom: var(--mf-muted);
+
+  // Temperature bands and weather measures
+  --mf-temp-cold: var(--mf-sky);
+  --mf-temp-cool: var(--mf-leaf);
+  --mf-temp-warm: var(--mf-ember);
+  --mf-temp-hot: var(--mf-rose);
+  --mf-humidity: var(--mf-teal);
+  --mf-wind: var(--mf-grape);
+
+  // Chart series
+  --mf-chart-1: var(--mf-leaf);
+  --mf-chart-2: var(--mf-sky);
+  --mf-chart-3: var(--mf-sun);
+  --mf-chart-4: var(--mf-grape);
+  --mf-chart-5: var(--mf-ember);
+  --mf-chart-6: var(--mf-teal);
+
+  // Map layers (drawn over satellite imagery, so they stay bright in both themes)
+  --mf-map-draw: #3b8fe0;
+  --mf-map-done: #3fae5a;
+  --mf-map-select: #f0b429;
+  --mf-map-fill: #ffffff;
+
+  // Overlays and elevation
+  --mf-scrim: rgba(0, 0, 0, 0.5);
+  --mf-scrim-soft: rgba(0, 0, 0, 0.4);
+  --mf-shadow-1: 0 2px 8px rgba(24, 35, 26, 0.08);
+  --mf-shadow-2: 0 6px 18px rgba(24, 35, 26, 0.12);
+  --mf-shadow-3: 0 20px 50px rgba(24, 35, 26, 0.18);
+
+  // Typography
+  --mf-font-display: 'Bricolage Grotesque', 'Mukta', 'Segoe UI', system-ui, sans-serif;
+  --mf-font-body: 'Figtree', 'Mukta', 'Segoe UI', system-ui, sans-serif;
+
+  // Spacing, radius, layers, motion
+  --mf-s-1: 4px;
+  --mf-s-2: 8px;
+  --mf-s-3: 12px;
+  --mf-s-4: 16px;
+  --mf-s-5: 24px;
+  --mf-s-6: 32px;
+  --mf-r-xs: 3px;
+  --mf-r-sm: 8px;
+  --mf-r-md: 10px;
+  --mf-r-lg: 12px;
+  --mf-r-xl: 14px;
+  --mf-r-sheet: 18px;
+  --mf-r-pill: 999px;
+  --mf-z-float: 1030;
+  --mf-z-dim: 1050;
+  --mf-z-dialog: 1055;
+  --mf-z-toast: 1090;
+  --mf-dur-fast: 0.15s;
+  --mf-dur-base: 0.22s;
+  --mf-ease: ease-out;
+}
+
+[data-bs-theme='dark'] {
+  --mf-bg: #0f1611;
+  --mf-bg-rgb: 15, 22, 17;
+  --mf-surface: #17211a;
+  --mf-surface2: #1d2a20;
+  --mf-line: #2a3a2d;
+  --mf-fg: #e8efe8;
+  --mf-fg-rgb: 232, 239, 232;
+  --mf-muted: #9bab9d;
+
+  --mf-leaf: #5fbf72;
+  --mf-leaf-rgb: 95, 191, 114;
+  --mf-leaf-soft: #1f3a26;
+  --mf-leaf-ink: #a5e0b0;
+  --mf-sun: #e3a93a;
+  --mf-sun-rgb: 227, 169, 58;
+  --mf-sun-soft: #3a2f14;
+  --mf-sun-ink: #f0cc85;
+  --mf-sky: #6aaee6;
+  --mf-sky-rgb: 106, 174, 230;
+  --mf-sky-soft: #17304a;
+  --mf-sky-ink: #a9d0f2;
+  --mf-rose: #e07878;
+  --mf-rose-rgb: 224, 120, 120;
+  --mf-rose-soft: #3f2020;
+  --mf-rose-ink: #f2b0b0;
+
+  --mf-on-leaf: #0f1611;
+  --mf-on-sun: #0f1611;
+  --mf-on-sky: #0f1611;
+  --mf-on-rose: #0f1611;
+
+  --mf-clay: #e08a7e;
+  --mf-grape: #b49ae0;
+  --mf-ember: #e8a06a;
+  --mf-teal: #6cc8bf;
+
+  --mf-scrim: rgba(0, 0, 0, 0.6);
+  --mf-scrim-soft: rgba(0, 0, 0, 0.5);
+  --mf-shadow-1: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --mf-shadow-2: 0 6px 18px rgba(0, 0, 0, 0.4);
+  --mf-shadow-3: 0 20px 50px rgba(0, 0, 0, 0.5);
+
+  color-scheme: dark;
+}

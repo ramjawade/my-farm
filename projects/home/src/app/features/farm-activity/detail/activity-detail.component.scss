@@ -13,7 +13,7 @@
 
 // 1. Total KPI Metric
 .total {
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--mf-font-body, sans-serif);
   font-size: 2.1rem;
   font-weight: 800;
   color: $farm-green-primary;
@@ -111,7 +111,7 @@
 }
 
 .amount {
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--mf-font-body, sans-serif);
   font-size: 1.35rem;
   font-weight: 800;
   letter-spacing: -0.02em;

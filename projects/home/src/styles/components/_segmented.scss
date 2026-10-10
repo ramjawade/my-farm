@@ -1,0 +1,34 @@
+// Segmented control — a pill group where one option is selected.
+// Markup: <div class="seg" role="group"><button aria-pressed="true">…</button>…</div>
+
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--mf-line);
+  border-radius: var(--mf-r-pill);
+  background: var(--mf-surface);
+  padding: 3px;
+
+  > button,
+  > .seg-option {
+    border: 0;
+    background: none;
+    padding: 6px 14px;
+    border-radius: var(--mf-r-pill);
+    color: var(--mf-muted);
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+
+    &[aria-pressed='true'],
+    &[aria-checked='true'],
+    &.active {
+      background: var(--mf-leaf);
+      color: var(--mf-on-leaf);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--mf-leaf);
+      outline-offset: 2px;
+    }
+  }
+}
