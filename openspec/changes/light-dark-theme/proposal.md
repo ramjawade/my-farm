@@ -42,7 +42,7 @@ flowchart TD
 
 ### Modified Capabilities
 
-- `design-system`: the scenario "Dark values exist but are inactive" no longer holds. The dark palette is now used when the theme resolves to dark, and every colour must stay readable in both.
+- `design-system`: the requirement "Design tokens drive colour, spacing, radius and elevation" says only the light palette is active, which no longer holds. It is removed and replaced by one that covers both palettes, since OpenSpec does not let a modified requirement drop a scenario.
 
 ## Non-goals
 
