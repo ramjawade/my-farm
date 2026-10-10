@@ -10,7 +10,7 @@
 
 // 1. KPI Metric styling
 .metric {
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--mf-font-body, sans-serif);
   font-size: 2.1rem;
   font-weight: 800;
   color: $farm-green-dark;
@@ -34,7 +34,7 @@
     overflow: visible;
 
     .grid-text {
-      font-family: 'Outfit', sans-serif;
+      font-family: var(--mf-font-body, sans-serif);
       font-size: 8px;
       fill: #94a3b8;
       font-weight: 600;
@@ -62,7 +62,7 @@
     }
 
     .axis-text {
-      font-family: 'Outfit', sans-serif;
+      font-family: var(--mf-font-body, sans-serif);
       font-size: 9px;
       font-weight: 600;
       fill: #64748b;
@@ -108,7 +108,7 @@
     align-items: center;
 
     .donut-total-lbl {
-      font-family: 'Outfit', sans-serif;
+      font-family: var(--mf-font-body, sans-serif);
       font-size: 0.65rem;
       text-transform: uppercase;
       color: #94a3b8;
@@ -117,7 +117,7 @@
     }
 
     .donut-total-val {
-      font-family: 'Outfit', sans-serif;
+      font-family: var(--mf-font-body, sans-serif);
       font-weight: 800;
       font-size: 1.15rem;
       color: $soil-dark;
@@ -157,7 +157,7 @@
     }
 
     .legend-name {
-      font-family: 'Outfit', sans-serif;
+      font-family: var(--mf-font-body, sans-serif);
       font-size: 0.85rem;
       color: #475569;
       font-weight: 500;
@@ -232,7 +232,7 @@
   }
 
   .quick-btn-text {
-    font-family: 'Outfit', sans-serif;
+    font-family: var(--mf-font-body, sans-serif);
     font-size: 0.85rem;
     font-weight: 600;
     color: $body-dark-slate;

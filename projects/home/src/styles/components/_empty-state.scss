@@ -1,0 +1,38 @@
+// Empty state — one pattern for lists and sections with no content:
+// round leaf-soft icon, short display-font title, one line of muted help,
+// optional primary action.
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--mf-s-2);
+  padding: var(--mf-s-5) var(--mf-s-4);
+
+  &__icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--mf-leaf-soft);
+    color: var(--mf-leaf-ink);
+    display: grid;
+    place-items: center;
+    font-size: 1.5rem;
+    margin-bottom: var(--mf-s-1);
+  }
+
+  &__title {
+    font-family: var(--mf-font-display);
+    font-size: 1.0625rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--mf-fg);
+  }
+
+  &__text {
+    margin: 0 0 var(--mf-s-3);
+    max-width: 34ch;
+    color: var(--mf-muted);
+  }
+}

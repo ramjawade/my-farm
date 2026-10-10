@@ -1,0 +1,59 @@
+// Dialogs and bottom sheets — a centred dialog on wider screens; below
+// 576px add `.mf-sheet` to the dialog surface and it anchors to the bottom
+// edge with rounded top corners, sliding up over a dimmed backdrop.
+
+.mf-scrim {
+  position: fixed;
+  inset: 0;
+  background: var(--mf-scrim);
+  z-index: var(--mf-z-dim);
+}
+
+.mf-dialog {
+  background: var(--mf-surface);
+  color: var(--mf-fg);
+  border: 1px solid var(--mf-line);
+  border-radius: var(--mf-r-xl);
+  box-shadow: var(--mf-shadow-3);
+  padding: 20px;
+  width: min(420px, calc(100% - 32px));
+  z-index: var(--mf-z-dialog);
+
+  h2,
+  h3 {
+    font-family: var(--mf-font-display);
+    font-size: 1.125rem;
+    margin: 0 0 6px;
+  }
+}
+
+@keyframes mfSheetUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .mf-sheet {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: var(--mf-r-sheet) var(--mf-r-sheet) 0 0;
+    border-bottom: 0;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    animation: mfSheetUp var(--mf-dur-base) var(--mf-ease);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mf-sheet {
+    animation: none;
+  }
+}

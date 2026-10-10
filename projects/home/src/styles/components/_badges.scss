@@ -1,112 +1,83 @@
-// 1. Base Badge Styling Override
+// Badges — small soft pills in five tones: leaf (success), sun (warning),
+// sky (info), rose (danger) and muted (neutral). Existing semantic class
+// names map onto the tones so templates keep working.
+
 .badge,
 .mf-badge {
-  font-family: 'Outfit', sans-serif;
-  text-transform: uppercase;
-  font-weight: 700;
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
-  padding: 0.35em 0.8em;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-  transition: all 0.2s ease-in-out;
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  border-radius: 50rem !important;
+  gap: var(--mf-s-1);
+  font-family: var(--mf-font-body);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.4;
+  padding: 2px var(--mf-s-2);
+  border-radius: var(--mf-r-pill);
+  border: 1px solid transparent;
+  white-space: nowrap;
   text-decoration: none;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-  }
+  // Default tone: leaf
+  background: var(--mf-leaf-soft);
+  color: var(--mf-leaf-ink);
 
   i {
-    font-size: 0.82rem;
+    font-size: 0.75rem;
   }
 }
 
-// 2. Curated Agricultural Theme Modifiers
+@mixin mf-badge-tone($soft, $ink, $border: transparent) {
+  background: var(#{$soft}) !important;
+  color: var(#{$ink}) !important;
+  border-color: $border !important;
+}
 
-// Success / Completed (Green)
+// Success / completed (leaf)
+.badge-soft-success,
 .bg-success,
 .mf-badge-success,
 .status-completed,
-.status-badge-inline.completed {
-  background: linear-gradient(
-    135deg,
-    rgba($farm-green-primary, 0.12),
-    rgba($farm-green-light, 0.15)
-  ) !important;
-  color: $farm-green-dark !important;
-  border: 1px solid rgba($farm-green-primary, 0.18) !important;
+.status-badge-inline.completed,
+.bg-success-light,
+.badge-crop,
+.tag-crop {
+  @include mf-badge-tone(--mf-leaf-soft, --mf-leaf-ink);
 }
 
-// Warning / Progressing (Amber)
+// Warning / in progress (sun)
+.badge-soft-warning,
 .bg-warning,
 .mf-badge-warning,
 .status-progress,
 .status-badge-inline.progressing {
-  background: linear-gradient(
-    135deg,
-    rgba($warning, 0.12),
-    rgba($farm-warning-light, 0.15)
-  ) !important;
-  color: $farm-warning-dark !important;
-  border: 1px solid rgba($warning, 0.18) !important;
+  @include mf-badge-tone(--mf-sun-soft, --mf-sun-ink);
 }
 
-// Danger / Alert (Red)
+// Danger / alert (rose)
+.badge-soft-danger,
 .bg-danger,
 .mf-badge-danger {
-  background: linear-gradient(
-    135deg,
-    rgba($farm-danger-primary, 0.1),
-    rgba($farm-danger-light, 0.12)
-  ) !important;
-  color: $farm-danger-dark !important;
-  border: 1px solid rgba($farm-danger-primary, 0.18) !important;
+  @include mf-badge-tone(--mf-rose-soft, --mf-rose-ink);
 }
 
-// Info / Field (Blue)
+// Info / field (sky)
+.badge-soft-info,
 .bg-info,
 .mf-badge-info,
 .tag-field {
-  background: linear-gradient(135deg, rgba($info, 0.1), rgba($farm-info-light, 0.12)) !important;
-  color: $farm-info-dark !important;
-  border: 1px solid rgba($info, 0.18) !important;
+  @include mf-badge-tone(--mf-sky-soft, --mf-sky-ink);
 }
 
-// Soil / Land (Brown)
+// Neutral (muted): draft, fallow, season tags
+.badge-soft-muted,
 .mf-badge-soil,
-.tag-season {
-  background: linear-gradient(
-    135deg,
-    rgba($soil-primary, 0.12),
-    rgba($soil-light, 0.15)
-  ) !important;
-  color: $soil-dark !important;
-  border: 1px solid rgba($soil-primary, 0.18) !important;
-}
-
-// Specific UI Stage / Tag overrides
-.bg-success-light,
-.badge-crop,
-.tag-crop {
-  background-color: rgba($farm-green-primary, 0.08) !important;
-  color: $farm-green-dark !important;
-  border: 1px solid rgba($farm-green-primary, 0.15) !important;
-}
-
+.tag-season,
 .status-draft {
-  background-color: #f1f5f9 !important;
-  color: #475569 !important;
-  border: 1px solid #cbd5e1 !important;
+  @include mf-badge-tone(--mf-surface2, --mf-muted, var(--mf-line));
 }
 
-// 3. AI Advisor badge
+// AI advisor badge
 .ai-badge {
   @extend .badge;
-  @extend .bg-success;
-  margin-bottom: 12px;
-  box-shadow: 0 3px 8px rgba($farm-green-dark, 0.15);
+  @extend .badge-soft-success;
+  margin-bottom: var(--mf-s-3);
 }

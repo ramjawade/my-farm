@@ -13,7 +13,7 @@
 
 // 1. Text clamp helper for activity notes preview
 .notes-preview {
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--mf-font-body, sans-serif);
   font-size: 0.82rem;
   line-height: 1.6;
   color: #57687e;
@@ -26,21 +26,9 @@
   text-overflow: ellipsis;
 }
 
-// 2. Custom Empty State Dashed Border
-.empty-state-container {
-  border: 2px dashed #cbd5e1 !important;
+// 2. Empty state (shared .empty-state pattern)
+.empty-state {
   max-width: 500px;
-  margin: 2.5rem auto;
-
-  .text-muted-custom {
-    color: #64748b;
-    font-size: 0.9rem;
-    line-height: 1.5;
-  }
-}
-
-.max-width-400 {
-  max-width: 400px;
 }
 
 .cursor-pointer {

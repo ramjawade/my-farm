@@ -37,39 +37,46 @@ const ICONS: Record<ToastKind, string> = {
       left: 50%;
       bottom: 1.25rem;
       transform: translateX(-50%);
-      z-index: 1080;
+      z-index: var(--mf-z-toast);
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--mf-s-2);
       width: min(92vw, 420px);
       pointer-events: none;
     }
     .lib-toast {
+      --toast-hue: var(--mf-sky);
+      --toast-soft: var(--mf-sky-soft);
       pointer-events: auto;
       display: flex;
       align-items: center;
-      gap: 0.6rem;
-      padding: 0.7rem 0.9rem;
-      border-radius: 0.75rem;
-      background: hsl(150, 12%, 16%);
-      color: #fff;
-      box-shadow: 0 10px 30px hsla(150, 20%, 10%, 0.35);
-      font-size: 0.875rem;
-      border-left: 4px solid hsl(200, 80%, 60%);
-      animation: lib-toast-in 0.25s ease-out;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: var(--mf-r-md);
+      background: var(--toast-soft);
+      color: var(--mf-fg);
+      border: 1px solid var(--toast-hue);
+      box-shadow: var(--mf-shadow-2);
+      font-family: var(--mf-font-body);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      animation: lib-toast-in var(--mf-dur-base) var(--mf-ease);
     }
     .lib-toast--success {
-      border-left-color: hsl(142, 60%, 50%);
+      --toast-hue: var(--mf-leaf);
+      --toast-soft: var(--mf-leaf-soft);
     }
     .lib-toast--warning {
-      border-left-color: hsl(40, 90%, 55%);
+      --toast-hue: var(--mf-sun);
+      --toast-soft: var(--mf-sun-soft);
     }
     .lib-toast--danger {
-      border-left-color: hsl(0, 75%, 58%);
+      --toast-hue: var(--mf-rose);
+      --toast-soft: var(--mf-rose-soft);
     }
     .lib-toast__icon {
       font-size: 1.05rem;
-      opacity: 0.9;
+      color: var(--toast-hue);
     }
     .lib-toast__text {
       flex: 1;
@@ -77,13 +84,12 @@ const ICONS: Record<ToastKind, string> = {
     .lib-toast__close {
       background: transparent;
       border: 0;
-      color: inherit;
-      opacity: 0.7;
+      color: var(--mf-muted);
       padding: 0.1rem 0.25rem;
       line-height: 1;
     }
     .lib-toast__close:hover {
-      opacity: 1;
+      color: var(--mf-fg);
     }
     @keyframes lib-toast-in {
       from {
@@ -93,6 +99,11 @@ const ICONS: Record<ToastKind, string> = {
       to {
         opacity: 1;
         transform: translateY(0);
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .lib-toast {
+        animation: none;
       }
     }
   `,

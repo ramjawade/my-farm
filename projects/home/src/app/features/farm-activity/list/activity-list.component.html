@@ -507,13 +507,11 @@
       }
     </div>
   } @else {
-    <div class="card card-glass empty-state-container p-5 text-center my-4">
-      <i class="bi bi-search text-muted display-3"></i>
-      <h3 class="mt-3 font-sans text-muted">{{ 'activityList.noActivitiesFound' | translate }}</h3>
-      <p class="text-muted-custom font-sans max-width-400 mx-auto mt-2">
-        {{ 'activityList.noActivitiesHint' | translate }}
-      </p>
-      <button class="btn btn-secondary mt-3" (click)="clearFilters()">
+    <div class="card empty-state my-4 mx-auto" role="status">
+      <div class="empty-state__icon" aria-hidden="true"><i class="bi bi-search"></i></div>
+      <h3 class="empty-state__title">{{ 'activityList.noActivitiesFound' | translate }}</h3>
+      <p class="empty-state__text">{{ 'activityList.noActivitiesHint' | translate }}</p>
+      <button type="button" class="btn btn-secondary" (click)="clearFilters()">
         {{ 'activityList.clearFilters' | translate }}
       </button>
     </div>

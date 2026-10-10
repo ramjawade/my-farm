@@ -116,7 +116,7 @@
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--mf-font-body, sans-serif);
   font-size: 0.85rem;
   color: #718096;
   z-index: 6;
@@ -148,7 +148,7 @@
 }
 
 .step-label {
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--mf-font-body, sans-serif);
   font-size: 0.62rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -158,7 +158,7 @@
 }
 
 .step-name {
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--mf-font-body, sans-serif);
   font-size: 0.76rem;
   font-weight: 600;
   color: #4a5568;

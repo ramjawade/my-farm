@@ -1,68 +1,57 @@
-// Bootstrap variable overrides (must load before variables/maps)
+// Bootstrap variable overrides (must load before Bootstrap's variables/maps).
+//
+// Sass needs real colour values at build time (tint/shade maths, contrast),
+// so the prototype's LIGHT palette is repeated here as Sass hex. At runtime
+// _bootstrap-bridge.scss re-points Bootstrap's --bs-* properties at the
+// --mf-* tokens, so anything that reads the custom properties follows the
+// tokens (and the theme). Keep these in sync with _tokens.scss.
 
-// --- Premium Branding Color Palette ---
-$farm-green-dark: #1b5e20;
-$farm-green-primary: #2e7d32;
-$farm-green-light: #66bb6a;
+// --- MyFarm light palette (mirror of _tokens.scss) ---
+$mf-bg: #eef1ec;
+$mf-surface: #ffffff;
+$mf-surface2: #f4f6f2;
+$mf-line: #dde3d8;
+$mf-fg: #18231a;
+$mf-muted: #5d6b5f;
+$mf-leaf: #2f7a3f;
+$mf-leaf-ink: #1d5a2b;
+$mf-sun: #c98a14;
+$mf-sky: #2b74b8;
+$mf-rose: #b83d3d;
 
-$soil-dark: #4e342e;
-$soil-primary: #6d4c41;
-$soil-light: #8d6e63;
+// --- Bootstrap theme colours ---
+$primary: $mf-leaf;
+$success: $mf-leaf;
+$info: $mf-sky;
+$warning: $mf-sun;
+$danger: $mf-rose;
+$body-bg: $mf-bg;
+$body-color: $mf-fg;
+$border-color: $mf-line;
+$link-color: $mf-leaf-ink;
+$secondary-color: $mf-muted;
 
-$light-mint: #edf6f0;
-$border-mint: rgba(42, 111, 71, 0.15);
-
-// Specific highlight tones for badges and status text
-$farm-warning-dark: #b7791f;
-$farm-warning-primary: #ff9800;
-$farm-warning-light: #ffca28;
-
-$farm-danger-dark: #c62828;
-$farm-danger-primary: #d32f2f;
-$farm-danger-light: #ef5350;
-
-$farm-info-dark: #01579b;
-$farm-info-primary: #0288d9;
-$farm-info-light: #29b6f6;
-
-$farm-humidity: #26a69a;
-$farm-wind: #7e57c2;
-
-// Temperature color palette (cold → hot)
-$temp-cold: #2196f3; // Blue (< 15°C)
-$temp-cool: #4caf50; // Green (15-25°C)
-$temp-warm: #ff9800; // Orange (25-35°C)
-$temp-hot: #f44336; // Red (> 35°C)
-
-$body-dark-slate: #2c3e50;
-
-// Override Bootstrap's native variables
-$primary: $farm-green-primary;
-$success: $farm-green-primary;
-$info: $farm-info-primary;
-$warning: $farm-warning-primary;
-$danger: $farm-danger-primary;
-$body-color: $body-dark-slate;
-
-// --- Typography System overrides ---
-$font-family-sans-serif:
-  'Outfit',
-  'Segoe UI',
-  -apple-system,
-  BlinkMacSystemFont,
-  Roboto,
-  sans-serif;
-$headings-font-family: $font-family-sans-serif;
+// --- Typography ---
+$font-family-sans-serif: 'Figtree', 'Mukta', 'Segoe UI', system-ui, sans-serif;
+$headings-font-family: 'Bricolage Grotesque', 'Mukta', 'Segoe UI', system-ui, sans-serif;
+$font-size-base: 0.875rem; // 14px, as in the prototype
+$line-height-base: 1.45;
 $headings-font-weight: 700;
-$headings-color: $farm-green-dark; // Elegant agricultural dark green for headers
+$headings-color: inherit;
 
-// Heading font size configurations
-$h1-font-size: 2.25rem; // ~36px
-$h2-font-size: 1.875rem; // ~30px
-$h3-font-size: 1.5rem; // ~24px
-$h4-font-size: 1.25rem; // ~20px
-$h5-font-size: 1.125rem; // ~18px
-$h6-font-size: 1rem; // ~16px
+$h1-font-size: 1.75rem; // 28px
+$h2-font-size: 1.5rem; // 24px — page title
+$h3-font-size: 1.25rem; // 20px
+$h4-font-size: 1.125rem; // 18px
+$h5-font-size: 1rem; // 16px — card title
+$h6-font-size: 0.875rem; // 14px
+
+// --- Radius ---
+$border-radius: 8px;
+$border-radius-sm: 6px;
+$border-radius-lg: 12px;
+$border-radius-xl: 14px;
+$border-radius-pill: 999px;
 
 // Layout variable overrides
 $offcanvas-horizontal-width: 260px;
@@ -71,3 +60,40 @@ $zindex-offcanvas: 1045;
 
 $navbar-padding-y: 0.5rem;
 $nav-link-padding-y: 0.5rem;
+
+// --- Legacy palette: TEMPORARY aliases ---
+// @deprecated — use var(--mf-*) instead. Sass colours are fixed at build
+// time and cannot follow the theme. Every use is replaced and these are
+// deleted in PR 2 of design-tokens-foundation (task 4.6).
+$farm-green-dark: $mf-leaf-ink;
+$farm-green-primary: $mf-leaf;
+$farm-green-light: #5fbf72;
+
+$soil-dark: $mf-fg;
+$soil-primary: $mf-muted;
+$soil-light: #8a978c;
+
+$light-mint: #dcefdf;
+$border-mint: $mf-line;
+
+$farm-warning-dark: #8a5d0b;
+$farm-warning-primary: $mf-sun;
+$farm-warning-light: #e3a93a;
+
+$farm-danger-dark: #8f2c2c;
+$farm-danger-primary: $mf-rose;
+$farm-danger-light: #e07878;
+
+$farm-info-dark: #1f5a91;
+$farm-info-primary: $mf-sky;
+$farm-info-light: #6aaee6;
+
+$farm-humidity: #2f8f88;
+$farm-wind: #6a4aa0;
+
+$temp-cold: $mf-sky;
+$temp-cool: $mf-leaf;
+$temp-warm: #c4682a;
+$temp-hot: $mf-rose;
+
+$body-dark-slate: $mf-fg;
