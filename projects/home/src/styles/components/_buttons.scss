@@ -290,3 +290,31 @@
     border-color: var(--mf-leaf);
   }
 }
+
+// Phones: the shell's bottom tab bar sits under the viewport-fixed buttons, so
+// lift them by its height (--mf-tabbar-h is set by the app layout, 0 elsewhere).
+@include media-breakpoint-down(lg) {
+  .fab,
+  .fab-button {
+    bottom: calc(24px + var(--mf-tabbar-h, 0px)) !important;
+  }
+  .fab-stack-1 {
+    bottom: calc(24px + var(--mf-tabbar-h, 0px)) !important;
+  }
+  .fab-stack-2 {
+    bottom: calc(84px + var(--mf-tabbar-h, 0px)) !important;
+  }
+  .fab-stack-3 {
+    bottom: calc(144px + var(--mf-tabbar-h, 0px)) !important;
+  }
+  .chat-fab {
+    bottom: calc(20px + var(--mf-tabbar-h, 0px)) !important;
+  }
+}
+
+// Wide screens: keep the chat button off the sidebar's account block.
+@include media-breakpoint-up(lg) {
+  .chat-fab {
+    left: calc(#{$offcanvas-horizontal-width} + 20px) !important;
+  }
+}

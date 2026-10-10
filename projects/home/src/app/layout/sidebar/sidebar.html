@@ -1,31 +1,42 @@
-<aside class="app-sidebar" [class.open]="open()">
-  <nav class="nav nav-pills flex-column p-3 gap-1">
-    <a
-      class="nav-link"
-      routerLink="/"
-      routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: true }"
-      (click)="onNavClick()"
-    >
-      <i class="bi bi-house-door-fill me-2"></i>{{ 'sidebar.home' | translate }}
-    </a>
-    <a class="nav-link" routerLink="/map" routerLinkActive="active" (click)="onNavClick()">
-      <i class="bi bi-map me-2"></i>{{ 'sidebar.lands' | translate }}
-    </a>
-    <a class="nav-link" routerLink="/crops" routerLinkActive="active" (click)="onNavClick()">
-      <i class="bi bi-grid-3x3-gap-fill me-2"></i>{{ 'sidebar.crops' | translate }}
-    </a>
-    <a class="nav-link" routerLink="/activities" routerLinkActive="active" (click)="onNavClick()">
-      <i class="bi bi-activity me-2"></i>{{ 'sidebar.activities' | translate }}
-    </a>
-    <a class="nav-link" routerLink="/weather" routerLinkActive="active" (click)="onNavClick()">
-      <i class="bi bi-cloud-sun me-2"></i>{{ 'sidebar.weather' | translate }}
-    </a>
-    <a class="nav-link" routerLink="/reports" routerLinkActive="active" (click)="onNavClick()">
-      <i class="bi bi-bar-chart-line-fill me-2"></i>{{ 'sidebar.reports' | translate }}
-    </a>
-    <a class="nav-link" routerLink="/profile" routerLinkActive="active" (click)="onNavClick()">
-      <i class="bi bi-person-circle me-2"></i>{{ 'sidebar.profile' | translate }}
-    </a>
+<aside class="app-sidebar d-flex flex-column w-100 h-100">
+  <a
+    routerLink="/"
+    class="d-flex align-items-center gap-2 p-3 text-decoration-none app-sidebar__brand"
+  >
+    <app-brand-logo [size]="32" [priority]="true" />
+    <span class="fw-bold fs-5">My Farm</span>
+  </a>
+
+  <nav
+    class="nav flex-column gap-1 px-2 flex-grow-1"
+    [attr.aria-label]="'shell.mainNav' | translate"
+  >
+    @for (item of items; track item.key) {
+      <a
+        class="app-sidebar__link d-flex align-items-center gap-3 rounded-3 px-3"
+        [class.active]="section() === item.key"
+        [routerLink]="item.link"
+        [attr.aria-current]="section() === item.key ? 'page' : null"
+      >
+        <i class="bi {{ item.icon }}" aria-hidden="true"></i>
+        <span>{{ item.labelKey | translate }}</span>
+      </a>
+    }
   </nav>
+
+  <a
+    routerLink="/profile"
+    class="app-sidebar__who d-flex align-items-center gap-2 m-2 p-2 rounded-3 text-decoration-none"
+    [class.active]="section() === 'profile'"
+    [attr.aria-current]="section() === 'profile' ? 'page' : null"
+    [attr.aria-label]="'shell.openProfile' | translate"
+  >
+    <span class="app-avatar" aria-hidden="true">{{ initials() }}</span>
+    <span class="min-w-0">
+      <b class="d-block text-truncate">{{ user()?.fullName }}</b>
+      @if (place()) {
+        <small class="d-block text-truncate">{{ place() }}</small>
+      }
+    </span>
+  </a>
 </aside>

@@ -5,11 +5,17 @@ import {
   provideZonelessChangeDetection,
   isDevMode,
 } from '@angular/core';
-import { provideRouter, withComponentInputBinding, withRouterConfig } from '@angular/router';
+import {
+  provideRouter,
+  TitleStrategy,
+  withComponentInputBinding,
+  withRouterConfig,
+} from '@angular/router';
 import { provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 
 import { routes } from './app.routes';
+import { AppTitleStrategy } from './core/page/app-title.strategy';
 import { IWeatherService } from './core/weather/weather.interface';
 import { WeatherService } from './core/weather/weather.service';
 import { provideEnvironmentInitializer } from './core/services/environment.initializer';
@@ -27,6 +33,7 @@ export const appConfig: ApplicationConfig = {
       withRouterConfig({ paramsInheritanceStrategy: 'always' }),
       withComponentInputBinding(),
     ),
+    { provide: TitleStrategy, useExisting: AppTitleStrategy },
     provideEnvironmentInitializer(),
     // Relative prefix (no leading slash) so it resolves against `<base href>`
     // rather than the origin root — this app deploys under a subpath

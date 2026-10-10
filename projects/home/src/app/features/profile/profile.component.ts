@@ -49,6 +49,10 @@ export class ProfileComponent implements OnInit {
     this.savedFarms.set(await this.farmLookup.loadForCurrentUser());
   }
 
+  signOut(): void {
+    this.authService.logout();
+  }
+
   onBackClicked(): void {
     this.router.navigate(['/']);
   }

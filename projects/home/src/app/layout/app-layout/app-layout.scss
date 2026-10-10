@@ -1,41 +1,41 @@
 @import '../../../styles/bootstrap-config';
 
+// Phones: header, main, tab bar in one column. Wide screens: sidebar | main.
 .app-layout {
+  --mf-tabbar-h: calc(64px + env(safe-area-inset-bottom));
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   grid-template-areas:
-    'toolbar'
-    'body';
+    'header'
+    'main'
+    'tabs';
   height: 100dvh;
   max-height: 100dvh;
   overflow: hidden;
 }
 
-.app-layout__body {
-  grid-area: body;
-  display: grid;
-  grid-template-areas: 'sidebar main';
-  grid-template-columns: $offcanvas-horizontal-width 1fr;
-  min-height: 0;
-  overflow: hidden;
-  position: relative;
+.app-layout__header {
+  grid-area: header;
 }
 
-@include media-breakpoint-down(lg) {
-  .app-layout__body {
-    grid-template-columns: 1fr;
-    grid-template-areas: 'main';
-  }
+.app-layout__main {
+  grid-area: main;
 }
 
-.app-layout__backdrop {
-  display: none;
+.app-layout__tabs {
+  grid-area: tabs;
+}
 
-  @include media-breakpoint-down(lg) {
-    display: block;
-    position: absolute;
-    inset: 0;
-    z-index: $zindex-offcanvas-backdrop;
-    background-color: rgba(var(--mf-shadow-rgb), 0.5);
+.app-layout__sidebar {
+  grid-area: sidebar;
+}
+
+@include media-breakpoint-up(lg) {
+  .app-layout {
+    --mf-tabbar-h: 0px;
+    grid-template-columns: $offcanvas-horizontal-width minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-areas: 'sidebar main';
   }
 }
