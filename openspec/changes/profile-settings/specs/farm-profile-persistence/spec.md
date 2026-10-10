@@ -22,8 +22,8 @@ Saving location details (village, district, state, pincode) from Profile SHALL s
 ### Requirement: Phone is read-only in the profile
 The profile SHALL show the phone number but not allow editing it.
 
-#### Scenario: Phone row
-- **WHEN** Profile opens
+#### Scenario: Phone field
+- **WHEN** the profile dialog opens
 - **THEN** the phone is displayed read-only and is not sent in any save
 
 ### Requirement: Save reports its outcome
