@@ -1,0 +1,64 @@
+.pad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.pad-key {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  border: 1px solid var(--mf-line);
+  border-radius: var(--mf-r-xl);
+  background: var(--mf-surface);
+  color: var(--mf-fg);
+  box-shadow: 0 3px 0 var(--mf-line);
+  font-family: var(--mf-font-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1;
+
+  // Slightly lower keys on a phone so the whole pad fits above the fold
+  @media (max-width: 991.98px) {
+    min-height: 2.75rem;
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(3px);
+    box-shadow: none;
+    background: var(--mf-leaf-soft);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--mf-leaf);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+}
+
+.pad-key__numeral {
+  margin-top: 0.15rem;
+  color: var(--mf-muted);
+  font-family: var(--mf-font-body);
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.pad-key--del {
+  border-color: transparent;
+  background: none;
+  box-shadow: none;
+  color: var(--mf-muted);
+}
+
+.pad-key--ok {
+  border-color: var(--mf-leaf);
+  background: var(--mf-leaf);
+  color: var(--mf-on-leaf);
+}

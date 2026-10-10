@@ -93,6 +93,10 @@
   // Round backing behind the full logo; the same in both themes so its dark ring stays visible
   --mf-logo-backing: #ffffff;
 
+  // Sign-in screen: Warli mud-red hero and the rice-white paint used on it
+  --mf-warli-mud: #9a4426;
+  --mf-warli-rice: #fbf3e4;
+
   // Overlays and elevation
   --mf-scrim: rgba(0, 0, 0, 0.5);
   --mf-scrim-soft: rgba(0, 0, 0, 0.4);
@@ -178,6 +182,9 @@
   --mf-shadow-1: 0 2px 8px rgba(0, 0, 0, 0.3);
   --mf-shadow-2: 0 6px 18px rgba(0, 0, 0, 0.4);
   --mf-shadow-3: 0 20px 50px rgba(0, 0, 0, 0.5);
+
+  --mf-warli-mud: #5a2414;
+  --mf-warli-rice: #ecdcc0;
 
   color-scheme: dark;
 }

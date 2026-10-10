@@ -1,0 +1,48 @@
+<div class="pad" role="group" [attr.aria-label]="'login.pad' | translate">
+  @for (k of keys; track k) {
+    @switch (k) {
+      @case ('del') {
+        <button
+          type="button"
+          class="pad-key pad-key--del"
+          [attr.data-testid]="'key-del'"
+          [attr.aria-label]="'login.delete' | translate"
+          [disabled]="busy()"
+          (click)="key.emit(k)"
+        >
+          <i class="bi bi-backspace fs-5" aria-hidden="true"></i>
+        </button>
+      }
+      @case ('ok') {
+        <button
+          type="button"
+          class="pad-key pad-key--ok"
+          [attr.data-testid]="'key-ok'"
+          [attr.aria-label]="'login.next' | translate"
+          [disabled]="busy()"
+          (click)="key.emit(k)"
+        >
+          @if (busy()) {
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+          } @else {
+            <i class="bi bi-arrow-right fs-5" aria-hidden="true"></i>
+          }
+        </button>
+      }
+      @default {
+        <button
+          type="button"
+          class="pad-key"
+          [attr.data-testid]="'key-' + k"
+          [disabled]="busy()"
+          (click)="key.emit(k)"
+        >
+          {{ k }}
+          @if (devanagari()) {
+            <small class="pad-key__numeral" aria-hidden="true">{{ numeral(k) }}</small>
+          }
+        </button>
+      }
+    }
+  }
+</div>

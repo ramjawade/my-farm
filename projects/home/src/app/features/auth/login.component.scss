@@ -1,327 +1,276 @@
-@import '../../../styles/bootstrap-config';
+:host {
+  display: block;
+}
 
-.login-wrapper {
-  position: relative;
-  width: 100%;
+// Phone: hero band above the card. Wide screen: hero left, card right.
+.login-screen {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   min-height: 100vh;
+  background: var(--mf-bg);
+
+  @media (min-width: 992px) {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  }
+}
+
+.login-hero {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--mf-surface2);
+  flex-direction: column;
   overflow: hidden;
-  font-family: var(--mf-font-body, sans-serif);
-  padding: 1.5rem;
+  padding: 0.75rem 0.875rem 0;
+  background: var(--mf-warli-mud);
+  color: var(--mf-warli-rice);
+
+  @media (min-width: 992px) {
+    padding: 1.5rem 2.25rem 0;
+  }
 }
 
-// 1. Organic Background Blurs (Ambient Glows)
-.background-blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(100px);
-  opacity: 0.35;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.blob-top {
-  top: -10%;
-  right: -5%;
-  width: 50vw;
-  height: 50vw;
-  background: radial-gradient(
-    circle,
-    rgba(var(--mf-leaf-rgb), 0.45) 0%,
-    rgba(var(--mf-leaf-rgb), 0.1) 70%
-  );
-}
-
-.blob-bottom {
-  bottom: -15%;
-  left: -5%;
-  width: 60vw;
-  height: 60vw;
-  background: radial-gradient(
-    circle,
-    rgba(var(--mf-leaf-rgb), 0.4) 0%,
-    rgba(var(--mf-leaf-rgb), 0.05) 75%
-  );
-}
-
-.home-btn {
-  position: absolute;
-  top: 1.5rem;
-  left: 1.5rem;
-  z-index: 20;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: rgba(var(--mf-surface-rgb), 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(var(--mf-surface-rgb), 0.6);
-  box-shadow: 0 4px 12px rgba(var(--mf-shadow-rgb), 0.06);
-  color: var(--mf-leaf);
+.login-brand {
+  font-family: var(--mf-font-display);
   font-size: 1.1rem;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-
-  &:hover {
-    color: var(--mf-leaf-ink);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(var(--mf-shadow-rgb), 0.1);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-}
-
-// 2. Center Container
-.login-container {
-  position: relative;
-  z-index: 10;
-  width: 100%;
-  max-width: 440px;
-}
-
-// 3. Glassmorphic Card Override
-.login-card {
-  padding: 2.25rem 2rem !important;
-  background: rgba(var(--mf-surface-rgb), 0.82) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(var(--mf-surface-rgb), 0.6) !important;
-  box-shadow:
-    0 15px 35px rgba(var(--mf-shadow-rgb), 0.05),
-    0 5px 15px rgba(var(--mf-shadow-rgb), 0.02) !important;
-}
-
-.brand-title {
-  font-weight: 800;
-  font-size: 1.75rem;
-  color: var(--mf-leaf-ink);
-  letter-spacing: -0.5px;
-}
-
-.brand-subtitle {
-  font-size: 0.875rem;
-  color: var(--mf-muted);
-  font-weight: 500;
-}
-
-// 4. Section titles
-.section-title {
-  font-size: 0.9rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--mf-leaf);
-  border-bottom: 2px solid rgba(var(--mf-leaf-rgb), 0.08);
-  padding-bottom: 0.5rem;
 }
 
-// 5. Quick Profiles List
-.quick-profiles-grid {
-  display: flex;
-  flex-column: column;
-  gap: 0.75rem;
-  max-height: 240px;
-  overflow-y: auto;
-  padding-right: 4px;
+.login-copy {
+  padding: 0.5rem 0 0;
 
-  &::-webkit-scrollbar {
-    width: 4px;
+  @media (min-width: 992px) {
+    margin: auto 0;
+    padding: 1.125rem 0;
   }
-  &::-webkit-scrollbar-thumb {
-    background: rgba(var(--mf-shadow-rgb), 0.15);
-    border-radius: 4px;
-  }
-}
 
-.profile-card {
-  width: 100%;
-  padding: 0.875rem 1rem;
-  background: rgba(var(--mf-surface-rgb), 0.95);
-  border-radius: 12px;
-  border: 1px solid rgba(var(--mf-shadow-rgb), 0.05) !important;
-  cursor: pointer;
+  h1 {
+    margin: 0;
+    font-family: var(--mf-font-display);
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1.1;
 
-  &:hover {
-    transform: translateY(-2px);
-    border-color: rgba(var(--mf-leaf-rgb), 0.25) !important;
-    box-shadow: 0 8px 16px rgba(var(--mf-leaf-rgb), 0.06);
-    background: var(--mf-surface);
-
-    .profile-avatar-circle {
-      transform: scale(1.05);
+    @media (min-width: 992px) {
+      font-size: 2.5rem;
     }
   }
 
-  &:active {
-    transform: translateY(0);
+  p {
+    margin: 0.125rem 0 0;
+    max-width: 26rem;
+    font-size: 0.85rem;
+    opacity: 0.92;
+
+    @media (min-width: 992px) {
+      margin: 0.5rem 0 1rem;
+      font-size: 1rem;
+    }
   }
 }
 
-.profile-avatar-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--mf-leaf) 0%, var(--mf-leaf-ink) 100%);
-  font-size: 0.95rem;
-  transition: transform 0.2s ease;
-  flex-shrink: 0;
-  box-shadow: 0 4px 10px rgba(var(--mf-leaf-rgb), 0.25);
-}
-
-.profile-name {
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: var(--mf-fg);
-  line-height: 1.2;
-}
-
-.profile-role {
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.profile-farm {
-  font-size: 0.7rem;
-  margin-top: 1px;
-}
-
-// 6. Divider
-.divider-container {
-  display: flex;
+.login-chips li {
+  display: inline-flex;
   align-items: center;
-  text-align: center;
-  color: var(--mf-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-
-  &::before,
-  &::after {
-    content: '';
-    flex: 1;
-    border-bottom: 1px solid rgba(var(--mf-shadow-rgb), 0.08);
-  }
-
-  &::before {
-    margin-right: 0.75em;
-  }
-
-  &::after {
-    margin-left: 0.75em;
-  }
-}
-
-// 7. Form Controls
-.field-label {
+  gap: 0.375rem;
+  padding: 0.3rem 0.75rem;
+  border: 1.5px dashed color-mix(in srgb, var(--mf-warli-rice) 60%, transparent);
+  border-radius: var(--mf-r-pill);
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--mf-fg);
-  margin-bottom: 0.375rem;
 }
 
-.required-label::after {
-  content: ' *';
-  color: var(--mf-rose);
-}
+.login-scene {
+  margin: 0 -0.875rem;
+  border-bottom: 6px solid var(--mf-leaf);
 
-.input-group {
-  box-shadow: 0 1px 3px rgba(var(--mf-shadow-rgb), 0.02);
-  border-radius: 8px;
-  overflow: hidden;
-
-  .input-group-text {
-    border-color: var(--mf-line);
+  @media (min-width: 992px) {
+    margin: 0 -2.25rem;
   }
 }
 
-.form-control {
-  border-color: var(--mf-line);
-  padding: 0.625rem 0.875rem;
-  font-size: 0.9rem;
-  font-weight: 500;
+.login-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0 0.875rem 0.75rem;
 
-  &:focus {
-    border-color: var(--mf-leaf);
-    box-shadow: 0 0 0 3px rgba(var(--mf-leaf-rgb), 0.15);
+  @media (min-width: 992px) {
+    padding: 1rem 1.75rem;
   }
+}
+
+.login-body {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  padding: 0.5rem 0 0;
+
+  @media (min-width: 992px) {
+    align-items: center;
+  }
+}
+
+.login-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 380px;
+}
+
+.login-steps i {
+  flex: 1;
+  height: 4px;
+  border-radius: var(--mf-r-pill);
+  background: var(--mf-line);
+
+  &.on,
+  &.now {
+    background: var(--mf-leaf);
+  }
+}
+
+.login-title {
+  margin: 0;
+  font-family: var(--mf-font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.login-sub {
+  margin: 0.125rem 0 0.75rem;
+}
+
+.login-number {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 0.75rem;
+  border: 2px solid var(--mf-line);
+  border-radius: var(--mf-r-xl);
+  background: var(--mf-surface);
 
   &.is-invalid {
     border-color: var(--mf-rose);
-
-    &:focus {
-      box-shadow: 0 0 0 3px rgba(var(--mf-rose-rgb), 0.15);
-    }
   }
 }
 
-.hover-lift {
-  transition:
-    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.2s ease;
+.login-cc {
+  padding-right: 0.625rem;
+  border-right: 1px solid var(--mf-line);
+  color: var(--mf-muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
 
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(var(--mf-leaf-rgb), 0.15);
+.login-digits {
+  display: flex;
+  font-family: var(--mf-font-display);
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  line-height: 1.1;
+
+  span {
+    position: relative;
+    width: 0.62em;
+    text-align: center;
   }
 
-  &:active {
-    transform: translateY(0);
+  .gap {
+    width: 8px;
+  }
+
+  .empty {
+    color: transparent;
+  }
+
+  .empty::after,
+  .cursor::after {
+    content: '';
+    position: absolute;
+    right: 18%;
+    bottom: 0.06em;
+    left: 18%;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--mf-line);
+  }
+
+  .cursor::after {
+    background: var(--mf-leaf);
   }
 }
 
-.text-xs {
-  font-size: 0.75rem;
+.login-pin span {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3.5rem;
+  border: 2px solid var(--mf-line);
+  border-radius: var(--mf-r-xl);
+  background: var(--mf-surface);
+  color: var(--mf-fg);
+  font-family: var(--mf-font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+
+  &.on {
+    border-color: var(--mf-leaf);
+    background: var(--mf-leaf-soft);
+    color: var(--mf-leaf-ink);
+  }
+
+  &.cursor {
+    border-color: var(--mf-leaf);
+    box-shadow: 0 0 0 3px var(--mf-leaf-soft);
+  }
 }
 
-.text-sm {
-  font-size: 0.85rem;
+.login-pin.is-invalid span {
+  border-color: var(--mf-rose);
 }
 
-// 8. Animations
-//
-// No `forwards`: a filled fadeIn animation would otherwise keep
-// "transform: none" as a live (matrix-resolved) animation value forever,
-// which still creates a containing block for any fixed-position
-// descendant. See the matching comment in the shared _animations.scss.
-.animate-fade-in {
-  opacity: 1;
-  transform: none;
-  animation: fadeIn 0.4s ease-out;
+.login-pad {
+  margin-top: 0.625rem;
 }
 
-.animate-pulse {
-  animation: pulse 2s infinite ease-in-out;
+.login-tick {
+  font-size: 3rem;
+  line-height: 1;
 }
 
-@keyframes fadeIn {
+@media (prefers-reduced-motion: no-preference) {
+  .login-rise {
+    animation: login-rise 0.3s ease-out;
+  }
+
+  .login-shake {
+    animation: login-shake 0.35s ease-in-out;
+  }
+
+  .login-tick {
+    animation: login-pop 0.4s ease-out;
+  }
+}
+
+@keyframes login-rise {
   from {
     opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
+    transform: translateY(8px);
   }
 }
 
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 1;
+@keyframes login-shake {
+  25% {
+    transform: translateX(-6px);
   }
-  50% {
-    transform: scale(1.05);
-    opacity: 0.85;
+  75% {
+    transform: translateX(6px);
+  }
+}
+
+@keyframes login-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
   }
 }

@@ -1,4 +1,5 @@
 import { test, expect, Locator } from '@playwright/test';
+import { registerThroughPad, signInThroughPad } from './login-pad';
 
 // The app defaults to Marathi; these tests find controls by their English labels.
 test.beforeEach(async ({ page }) => {
@@ -46,39 +47,19 @@ test.describe('Golden path', () => {
     const today = new Date().toISOString().slice(0, 10);
 
     await test.step('register a new farmer (phone not on file -> create profile)', async () => {
-      // The phone step never calls the backend — it just moves to the PIN
-      // step. The 404-vs-login check happens on PIN submit
-      // (session-auth.service.ts's createSession), which is what flips this
-      // to the 'register' step for an unrecognized phone.
-      await page.goto('/login');
-      await page.locator('#phoneInput').fill(phone);
-      await page.getByRole('button', { name: 'Continue' }).click();
+      // The number step never calls the backend; the server says the number is new
+      // when the PIN is submitted (createSession), which moves on to the name step.
+      await registerThroughPad(page, phone, pin, farmerName);
 
-      await expect(page.locator('#pinInput')).toBeVisible();
-      await page.locator('#pinInput').fill(pin);
-      await page.getByRole('button', { name: 'Access Account' }).click();
-
-      await expect(page.locator('#nameInput')).toBeVisible();
-      await page.locator('#nameInput').fill(farmerName);
-      await page.locator('#registerPinInput').fill(pin);
-      await page.locator('#confirmRegisterPinInput').fill(pin);
-      await page.getByRole('button', { name: 'Create Profile & Enter' }).click();
-
-      await expect(page).toHaveURL(/\/map$/);
+      await expect(page).toHaveURL(/\/map$/, { timeout: 15_000 });
     });
 
     await test.step('log out and back in with the same PIN', async () => {
       // Prove the login leg of the golden path too, not just registration.
       await page.evaluate(() => localStorage.clear());
-      await page.goto('/login');
-      await page.locator('#phoneInput').fill(phone);
-      await page.getByRole('button', { name: 'Continue' }).click();
+      await signInThroughPad(page, phone, pin);
 
-      await expect(page.locator('#pinInput')).toBeVisible();
-      await page.locator('#pinInput').fill(pin);
-      await page.getByRole('button', { name: 'Access Account' }).click();
-
-      await expect(page).toHaveURL(/\/map$/);
+      await expect(page).toHaveURL(/\/map$/, { timeout: 15_000 });
     });
 
     await test.step('draw and save a land boundary on the map', async () => {
