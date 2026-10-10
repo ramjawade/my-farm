@@ -1051,7 +1051,11 @@
       "sownToday": "आज पेरले",
       "toHarvest": "काढणीस",
       "expenses": "खर्च",
-      "nothingPlanted": "अजून काही लावलेले नाही"
+      "nothingPlanted": "अजून काही लावलेले नाही",
+      "viewLand": "जमिनीचा तपशील पहा",
+      "tapLand": "जमीन निवडा",
+      "mapLabel": "{{count}} जमिनींसह शेताचा नकाशा",
+      "noCropYet": "अजून पीक नाही"
     }
   }
 }

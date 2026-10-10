@@ -6,6 +6,7 @@ import { provideTranslateService } from '@ngx-translate/core';
 import { Activity } from '../../activity/activity.models';
 import { CropEntity } from '../../crop-timeline/crop-timeline.models';
 import { CurrentWeather, ForecastDay } from '../../../core/weather/weather.models';
+import { SavedFarm } from '../../../map/models/map.models';
 import { AttentionItem, KeyTiles, TodayItem } from '../home-summary';
 import { HomeAttentionCardComponent } from './home-attention-card.component';
 import { HomeFarmCardComponent } from './home-farm-card.component';
@@ -175,6 +176,19 @@ describe('HomeTodayCardComponent', () => {
 });
 
 describe('HomeFarmCardComponent', () => {
+  const land = {
+    id: 7,
+    name: 'North plot',
+    points: [
+      { lat: 20, lng: 74 },
+      { lat: 20, lng: 74.001 },
+      { lat: 20.001, lng: 74.001 },
+    ],
+    area: { squareMeters: 4000, hectares: 0.4, acres: 1 },
+    geoJson: null,
+    createdAt: 0,
+  } as SavedFarm;
+
   it('shows two crops with age, stage bar and expenses, and View all for more', () => {
     const crops = [
       crop(1, { expectedHarvestDate: Date.now() + 5 * DAY }),
@@ -182,10 +196,15 @@ describe('HomeFarmCardComponent', () => {
       crop(3, { name: 'Rice' }),
     ];
     const { el } = setup(HomeFarmCardComponent, {
+      lands: [land],
+      selectedLand: land,
       crops,
       costByCrop: { 1: 4500 },
       now: Date.now(),
     });
+    expect(el.textContent).toContain('North plot');
+    expect(el.querySelector('a[href="/map?land=7"]')).not.toBeNull();
+    expect(el.querySelector('app-home-farm-map')).not.toBeNull();
     expect(el.querySelectorAll('li, button').length).toBeGreaterThanOrEqual(2);
     expect(el.querySelectorAll('app-stage-bar').length).toBe(2);
     expect(el.textContent).toContain('₹4,500');

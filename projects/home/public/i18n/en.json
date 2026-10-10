@@ -1051,7 +1051,11 @@
       "sownToday": "Sown today",
       "toHarvest": "to harvest",
       "expenses": "expenses",
-      "nothingPlanted": "Nothing planted yet"
+      "nothingPlanted": "Nothing planted yet",
+      "viewLand": "View land details",
+      "tapLand": "Tap a land",
+      "mapLabel": "Farm map with {{count}} lands",
+      "noCropYet": "No crop yet"
     }
   }
 }

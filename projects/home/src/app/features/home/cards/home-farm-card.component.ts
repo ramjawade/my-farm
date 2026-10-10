@@ -6,33 +6,76 @@ import { ReferenceNamePipe } from '../../../core/i18n/reference-name.pipe';
 import { CropEntity } from '../../crop-timeline/crop-timeline.models';
 import { cropIconClass, daysAfterSowing } from '../../crop-timeline/crop-timeline.utils';
 import { StageBarComponent } from '../../crop-timeline/stage-bar/stage-bar.component';
+import { SavedFarm } from '../../../map/models/map.models';
 import { dayDiff } from '../home-summary';
+import { HomeFarmMapComponent } from './home-farm-map.component';
 
 const VISIBLE_CROPS = 2;
 
 /** A short view of the farm: its first crops with stage, harvest and cost. */
 @Component({
   selector: 'app-home-farm-card',
-  imports: [RouterLink, TranslatePipe, LocalNumberPipe, ReferenceNamePipe, StageBarComponent],
+  imports: [
+    RouterLink,
+    TranslatePipe,
+    LocalNumberPipe,
+    ReferenceNamePipe,
+    StageBarComponent,
+    HomeFarmMapComponent,
+  ],
   template: `
     <section class="card">
       <h2 class="fs-6 fw-bold d-flex justify-content-between align-items-center mb-2">
         {{ 'homeScreen.farm.title' | translate }}
-        @if (crops().length) {
-          <span class="fw-normal small d-flex align-items-baseline" style="gap: 12px">
-            <span class="text-body-secondary">
-              {{
-                'homeScreen.farm.showing'
-                  | translate: { shown: visible().length, total: crops().length }
-              }}
-            </span>
-            <a routerLink="/crops" class="text-decoration-none">
-              {{ 'cropActivity.viewAll' | translate }}
-              <i class="bi bi-chevron-right" aria-hidden="true"></i>
-            </a>
-          </span>
+        @if (selectedLand(); as land) {
+          <a
+            routerLink="/map"
+            [queryParams]="{ land: land.id }"
+            class="fw-normal small text-decoration-none"
+          >
+            {{ 'homeScreen.farm.viewLand' | translate }}
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+          </a>
+        } @else if (lands().length) {
+          <span class="fw-normal small text-body-secondary">{{
+            'homeScreen.farm.tapLand' | translate
+          }}</span>
         }
       </h2>
+
+      @if (lands().length) {
+        <app-home-farm-map
+          [lands]="lands()"
+          [selectedId]="selectedLand()?.id ?? null"
+          [details]="landDetails()"
+          [label]="'homeScreen.farm.mapLabel' | translate: { count: lands().length }"
+          (selectLand)="selectLand.emit($event)"
+        />
+      }
+
+      @if (selectedLand(); as land) {
+        <div class="d-flex justify-content-between align-items-baseline mt-3 mb-1" style="gap: 8px">
+          <strong>{{ land.name }}</strong>
+          <span class="small d-flex align-items-baseline" style="gap: 12px">
+            <span class="text-body-secondary">
+              @if (crops().length) {
+                {{
+                  'homeScreen.farm.showing'
+                    | translate: { shown: visible().length, total: crops().length }
+                }}
+              } @else {
+                {{ 'homeScreen.farm.noCropYet' | translate }}
+              }
+            </span>
+            @if (crops().length) {
+              <a routerLink="/crops" class="text-decoration-none">
+                {{ 'cropActivity.viewAll' | translate }}
+                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+              </a>
+            }
+          </span>
+        </div>
+      }
 
       @for (crop of visible(); track crop.id) {
         <button
@@ -80,9 +123,13 @@ const VISIBLE_CROPS = 2;
           </span>
         </button>
       } @empty {
-        <p class="text-body-secondary small mb-0">
+        <p class="text-body-secondary small mb-0 mt-2">
           {{ 'homeScreen.farm.nothingPlanted' | translate }} ·
-          <a routerLink="/crops/add" class="text-decoration-none">
+          <a
+            routerLink="/crops/add"
+            [queryParams]="selectedLand() ? { landId: selectedLand()!.id } : null"
+            class="text-decoration-none"
+          >
             {{ 'cropDashboard.addCrop' | translate }}
             <i class="bi bi-chevron-right" aria-hidden="true"></i>
           </a>
@@ -93,7 +140,14 @@ const VISIBLE_CROPS = 2;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomeFarmCardComponent {
+  readonly lands = input<SavedFarm[]>([]);
+  /** The land shown below the map, or null when none is selected. */
+  readonly selectedLand = input<SavedFarm | null>(null);
+  /** The second map label line per land id, such as its crops. */
+  readonly landDetails = input<Record<number, string>>({});
+  /** The crops of the selected land (all crops when there are no lands). */
   readonly crops = input.required<CropEntity[]>();
+  readonly selectLand = output<number>();
   /** Expenses logged per crop id. */
   readonly costByCrop = input<Record<number, number>>({});
   /** The time used for ages and harvest countdowns. */

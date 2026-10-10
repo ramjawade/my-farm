@@ -175,9 +175,13 @@
             />
             <app-home-farm-card
               class="home-farm"
-              [crops]="crops()"
+              [lands]="farms()"
+              [selectedLand]="selectedLand()"
+              [landDetails]="landDetails()"
+              [crops]="landCrops()"
               [costByCrop]="costByCrop()"
               [now]="now()"
+              (selectLand)="selectLand($event)"
               (openCrop)="openCrop($event)"
             />
           </div>

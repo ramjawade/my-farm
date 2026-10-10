@@ -271,6 +271,11 @@
     > .home-col--main {
       grid-column: 1;
       grid-row: 1;
+
+      // The farm map leads the left column, as in the prototype.
+      .home-farm {
+        order: -1;
+      }
     }
 
     > .home-col:not(.home-col--main) {

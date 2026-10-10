@@ -1051,7 +1051,11 @@
       "sownToday": "आज बोई",
       "toHarvest": "कटाई में",
       "expenses": "खर्च",
-      "nothingPlanted": "अभी कुछ बोया नहीं"
+      "nothingPlanted": "अभी कुछ बोया नहीं",
+      "viewLand": "जमीन का विवरण देखें",
+      "tapLand": "जमीन चुनें",
+      "mapLabel": "{{count}} जमीनों के साथ खेत का नक्शा",
+      "noCropYet": "अभी कोई फसल नहीं"
     }
   }
 }

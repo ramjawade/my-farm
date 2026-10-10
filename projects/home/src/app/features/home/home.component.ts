@@ -17,6 +17,7 @@ import { WeatherLocation } from '../../core/weather/weather.models';
 import { centroidOf } from '../../core/weather/weather-location.util';
 import { CropTimelineService } from '../crop-timeline/crop-timeline.service';
 import { ActivityService } from '../activity/activity.service';
+import { resolveReferenceName } from '../../core/i18n/reference-name';
 import { FarmDrawService } from '../../map/farm-draw/farm-draw.service';
 import { SavedFarm } from '../../map/models/map.models';
 import { CropEntity } from '../crop-timeline/crop-timeline.models';
@@ -214,6 +215,36 @@ export class HomeComponent implements OnInit {
   readonly today = computed(() => todayItems(this.activityService.activities(), this.now()));
 
   readonly crops = this.cropService.crops;
+
+  /** The land picked on the map; until one is picked, the first land. */
+  private readonly pickedLandId = signal<number | null>(null);
+
+  readonly selectedLand = computed(
+    () => this.farms().find((f) => f.id === this.pickedLandId()) ?? this.farms()[0] ?? null,
+  );
+
+  /** Crops of the selected land; all crops when there are no lands. */
+  readonly landCrops = computed(() => {
+    const land = this.selectedLand();
+    return land ? this.crops().filter((c) => c.fieldId === land.id) : this.crops();
+  });
+
+  /** The map label under each land's name: its crops and area. */
+  readonly landDetails = computed(() => {
+    const none = this.i18n.t('homeScreen.farm.noCropYet');
+    return Object.fromEntries(
+      this.farms().map((land) => {
+        const names = this.crops()
+          .filter((c) => c.fieldId === land.id)
+          .map((c) => resolveReferenceName(this.translate, 'crop', c.name));
+        return [land.id, `${names.join(', ') || none} · ${land.area.acres.toFixed(1)} ac`];
+      }),
+    );
+  });
+
+  selectLand(id: number): void {
+    this.pickedLandId.set(id);
+  }
 
   /** Expenses logged per crop, for the farm card. */
   readonly costByCrop = computed(() =>
