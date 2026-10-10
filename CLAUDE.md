@@ -1,27 +1,27 @@
 # Claude Code Rules
 
-## Workflow: board-first
+## Workflow: OpenSpec-first
 
-📋 **Everything starts on the GitHub Project board, not in code.** Board: https://github.com/users/ramjawade/projects/6
+📐 **Everything starts as an OpenSpec change, not in code.** The GitHub Project board is set aside for now: no issues are needed.
 
-**Full procedure, board ids and `gh` commands: the `board-first` skill** ([`.claude/skills/board-first/SKILL.md`](.claude/skills/board-first/SKILL.md)). Load it whenever you plan work, create or start an issue, raise a PR, or close out an issue.
+Flow: `/opsx:explore` (optional) → `/opsx:propose` → user approves → `/opsx:apply` → PR → merge → `/opsx:archive` (updates `openspec/specs/`).
 
 Non-negotiables:
 
-- The issue is a short pointer that tracks status; the plan lives in an OpenSpec change (`openspec/changes/<name>/`, `/opsx:propose`). No other local PLAN/DESIGN docs.
-- A change is required for user-visible or API behaviour and for parent epics. Bugs, chores and no-behaviour refactors stay board-only (plan in the issue body).
-- No code until the user approves the issue (and its change, if any).
-- Status flow: **Todo → In Progress → Done**. Done is set automatically when the issue closes.
-- Big features: a parent issue plus one sub-issue per PR.
-- Branch: `claude/feature-<issue>-<slug>` from `origin/main`. PR says `Fixes #<issue>`.
+- The plan lives in `openspec/changes/<name>/` (proposal, specs, design, tasks). No other local PLAN/DESIGN docs.
+- A change is required for user-visible or API behaviour. Small bugs and chores can go straight to a PR with the plan in its description.
+- No code until the user approves the change.
+- Big features: one change per PR-sized slice.
+- Branch: `claude/feature-<change-name>` from `origin/main`. The PR names the change.
 - Before a PR: `npm run lint` and `npm run build` (backend: ruff, mypy, pytest).
-- Delete the branch right after merge. Never force-push `main`. Never delete issues.
+- Delete the branch right after merge. Never force-push `main`.
+- UX source of truth: `design/prototype/myfarm-prototype.html` and `design/prototype/myfarm-design-system.html`.
 
 ## Usage optimization
 
 - Keep reasoning effort at `medium` unless the architecture is genuinely complex.
 - Batch independent tool calls; reuse context already in the conversation.
-- Keep commit messages and PR descriptions concise; reference issue numbers.
+- Keep commit messages and PR descriptions concise; name the OpenSpec change.
 - Check for existing code to reuse before writing new code.
 
 ## Interaction & styling
@@ -29,4 +29,5 @@ Non-negotiables:
 - **Don't drive the Browser** unless asked. Run `npm run build` to catch errors, but don't screenshot or navigate to verify UI unless requested.
 - **Prefer Bootstrap CSS** over custom CSS. Use utility classes (`d-flex`, `btn`, `badge`) first; write custom CSS only as a last resort.
 - **Angular/TypeScript coding rules:** the `angular-best-practices` skill ([`.claude/skills/angular-best-practices/SKILL.md`](.claude/skills/angular-best-practices/SKILL.md)). Load it whenever writing or reviewing frontend code.
-- **Home Daily brief card:** parked at the bottom of the Home Overview and greyed out (button disabled) until a design is chosen. Options A/B/C were mocked in the prototype options page. The prototype snapshot is `design/prototype/myfarm-prototype.html`.
+- **Home Daily brief card:** removed from the prototype for now; do not build it until a new design is chosen.
+

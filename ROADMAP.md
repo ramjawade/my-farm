@@ -90,6 +90,9 @@ git log for `claude/mvp1-*` branches)
 
 ## 4. Remaining work
 
+- **Prototype adoption (main track).** Adopt the full design prototype
+  (`design/prototype/`) — look, feel and features — in phased child changes.
+  Plan and progress: [`openspec/changes/prototype-adoption-roadmap/`](./openspec/changes/prototype-adoption-roadmap/).
 - **Backend Stage 6 — Weather + attachments (#42).** Move the OpenWeatherMap
   key server-side (shared cache keyed by location grid, not per farmer); wire
   Cloudflare R2 for activity photo attachments (currently disabled in the UI).
