@@ -18,6 +18,61 @@
   height: 100%;
 }
 
+// Lands page layout. On a phone the pieces stack: saved card, All lands, the
+// map, then the save form. From lg up the map takes the left column and the
+// save form and list stack in the right one.
+.lands-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+
+  > * {
+    min-width: 0;
+  }
+
+  .lands-saved {
+    order: -1;
+  }
+
+  .lands-list {
+    order: 0;
+  }
+
+  .lands-map {
+    order: 1;
+  }
+
+  .lands-form {
+    order: 2;
+  }
+
+  @media (min-width: 992px) {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-items: start;
+
+    > * {
+      order: 0;
+    }
+
+    .lands-map {
+      grid-column: 1;
+      grid-row: 1 / span 3;
+    }
+
+    .lands-form,
+    .lands-saved,
+    .lands-list {
+      grid-column: 2;
+      order: 0;
+    }
+  }
+}
+
+.lands-page--picker .lands-grid {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+}
+
 // The Lands page flows like any page; the map gets a fixed height.
 :host(.lands-host) {
   position: static;

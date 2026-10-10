@@ -19,8 +19,8 @@
     </header>
   }
 
-  <div class="row lands-grid" style="--bs-gutter-x: 12px; --bs-gutter-y: 12px">
-    <div class="col-12" [class.col-lg-7]="!isPicker">
+  <div class="lands-grid">
+    <div class="lands-map">
       <div [class.card]="!isPicker" [style.padding.px]="isPicker ? null : 10">
         @if (!isPicker && (farmDraw.isDrawing() || farmDraw.isCompleted())) {
           <div class="d-flex gap-2 mb-2 mx-1">
@@ -93,40 +93,40 @@
     </div>
 
     @if (!isPicker) {
-      <div class="col-12 col-lg-5 d-flex flex-column" style="gap: 12px">
-        @if (farmDraw.isCompleted() && farmDraw.area(); as area) {
-          <app-land-save-form
-            [area]="area"
-            [saving]="saving()"
-            (save)="onSaveLand($event)"
-            (discard)="discardDraft()"
-          />
-        } @else if (justSaved(); as saved) {
-          <section class="card border-success">
-            <h2 class="fs-6 fw-bold">{{ 'lands.savedTitle' | translate: { name: saved.name } }}</h2>
-            <p class="small">{{ 'lands.savedMessage' | translate }}</p>
-            <div class="d-flex gap-2">
-              <button type="button" class="btn btn-primary" (click)="addCrop(saved.id)">
-                {{ 'lands.addCrop' | translate }}
-              </button>
-              <button type="button" class="btn btn-secondary" (click)="justSaved.set(null)">
-                {{ 'lands.notNow' | translate }}
-              </button>
-            </div>
-          </section>
-        }
+      @if (farmDraw.isCompleted() && farmDraw.area(); as area) {
+        <app-land-save-form
+          class="lands-form"
+          [area]="area"
+          [saving]="saving()"
+          (save)="onSaveLand($event)"
+          (discard)="discardDraft()"
+        />
+      } @else if (justSaved(); as saved) {
+        <section class="card border-success lands-saved">
+          <h2 class="fs-6 fw-bold">{{ 'lands.savedTitle' | translate: { name: saved.name } }}</h2>
+          <p class="small">{{ 'lands.savedMessage' | translate }}</p>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-primary" (click)="addCrop(saved.id)">
+              {{ 'lands.addCrop' | translate }}
+            </button>
+            <button type="button" class="btn btn-secondary" (click)="justSaved.set(null)">
+              {{ 'lands.notNow' | translate }}
+            </button>
+          </div>
+        </section>
+      }
 
-        @if (farms().length > 0) {
-          <app-lands-list
-            [farms]="farms()"
-            [selectedId]="selected()?.id ?? null"
-            [cropsByLand]="cropsByLand()"
-            (selectLand)="onSelectFarm($event)"
-            (renameLand)="onRenameLand($event)"
-            (deleteLand)="requestDelete($event)"
-          />
-        }
-      </div>
+      @if (farms().length > 0) {
+        <app-lands-list
+          class="lands-list"
+          [farms]="farms()"
+          [selectedId]="selected()?.id ?? null"
+          [cropsByLand]="cropsByLand()"
+          (selectLand)="onSelectFarm($event)"
+          (renameLand)="onRenameLand($event)"
+          (deleteLand)="requestDelete($event)"
+        />
+      }
     }
   </div>
 
