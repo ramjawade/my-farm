@@ -26,5 +26,5 @@
 ## 5. Wrap up
 
 - [x] 5.1 Run `npm run lint`, `npm run build` and `npm test`; fix findings
-- [ ] 5.2 Open the PR naming `lands-redesign`
-- [ ] 5.3 After the PR merges, archive this change and tick task 3.2 in `prototype-adoption-roadmap/tasks.md`
+- [x] 5.2 Open the PR naming `lands-redesign`
+- [x] 5.3 After the PR merges, archive this change and tick task 3.2 in `prototype-adoption-roadmap/tasks.md`
