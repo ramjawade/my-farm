@@ -16,18 +16,26 @@ describe('StageBarComponent', () => {
 
   it('draws four marks and four labels', () => {
     const el = render('Sowing');
-    expect(el.querySelectorAll('.rounded-pill').length).toBe(4);
-    expect(el.querySelectorAll('.small span').length).toBe(4);
+    expect(el.querySelectorAll('.flex-fill').length).toBe(4);
+    expect(el.querySelectorAll('.justify-content-between span').length).toBe(4);
   });
 
   it('marks the steps up to the current one', () => {
-    const marks = Array.from(render('Fruiting / Pod Formation').querySelectorAll('.rounded-pill'));
-    expect(marks.map((m) => m.classList.contains('bg-success'))).toEqual([true, true, true, false]);
+    const marks = Array.from(render('Fruiting / Pod Formation').querySelectorAll('.flex-fill'));
+    expect(marks.map((m) => m.classList.contains('step-on'))).toEqual([true, true, false, false]);
+    expect(marks.map((m) => m.classList.contains('step-now'))).toEqual([false, false, true, false]);
   });
 
   it('highlights only the current step label', () => {
-    const labels = Array.from(render('Vegetative Growth').querySelectorAll('.small span'));
-    expect(labels.map((l) => l.classList.contains('fw-bold'))).toEqual([false, true, false, false]);
+    const labels = Array.from(
+      render('Vegetative Growth').querySelectorAll('.justify-content-between span'),
+    );
+    expect(labels.map((l) => l.classList.contains('fw-semibold'))).toEqual([
+      false,
+      true,
+      false,
+      false,
+    ]);
   });
 
   it('names the step for assistive technology', () => {

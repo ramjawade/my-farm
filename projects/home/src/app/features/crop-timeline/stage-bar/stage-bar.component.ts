@@ -10,20 +10,26 @@ import { CropStage } from '../crop-timeline.models';
   imports: [TranslatePipe],
   template: `
     <div role="img" [attr.aria-label]="ariaLabel()">
-      <div class="d-flex gap-1" aria-hidden="true">
+      <div class="d-flex gap-1" style="margin: 10px 0 6px" aria-hidden="true">
         @for (key of steps; track key; let i = $index) {
           <span
-            class="flex-fill rounded-pill"
-            style="height: 6px"
-            [class.bg-success]="i <= step()"
-            [class.bg-secondary-subtle]="i > step()"
-            [class.opacity-50]="i < step()"
+            class="flex-fill"
+            style="height: 6px; border-radius: 3px"
+            [class.step-on]="i < step()"
+            [class.step-now]="i === step()"
+            [style.background]="
+              i < step() ? 'var(--mf-leaf)' : i === step() ? 'var(--mf-sun)' : 'var(--mf-line)'
+            "
           ></span>
         }
       </div>
-      <div class="d-flex justify-content-between small mt-1" aria-hidden="true">
+      <div
+        class="d-flex justify-content-between text-body-secondary"
+        style="font-size: 0.6875rem"
+        aria-hidden="true"
+      >
         @for (key of steps; track key; let i = $index) {
-          <span [class.fw-bold]="i === step()" [class.text-body-secondary]="i !== step()">{{
+          <span [class.fw-semibold]="i === step()" [class.text-body]="i === step()">{{
             key | translate
           }}</span>
         }
