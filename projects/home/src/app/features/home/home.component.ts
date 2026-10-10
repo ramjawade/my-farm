@@ -1,5 +1,4 @@
 import { LocaleService } from '../../core/i18n/locale.service';
-import { LocalNumberPipe } from '../../core/i18n/localized.pipes';
 import {
   Component,
   inject,
@@ -8,10 +7,9 @@ import {
   ChangeDetectionStrategy,
   OnInit,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { I18n } from '../../core/i18n/i18n.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { WorkflowStateService } from '../../core/workflow/workflow-state.service';
 import { IWeatherService } from '../../core/weather/weather.interface';
@@ -21,11 +19,22 @@ import { CropTimelineService } from '../crop-timeline/crop-timeline.service';
 import { ActivityService } from '../activity/activity.service';
 import { FarmDrawService } from '../../map/farm-draw/farm-draw.service';
 import { SavedFarm } from '../../map/models/map.models';
-import { Activity } from '../activity/activity.models';
-import { daysAfterSowing, stageProgressPercent } from '../crop-timeline/crop-timeline.utils';
+import { CropEntity } from '../crop-timeline/crop-timeline.models';
+import {
+  AttentionItem,
+  TodayItem,
+  attentionItems,
+  greetingFor,
+  keyTiles,
+  todayItems,
+} from './home-summary';
+import { HomeAttentionCardComponent } from './cards/home-attention-card.component';
+import { HomeFarmCardComponent } from './cards/home-farm-card.component';
+import { HomeKeyTilesComponent } from './cards/home-key-tiles.component';
+import { HomeTodayCardComponent } from './cards/home-today-card.component';
+import { HomeWeatherCardComponent } from './cards/home-weather-card.component';
 
 import { ProfileEditDialogComponent } from '../profile/components/profile-edit-dialog.component';
-import { ReferenceNamePipe } from '../../core/i18n/reference-name.pipe';
 import { ToastService } from 'shared';
 import {
   OnboardingChecklistComponent,
@@ -37,15 +46,16 @@ import { WorkflowProgressBarComponent } from '../shared/components/workflow-prog
   standalone: true,
   selector: 'app-home',
   imports: [
-    LocalNumberPipe,
-    CommonModule,
-    FormsModule,
     RouterLink,
+    HomeAttentionCardComponent,
+    HomeFarmCardComponent,
+    HomeKeyTilesComponent,
+    HomeTodayCardComponent,
+    HomeWeatherCardComponent,
     ProfileEditDialogComponent,
     OnboardingChecklistComponent,
     WorkflowProgressBarComponent,
     TranslatePipe,
-    ReferenceNamePipe,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
@@ -62,6 +72,7 @@ export class HomeComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18n);
 
   readonly farms = signal<SavedFarm[]>([]);
 
@@ -171,32 +182,6 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  // Time-of-day Greeting Signal
-  readonly greetingInfo = computed(() => {
-    const hour = new Date().getHours();
-    let greetingKey = 'home.greeting.welcomeBack';
-    let icon = 'bi-sun-fill text-warning';
-
-    if (hour >= 5 && hour < 12) {
-      greetingKey = 'home.greeting.goodMorning';
-      icon = 'bi-sunrise-fill text-warning';
-    } else if (hour >= 12 && hour < 17) {
-      greetingKey = 'home.greeting.goodAfternoon';
-      icon = 'bi-sun-fill text-warning';
-    } else if (hour >= 17 && hour < 22) {
-      greetingKey = 'home.greeting.goodEvening';
-      icon = 'bi-sunset-fill text-danger';
-    } else {
-      greetingKey = 'home.greeting.goodNight';
-      icon = 'bi-moon-stars-fill text-primary';
-    }
-
-    const user = this.currentUser();
-    const name = user ? user.fullName.split(' ')[0] : this.translate.instant('common.farmer');
-    const text = this.translate.instant(greetingKey, { name });
-    return { text, icon };
-  });
-
   // Profile completeness check
   readonly hasBoundary = computed(() => {
     return this.farms().length > 0;
@@ -207,105 +192,69 @@ export class HomeComponent implements OnInit {
     return !!(user && user.village && user.state);
   });
 
-  // Dynamic Metrics Summary
-  readonly metrics = computed(() => {
-    const cropsCount = this.cropService.crops().length;
+  // ----- Signed-in Home -----
+
+  /** The moment the screen's numbers are worked out for. */
+  readonly now = signal(Date.now());
+
+  readonly tiles = computed(() =>
+    keyTiles(this.cropService.crops(), this.farms(), this.activityService.expenses(), this.now()),
+  );
+
+  /** The village or district shown under the total area. */
+  readonly place = computed(() => {
     const user = this.currentUser();
+    return user?.village || user?.district || '';
+  });
 
-    const savedFarmsList = this.farms();
-    const landsCount = savedFarmsList.length;
-    const unit = user?.farmAreaUnit || 'hectares';
+  readonly attention = computed(() =>
+    attentionItems(this.activityService.activities(), this.cropService.crops(), this.now()),
+  );
 
-    let acreage = 0;
-    if (landsCount > 0) {
-      const totalArea = savedFarmsList.reduce((sum, f) => {
-        const val = unit === 'acres' ? f.area.acres : f.area.hectares;
-        return sum + val;
-      }, 0);
-      acreage = Math.round(totalArea * 100) / 100;
-    } else {
-      acreage = user && user.farmArea ? user.farmArea : 0;
+  readonly today = computed(() => todayItems(this.activityService.activities(), this.now()));
+
+  readonly crops = this.cropService.crops;
+
+  /** Expenses logged per crop, for the farm card. */
+  readonly costByCrop = computed(() =>
+    Object.fromEntries(
+      this.cropService.crops().map((crop) => [crop.id, this.cropService.costForCrop(crop.id)]),
+    ),
+  );
+
+  readonly forecastDays = computed(() => this.weatherService.weatherData()?.forecast?.days ?? []);
+
+  readonly greeting = computed(() => {
+    const user = this.currentUser();
+    const name = user?.fullName.split(' ')[0] || this.i18n.t('common.farmer');
+    const period = greetingFor(new Date(this.now()).getHours());
+    return this.i18n.t('homeScreen.greeting.' + period, { name });
+  });
+
+  /** The date, and the temperature and conditions when the weather has loaded. */
+  readonly subtitle = computed(() => {
+    const date = this.locale.date(this.now(), 'EEEE d MMM');
+    const weather = this.currentWeather();
+    return weather ? date + ' · ' + Math.round(weather.temp) + '°C, ' + weather.condition : date;
+  });
+
+  readonly initial = computed(() =>
+    (this.currentUser()?.fullName ?? '').trim().charAt(0).toUpperCase(),
+  );
+
+  completeToday(item: TodayItem): void {
+    this.cropService.completeActivity(item.activity.id);
+  }
+
+  openAttention(item: AttentionItem): void {
+    if (item.activity) {
+      void this.router.navigate(['/activities', item.activity.id]);
+    } else if (item.crop) {
+      void this.router.navigate(['/crops', item.crop.id]);
     }
+  }
 
-    const todayTasks = this.activityService.todaysPendingActivities().length;
-
-    // Calculate total expenses this month
-    const currentMonth = new Date().getMonth();
-    const monthName = this.locale.date(new Date(), 'LLLL');
-    const currentYear = new Date().getFullYear();
-    const totalExpenses = this.activityService
-      .expenses()
-      .filter((e) => {
-        const d = new Date(e.createdAt);
-        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-      })
-      .reduce((sum, e) => sum + e.amount, 0);
-
-    return {
-      cropsCount,
-      acreage,
-      todayTasks,
-      totalExpenses,
-      landsCount,
-      monthName,
-    };
-  });
-
-  // Active Crops list with formatted stages
-  readonly activeCrops = computed(() => {
-    const crops = this.cropService.crops();
-    const lastActByC = this.cropService.lastActivityDateByCrop();
-    return crops.map((crop) => {
-      const days = daysAfterSowing(crop.sowingDate);
-      const progressPercent = stageProgressPercent(crop.currentStage);
-
-      let lastActivityDays = -1;
-      const lastActDate = lastActByC[crop.id];
-      if (lastActDate) {
-        lastActivityDays = Math.floor((Date.now() - lastActDate) / (1000 * 60 * 60 * 24));
-      }
-
-      return {
-        ...crop,
-        daysAfterSowing: days,
-        progressPercent,
-        noRecentActivity: lastActivityDays > 7 || lastActivityDays === -1,
-      };
-    });
-  });
-
-  // Upcoming scheduled / planned activities (limit to 3 for summary view)
-  readonly upcomingActivities = computed(() => {
-    const todayStr = new Date().toISOString().split('T')[0];
-    return this.activityService
-      .activities()
-      .filter((a) => a.status !== 'Completed')
-      .sort((a, b) => {
-        const timeA = a.date !== undefined ? a.date : Infinity;
-        const timeB = b.date !== undefined ? b.date : Infinity;
-        return timeA - timeB;
-      })
-      .slice(0, 3)
-      .map((act) => {
-        const crop = this.cropService.crops().find((c) => c.id === act.cropId);
-        return {
-          ...act,
-          cropName: crop ? crop.name : this.translate.instant('home.generalFarm'),
-          isToday: act.date ? new Date(act.date).toISOString().split('T')[0] === todayStr : false,
-          dateLabel: this.formatDate(act.date),
-        };
-      });
-  });
-
-  // Today's pending activities
-  readonly todayActivities = computed(() => this.activityService.todaysPendingActivities());
-
-  private formatDate(timestamp: number | undefined): string {
-    if (!timestamp) return '';
-    try {
-      return this.locale.date(timestamp, 'd MMM');
-    } catch {
-      return '';
-    }
+  openCrop(crop: CropEntity): void {
+    void this.router.navigate(['/crops', crop.id]);
   }
 }

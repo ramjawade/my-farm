@@ -999,5 +999,59 @@
       "ConservationFarming": "संरक्षण खेती",
       "NaturalFarming": "प्राकृतिक खेती"
     }
+  },
+  "homeScreen": {
+    "greeting": {
+      "morning": "सुप्रभात, {{name}}",
+      "afternoon": "नमस्कार, {{name}}",
+      "evening": "शुभ संध्या, {{name}}"
+    },
+    "openProfile": "प्रोफ़ाइल खोलें",
+    "tiles": {
+      "activeCrops": "चालू फसलें",
+      "acrossLand": "{{count}} ज़मीन पर",
+      "acrossLands": "{{count}} ज़मीनों पर",
+      "totalArea": "कुल क्षेत्र",
+      "seasonSpend": "मौसम का खर्च",
+      "since": "से",
+      "nextHarvest": "अगली कटाई",
+      "inDays": "{{count}} दिन",
+      "noHarvest": "तय नहीं"
+    },
+    "weather": {
+      "title": "आज का मौसम",
+      "humidity": "नमी",
+      "wind": "हवा"
+    },
+    "attention": {
+      "title": "ध्यान चाहिए",
+      "none": "कुछ नहीं",
+      "noActivityOn": "{{crop}} पर कोई गतिविधि नहीं",
+      "lastDone": "आखिरी बार",
+      "sinceSowing": "बुवाई से",
+      "allClear": "सब ठीक",
+      "allClearHint": "कुछ भी देर से या निष्क्रिय नहीं।"
+    },
+    "badge": {
+      "overdue": "{{days}} दिन देर",
+      "today": "आज",
+      "tomorrow": "कल",
+      "in2days": "2 दिन में",
+      "idle": "{{days}} दिन"
+    },
+    "today": {
+      "title": "आज",
+      "doneOf": "{{total}} में से {{done}} पूरे",
+      "markDone": "पूरा करें: {{name}}",
+      "nothing": "आज कुछ नियोजित नहीं।"
+    },
+    "farm": {
+      "title": "आपका खेत",
+      "showing": "{{total}} में से {{shown}} फसलें",
+      "sownToday": "आज बोई",
+      "toHarvest": "कटाई में",
+      "expenses": "खर्च",
+      "nothingPlanted": "अभी कुछ बोया नहीं"
+    }
   }
 }
