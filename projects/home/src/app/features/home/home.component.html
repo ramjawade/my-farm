@@ -1,5 +1,5 @@
 <!-- HOME PAGE CONTAINER -->
-<div class="home-container py-4 px-3 px-md-5 animate-fade-in">
+<div class="home-container pt-3 pt-md-4 pb-4 px-3 px-md-4 animate-fade-in">
   <!-- Workflow Progress Bar -->
   @if (isLoggedIn()) {
     <app-workflow-progress-bar />
@@ -121,386 +121,76 @@
       </section>
     </div>
   } @else {
-    <!-- ================= AUTHENTICATED COMMAND CENTER ================= -->
-    <div class="dashboard-page animate-fade-in">
-      <!-- PERSONALIZED WELCOME CARD -->
-      <div
-        class="card card-glass border-0 shadow-lg mb-4 p-3 p-sm-4 welcome-card position-relative overflow-hidden"
+    <!-- ================= SIGNED-IN HOME ================= -->
+    <div class="dashboard-page">
+      <header
+        class="d-flex justify-content-between align-items-center gap-3"
+        style="padding-bottom: 12px"
       >
-        <div class="welcome-card-glow"></div>
-        <div class="row g-3 align-items-center position-relative z-1 text-center text-sm-start">
-          <div class="col-12 col-sm-auto">
-            <div class="greeting-icon-wrapper shadow-xs mx-auto">
-              <i class="bi" [ngClass]="greetingInfo().icon"></i>
-            </div>
-          </div>
-          <div class="col-12 col-sm">
-            <h2 class="h3 fw-bold text-success-dark mb-1">{{ greetingInfo().text }}</h2>
-            <p
-              class="text-muted text-xs mb-0 d-flex flex-wrap align-items-center justify-content-center justify-content-sm-start gap-2"
-            >
-              @if (hasLocation()) {
-                <span class="badge bg-success-subtle text-success rounded-pill fw-semibold"
-                  ><i class="bi bi-geo-alt-fill me-1"></i>{{ currentUser()?.village }},
-                  {{ currentUser()?.state }}</span
-                >
-              } @else {
-                <span class="badge bg-warning-subtle text-warning rounded-pill fw-semibold"
-                  ><i class="bi bi-geo-alt me-1"></i>{{ 'home.locationNotSet' | translate }}</span
-                >
-              }
-              <span class="text-secondary font-medium">|</span>
-              <span class="text-secondary"
-                ><i class="bi bi-calendar3 me-1"></i
-                >{{
-                  'home.scheduledTasksToday' | translate: { count: todayActivities().length }
-                }}</span
-              >
-            </p>
-          </div>
-          <div
-            class="col-12 col-md-auto text-md-end mt-3 mt-md-0 d-flex flex-wrap gap-2 justify-content-center justify-content-md-end"
+        <div class="d-flex align-items-center min-w-0" style="gap: 12px">
+          <a
+            routerLink="/profile"
+            class="d-md-none d-inline-flex align-items-center justify-content-center rounded-circle bg-success text-white fw-bold text-decoration-none flex-shrink-0"
+            style="width: 40px; height: 40px"
+            [attr.aria-label]="'homeScreen.openProfile' | translate"
+            >{{ initial() }}</a
           >
-            <a
-              routerLink="/crops/add"
-              class="btn btn-success btn-sm px-3 py-2 fw-semibold hover-lift"
-            >
-              <i class="bi bi-plus-circle me-1.5"></i>{{ 'home.addCrop' | translate }}
-            </a>
-            <a
-              routerLink="/activities/create"
-              class="btn btn-outline-success btn-sm px-3 py-2 fw-semibold hover-lift bg-white"
-            >
-              <i class="bi bi-pencil-square me-1.5"></i>{{ 'home.logActivity' | translate }}
-            </a>
+          <div class="min-w-0">
+            <h1 class="h4 mb-1 text-truncate">{{ greeting() }}</h1>
+            <p class="text-body-secondary mb-0 text-truncate">{{ subtitle() }}</p>
           </div>
         </div>
-      </div>
+        <a
+          routerLink="/activities/create"
+          class="btn btn-primary text-nowrap d-none d-md-inline-flex"
+        >
+          + {{ 'home.logActivity' | translate }}
+        </a>
+      </header>
 
-      <!-- KEY METRICS COUNTERS -->
-      <section class="row g-3 mb-4">
-        <!-- Acreage -->
-        <div class="col-6 col-lg-3">
-          <div
-            class="card card-interactive border-0 shadow-sm p-3 p-sm-3.5 h-100 bg-white"
-            routerLink="/map"
-            style="cursor: pointer"
-          >
-            <div class="d-flex align-items-center justify-content-between mb-2">
-              <span class="text-muted text-xs fw-semibold uppercase tracking-wider">{{
-                'home.farmArea' | translate
-              }}</span>
-              <div class="metric-icon bg-success-subtle text-success">
-                <i class="bi bi-tree-fill"></i>
-              </div>
-            </div>
-            <div class="h3 fw-bold text-success-dark mb-0">
-              {{ metrics().acreage }}
-              <span class="text-sm fw-medium">{{
-                'landEdit.' + (currentUser()?.farmAreaUnit || 'hectares') | translate
-              }}</span>
-            </div>
-            <div class="text-xxs text-muted mt-1">
-              @if (metrics().landsCount > 0) {
-                {{
-                  (metrics().landsCount > 1
-                    ? 'home.basedOnSavedLandsPlural'
-                    : 'home.basedOnSavedLand'
-                  ) | translate: { count: metrics().landsCount }
-                }}
-              } @else {
-                {{ 'home.basedOnSavedBoundary' | translate }}
-              }
-            </div>
+      <div class="d-flex flex-column" style="gap: 12px">
+        <app-home-key-tiles [tiles]="tiles()" [place]="place()" />
+
+        <div class="home-grid">
+          <div class="home-col">
+            <app-home-weather-card
+              class="home-weather"
+              [hasLocation]="!!weatherLocation()"
+              [weather]="currentWeather()"
+              [forecast]="forecastDays()"
+              [isSample]="weatherIsSample()"
+            />
+            <app-home-attention-card
+              class="home-attention"
+              [items]="attention()"
+              (open)="openAttention($event)"
+            />
           </div>
-        </div>
-
-        <!-- Active Crops -->
-        <div class="col-6 col-lg-3">
-          <div
-            class="card card-interactive border-0 shadow-sm p-3 p-sm-3.5 h-100 bg-white"
-            routerLink="/crops"
-            style="cursor: pointer"
-          >
-            <div class="d-flex align-items-center justify-content-between mb-2">
-              <span class="text-muted text-xs fw-semibold uppercase tracking-wider">{{
-                'home.activeCrops' | translate
-              }}</span>
-              <div class="metric-icon bg-warning-subtle text-warning">
-                <i class="bi bi-grid-3x3-gap-fill"></i>
-              </div>
-            </div>
-            <div class="h3 fw-bold text-warning-dark mb-0">{{ metrics().cropsCount }}</div>
-            <div class="text-xxs text-muted mt-1">{{ 'home.currentlyGrowing' | translate }}</div>
-          </div>
-        </div>
-
-        <!-- Today's Tasks -->
-        <div class="col-6 col-lg-3">
-          <div class="card border-0 shadow-sm p-3 p-sm-3.5 h-100 bg-white">
-            <div class="d-flex align-items-center justify-content-between mb-2">
-              <span class="text-muted text-xs fw-semibold uppercase tracking-wider">{{
-                'home.pendingTasks' | translate
-              }}</span>
-              <div class="metric-icon bg-info-subtle text-info">
-                <i class="bi bi-check-circle-fill"></i>
-              </div>
-            </div>
-            <div class="h3 fw-bold text-info-dark mb-0">{{ metrics().todayTasks }}</div>
-            <div class="text-xxs text-muted mt-1">
-              {{ 'home.scheduledActivitiesRemaining' | translate }}
-            </div>
-          </div>
-        </div>
-
-        <!-- Monthly expenses -->
-        <div class="col-6 col-lg-3">
-          <div class="card border-0 shadow-sm p-3 p-sm-3.5 h-100 bg-white">
-            <div class="d-flex align-items-center justify-content-between mb-2">
-              <span class="text-muted text-xs fw-semibold uppercase tracking-wider">{{
-                'home.monthExpenses' | translate
-              }}</span>
-              <div class="metric-icon bg-danger-subtle text-danger">
-                <i class="bi bi-cash-coin"></i>
-              </div>
-            </div>
-            <div class="h3 fw-bold text-danger-dark mb-0">
-              ₹{{ metrics().totalExpenses | localNumber }}
-            </div>
-            <div class="text-xxs text-muted mt-1">
-              {{ 'home.productionCostsLogged' | translate: { month: metrics().monthName } }}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- DASHBOARD MAIN WORKSPACE GRID -->
-      <div class="row g-4 mb-4">
-        <!-- LEFT COLUMN: WEATHER AND CALCULATOR -->
-        <div class="col-12 col-lg-6 d-flex flex-column gap-4">
-          <!-- WEATHER WIDGET -->
-          <div class="card border-0 shadow-sm p-3 p-sm-4 bg-white flex-grow-1">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h3 class="h5 fw-bold text-success-dark mb-0">
-                <i class="bi bi-cloud-sun-fill me-2 text-info"></i
-                >{{ 'home.weatherMonitor' | translate }}
-              </h3>
-              <a
-                routerLink="/weather"
-                class="text-success fw-semibold text-xs text-decoration-none hover-underline"
-              >
-                {{ 'home.fullForecast' | translate }} <i class="bi bi-arrow-right ms-0.5"></i>
-              </a>
-            </div>
-
-            @if (!weatherLocation()) {
-              <div class="text-center text-muted py-4">
-                <i class="bi bi-geo-alt fs-2 d-block mb-2"></i>
-                <p class="text-sm mb-2">{{ 'home.weatherNoLocation' | translate }}</p>
-                <a routerLink="/map" class="btn btn-sm btn-outline-success">{{
-                  'home.weatherSetLocation' | translate
-                }}</a>
-              </div>
-            } @else if (currentWeather(); as w) {
-              <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-3 gap-sm-4">
-                <div class="weather-dash-temp-wrapper d-flex align-items-center gap-2">
-                  <i class="bi bi-cloud-sun text-info fs-1"></i>
-                  <div>
-                    <div class="h1 fw-bold mb-0">{{ w.temp }}°C</div>
-                    <div class="text-xs text-muted">
-                      {{
-                        'home.weatherSummaryLive'
-                          | translate: { condition: w.condition, feelsLike: w.feelsLike }
-                      }}
-                    </div>
-                  </div>
-                </div>
-                <div class="border-start-sm ps-sm-4 flex-grow-1 mt-3 mt-sm-0">
-                  <div class="row g-2">
-                    <div class="col-6">
-                      <div class="text-xxs text-muted text-nowrap">
-                        {{ 'home.humidity' | translate }}
-                      </div>
-                      <div class="fw-bold text-sm text-secondary">{{ w.humidity }}%</div>
-                    </div>
-                    <div class="col-6">
-                      <div class="text-xxs text-muted text-nowrap">
-                        {{ 'home.wind' | translate }}
-                      </div>
-                      <div class="fw-bold text-sm text-secondary text-nowrap">
-                        {{ w.windSpeed }} km/h
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              @if (weatherIsSample()) {
-                <div class="alert alert-warning py-2 px-3 text-xs mt-3 mb-0" role="status">
-                  {{ 'home.weatherSample' | translate }}
-                </div>
-              }
-            } @else {
-              <p class="text-muted text-sm mb-0">{{ 'home.weatherLoading' | translate }}</p>
-            }
-          </div>
-        </div>
-
-        <!-- RIGHT COLUMN: CROPS & ACTIVITIES -->
-        <div class="col-12 col-lg-6 d-flex flex-column gap-4">
-          <!-- CROPS MONITOR -->
-          <div class="card border-0 shadow-sm p-3 p-sm-4 bg-white flex-grow-1">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h3 class="h5 fw-bold text-success-dark mb-0">
-                <i class="bi bi-grid-3x3-gap-fill me-2 text-success"></i
-                >{{ 'home.cropsMonitor' | translate }}
-              </h3>
-              <a
-                routerLink="/crops"
-                class="text-success fw-semibold text-xs text-decoration-none hover-underline"
-              >
-                {{ 'home.viewTimeline' | translate }} <i class="bi bi-arrow-right ms-0.5"></i>
-              </a>
-            </div>
-
-            <div class="crops-dash-list d-flex flex-column gap-3">
-              @for (crop of activeCrops(); track crop.id) {
-                <div
-                  class="crop-dash-item p-3 border rounded-3 transition hover-bg-light position-relative"
-                >
-                  <!-- Crop name & stage -->
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div>
-                      <a
-                        [routerLink]="['/crops', crop.id]"
-                        class="fw-bold text-sm text-dark hover-underline text-decoration-none"
-                      >
-                        {{ crop.name | referenceName: 'crop' }}
-                      </a>
-                      @if (crop.daysAfterSowing !== null) {
-                        <span class="text-xxs text-muted ms-2 text-nowrap">{{
-                          'home.sownDaysAgo' | translate: { days: crop.daysAfterSowing }
-                        }}</span>
-                      }
-                    </div>
-                    <div>
-                      <span
-                        class="badge bg-success-subtle text-success text-xxs fw-bold text-nowrap"
-                        >{{ crop.currentStage }}</span
-                      >
-                      @if (crop.noRecentActivity) {
-                        <span
-                          class="badge bg-warning-subtle text-warning text-xxs fw-bold ms-1"
-                          [title]="'home.noRecentActivity' | translate"
-                        >
-                          <i class="bi bi-exclamation-triangle"></i>
-                        </span>
-                      }
-                    </div>
-                  </div>
-                  <!-- Progress bar -->
-                  <div class="progress" style="height: 6px">
-                    <div
-                      class="progress-bar bg-success"
-                      role="progressbar"
-                      [style.width.%]="crop.progressPercent"
-                      [attr.aria-valuenow]="crop.progressPercent"
-                      aria-valuemin="0"
-                      aria-valuemax="100"
-                    ></div>
-                  </div>
-                </div>
-              } @empty {
-                <!-- Empty state crops -->
-                <div class="text-center py-4 bg-light rounded-3 border border-dashed">
-                  <i class="bi bi-flower1 text-muted fs-2 mb-2 d-block"></i>
-                  <span class="fw-bold text-xs text-dark d-block">{{
-                    'home.noActiveCrops' | translate
-                  }}</span>
-                  <span class="text-xxs text-muted d-block mb-3">{{
-                    'home.startTrackingFields' | translate
-                  }}</span>
-                  <a
-                    routerLink="/crops/add"
-                    class="btn btn-success btn-xs px-3 py-1.5 fw-bold text-xs rounded-pill"
-                  >
-                    {{ 'home.addFirstCrop' | translate }}
-                  </a>
-                </div>
-              }
-            </div>
-          </div>
-
-          <!-- TODAY & UPCOMING ACTIVITIES -->
-          <div class="card border-0 shadow-sm p-3 p-sm-4 bg-white flex-grow-1">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h3 class="h5 fw-bold text-success-dark mb-0">
-                <i class="bi bi-check-circle-fill me-2 text-info"></i
-                >{{ 'home.plannedOperations' | translate }}
-              </h3>
-              <a
-                routerLink="/activities"
-                class="text-success fw-semibold text-xs text-decoration-none hover-underline"
-              >
-                {{ 'home.activityLog' | translate }} <i class="bi bi-arrow-right ms-0.5"></i>
-              </a>
-            </div>
-
-            <div class="activities-dash-list d-flex flex-column gap-3">
-              @for (act of upcomingActivities(); track act.id) {
-                <div
-                  class="activity-dash-item p-3 border rounded-3 d-flex align-items-center justify-content-between transition hover-bg-light"
-                  [routerLink]="['/activities', act.id]"
-                  style="cursor: pointer"
-                >
-                  <div class="d-flex align-items-center gap-3">
-                    <div>
-                      <span class="fw-bold text-xs text-dark d-block">{{
-                        act.activityTypeId | referenceName: 'activity'
-                      }}</span>
-                      <span class="text-xxs text-muted d-block">
-                        {{ act.cropName | referenceName: 'crop' }} |
-                        <span class="fw-semibold text-secondary">{{ act.dateLabel }}</span>
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    @if (act.isToday) {
-                      <span class="badge bg-danger-subtle text-danger text-xxs fw-bold">{{
-                        'home.today' | translate
-                      }}</span>
-                    } @else {
-                      <span class="badge bg-secondary-subtle text-secondary text-xxs fw-bold">{{
-                        'home.planned' | translate
-                      }}</span>
-                    }
-                  </div>
-                </div>
-              } @empty {
-                <!-- Empty state activities -->
-                <div class="text-center py-4.5 bg-light rounded-3 border border-dashed">
-                  <i class="bi bi-check2-all text-success fs-2 mb-2 d-block"></i>
-                  <span class="fw-bold text-xs text-dark d-block">{{
-                    'home.allTasksCompleted' | translate
-                  }}</span>
-                  <span class="text-xxs text-muted d-block mb-3">{{
-                    'home.noUpcomingActivities' | translate
-                  }}</span>
-                  <a
-                    routerLink="/activities/create"
-                    class="btn btn-outline-success btn-xs px-3 py-1.5 fw-bold text-xs rounded-pill bg-white"
-                  >
-                    {{ 'home.scheduleNewTask' | translate }}
-                  </a>
-                </div>
-              }
-            </div>
+          <div class="home-col home-col--main">
+            <app-home-today-card
+              class="home-today"
+              [items]="today()"
+              [crops]="crops()"
+              (complete)="completeToday($event)"
+            />
+            <app-home-farm-card
+              class="home-farm"
+              [lands]="farms()"
+              [selectedLand]="selectedLand()"
+              [landDetails]="landDetails()"
+              [crops]="landCrops()"
+              [costByCrop]="costByCrop()"
+              [now]="now()"
+              (selectLand)="selectLand($event)"
+              (openCrop)="openCrop($event)"
+            />
           </div>
         </div>
       </div>
 
       <!-- ONBOARDING CHECKLIST (new farmers) -->
       @if (showOnboarding()) {
-        <div class="mb-4">
+        <div style="margin-top: 12px">
           <app-onboarding-checklist
             [steps]="onboardingSteps()"
             (action)="onOnboardingAction($event)"

@@ -13,7 +13,7 @@ import {
   output,
 } from '@angular/core';
 import * as L from 'leaflet';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ConfirmDialogComponent, ToastService } from 'shared';
 
@@ -68,6 +68,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly farmDraw = inject(FarmDrawService);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly cropService = inject(CropTimelineService);
   private readonly landSaved = inject(LandSavedService);
   private readonly toast = inject(ToastService);
@@ -150,7 +151,8 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /** Select the first land and show it on the map, once both the lands and the map are ready. */
   private selectFirstLand(): void {
-    const first = this.farms()[0];
+    const wanted = Number(this.route.snapshot.queryParamMap.get('land'));
+    const first = this.farms().find((f) => f.id === wanted) ?? this.farms()[0];
     if (this.isPicker || this.initialSelectionDone || !this.map || !first || this.selected()) {
       return;
     }

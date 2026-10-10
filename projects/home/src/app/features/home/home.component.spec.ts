@@ -1,8 +1,9 @@
+import { firstValueFrom } from 'rxjs';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
-import { provideTranslateService } from '@ngx-translate/core';
+import { TranslateService, provideTranslateService } from '@ngx-translate/core';
 import { HomeComponent } from './home.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { CropTimelineService } from '../crop-timeline/crop-timeline.service';
@@ -118,124 +119,146 @@ describe('HomeComponent', () => {
     expect(compiled.querySelector('.dashboard-page')).toBeTruthy();
   });
 
-  it('should contain redirection links to /map and /crops on the metrics cards when logged in', () => {
-    const mockUser: FarmerRegistrationData = {
-      id: 1,
-      fullName: 'Test Farmer',
-      phone: '1234567890',
-      preferredLanguage: 'English',
-      userRole: 'Farmer',
-      farmName: 'Test Farm',
-      farmArea: 2.0,
-      farmAreaUnit: 'hectares',
-      primaryCrops: [],
-      waterSource: 'Rainfed',
-      irrigationType: 'Manual',
-      farmingMethod: 'Organic',
-      locationType: 'skipped',
-      location: null,
-      createdAt: Date.now(),
-    };
-    authService.login(mockUser);
-    fixture.detectChanges();
+  describe('signed-in screen', () => {
+    const text = () => (fixture.nativeElement as HTMLElement).textContent ?? '';
+    const day = 86_400_000;
 
-    const compiled = fixture.nativeElement as HTMLElement;
-    const farmAreaCard = compiled.querySelector('[routerLink="/map"]');
-    expect(farmAreaCard).toBeTruthy();
+    beforeEach(() => {
+      authService.login({ ...baseUser, fullName: 'Ram Jawade', village: 'Sinnar' });
+      fixture.detectChanges();
+    });
 
-    const activeCropsCard = compiled.querySelector('[routerLink="/crops"]');
-    expect(activeCropsCard).toBeTruthy();
-  });
+    it('greets the farmer by first name for the time of day', async () => {
+      const translate = TestBed.inject(TranslateService);
+      translate.setTranslation('en', {
+        homeScreen: {
+          greeting: {
+            morning: 'Good morning, {{name}}',
+            afternoon: 'Good afternoon, {{name}}',
+            evening: 'Good evening, {{name}}',
+          },
+        },
+      });
+      await firstValueFrom(translate.use('en'));
+      component.now.set(new Date(2026, 9, 1, 9).getTime());
+      expect(component.greeting()).toBe('Good morning, Ram');
+      component.now.set(new Date(2026, 9, 1, 14).getTime());
+      expect(component.greeting()).toBe('Good afternoon, Ram');
+      component.now.set(new Date(2026, 9, 1, 20).getTime());
+      expect(component.greeting()).toBe('Good evening, Ram');
+      expect(fixture.nativeElement.querySelector('h1')).not.toBeNull();
+    });
 
-  it('should sum all saved land areas and set landsCount in metrics', () => {
-    const mockUser: FarmerRegistrationData = {
-      id: 1,
-      fullName: 'Test Farmer',
-      phone: '1234567890',
-      preferredLanguage: 'English',
-      userRole: 'Farmer',
-      farmName: 'Test Farm',
-      farmArea: 2.0,
-      farmAreaUnit: 'hectares',
-      primaryCrops: [],
-      waterSource: 'Rainfed',
-      irrigationType: 'Manual',
-      farmingMethod: 'Organic',
-      locationType: 'skipped',
-      location: null,
-      createdAt: Date.now(),
-    };
-    authService.login(mockUser);
+    it('shows the avatar initial linking to Profile and a Log activity button', () => {
+      const avatar = fixture.nativeElement.querySelector('a[href="/profile"]') as HTMLAnchorElement;
+      expect(avatar.textContent?.trim()).toBe('R');
+      expect(avatar.classList).toContain('d-md-none');
+      const log = fixture.nativeElement.querySelector('a[href="/activities/create"]');
+      expect(log.classList).toContain('d-none');
+    });
 
-    // Set mock saved farms
-    const mockFarms = [
-      {
-        id: 1,
-        name: 'Land 1',
-        points: [],
-        area: { squareMeters: 10000, hectares: 1.0, acres: 2.47 },
-        geoJson: {},
-        createdAt: Date.now(),
-      },
-      {
-        id: 2,
-        name: 'Land 2',
-        points: [],
-        area: { squareMeters: 15000, hectares: 1.5, acres: 3.7 },
-        geoJson: {},
-        createdAt: Date.now(),
-      },
-    ];
-    component.farms.set(mockFarms);
-    fixture.detectChanges();
+    it('renders the five cards in the phone order: weather, attention, today, farm', () => {
+      const order = Array.from(
+        fixture.nativeElement.querySelectorAll(
+          '.home-grid [class^="home-"]',
+        ) as NodeListOf<HTMLElement>,
+      ).map((el) => el.className);
+      expect(
+        order
+          .filter((c) => /home-(weather|attention|today|farm)\b/.test(c))
+          .map((c) => c.match(/home-(weather|attention|today|farm)/)![1]),
+      ).toEqual(['weather', 'attention', 'today', 'farm']);
+    });
 
-    expect(component.metrics().acreage).toBe(2.5); // 1.0 + 1.5
-    expect(component.metrics().landsCount).toBe(2);
-  });
+    it('totals the area of all saved lands in the tiles', () => {
+      component.farms.set([
+        { id: 1, name: 'A', points: [], area: { squareMeters: 0, hectares: 0, acres: 2 } } as any,
+        { id: 2, name: 'B', points: [], area: { squareMeters: 0, hectares: 0, acres: 3.5 } } as any,
+      ]);
+      expect(component.tiles().landsCount).toBe(2);
+      expect(component.tiles().totalAcres).toBeCloseTo(5.5);
+      expect(component.place()).toBe('Sinnar');
+    });
 
-  it('should sum saved land areas in acres if farmAreaUnit is acres', () => {
-    const mockUser: FarmerRegistrationData = {
-      id: 1,
-      fullName: 'Test Farmer',
-      phone: '1234567890',
-      preferredLanguage: 'English',
-      userRole: 'Farmer',
-      farmName: 'Test Farm',
-      farmArea: 2.0,
-      farmAreaUnit: 'acres',
-      primaryCrops: [],
-      waterSource: 'Rainfed',
-      irrigationType: 'Manual',
-      farmingMethod: 'Organic',
-      locationType: 'skipped',
-      location: null,
-      createdAt: Date.now(),
-    };
-    authService.login(mockUser);
+    it("counts only this season's expenses and active crops", async () => {
+      const crop = await cropService.addCrop({
+        fieldId: 1,
+        name: 'Onion',
+        cropCatalogId: 1,
+        area: 1,
+        areaUnit: 'acres',
+        currentStage: 'Sowing',
+        status: 'Active',
+        sowingDate: Date.now() - 3 * day,
+      });
+      await cropService.addActivity({
+        cropId: crop.id,
+        activityTypeId: 1,
+        date: Date.now(),
+        status: 'Completed',
+        cost: 800,
+        notes: '',
+      });
+      expect(component.tiles().activeCrops).toBe(1);
+      expect(component.tiles().seasonSpend).toBe(800);
+    });
 
-    const mockFarms = [
-      {
-        id: 1,
-        name: 'Land 1',
-        points: [],
-        area: { squareMeters: 10000, hectares: 1.0, acres: 2.47 },
-        geoJson: {},
-        createdAt: Date.now(),
-      },
-      {
-        id: 2,
-        name: 'Land 2',
-        points: [],
-        area: { squareMeters: 15000, hectares: 1.5, acres: 3.7 },
-        geoJson: {},
-        createdAt: Date.now(),
-      },
-    ];
-    component.farms.set(mockFarms);
-    fixture.detectChanges();
+    it('lists an overdue activity as needing attention and opens it', async () => {
+      const act = await activityService.addActivity({
+        date: Date.now() - 2 * day,
+        activityTypeId: 1,
+        status: 'Scheduled',
+      } as any);
+      fixture.detectChanges();
+      expect(component.attention().map((i) => i.activity?.id)).toEqual([act.id]);
+      expect(component.attention()[0].badge).toEqual({ kind: 'overdue', days: 2 });
 
-    expect(component.metrics().acreage).toBe(6.17); // 2.47 + 3.7
-    expect(component.metrics().landsCount).toBe(2);
+      const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+      component.openAttention(component.attention()[0]);
+      expect(navigate).toHaveBeenCalledWith(['/activities', act.id]);
+    });
+
+    it("lists today's work and completes an activity when it is checked", async () => {
+      const act = await activityService.addActivity({
+        date: Date.now(),
+        activityTypeId: 1,
+        status: 'Scheduled',
+      } as any);
+      fixture.detectChanges();
+      expect(component.today().map((i) => [i.activity.id, i.done])).toEqual([[act.id, false]]);
+
+      component.completeToday(component.today()[0]);
+      fixture.detectChanges();
+      expect(activityService.getActivityById(act.id)?.status).toBe('Completed');
+      expect(component.today().map((i) => i.done)).toEqual([true]);
+    });
+
+    it('shows All clear and nothing planned for a quiet farm', () => {
+      expect(component.attention()).toEqual([]);
+      expect(component.today()).toEqual([]);
+      expect(text()).toContain('homeScreen.attention.allClear');
+      expect(text()).toContain('homeScreen.today.nothing');
+    });
+
+    it('says nothing is planted and links to Add crop when there are no crops', () => {
+      expect(text()).toContain('homeScreen.farm.nothingPlanted');
+      expect(fixture.nativeElement.querySelector('a[href="/crops/add"]')).not.toBeNull();
+    });
+
+    it('opens a crop from the farm card', async () => {
+      const crop = await cropService.addCrop({
+        fieldId: 1,
+        name: 'Onion',
+        cropCatalogId: 1,
+        area: 1,
+        areaUnit: 'acres',
+        currentStage: 'Sowing',
+        status: 'Active',
+      });
+      const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+      component.openCrop(crop);
+      expect(navigate).toHaveBeenCalledWith(['/crops', crop.id]);
+    });
   });
 
   it('should show the onboarding checklist for a fresh registration', () => {
