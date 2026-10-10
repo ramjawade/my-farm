@@ -179,7 +179,7 @@ import { ReferenceDataService } from '../../core/api/reference-data.service';
       .mf-page-title {
         font-size: 1.75rem;
         font-weight: 700;
-        color: hsl(142, 52%, 38%);
+        color: var(--mf-leaf);
       }
     `,
   ],

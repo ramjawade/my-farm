@@ -123,7 +123,9 @@
                       <i
                         class="bi"
                         [class]="role.icon"
-                        [style.color]="editUserRole() === role.value ? '#2a6f47' : role.color"
+                        [style.color]="
+                          editUserRole() === role.value ? 'var(--mf-leaf)' : role.color
+                        "
                       ></i>
                       <span class="fw-semibold role-label-text ms-2">{{ role.label }}</span>
                     </button>
@@ -152,7 +154,7 @@
                         class="bi"
                         [class]="method.icon"
                         [style.color]="
-                          editFarmingMethod() === method.value ? '#2a6f47' : method.color
+                          editFarmingMethod() === method.value ? 'var(--mf-leaf)' : method.color
                         "
                       ></i>
                       <span class="fw-semibold role-label-text ms-2">{{ method.label }}</span>
@@ -554,7 +556,7 @@
                         class="bi"
                         [class]="crop.icon"
                         [style.color]="
-                          selectedCrops().includes(crop.value) ? '#2a6f47' : crop.color
+                          selectedCrops().includes(crop.value) ? 'var(--mf-leaf)' : crop.color
                         "
                       ></i>
                       <span class="fw-semibold role-label-text ms-2">{{ crop.label }}</span>
@@ -588,7 +590,7 @@
                       <i
                         class="bi"
                         [class]="ws.icon"
-                        [style.color]="editWaterSource() === ws.value ? '#2a6f47' : ws.color"
+                        [style.color]="editWaterSource() === ws.value ? 'var(--mf-leaf)' : ws.color"
                       ></i>
                       <span class="fw-semibold role-label-text ms-2">{{ ws.label }}</span>
                     </button>
@@ -618,7 +620,9 @@
                       <i
                         class="bi"
                         [class]="irr.icon"
-                        [style.color]="editIrrigationType() === irr.value ? '#2a6f47' : irr.color"
+                        [style.color]="
+                          editIrrigationType() === irr.value ? 'var(--mf-leaf)' : irr.color
+                        "
                       ></i>
                       <span class="fw-semibold role-label-text ms-2">{{ irr.label }}</span>
                     </button>
@@ -653,7 +657,7 @@
                       <i
                         class="bi"
                         [class]="ws.icon"
-                        [style.color]="editWaterSource() === ws.value ? '#2a6f47' : ws.color"
+                        [style.color]="editWaterSource() === ws.value ? 'var(--mf-leaf)' : ws.color"
                       ></i>
                       <span class="fw-semibold role-label-text ms-2">{{ ws.label }}</span>
                     </button>
@@ -683,7 +687,9 @@
                       <i
                         class="bi"
                         [class]="irr.icon"
-                        [style.color]="editIrrigationType() === irr.value ? '#2a6f47' : irr.color"
+                        [style.color]="
+                          editIrrigationType() === irr.value ? 'var(--mf-leaf)' : irr.color
+                        "
                       ></i>
                       <span class="fw-semibold role-label-text ms-2">{{ irr.label }}</span>
                     </button>
@@ -714,7 +720,7 @@
                         class="bi"
                         [class]="method.icon"
                         [style.color]="
-                          editFarmingMethod() === method.value ? '#2a6f47' : method.color
+                          editFarmingMethod() === method.value ? 'var(--mf-leaf)' : method.color
                         "
                       ></i>
                       <span class="fw-semibold role-label-text ms-2">{{ method.label }}</span>

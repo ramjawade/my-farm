@@ -1,5 +1,5 @@
 .review-popup-backdrop {
-  background-color: rgba(15, 23, 42, 0.45);
+  background-color: rgba(var(--mf-sky-rgb), 0.45);
   backdrop-filter: blur(4px);
 }
 

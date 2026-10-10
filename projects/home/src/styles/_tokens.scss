@@ -12,6 +12,8 @@
   // Surfaces and text
   --mf-bg: #eef1ec;
   --mf-bg-rgb: 238, 241, 236;
+  --mf-surface-rgb: 255, 255, 255;
+  --mf-shadow-rgb: 24, 35, 26;
   --mf-surface: #ffffff;
   --mf-surface2: #f4f6f2;
   --mf-line: #dde3d8;
@@ -46,8 +48,11 @@
   // Accent hues for data (activity types, charts)
   --mf-clay: #b5483a;
   --mf-grape: #6a4aa0;
+  --mf-grape-rgb: 106, 74, 160;
   --mf-ember: #c4682a;
+  --mf-ember-rgb: 196, 104, 42;
   --mf-teal: #2f8f88;
+  --mf-teal-rgb: 47, 143, 136;
 
   // Activity types
   --mf-type-sowing: var(--mf-leaf);
@@ -122,6 +127,8 @@
 [data-bs-theme='dark'] {
   --mf-bg: #0f1611;
   --mf-bg-rgb: 15, 22, 17;
+  --mf-surface-rgb: 23, 33, 26;
+  --mf-shadow-rgb: 0, 0, 0;
   --mf-surface: #17211a;
   --mf-surface2: #1d2a20;
   --mf-line: #2a3a2d;
@@ -153,8 +160,11 @@
 
   --mf-clay: #e08a7e;
   --mf-grape: #b49ae0;
+  --mf-grape-rgb: 180, 154, 224;
   --mf-ember: #e8a06a;
+  --mf-ember-rgb: 232, 160, 106;
   --mf-teal: #6cc8bf;
+  --mf-teal-rgb: 108, 200, 191;
 
   --mf-scrim: rgba(0, 0, 0, 0.6);
   --mf-scrim-soft: rgba(0, 0, 0, 0.5);

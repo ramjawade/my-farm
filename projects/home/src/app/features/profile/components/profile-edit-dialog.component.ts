@@ -73,52 +73,87 @@ export class ProfileEditDialogComponent {
   readonly languages = SUPPORTED_LANGUAGES;
 
   readonly cropOptions = [
-    { value: 'Wheat', label: 'Wheat', icon: 'bi-flower2', color: '#d69e2e' },
-    { value: 'Rice', label: 'Rice', icon: 'bi-water', color: '#3182ce' },
-    { value: 'Corn', label: 'Corn', icon: 'bi-sun-fill', color: '#ecc94b' },
-    { value: 'Cotton', label: 'Cotton', icon: 'bi-cloud-fill', color: '#a0aec0' },
-    { value: 'Sugarcane', label: 'Sugarcane', icon: 'bi-distribute-vertical', color: '#38a169' },
-    { value: 'Soybeans', label: 'Soybeans', icon: 'bi-record-circle', color: '#4a5568' },
-    { value: 'Mustard', label: 'Mustard', icon: 'bi-brightness-high', color: '#d69e2e' },
-    { value: 'Vegetables', label: 'Vegetables', icon: 'bi-basket', color: '#e53e3e' },
-    { value: 'Fruits', label: 'Fruits', icon: 'bi-apple', color: '#e53e3e' },
+    { value: 'Wheat', label: 'Wheat', icon: 'bi-flower2', color: 'var(--mf-sun)' },
+    { value: 'Rice', label: 'Rice', icon: 'bi-water', color: 'var(--mf-sky)' },
+    { value: 'Corn', label: 'Corn', icon: 'bi-sun-fill', color: 'var(--mf-sun)' },
+    { value: 'Cotton', label: 'Cotton', icon: 'bi-cloud-fill', color: 'var(--mf-muted)' },
+    {
+      value: 'Sugarcane',
+      label: 'Sugarcane',
+      icon: 'bi-distribute-vertical',
+      color: 'var(--mf-leaf)',
+    },
+    { value: 'Soybeans', label: 'Soybeans', icon: 'bi-record-circle', color: 'var(--mf-fg)' },
+    { value: 'Mustard', label: 'Mustard', icon: 'bi-brightness-high', color: 'var(--mf-sun)' },
+    { value: 'Vegetables', label: 'Vegetables', icon: 'bi-basket', color: 'var(--mf-rose)' },
+    { value: 'Fruits', label: 'Fruits', icon: 'bi-apple', color: 'var(--mf-rose)' },
   ];
 
   readonly waterSourceOptions = [
-    { value: 'Borewell', label: 'Borewell', icon: 'bi-box-arrow-down', color: '#718096' },
-    { value: 'Canal', label: 'Canal', icon: 'bi-water', color: '#2b6cb0' },
-    { value: 'River', label: 'River', icon: 'bi-droplet-fill', color: '#3182ce' },
-    { value: 'Farm Pond', label: 'Farm Pond', icon: 'bi-moisture', color: '#319795' },
-    { value: 'Rainfed', label: 'Rainfed', icon: 'bi-cloud-rain-fill', color: '#4a5568' },
+    { value: 'Borewell', label: 'Borewell', icon: 'bi-box-arrow-down', color: 'var(--mf-muted)' },
+    { value: 'Canal', label: 'Canal', icon: 'bi-water', color: 'var(--mf-sky)' },
+    { value: 'River', label: 'River', icon: 'bi-droplet-fill', color: 'var(--mf-sky)' },
+    { value: 'Farm Pond', label: 'Farm Pond', icon: 'bi-moisture', color: 'var(--mf-teal)' },
+    { value: 'Rainfed', label: 'Rainfed', icon: 'bi-cloud-rain-fill', color: 'var(--mf-fg)' },
   ];
 
   readonly irrigationTypeOptions = [
-    { value: 'Drip', label: 'Drip', icon: 'bi-droplet-half', color: '#319795' },
-    { value: 'Sprinkler', label: 'Sprinkler', icon: 'bi-cloud-drizzle-fill', color: '#4a5568' },
-    { value: 'Flood', label: 'Flood', icon: 'bi-water', color: '#3182ce' },
-    { value: 'Manual', label: 'Manual', icon: 'bi-person-fill', color: '#d69e2e' },
+    { value: 'Drip', label: 'Drip', icon: 'bi-droplet-half', color: 'var(--mf-teal)' },
+    {
+      value: 'Sprinkler',
+      label: 'Sprinkler',
+      icon: 'bi-cloud-drizzle-fill',
+      color: 'var(--mf-fg)',
+    },
+    { value: 'Flood', label: 'Flood', icon: 'bi-water', color: 'var(--mf-sky)' },
+    { value: 'Manual', label: 'Manual', icon: 'bi-person-fill', color: 'var(--mf-sun)' },
   ];
 
   readonly farmingMethods = [
-    { value: 'Organic', label: 'Organic', icon: 'bi-leaf-fill', color: '#38a169' },
-    { value: 'Conventional', label: 'Conventional', icon: 'bi-gear-fill', color: '#718096' },
+    { value: 'Organic', label: 'Organic', icon: 'bi-leaf-fill', color: 'var(--mf-leaf)' },
+    {
+      value: 'Conventional',
+      label: 'Conventional',
+      icon: 'bi-gear-fill',
+      color: 'var(--mf-muted)',
+    },
     {
       value: 'Conservation Farming',
       label: 'Conservation Farming',
       icon: 'bi-shield-shaded',
-      color: '#319795',
+      color: 'var(--mf-teal)',
     },
-    { value: 'Natural Farming', label: 'Natural Farming', icon: 'bi-sun-fill', color: '#ecc94b' },
+    {
+      value: 'Natural Farming',
+      label: 'Natural Farming',
+      icon: 'bi-sun-fill',
+      color: 'var(--mf-sun)',
+    },
   ];
 
   readonly roleOptions = [
-    { value: 'Farmer', label: 'Farmer', icon: 'bi-person-badge-fill', color: '#2a6f47' },
-    { value: 'Farm Owner', label: 'Farm Owner', icon: 'bi-house-heart-fill', color: '#2b6cb0' },
-    { value: 'Agronomist', label: 'Agronomist', icon: 'bi-clipboard-pulse', color: '#d69e2e' },
-    { value: 'Farm Worker', label: 'Farm Worker', icon: 'bi-wrench-adjustable', color: '#4a5568' },
-    { value: 'Student', label: 'Student', icon: 'bi-mortarboard-fill', color: '#319795' },
-    { value: 'Researcher', label: 'Researcher', icon: 'bi-search', color: '#e53e3e' },
-    { value: 'Gardener', label: 'Gardener', icon: 'bi-flower1', color: '#38a169' },
+    { value: 'Farmer', label: 'Farmer', icon: 'bi-person-badge-fill', color: 'var(--mf-leaf)' },
+    {
+      value: 'Farm Owner',
+      label: 'Farm Owner',
+      icon: 'bi-house-heart-fill',
+      color: 'var(--mf-sky)',
+    },
+    {
+      value: 'Agronomist',
+      label: 'Agronomist',
+      icon: 'bi-clipboard-pulse',
+      color: 'var(--mf-sun)',
+    },
+    {
+      value: 'Farm Worker',
+      label: 'Farm Worker',
+      icon: 'bi-wrench-adjustable',
+      color: 'var(--mf-fg)',
+    },
+    { value: 'Student', label: 'Student', icon: 'bi-mortarboard-fill', color: 'var(--mf-teal)' },
+    { value: 'Researcher', label: 'Researcher', icon: 'bi-search', color: 'var(--mf-rose)' },
+    { value: 'Gardener', label: 'Gardener', icon: 'bi-flower1', color: 'var(--mf-leaf)' },
   ];
 
   // Leaflet map instances

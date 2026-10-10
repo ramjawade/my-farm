@@ -50,17 +50,17 @@ import { WorkflowStateService } from '../../../core/workflow/workflow-state.serv
 
       .progress-label {
         font-weight: 500;
-        color: #333;
+        color: var(--mf-fg);
       }
 
       .progress-percent {
-        color: #2a6f47;
+        color: var(--mf-leaf);
         font-weight: 600;
         font-size: 0.8rem;
       }
 
       .progress {
-        background-color: #e9f5f0;
+        background-color: var(--mf-leaf-soft);
         border-radius: 3px;
       }
     `,

@@ -23,11 +23,11 @@
   max-width: 80%;
 
   &--bot {
-    background-color: #e7f2ec;
+    background-color: var(--mf-leaf-soft);
   }
 
   &--farmer {
-    background-color: #2f6e4b;
-    color: #ffffff;
+    background-color: var(--mf-leaf);
+    color: var(--mf-on-leaf);
   }
 }

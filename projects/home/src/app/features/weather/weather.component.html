@@ -47,7 +47,7 @@
       message="Tell us your village and state to receive localized weather forecasts, precise satellite mapping coordinates, and customized agronomy advisories for your fields."
       actionLabel="Configure Location"
       icon="bi-geo-alt-fill"
-      color="#2e7d32"
+      color="var(--mf-leaf)"
       buttonStyle="btn-success"
       (action)="onLocationPromptAction()"
       (dismiss)="onLocationPromptDismiss()"
@@ -58,7 +58,7 @@
   @if (showLocationPrompt() && !shouldShowLocationPrompt()) {
     <div
       class="card card-glass mb-4 p-4 border border-warning-subtle shadow-sm animate-fade-in"
-      style="border-left: 4px solid #2e7d32 !important"
+      style="border-left: 4px solid var(--mf-leaf) !important"
     >
       <div class="row align-items-center g-3">
         <div class="col-lg-8 col-12">
@@ -314,7 +314,10 @@
           @if (dropdownOpen()) {
             <div
               class="position-absolute end-0 mt-2 bg-white rounded-3 shadow-lg border border-light-subtle py-1 overflow-hidden animate-fade-in"
-              style="min-width: 110px; box-shadow: 0 10px 30px rgba(46, 125, 50, 0.08) !important"
+              style="
+                min-width: 110px;
+                box-shadow: 0 10px 30px rgba(var(--mf-leaf-rgb), 0.08) !important;
+              "
             >
               <button
                 type="button"

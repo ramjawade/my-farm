@@ -1,21 +1,21 @@
 .onboarding-card {
-  border-left: 4px solid hsl(142, 52%, 42%) !important;
+  border-left: 4px solid var(--mf-leaf) !important;
 }
 
 .onboarding-step {
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease;
-  border-color: hsl(150, 15%, 90%) !important;
+  border-color: var(--mf-line) !important;
 
   &.is-done {
-    background: hsl(140, 45%, 97%);
+    background: var(--mf-leaf-soft);
     opacity: 0.85;
   }
 
   &.is-next {
-    border-color: hsl(142, 52%, 42%) !important;
-    background: hsl(140, 60%, 98%);
+    border-color: var(--mf-leaf) !important;
+    background: var(--mf-leaf-soft);
   }
 }
 
@@ -27,16 +27,16 @@
   place-items: center;
   font-size: 0.8rem;
   font-weight: 700;
-  background: hsl(150, 15%, 93%);
-  color: hsl(150, 10%, 40%);
+  background: var(--mf-surface2);
+  color: var(--mf-muted);
 
   .is-done & {
-    background: hsl(142, 52%, 42%);
-    color: #fff;
+    background: var(--mf-leaf);
+    color: var(--mf-on-leaf);
   }
 
   .is-next & {
-    background: hsl(142, 52%, 42%, 0.15);
-    color: hsl(142, 52%, 32%);
+    background: rgba(var(--mf-leaf-rgb), 0.15);
+    color: var(--mf-leaf);
   }
 }

@@ -29,10 +29,10 @@ export class LayerToggleControl extends L.Control {
       right: 12px;
       margin: 0;
       display: flex;
-      background: rgba(255, 255, 255, 0.96);
+      background: rgba(var(--mf-surface-rgb), 0.96);
       border-radius: 50rem;
       padding: 3px;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
+      box-shadow: 0 6px 16px rgba(var(--mf-shadow-rgb), 0.16);
       z-index: 999;
       gap: 2px;
     `;
@@ -44,7 +44,7 @@ export class LayerToggleControl extends L.Control {
       font-weight: 700;
       padding: 0.4rem 0.9rem;
       border-radius: 50rem;
-      color: #64748b;
+      color: var(--mf-muted);
       cursor: pointer;
       transition: all 0.2s ease;
       user-select: none;
@@ -57,8 +57,8 @@ export class LayerToggleControl extends L.Control {
       font-weight: 700;
       padding: 0.4rem 0.9rem;
       border-radius: 50rem;
-      background: linear-gradient(135deg, #2e7d32, #1b5e20);
-      color: #fff;
+      background: linear-gradient(135deg, var(--mf-leaf), var(--mf-leaf-ink));
+      color: var(--mf-on-leaf);
       cursor: pointer;
       transition: all 0.2s ease;
       user-select: none;
@@ -97,8 +97,8 @@ export class LayerToggleControl extends L.Control {
         font-weight: 700;
         padding: 0.4rem 0.9rem;
         border-radius: 50rem;
-        background: linear-gradient(135deg, #2e7d32, #1b5e20);
-        color: #fff;
+        background: linear-gradient(135deg, var(--mf-leaf), var(--mf-leaf-ink));
+        color: var(--mf-on-leaf);
         cursor: pointer;
         transition: all 0.2s ease;
         user-select: none;
@@ -110,7 +110,7 @@ export class LayerToggleControl extends L.Control {
         font-weight: 700;
         padding: 0.4rem 0.9rem;
         border-radius: 50rem;
-        color: #64748b;
+        color: var(--mf-muted);
         cursor: pointer;
         transition: all 0.2s ease;
         user-select: none;
@@ -122,7 +122,7 @@ export class LayerToggleControl extends L.Control {
         font-weight: 700;
         padding: 0.4rem 0.9rem;
         border-radius: 50rem;
-        color: #64748b;
+        color: var(--mf-muted);
         cursor: pointer;
         transition: all 0.2s ease;
         user-select: none;
@@ -134,8 +134,8 @@ export class LayerToggleControl extends L.Control {
         font-weight: 700;
         padding: 0.4rem 0.9rem;
         border-radius: 50rem;
-        background: linear-gradient(135deg, #2e7d32, #1b5e20);
-        color: #fff;
+        background: linear-gradient(135deg, var(--mf-leaf), var(--mf-leaf-ink));
+        color: var(--mf-on-leaf);
         cursor: pointer;
         transition: all 0.2s ease;
         user-select: none;

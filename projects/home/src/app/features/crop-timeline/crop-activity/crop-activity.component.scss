@@ -16,7 +16,7 @@
   position: sticky;
   top: 0;
   z-index: 1010;
-  background: rgba(243, 248, 245, 0.94);
+  background: rgba(var(--mf-surface-rgb), 0.94);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 
@@ -52,11 +52,11 @@
       height: 4px;
     }
     &::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.02);
+      background: rgba(var(--mf-shadow-rgb), 0.02);
       border-radius: 4px;
     }
     &::-webkit-scrollbar-thumb {
-      background: rgba(42, 111, 71, 0.15);
+      background: rgba(var(--mf-leaf-rgb), 0.15);
       border-radius: 4px;
     }
   }
@@ -110,18 +110,18 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: #ffffff;
-  border: 3px solid #e2e8f0;
+  background: var(--mf-surface);
+  border: 3px solid var(--mf-line);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   font-family: var(--mf-font-body, sans-serif);
   font-size: 0.85rem;
-  color: #718096;
+  color: var(--mf-muted);
   z-index: 6;
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 3px 6px rgba(var(--mf-shadow-rgb), 0.03);
 
   i {
     font-size: 0.95rem;
@@ -152,7 +152,7 @@
   font-size: 0.62rem;
   font-weight: 700;
   text-transform: uppercase;
-  color: #a0aec0;
+  color: var(--mf-muted);
   letter-spacing: 0.5px;
   display: block;
 }
@@ -161,7 +161,7 @@
   font-family: var(--mf-font-body, sans-serif);
   font-size: 0.76rem;
   font-weight: 600;
-  color: #4a5568;
+  color: var(--mf-fg);
   line-height: 1.25;
   margin-top: 3px;
   display: block;
@@ -176,44 +176,44 @@
   left: calc(50% + 19px); // Right edge of circle
   width: calc(100% - 38px); // Bridges perfectly to left edge of next step circle
   height: 4px;
-  background: #e2e8f0;
+  background: var(--mf-surface2);
   z-index: 2;
   transition: background-color 0.4s ease;
 
   &.completed {
-    background: #3f9b65;
+    background: var(--mf-leaf);
   }
 }
 
 // Completed Step state
 .lifecycle-step.completed {
   .step-circle {
-    background: #edf6f0;
-    border-color: #3f9b65;
-    color: #3f9b65;
+    background: var(--mf-leaf-soft);
+    border-color: var(--mf-leaf);
+    color: var(--mf-leaf);
   }
   .step-name {
-    color: #1b4b2f;
+    color: var(--mf-leaf-ink);
   }
   .step-label {
-    color: #3f9b65;
+    color: var(--mf-leaf);
   }
 }
 
 // Active Step state
 .lifecycle-step.active {
   .step-circle {
-    background: #1b4b2f;
-    border-color: #2a6f47;
-    color: #ffffff;
-    box-shadow: 0 4px 12px rgba(42, 111, 71, 0.25);
+    background: var(--mf-leaf-ink);
+    border-color: var(--mf-leaf);
+    color: var(--mf-on-leaf);
+    box-shadow: 0 4px 12px rgba(var(--mf-leaf-rgb), 0.25);
     transform: scale(1.1);
   }
   .step-name {
-    color: #1b4b2f;
+    color: var(--mf-leaf-ink);
     font-weight: 700;
   }
   .step-label {
-    color: #2a6f47;
+    color: var(--mf-leaf);
   }
 }

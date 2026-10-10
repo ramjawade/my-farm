@@ -41,8 +41,8 @@ import { RouterLink } from '@angular/router';
       display: grid;
       place-items: center;
       font-size: 2.2rem;
-      color: hsl(142, 52%, 38%);
-      background: hsl(140, 45%, 94%);
+      color: var(--mf-leaf);
+      background: var(--mf-leaf-soft);
     }
   `,
 })

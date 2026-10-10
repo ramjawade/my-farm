@@ -133,3 +133,56 @@
   --bs-progress-bg: var(--mf-surface2);
   --bs-progress-bar-bg: var(--mf-leaf);
 }
+
+// Bootstrap's fixed-colour utilities (bg-white, bg-light, text-dark …) are
+// literal colours that ignore the theme. Templates use them a lot, so map
+// them onto the tokens here once instead of editing every template.
+.bg-white,
+.bg-body {
+  background-color: var(--mf-surface) !important;
+}
+
+.bg-light,
+.bg-body-tertiary,
+.bg-body-secondary {
+  background-color: var(--mf-surface2) !important;
+}
+
+.bg-dark {
+  background-color: rgb(var(--mf-shadow-rgb)) !important;
+}
+
+.bg-secondary {
+  background-color: var(--mf-muted) !important;
+  color: var(--mf-bg) !important;
+}
+
+.text-dark,
+.text-body,
+.link-dark {
+  color: var(--mf-fg) !important;
+}
+
+.text-secondary {
+  color: var(--mf-muted) !important;
+}
+
+.border-light,
+.border-light-subtle,
+.border-white {
+  border-color: var(--mf-line) !important;
+}
+
+.btn-light {
+  --bs-btn-bg: var(--mf-surface);
+  --bs-btn-color: var(--mf-fg);
+  --bs-btn-border-color: var(--mf-line);
+}
+
+.navbar {
+  --bs-navbar-color: var(--mf-muted);
+  --bs-navbar-hover-color: var(--mf-fg);
+  --bs-navbar-active-color: var(--mf-fg);
+  --bs-navbar-brand-color: var(--mf-fg);
+  --bs-navbar-brand-hover-color: var(--mf-fg);
+}

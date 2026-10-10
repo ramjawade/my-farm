@@ -9,11 +9,11 @@ import { TranslatePipe } from '@ngx-translate/core';
   template: `
     <div
       class="workflow-prompt-card animate-fade-in mb-4 p-4 border-0 rounded-3 shadow-sm"
-      [style.border-left]="'4px solid ' + (color || '#2a6f47') + ' !important'"
+      [style.border-left]="'4px solid ' + (color || 'var(--mf-leaf)') + ' !important'"
     >
       <div class="row align-items-center g-3">
         <div class="col-lg-8 col-12">
-          <h5 class="fw-bold mb-2" [style.color]="color || '#2a6f47'">
+          <h5 class="fw-bold mb-2" [style.color]="color || 'var(--mf-leaf)'">
             <i [class]="'bi ' + icon + ' me-2'"></i>{{ title }}
           </h5>
           <p class="text-secondary mb-0">{{ message }}</p>
@@ -40,7 +40,7 @@ export class WorkflowPromptCardComponent {
   @Input() message: string = '';
   @Input() actionLabel: string = 'Get Started';
   @Input() icon: string = 'bi-info-circle';
-  @Input() color: string = '#2a6f47';
+  @Input() color: string = 'var(--mf-leaf)';
   @Input() buttonStyle: string = 'btn-success';
 
   @Output() readonly action = new EventEmitter<void>();

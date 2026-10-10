@@ -6,14 +6,14 @@ import { formatArea, getPolygonCentroid } from './farm-area.utils';
 import { FarmAreaResult, LatLngPoint, SavedFarm } from '../models/map.models';
 import { FarmDrawService } from './farm-draw.service';
 
-const DRAWING_COLOR = '#0d6efd';
-const COMPLETE_COLOR = '#198754';
+const DRAWING_COLOR = 'var(--mf-map-draw)';
+const COMPLETE_COLOR = 'var(--mf-map-done)';
 
 const vertexStyle: L.CircleMarkerOptions = {
   radius: 8,
   color: DRAWING_COLOR,
   weight: 3,
-  fillColor: '#ffffff',
+  fillColor: 'var(--mf-map-fill)',
   fillOpacity: 1,
   interactive: false,
 };
@@ -91,7 +91,7 @@ export class FarmDrawLayer {
               radius: 11,
               color: COMPLETE_COLOR,
               weight: 4,
-              fillColor: '#ffffff',
+              fillColor: 'var(--mf-map-fill)',
               className: 'map-drawing-finish-point',
             }
           : {}),
