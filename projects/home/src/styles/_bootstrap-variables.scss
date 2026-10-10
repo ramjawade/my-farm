@@ -32,18 +32,8 @@ $link-color: $mf-leaf-ink;
 $secondary-color: $mf-muted;
 
 // --- Typography ---
-$font-family-sans-serif:
-  'Figtree',
-  'Mukta',
-  'Segoe UI',
-  system-ui,
-  sans-serif;
-$headings-font-family:
-  'Bricolage Grotesque',
-  'Mukta',
-  'Segoe UI',
-  system-ui,
-  sans-serif;
+$font-family-sans-serif: 'Figtree', 'Mukta', 'Segoe UI', system-ui, sans-serif;
+$headings-font-family: 'Bricolage Grotesque', 'Mukta', 'Segoe UI', system-ui, sans-serif;
 $font-size-base: 0.875rem; // 14px, as in the prototype
 $line-height-base: 1.45;
 $headings-font-weight: 700;
