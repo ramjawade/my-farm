@@ -138,7 +138,9 @@ export class MapMyFarmComponent {
       }
 
       if (Object.keys(updates).length > 0) {
-        this.authService.updateProfile(updates);
+        this.authService
+          .updateProfile(updates)
+          .catch((e) => console.error('Failed to save farm details', e));
       }
     }
 

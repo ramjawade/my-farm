@@ -2,6 +2,7 @@ import { Injectable, inject, signal, computed, effect } from '@angular/core';
 import { Router } from '@angular/router';
 import { FarmerRegistrationService } from '../../features/farmer-registration/farmer-registration.service';
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
+import { FarmerProfileApiService } from '../api/farmer-profile-api.service';
 import { HttpService } from '../http/http.service';
 import { ReferenceDataService } from '../api/reference-data.service';
 
@@ -16,6 +17,7 @@ const SESSION_DURATION_MS = 24 * 60 * 60 * 1000;
 export class AuthService {
   private readonly router = inject(Router);
   private readonly registrationService = inject(FarmerRegistrationService);
+  private readonly profileApi = inject(FarmerProfileApiService);
   private readonly httpService = inject(HttpService);
   private readonly referenceData = inject(ReferenceDataService);
 
@@ -79,6 +81,7 @@ export class AuthService {
     // Warm the reference-data cache without making sign-in wait for it (#174).
     if (sessionToken) {
       this.referenceData.preload();
+      void this.hydrateFarm(farmer.id);
     }
   }
 
@@ -105,14 +108,31 @@ export class AuthService {
     }
   }
 
-  updateProfile(updates: Partial<FarmerRegistrationData>): void {
+  /**
+   * Save profile edits to the backend, then reflect them in the signed-in
+   * user. Rejects when a write fails, leaving the in-memory profile as it was.
+   */
+  async updateProfile(updates: Partial<FarmerRegistrationData>): Promise<void> {
     const user = this.currentUserSignal();
-    if (user) {
-      // Upsert: the farmer list may still be loading (or the user came from a
-      // demo login), so never drop a profile edit on the floor.
-      const updated = { ...user, ...updates };
-      this.registrationService.upsertFarmer(updated);
-      this.currentUserSignal.set(updated);
+    if (!user) return;
+    await this.profileApi.saveProfile(updates);
+    const latest = this.currentUserSignal();
+    if (latest?.id === user.id) {
+      this.currentUserSignal.set({ ...latest, ...updates });
+    }
+  }
+
+  /** Load the farm half of the profile (stored on the default farm) into the
+   * signed-in user. Failures leave the account-only profile in place. */
+  private async hydrateFarm(userId: number): Promise<void> {
+    try {
+      const farmFields = await this.profileApi.getFarmFields();
+      const user = this.currentUserSignal();
+      if (user?.id === userId) {
+        this.currentUserSignal.set({ ...user, ...farmFields });
+      }
+    } catch (e) {
+      console.error('Failed to load farm profile', e);
     }
   }
 
@@ -156,6 +176,7 @@ export class AuthService {
         if (found) {
           this.currentUserSignal.set(found);
           this.referenceData.preload();
+          await this.hydrateFarm(found.id);
           return;
         }
       }

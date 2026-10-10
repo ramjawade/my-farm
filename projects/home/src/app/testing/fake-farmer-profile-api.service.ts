@@ -8,6 +8,20 @@ import { FarmerRegistrationData } from '../features/farmer-registration/farmer-r
 @Injectable()
 export class FakeFarmerProfileApiService {
   farmers: FarmerRegistrationData[] = [];
+  /** Every `saveProfile` payload, in call order. */
+  savedProfiles: Partial<FarmerRegistrationData>[] = [];
+  /** Farm fields `getFarmFields` returns (the backend's stored farm). */
+  farmFields: Partial<FarmerRegistrationData> = {};
+  /** Make `saveProfile` reject, like a failed backend write. */
+  failSave = false;
+
+  async saveProfile(updates: Partial<FarmerRegistrationData>): Promise<void> {
+    if (this.failSave) throw new Error('save failed');
+    this.savedProfiles.push(updates);
+  }
+  async getFarmFields(): Promise<Partial<FarmerRegistrationData>> {
+    return this.farmFields;
+  }
 
   async getFarmerById(id: number): Promise<FarmerRegistrationData | undefined> {
     return this.farmers.find((f) => f.id === id);

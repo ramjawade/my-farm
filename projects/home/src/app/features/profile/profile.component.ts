@@ -9,6 +9,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { FarmerRegistrationData } from '../farmer-registration/farmer-registration.models';
 import { AuthService } from '../../core/auth/auth.service';
 import { FarmLookupService } from '../../core/farms/farm-lookup.service';
 import { SavedFarm } from '../../map/models/map.models';
@@ -121,9 +122,18 @@ export class ProfileComponent implements OnInit {
     this.showEditDialog.set(true);
   }
 
-  deleteAgronomic(): void {
+  private async saveDeletion(updates: Partial<FarmerRegistrationData>): Promise<void> {
+    try {
+      await this.authService.updateProfile(updates);
+    } catch (error) {
+      console.error('Failed to save profile', error);
+      this.toast.error("Couldn't save your changes. Check your connection and try again.");
+    }
+  }
+
+  async deleteAgronomic(): Promise<void> {
     if (confirm(this.translate.instant('profile.confirmDeleteAgronomic'))) {
-      this.authService.updateProfile({
+      await this.saveDeletion({
         userRole: 'Farmer',
         farmingMethod: '',
         farmSetupCompleted: false,
@@ -131,9 +141,9 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  deleteLandLocation(): void {
+  async deleteLandLocation(): Promise<void> {
     if (confirm(this.translate.instant('profile.confirmDeleteLand'))) {
-      this.authService.updateProfile({
+      await this.saveDeletion({
         farmName: '',
         farmArea: 0,
         farmAreaUnit: 'hectares',
@@ -148,9 +158,9 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  deleteOperations(): void {
+  async deleteOperations(): Promise<void> {
     if (confirm(this.translate.instant('profile.confirmDeleteOperations'))) {
-      this.authService.updateProfile({
+      await this.saveDeletion({
         waterSource: '',
         irrigationType: '',
         primaryCrops: [],
