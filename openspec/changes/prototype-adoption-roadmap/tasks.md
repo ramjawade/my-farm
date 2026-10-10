@@ -13,7 +13,7 @@ Each task is one child change: run `/opsx:propose`, get approval, apply it, merg
 ## 2. Phase 1: Account
 
 - [x] 2.1 `warli-login-registration`: Warli scene, the "राम राम मंडळी 🙏" greeting, phone + PIN sign-in, registration [prototype: login]
-- [ ] 2.2 `profile-settings`: settings-row list, edit dialog (centred on desktop, bottom sheet on the phone), move water source to the land and irrigation and farming method to the crop (backend migration), drop primary crops, profile KPIs and GPS [prototype: profile]
+- [x] 2.2 `profile-settings`: settings-row list, edit dialog (centred on desktop, bottom sheet on the phone), move water source to the land and irrigation and farming method to the crop (backend migration), drop primary crops, profile KPIs and GPS [prototype: profile]
 
 ## 3. Phase 2: Core farm screens
 
