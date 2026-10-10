@@ -45,7 +45,7 @@
 // Position the attribution watermark horizontally left to the Home button
 :host ::ng-deep .leaflet-control-attribution {
   margin-right: 3.25rem !important; /* Clear the 30px native Home Control nicely */
-  background: rgba(255, 255, 255, 0.8) !important;
+  background: rgba(var(--mf-surface-rgb), 0.8) !important;
   border-radius: var(--bs-border-radius-sm);
   padding: 2px 6px !important;
   box-shadow: var(--bs-box-shadow-sm);
@@ -60,16 +60,16 @@
   cursor: pointer;
 
   &:hover {
-    background-color: #f4f4f4 !important;
-    color: #157347 !important;
+    background-color: var(--mf-surface2) !important;
+    color: var(--mf-leaf-ink) !important;
   }
 }
 
 // Leaflet layer toggle button custom icon centering and hover states
 :host ::ng-deep .leaflet-bar {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 2px 8px rgba(var(--mf-shadow-rgb), 0.12) !important;
   border-radius: 6px !important;
-  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid rgba(var(--mf-shadow-rgb), 0.1) !important;
 }
 
 :host ::ng-deep .leaflet-bar a {
@@ -83,16 +83,16 @@
   padding: 0 !important;
   margin: 2px !important;
   border-radius: 4px !important;
-  background-color: #ffffff !important;
-  color: #2c3e50 !important;
-  border: 1px solid #e2e8f0 !important;
+  background-color: var(--mf-surface) !important;
+  color: var(--mf-fg) !important;
+  border: 1px solid var(--mf-line) !important;
   transition: all 0.2s ease !important;
 }
 
 :host ::ng-deep .leaflet-bar a:hover {
-  background-color: #f8f9fa !important;
-  border-color: #cbd5e1 !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08) !important;
+  background-color: var(--mf-surface) !important;
+  border-color: var(--mf-line) !important;
+  box-shadow: 0 2px 4px rgba(var(--mf-shadow-rgb), 0.08) !important;
 }
 
 :host ::ng-deep .leaflet-layer-toggle-button {
@@ -141,33 +141,33 @@
 :host ::ng-deep .farm-area-label__name {
   font-size: 0.85rem;
   font-weight: 800;
-  color: #198754;
+  color: var(--mf-leaf);
   text-transform: capitalize;
   line-height: 1.2;
   text-shadow:
-    -2px -2px 0 #ffffff,
-    2px -2px 0 #ffffff,
-    -2px 2px 0 #ffffff,
-    2px 2px 0 #ffffff,
-    -2px 0px 0 #ffffff,
-    2px 0px 0 #ffffff,
-    0px -2px 0 #ffffff,
-    0px 2px 0 #ffffff;
+    -2px -2px 0 var(--mf-surface),
+    2px -2px 0 var(--mf-surface),
+    -2px 2px 0 var(--mf-surface),
+    2px 2px 0 var(--mf-surface),
+    -2px 0px 0 var(--mf-surface),
+    2px 0px 0 var(--mf-surface),
+    0px -2px 0 var(--mf-surface),
+    0px 2px 0 var(--mf-surface);
 }
 
 :host ::ng-deep .farm-area-label__details {
   font-size: 0.7rem;
   font-weight: 700;
-  color: #212529;
+  color: var(--mf-fg);
   margin-top: 0.1rem;
   line-height: 1.2;
   text-shadow:
-    -2px -2px 0 #ffffff,
-    2px -2px 0 #ffffff,
-    -2px 2px 0 #ffffff,
-    2px 2px 0 #ffffff,
-    -2px 0px 0 #ffffff,
-    2px 0px 0 #ffffff,
-    0px -2px 0 #ffffff,
-    0px 2px 0 #ffffff;
+    -2px -2px 0 var(--mf-surface),
+    2px -2px 0 var(--mf-surface),
+    -2px 2px 0 var(--mf-surface),
+    2px 2px 0 var(--mf-surface),
+    -2px 0px 0 var(--mf-surface),
+    2px 0px 0 var(--mf-surface),
+    0px -2px 0 var(--mf-surface),
+    0px 2px 0 var(--mf-surface);
 }

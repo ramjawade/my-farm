@@ -2,7 +2,7 @@
 
 /* Backdrop glass overlay */
 .modal-backdrop {
-  background-color: rgba(44, 62, 80, 0.45) !important;
+  background-color: rgba(var(--mf-shadow-rgb), 0.45) !important;
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   transition: all 0.3s ease;
@@ -10,10 +10,10 @@
 
 /* Modal Card with pop-in entry */
 .modal-card {
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(var(--mf-surface-rgb), 0.3) !important;
+  background: rgba(var(--mf-surface-rgb), 0.96) !important;
   border-radius: 20px !important;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 24px 60px rgba(var(--mf-shadow-rgb), 0.15) !important;
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -60,53 +60,53 @@
 .field-label {
   font-size: 0.85rem;
   font-weight: 700;
-  color: $soil-primary;
+  color: var(--mf-muted);
   margin-bottom: 6px;
   display: block;
 }
 
 .required-label::after {
   content: ' *';
-  color: $danger;
+  color: var(--mf-rose);
 }
 
 .field-sub-label {
   font-size: 0.78rem;
-  color: $text-muted;
+  color: var(--mf-muted);
   margin-bottom: 12px;
   line-height: 1.35;
   font-weight: 400;
 }
 
 .input-group-text {
-  background-color: $light-mint;
-  border: 1.5px solid $border-mint;
-  color: $farm-green-primary;
+  background-color: var(--mf-leaf-soft);
+  border: 1.5px solid var(--mf-line);
+  color: var(--mf-leaf);
   border-radius: 8px 0 0 8px;
   padding: 10px 14px;
 }
 
 .form-control,
 .form-select {
-  border: 1.5px solid $border-mint;
+  border: 1.5px solid var(--mf-line);
   border-radius: 8px;
   padding: 10px 14px;
   font-size: 0.9rem;
-  color: $body-color;
-  background-color: $white;
+  color: var(--mf-fg);
+  background-color: var(--mf-surface);
   transition: all 0.2s ease;
 
   &:focus {
-    border-color: $farm-green-primary;
-    box-shadow: 0 0 0 3px rgba($farm-green-primary, 0.15);
+    border-color: var(--mf-leaf);
+    box-shadow: 0 0 0 3px rgba(var(--mf-leaf-rgb), 0.15);
   }
 }
 
 /* Shared base button option properties */
 .role-row-btn,
 .location-toggle-btn {
-  background-color: $white;
-  border: 1.5px solid rgba($farm-green-primary, 0.15);
+  background-color: var(--mf-surface);
+  border: 1.5px solid rgba(var(--mf-leaf-rgb), 0.15);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -116,10 +116,10 @@
   display: flex;
   align-items: center;
   border-radius: 12px;
-  color: $body-color;
+  color: var(--mf-fg);
   width: 100%;
   padding: 12px 16px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+  box-shadow: 0 2px 4px rgba(var(--mf-shadow-rgb), 0.01);
 
   i.bi {
     font-size: 1.35rem !important;
@@ -129,23 +129,23 @@
 
   .role-label-text {
     font-size: 0.88rem;
-    color: $body-color;
+    color: var(--mf-fg);
     transition: all 0.2s ease;
   }
 
   &:hover {
-    background-color: $light-mint;
-    border-color: rgba($farm-green-primary, 0.35);
+    background-color: var(--mf-leaf-soft);
+    border-color: rgba(var(--mf-leaf-rgb), 0.35);
   }
 
   &.active {
-    border-color: $farm-green-primary !important;
+    border-color: var(--mf-leaf) !important;
     border-width: 1.5px;
-    box-shadow: 0 4px 10px rgba($farm-green-primary, 0.08);
-    background-color: rgba($farm-green-primary, 0.04);
+    box-shadow: 0 4px 10px rgba(var(--mf-leaf-rgb), 0.08);
+    background-color: rgba(var(--mf-leaf-rgb), 0.04);
 
     .role-label-text {
-      color: $farm-green-primary;
+      color: var(--mf-leaf);
       font-weight: 700;
     }
   }
@@ -154,42 +154,42 @@
 /* Custom visual card Buttons for Location Method Selection */
 .location-toggle-btn {
   border-radius: 12px;
-  color: $body-color;
+  color: var(--mf-fg);
   padding: 14px 18px;
   width: 100%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+  box-shadow: 0 2px 4px rgba(var(--mf-shadow-rgb), 0.01);
 
   i.bi {
     font-size: 1.5rem !important;
-    color: $farm-green-light;
+    color: var(--mf-leaf);
     transition: all 0.2s ease;
   }
 
   .location-label-text {
     font-size: 0.9rem;
-    color: $body-color;
+    color: var(--mf-fg);
     transition: all 0.2s ease;
   }
 
   &:hover {
-    background-color: $light-mint;
-    border-color: $farm-green-primary;
+    background-color: var(--mf-leaf-soft);
+    border-color: var(--mf-leaf);
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba($farm-green-primary, 0.06);
+    box-shadow: 0 4px 10px rgba(var(--mf-leaf-rgb), 0.06);
   }
 
   &.active {
-    border-color: $farm-green-primary !important;
+    border-color: var(--mf-leaf) !important;
     border-width: 1.5px;
-    background-color: rgba($farm-green-primary, 0.04);
-    box-shadow: 0 4px 12px rgba($farm-green-primary, 0.1);
+    background-color: rgba(var(--mf-leaf-rgb), 0.04);
+    box-shadow: 0 4px 12px rgba(var(--mf-leaf-rgb), 0.1);
 
     i.bi {
-      color: $farm-green-primary;
+      color: var(--mf-leaf);
     }
 
     .location-label-text {
-      color: $farm-green-primary;
+      color: var(--mf-leaf);
       font-weight: 700;
     }
   }
@@ -197,14 +197,14 @@
 
 /* Premium Map Frame Container */
 .map-card-premium {
-  border: 1px solid rgba($farm-green-primary, 0.2);
+  border: 1px solid rgba(var(--mf-leaf-rgb), 0.2);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 15px rgba(var(--mf-shadow-rgb), 0.04);
 }
 
 .bg-dark-green {
-  background-color: $farm-green-dark;
+  background-color: var(--mf-leaf-ink);
 }
 
 .registration-map-wrapper {
@@ -221,7 +221,7 @@
 }
 
 .manual-location-card {
-  border: 1.5px solid rgba($farm-green-primary, 0.15) !important;
+  border: 1.5px solid rgba(var(--mf-leaf-rgb), 0.15) !important;
 }
 
 .btn-close {

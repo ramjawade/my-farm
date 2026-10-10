@@ -29,7 +29,7 @@
       <!-- Right side: Language Dropdown and User Avatar -->
       <div class="d-flex align-items-center gap-2 gap-sm-3 flex-shrink-0">
         <!-- Language switcher: writes to the same preferredLanguage field
-             the profile edit dialog uses, so both stay in sync (#208). -->
+             the profile edit dialog uses, so both stay in sync (var(--mf-sky-ink)). -->
         <div class="position-relative">
           <button
             type="button"
@@ -48,7 +48,7 @@
                 min-width: 200px;
                 max-height: 320px;
                 overflow-y: auto;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+                box-shadow: 0 10px 30px rgba(var(--mf-shadow-rgb), 0.08) !important;
                 z-index: 1060;
               "
             >
@@ -100,7 +100,7 @@
               class="position-absolute end-0 mt-2 bg-white rounded-3 shadow-lg border border-light-subtle py-2 overflow-hidden animate-fade-in"
               style="
                 min-width: 180px;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+                box-shadow: 0 10px 30px rgba(var(--mf-shadow-rgb), 0.08) !important;
                 z-index: 1060;
               "
             >

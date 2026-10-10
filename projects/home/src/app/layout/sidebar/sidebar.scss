@@ -6,8 +6,8 @@
 
 .app-sidebar {
   grid-area: sidebar;
-  background-color: $light;
-  border-right: 1px solid $border-color;
+  background-color: var(--mf-surface2);
+  border-right: 1px solid var(--mf-line);
   overflow-y: auto;
 }
 

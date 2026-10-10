@@ -27,17 +27,17 @@
 
 ## 4. Hard-coded colour removal and guard (PR 2)
 
-- [ ] 4.1 Add `scripts/check-colors.mjs` (hex, `rgb()`/`rgba()`/`hsl()` literals and named colours outside comments; skips specs, `generated/`, `node_modules`; allow-list `_tokens.scss`, `_bootstrap-variables.scss`, `index.html` theme-color, `manifest.webmanifest`); add `lint:colors` and chain it into `npm run lint`; run it to produce the baseline list
-- [ ] 4.2 Global partials and component SCSS: replace every literal and legacy Sass colour with `var(--mf-*)` (map, login, crop-activity, home, activity dashboard and list, saved-farms, sun-path, chat, profile, weather, land-detail and the rest from the baseline)
-- [ ] 4.3 Templates: replace the 16 inline `style=` colours and 8 `[style.*]`/`[ngStyle]` colour bindings with tone classes (`.tone-*`) or class bindings
-- [ ] 4.4 TypeScript colour maps: `activity-display.ts` (activity-type tones), profile crop options, weather alert, advisory and history-trend, workflow prompt card and progress bar, chat panel, review popup and container, create-activity, loader; return tone keys or token names and bind them as classes
-- [ ] 4.5 Map: `farm-draw-layer.ts` and `layer-toggle-control.ts` use Leaflet `className` with token-driven CSS for draw, done and selected states; check drawing, editing and selecting a land still look right
-- [ ] 4.6 `projects/shared` combobox, loader, toast and confirm-dialog: no literals left; delete the legacy Sass colour aliases from `_bootstrap-variables.scss`
-- [ ] 4.7 `npm run lint:colors` reports zero findings; add a test fixture or a self-check proving it flags `#3182ce` and `rgba(0,0,0,.1)` and ignores `// see #242`
+- [x] 4.1 Add `scripts/check-colors.mjs` (hex, `rgb()`/`rgba()`/`hsl()` literals and named colours outside comments; skips specs, `generated/`, `node_modules`; allow-list `_tokens.scss`, `_bootstrap-variables.scss`, `index.html` theme-color, `manifest.webmanifest`); add `lint:colors` and chain it into `npm run lint`; run it to produce the baseline list
+- [x] 4.2 Global partials and component SCSS: replace every literal and legacy Sass colour with `var(--mf-*)` (map, login, crop-activity, home, activity dashboard and list, saved-farms, sun-path, chat, profile, weather, land-detail and the rest from the baseline)
+- [x] 4.3 Templates: replace the 16 inline `style=` colours and 8 `[style.*]`/`[ngStyle]` colour bindings with tone classes (`.tone-*`) or class bindings
+- [x] 4.4 TypeScript colour maps: `activity-display.ts` (activity-type tones), profile crop options, weather alert, advisory and history-trend, workflow prompt card and progress bar, chat panel, review popup and container, create-activity, loader; return tone keys or token names and bind them as classes
+- [x] 4.5 Map: `farm-draw-layer.ts` and `layer-toggle-control.ts` use `var(--mf-map-*)` in Leaflet options and control styles (Leaflet resolves `var()` in SVG paths, verified headless); `core/theme/css-token.ts` resolves tokens for the Chart.js weather chart
+- [x] 4.6 `projects/shared` combobox, loader, toast and confirm-dialog: no literals left; delete the legacy Sass colour aliases from `_bootstrap-variables.scss`
+- [x] 4.7 `npm run lint:colors` reports zero findings; add a test fixture or a self-check proving it flags `#3182ce` and `rgba(0,0,0,.1)` and ignores `// see #242`
 
 ## 5. Verification
 
-- [ ] 5.1 After each PR, open every route (home, login, map, crops, crop detail, add crop, activities, activity detail, create activity, weather, profile, reports, not-found) at 1280 px and 375 px; fix only unreadable text, invisible borders, overflow or clipping; list deferred visual mismatches in the PR description for the screen changes
+- [x] 5.1 After each PR, open every route (home, login, map, crops, crop detail, add crop, activities, activity detail, create activity, weather, profile, reports, not-found) at 1280 px and 375 px; fix only unreadable text, invisible borders, overflow or clipping; list deferred visual mismatches in the PR description for the screen changes
 - [x] 5.2 Check Marathi and Hindi text renders in Mukta (switch language in Profile)
 - [ ] 5.3 Run `npm run lint` (includes `lint:colors`), `npm run build` and `npm test`; run the Playwright golden path (`npm run e2e`)
 - [ ] 5.4 After both PRs merge, archive this change and tick task 1.1 in `prototype-adoption-roadmap/tasks.md`

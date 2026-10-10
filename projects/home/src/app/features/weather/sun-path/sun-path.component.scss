@@ -49,12 +49,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffb300;
+  color: var(--mf-sun);
   font-size: 26px;
   line-height: 1;
   pointer-events: none;
   user-select: none;
-  text-shadow: 0 2px 6px rgba(255, 179, 0, 0.35);
+  text-shadow: 0 2px 6px rgba(var(--mf-sun-rgb), 0.35);
   transition:
     left 0.1s linear,
     top 0.1s linear;
@@ -76,7 +76,10 @@
   .label-text {
     font-size: 0.62rem;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.72); // High-contrast semi-transparent white for dark background
+    color: rgba(
+      var(--mf-surface-rgb),
+      0.72
+    ); // High-contrast semi-transparent white for dark background
     text-transform: uppercase;
     letter-spacing: 0.05em;
     line-height: 1;
@@ -94,15 +97,15 @@
 .sunrise {
   left: 50px; // Shifted closer to the chord arc start (X = 68.9)
   transform: translateX(-50%);
-  color: #ffd54f; // Glow yellow for stunning contrast on green
-  text-shadow: 0 1px 3px rgba(255, 213, 79, 0.2);
+  color: var(--mf-on-leaf); // Readable on the green hero in both themes
+  text-shadow: 0 1px 3px rgba(var(--mf-sun-rgb), 0.2);
 }
 
 .sunset {
   left: 310px; // Shifted closer to the chord arc end (X = 291.1)
   transform: translateX(-50%);
-  color: #ff8a65; // Soft warm sunset coral-orange for premium, high-contrast look
-  text-shadow: 0 1px 3px rgba(255, 138, 101, 0.2);
+  color: var(--mf-on-leaf); // Readable on the green hero in both themes
+  text-shadow: 0 1px 3px rgba(var(--mf-rose-rgb), 0.2);
 }
 
 .sunrise i,
@@ -134,18 +137,18 @@
 .time-display {
   font-size: 1.35rem;
   font-weight: 800;
-  color: #ffffff; // Clean high-contrast white clock text
+  color: var(--mf-on-leaf); // Clean high-contrast white clock text
   line-height: 1;
   letter-spacing: -0.01em;
-  text-shadow: 0 0 10px rgba(255, 224, 130, 0.4); // Warm solar glow
+  text-shadow: 0 0 10px rgba(var(--mf-sun-rgb), 0.4); // Warm solar glow
 
   &.night-text {
-    color: #ffffff; // High-contrast white nighttime clock
-    text-shadow: 0 0 10px rgba(0, 229, 255, 0.4); // Cool celestial lunar glow
+    color: var(--mf-on-leaf); // High-contrast white nighttime clock
+    text-shadow: 0 0 10px rgba(var(--mf-teal-rgb), 0.4); // Cool celestial lunar glow
   }
 }
 
 .sun-icon-overlay.night-mode {
-  color: #b2ebf2; // Glowing light blue/silver moon
-  text-shadow: 0 2px 8px rgba(0, 188, 212, 0.45);
+  color: var(--mf-teal); // Glowing light blue/silver moon
+  text-shadow: 0 2px 8px rgba(var(--mf-teal-rgb), 0.45);
 }

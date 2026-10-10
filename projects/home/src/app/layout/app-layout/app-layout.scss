@@ -36,6 +36,6 @@
     position: absolute;
     inset: 0;
     z-index: $zindex-offcanvas-backdrop;
-    background-color: rgba($black, 0.5);
+    background-color: rgba(var(--mf-shadow-rgb), 0.5);
   }
 }

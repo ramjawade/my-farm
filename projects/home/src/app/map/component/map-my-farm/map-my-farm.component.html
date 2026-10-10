@@ -6,7 +6,7 @@
       [message]="'mapMyFarm.drawBoundaryMessage' | translate"
       [actionLabel]="'mapMyFarm.startDrawing' | translate"
       icon="bi-pin-map-fill"
-      color="#2a6f47"
+      color="var(--mf-leaf)"
       buttonStyle="btn-success"
       (action)="onLandPromptAction()"
       (dismiss)="onLandPromptDismiss()"
@@ -17,9 +17,9 @@
     <div
       class="alert alert-success p-2.5 mb-2 border-0 rounded-3 text-start animate-fade-in"
       style="
-        background-color: rgba(46, 125, 50, 0.09);
+        background-color: rgba(var(--mf-leaf-rgb), 0.09);
         font-size: 0.75rem;
-        color: #1b5e20;
+        color: var(--mf-leaf-ink);
         line-height: 1.35;
       "
     >

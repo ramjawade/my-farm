@@ -27,8 +27,12 @@ import { NgClass, NgIf, NgForOf } from '@angular/common';
   styles: [
     `
       .alert-banner {
-        background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(255, 193, 7, 0.1) 100%);
-        border-top: 3px solid #dc3545;
+        background: linear-gradient(
+          135deg,
+          rgba(var(--mf-rose-rgb), 0.1) 0%,
+          rgba(var(--mf-sun-rgb), 0.1) 100%
+        );
+        border-top: 3px solid var(--mf-rose);
         padding: 12px 16px;
         margin-bottom: 16px;
       }
@@ -44,19 +48,19 @@ import { NgClass, NgIf, NgForOf } from '@angular/common';
         padding: 10px 12px;
         border-left: 3px solid;
         border-radius: 4px;
-        background: rgba(255, 255, 255, 0.5);
+        background: rgba(var(--mf-surface-rgb), 0.5);
       }
       .alert-item.high {
-        border-left-color: #dc3545;
-        background: rgba(220, 53, 69, 0.08);
+        border-left-color: var(--mf-rose);
+        background: rgba(var(--mf-rose-rgb), 0.08);
       }
       .alert-item.medium {
-        border-left-color: #ffc107;
-        background: rgba(255, 193, 7, 0.08);
+        border-left-color: var(--mf-sun);
+        background: rgba(var(--mf-sun-rgb), 0.08);
       }
       .alert-item.low {
-        border-left-color: #0dcaf0;
-        background: rgba(13, 202, 240, 0.08);
+        border-left-color: var(--mf-sky);
+        background: rgba(var(--mf-sky-rgb), 0.08);
       }
       .alert-item i {
         font-size: 18px;
@@ -64,13 +68,13 @@ import { NgClass, NgIf, NgForOf } from '@angular/common';
         flex-shrink: 0;
       }
       .alert-item.high i {
-        color: #dc3545;
+        color: var(--mf-rose);
       }
       .alert-item.medium i {
-        color: #ffc107;
+        color: var(--mf-sun);
       }
       .alert-item.low i {
-        color: #0dcaf0;
+        color: var(--mf-sky);
       }
       .alert-content {
         flex: 1;
@@ -80,26 +84,26 @@ import { NgClass, NgIf, NgForOf } from '@angular/common';
         margin: 0 0 2px 0;
         font-size: 14px;
         font-weight: 600;
-        color: #212529;
+        color: var(--mf-fg);
       }
       .alert-desc {
         margin: 0;
         font-size: 13px;
-        color: #6c757d;
+        color: var(--mf-muted);
         line-height: 1.4;
       }
       .btn-dismiss {
         background: none;
         border: none;
         font-size: 20px;
-        color: #6c757d;
+        color: var(--mf-muted);
         cursor: pointer;
         padding: 0;
         margin-left: 8px;
         flex-shrink: 0;
       }
       .btn-dismiss:hover {
-        color: #212529;
+        color: var(--mf-fg);
       }
     `,
   ],

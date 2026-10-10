@@ -7,12 +7,12 @@
         <!-- DEFINITIONS: CELESTIAL GRADIENTS -->
         <defs>
           <linearGradient id="sunGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stop-color="#ffca28"></stop>
-            <stop offset="100%" stop-color="#ff7043"></stop>
+            <stop offset="0%" stop-color="var(--mf-sun)"></stop>
+            <stop offset="100%" stop-color="var(--mf-rose)"></stop>
           </linearGradient>
           <linearGradient id="nightGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stop-color="#b2ebf2"></stop>
-            <stop offset="100%" stop-color="#00e5ff"></stop>
+            <stop offset="0%" stop-color="var(--mf-sky)"></stop>
+            <stop offset="100%" stop-color="var(--mf-teal)"></stop>
           </linearGradient>
         </defs>
 
@@ -55,7 +55,8 @@
             [attr.cx]="celestialPosition().cx"
             [attr.cy]="celestialPosition().cy"
             r="20"
-            [attr.fill]="isDaytime() ? 'rgba(255, 213, 79, 0.25)' : 'rgba(0, 229, 255, 0.25)'"
+            [attr.fill]="isDaytime() ? 'var(--mf-sun)' : 'var(--mf-teal)'"
+            fill-opacity="0.25"
             style="
               transition:
                 cx 0.1s linear,

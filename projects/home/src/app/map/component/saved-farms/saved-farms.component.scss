@@ -8,7 +8,7 @@
   left: 0.75rem;
   z-index: 1000;
   width: 14rem;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(var(--mf-surface-rgb), 0.95);
   border-radius: var(--bs-border-radius);
   overflow: hidden;
   display: flex;
@@ -21,7 +21,7 @@
 
 .map-page__saved-farms-header {
   padding: 0.5rem 0.75rem;
-  background: #ffffff;
+  background: var(--mf-surface);
   border-bottom: 1px solid var(--bs-border-color-translucent);
   user-select: none;
 }
@@ -47,7 +47,7 @@
 }
 
 .map-page__saved-farms-list::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(var(--mf-shadow-rgb), 0.15);
   border-radius: 2px;
 }
 
@@ -69,11 +69,11 @@
 }
 
 .map-page__saved-farms-list .list-group-item:hover {
-  background: var(--bs-light);
+  background: var(--mf-surface2);
 }
 
 .map-page__saved-farms-list .list-group-item.active-farm {
-  background: rgba(25, 135, 84, 0.08);
+  background: rgba(var(--mf-leaf-rgb), 0.08);
   border-left: 3px solid var(--bs-success) !important;
   padding-left: calc(0.5rem) !important;
 }
@@ -103,21 +103,29 @@
 }
 
 .status-planted {
-  background: linear-gradient(135deg, rgba(46, 125, 50, 0.14), rgba(102, 187, 106, 0.18));
-  color: #1b5e20;
-  border: 1px solid rgba(46, 125, 50, 0.22);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--mf-leaf-rgb), 0.14),
+    rgba(var(--mf-leaf-rgb), 0.18)
+  );
+  color: var(--mf-leaf-ink);
+  border: 1px solid rgba(var(--mf-leaf-rgb), 0.22);
 }
 
 .status-fallow {
-  background: linear-gradient(135deg, rgba(109, 76, 65, 0.1), rgba(141, 110, 99, 0.12));
-  color: #4e342e;
-  border: 1px solid rgba(109, 76, 65, 0.18);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--mf-shadow-rgb), 0.1),
+    rgba(var(--mf-shadow-rgb), 0.12)
+  );
+  color: var(--mf-fg);
+  border: 1px solid rgba(var(--mf-shadow-rgb), 0.18);
 }
 
 .status-multiple {
-  background: linear-gradient(135deg, rgba(255, 152, 0, 0.12), rgba(255, 193, 7, 0.14));
-  color: #e65100;
-  border: 1px solid rgba(255, 152, 0, 0.22);
+  background: linear-gradient(135deg, rgba(var(--mf-sun-rgb), 0.12), rgba(var(--mf-sun-rgb), 0.14));
+  color: var(--mf-ember);
+  border: 1px solid rgba(var(--mf-sun-rgb), 0.22);
 }
 
 .map-page__saved-farm-actions {
@@ -135,7 +143,7 @@
   border: none;
   border-radius: 6px;
   background: transparent;
-  color: #94a3b8;
+  color: var(--mf-muted);
   opacity: 0.85;
   cursor: pointer;
   transition:
@@ -145,7 +153,7 @@
 
 .icon-btn:hover {
   opacity: 1;
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(var(--mf-shadow-rgb), 0.05);
 }
 
 .icon-btn svg {
@@ -153,35 +161,35 @@
 }
 
 .icon-btn--danger {
-  color: #d32f2f;
+  color: var(--mf-rose);
 }
 
 .icon-btn--save {
   width: 24px;
   height: 24px;
   border-radius: 7px;
-  color: #2e7d32;
-  background: rgba(46, 125, 50, 0.12);
+  color: var(--mf-leaf);
+  background: rgba(var(--mf-leaf-rgb), 0.12);
 }
 
 .icon-btn--cancel {
   width: 24px;
   height: 24px;
   border-radius: 7px;
-  color: #64748b;
-  background: #f1f5f9;
+  color: var(--mf-muted);
+  background: var(--mf-surface2);
 }
 
 .map-page__saved-farm-rename-input {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--mf-fg);
   border: 1.5px solid var(--bs-success);
   border-radius: 6px;
   padding: 0.3rem 0.5rem;
   font-family: inherit;
   outline: none;
   width: 100%;
-  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.12);
-  background: #fff;
+  box-shadow: 0 0 0 3px rgba(var(--mf-leaf-rgb), 0.12);
+  background: var(--mf-surface);
 }

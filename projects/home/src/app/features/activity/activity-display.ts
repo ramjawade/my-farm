@@ -57,32 +57,37 @@ export function activityTypeEmoji(type: ActivityType): string {
   }
 }
 
-/** Hex color for activity type. */
-export function activityTypeColor(type: ActivityType): string {
+/** Design token (CSS custom property) holding the colour for an activity type. */
+export function activityTypeColorToken(type: ActivityType): string {
   switch (type) {
     case 'Sowing':
-      return '#38a169';
+      return '--mf-type-sowing';
     case 'Irrigation':
-      return '#3182ce';
+      return '--mf-type-irrigation';
     case 'Fertilizer Application':
-      return '#805ad5';
+      return '--mf-type-fertilizer';
     case 'Spray Application':
-      return '#e53e3e';
+      return '--mf-type-spray';
     case 'Weeding':
-      return '#dd6b20';
+      return '--mf-type-weeding';
     case 'Field Inspection':
-      return '#319795';
+      return '--mf-type-inspection';
     case 'Labour Activity':
-      return '#4a5568';
+      return '--mf-type-labour';
     case 'Harvest':
-      return '#d69e2e';
+      return '--mf-type-harvest';
     case 'Sale':
-      return '#38a169';
+      return '--mf-type-sale';
     case 'Weather Incident':
-      return '#e53e3e';
+      return '--mf-type-weather';
     default:
-      return '#4a5568';
+      return '--mf-type-custom';
   }
+}
+
+/** CSS colour value for an activity type, e.g. for a style binding. */
+export function activityTypeColor(type: ActivityType): string {
+  return `var(${activityTypeColorToken(type)})`;
 }
 
 /** Icon class for expense category (Bootstrap icon). */

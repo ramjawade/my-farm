@@ -1,14 +1,14 @@
 // Bottom Aggregate Stats Styling
 .bottom-stat {
-  background: white;
+  background: var(--mf-surface);
   border-radius: 18px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 15px rgba(var(--mf-shadow-rgb), 0.04);
   transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
   min-height: 120px;
 
   &:hover {
-    box-shadow: 0 8px 24px rgba(46, 125, 50, 0.08);
-    border-color: rgba(46, 125, 50, 0.2) !important;
+    box-shadow: 0 8px 24px rgba(var(--mf-leaf-rgb), 0.08);
+    border-color: rgba(var(--mf-leaf-rgb), 0.2) !important;
   }
 }
 
@@ -16,15 +16,15 @@
 .weather-card {
   border: none;
   border-radius: 18px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 15px rgba(var(--mf-shadow-rgb), 0.05);
   transition:
     transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
     box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  background: white;
+  background: var(--mf-surface);
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 10px 25px rgba(var(--mf-shadow-rgb), 0.08);
   }
 }
 
@@ -35,7 +35,7 @@
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(46, 125, 50, 0.15);
+    box-shadow: 0 4px 10px rgba(var(--mf-leaf-rgb), 0.15);
   }
 }
 
@@ -47,7 +47,7 @@
   align-items: center;
   justify-content: center;
   font-size: 1.6rem;
-  color: white;
+  color: var(--mf-on-leaf);
   flex-shrink: 0;
 }
 

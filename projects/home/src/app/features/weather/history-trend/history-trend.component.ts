@@ -9,6 +9,7 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { Chart, registerables } from 'chart.js';
+import { cssColor, cssColorAlpha } from '../../../core/theme/css-token';
 
 Chart.register(...registerables);
 
@@ -103,20 +104,20 @@ export class HistoryTrendComponent {
         : 16;
   });
 
+  private temperatureToken(tempValue: number): string {
+    if (tempValue < 15) return '--mf-temp-cold';
+    if (tempValue < 25) return '--mf-temp-cool';
+    if (tempValue < 35) return '--mf-temp-warm';
+    return '--mf-temp-hot';
+  }
+
   private getTemperatureColor(tempValue: number): string {
-    if (tempValue < 15) return '#2196F3'; // blue
-    if (tempValue < 25) return '#4CAF50'; // green
-    if (tempValue < 35) return '#FF9800'; // orange
-    return '#F44336'; // red
+    return cssColor(this.temperatureToken(tempValue));
   }
 
   /** Same color family as `getTemperatureColor`, as an rgba string for gradient stops. */
   private temperatureColorRgba(tempValue: number, alpha: number): string {
-    const hex = this.getTemperatureColor(tempValue);
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    return cssColorAlpha(this.temperatureToken(tempValue), alpha);
   }
 
   constructor() {
@@ -149,7 +150,7 @@ export class HistoryTrendComponent {
               fill: true,
               tension: 0.3,
               borderWidth: 3,
-              pointBackgroundColor: '#ffffff',
+              pointBackgroundColor: cssColor('--mf-surface'),
               pointBorderColor: this.getTemperatureColor(this.avgTemp()),
               pointBorderWidth: 2,
               pointRadius: 4.5,
@@ -160,13 +161,13 @@ export class HistoryTrendComponent {
               label: 'Rainfall (mm)',
               data: data.map((d) => d.rain),
               yAxisID: 'yRain',
-              borderColor: '#42a5f5',
+              borderColor: cssColor('--mf-chart-2'),
               backgroundColor: 'transparent',
               fill: false,
               tension: 0.3,
               borderWidth: 2.5,
-              pointBackgroundColor: '#ffffff',
-              pointBorderColor: '#42a5f5',
+              pointBackgroundColor: cssColor('--mf-surface'),
+              pointBorderColor: cssColor('--mf-chart-2'),
               pointBorderWidth: 2,
               pointRadius: 4.5,
               pointHoverRadius: 6.5,
@@ -176,13 +177,13 @@ export class HistoryTrendComponent {
               label: 'Humidity (%)',
               data: data.map((d) => d.humidity),
               yAxisID: 'yHum',
-              borderColor: '#26a69a',
+              borderColor: cssColor('--mf-humidity'),
               backgroundColor: 'transparent',
               fill: false,
               tension: 0.3,
               borderWidth: 2.5,
-              pointBackgroundColor: '#ffffff',
-              pointBorderColor: '#26a69a',
+              pointBackgroundColor: cssColor('--mf-surface'),
+              pointBorderColor: cssColor('--mf-humidity'),
               pointBorderWidth: 2,
               pointRadius: 4.5,
               pointHoverRadius: 6.5,
@@ -212,23 +213,23 @@ export class HistoryTrendComponent {
                   size: 11,
                   weight: 'bold',
                 },
-                color: '#4a5568',
+                color: cssColor('--mf-fg'),
               },
             },
             tooltip: {
-              backgroundColor: 'rgba(255, 255, 255, 0.96)',
-              titleColor: '#5c4033',
+              backgroundColor: cssColorAlpha('--mf-surface', 0.96),
+              titleColor: cssColor('--mf-fg'),
               titleFont: {
                 family: 'Figtree, Mukta, sans-serif',
                 weight: 'bold',
                 size: 13,
               },
-              bodyColor: '#4a5568',
+              bodyColor: cssColor('--mf-muted'),
               bodyFont: {
                 family: 'Figtree, Mukta, sans-serif',
                 size: 12,
               },
-              borderColor: 'rgba(42, 111, 71, 0.15)',
+              borderColor: cssColor('--mf-line'),
               borderWidth: 1,
               padding: 10,
               boxPadding: 6,
@@ -295,7 +296,7 @@ export class HistoryTrendComponent {
           scales: {
             x: {
               grid: {
-                color: '#f8fafc',
+                color: cssColor('--mf-line'),
               },
               ticks: {
                 font: {
@@ -303,7 +304,7 @@ export class HistoryTrendComponent {
                   size: 10,
                   weight: 'bold',
                 },
-                color: '#64748b',
+                color: cssColor('--mf-muted'),
               },
             },
             yTemp: {
@@ -320,7 +321,7 @@ export class HistoryTrendComponent {
                 },
               },
               grid: {
-                color: '#f1f5f9',
+                color: cssColor('--mf-line'),
               },
               ticks: {
                 color: this.getTemperatureColor(this.avgTemp()),
@@ -337,7 +338,7 @@ export class HistoryTrendComponent {
               title: {
                 display: true,
                 text: 'Humidity (%)',
-                color: '#26a69a',
+                color: cssColor('--mf-humidity'),
                 font: {
                   family: 'Figtree, Mukta, sans-serif',
                   weight: 'bold',
@@ -348,7 +349,7 @@ export class HistoryTrendComponent {
                 drawOnChartArea: false,
               },
               ticks: {
-                color: '#26a69a',
+                color: cssColor('--mf-humidity'),
                 font: {
                   family: 'Figtree, Mukta, sans-serif',
                   size: 10,

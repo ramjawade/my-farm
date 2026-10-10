@@ -24,7 +24,7 @@ import { LoaderService } from './loader.service';
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(245, 247, 246, 0.7);
+      background: rgba(var(--mf-surface-rgb), 0.7);
       backdrop-filter: blur(2px);
     }
     .lib-loader-card {
@@ -32,15 +32,15 @@ import { LoaderService } from './loader.service';
       flex-direction: column;
       align-items: center;
       gap: 0.75rem;
-      background: #ffffff;
+      background: var(--mf-surface);
       border-radius: 1rem;
       padding: 1.625rem 2.125rem;
-      box-shadow: 0 10px 34px rgba(0, 0, 0, 0.14);
+      box-shadow: 0 10px 34px rgba(var(--mf-shadow-rgb), 0.14);
     }
     .lib-loader-text {
       font-size: 0.8125rem;
       font-weight: 600;
-      color: #374151;
+      color: var(--mf-fg);
     }
   `,
 })

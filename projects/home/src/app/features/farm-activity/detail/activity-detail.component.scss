@@ -16,14 +16,14 @@
   font-family: var(--mf-font-body, sans-serif);
   font-size: 2.1rem;
   font-weight: 800;
-  color: $farm-green-primary;
+  color: var(--mf-leaf);
   letter-spacing: -0.02em;
   line-height: 1.1;
 }
 
 // 2. Timeline Diary layout
 .timeline {
-  border-left: 3px solid rgba($farm-green-primary, 0.2);
+  border-left: 3px solid rgba(var(--mf-leaf-rgb), 0.2);
   padding-left: 20px;
   margin-left: 10px;
 }
@@ -45,20 +45,20 @@
     content: '';
     width: 14px;
     height: 14px;
-    background: $farm-green-primary;
-    border: 3px solid #ffffff;
+    background: var(--mf-leaf);
+    border: 3px solid var(--mf-surface);
     border-radius: 50%;
     position: absolute;
     left: -28.5px;
     top: 4px;
-    box-shadow: 0 0 0 3px rgba($farm-green-primary, 0.15);
+    box-shadow: 0 0 0 3px rgba(var(--mf-leaf-rgb), 0.15);
   }
 }
 
 // 3. Card Detail Layout Helper
 .summary-col {
   padding: 1.25rem 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(var(--mf-shadow-rgb), 0.05);
 
   &:last-child {
     border-bottom: none;
@@ -67,7 +67,7 @@
   @media (min-width: 768px) {
     padding: 0;
     border-bottom: none;
-    border-right: 1px solid rgba(0, 0, 0, 0.05);
+    border-right: 1px solid rgba(var(--mf-shadow-rgb), 0.05);
 
     &:last-child {
       border-right: none;
@@ -93,7 +93,7 @@
 .expense-modal-backdrop {
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  background-color: rgba(0, 0, 0, 0.45) !important;
+  background-color: rgba(var(--mf-shadow-rgb), 0.45) !important;
 }
 
 // 5. Expense Items Row Layout
@@ -101,12 +101,12 @@
   width: 55px;
   height: 55px;
   border-radius: 15px;
-  background: rgba($farm-green-primary, 0.08);
+  background: rgba(var(--mf-leaf-rgb), 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.4rem;
-  color: $farm-green-dark;
+  color: var(--mf-leaf-ink);
   flex-shrink: 0;
 }
 
@@ -124,7 +124,7 @@
 }
 
 .border-top-mobile {
-  border-top: 1px dashed rgba(0, 0, 0, 0.05);
+  border-top: 1px dashed rgba(var(--mf-shadow-rgb), 0.05);
   @media (min-width: 576px) {
     border-top: none;
   }
@@ -155,14 +155,14 @@
   }
 
   .btn-outline-warning {
-    border: 1px solid $warning !important;
-    color: $farm-warning-dark !important;
+    border: 1px solid var(--mf-sun) !important;
+    color: var(--mf-sun-ink) !important;
     background-color: transparent !important;
 
     &:hover {
-      background-color: $warning !important;
-      color: #ffffff !important;
-      box-shadow: 0 4px 10px rgba($warning, 0.2);
+      background-color: var(--mf-sun) !important;
+      color: var(--mf-on-leaf) !important;
+      box-shadow: 0 4px 10px rgba(var(--mf-sun-rgb), 0.2);
     }
   }
 }

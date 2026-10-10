@@ -39,10 +39,10 @@ import { NgClass, NgIf, NgForOf } from '@angular/common';
       .advisory-panel {
         background: linear-gradient(
           135deg,
-          rgba(13, 202, 240, 0.08) 0%,
-          rgba(25, 135, 84, 0.08) 100%
+          rgba(var(--mf-sky-rgb), 0.08) 0%,
+          rgba(var(--mf-leaf-rgb), 0.08) 100%
         );
-        border: 1px solid rgba(13, 202, 240, 0.2);
+        border: 1px solid rgba(var(--mf-sky-rgb), 0.2);
         border-radius: 8px;
         padding: 12px 16px;
         margin-bottom: 16px;
@@ -57,25 +57,25 @@ import { NgClass, NgIf, NgForOf } from '@angular/common';
         margin: 0;
         font-size: 15px;
         font-weight: 600;
-        color: #212529;
+        color: var(--mf-fg);
         display: flex;
         align-items: center;
         gap: 8px;
       }
       .advisory-title i {
-        color: #ffc107;
+        color: var(--mf-sun);
         font-size: 16px;
       }
       .btn-expand {
         background: none;
         border: none;
-        color: #6c757d;
+        color: var(--mf-muted);
         cursor: pointer;
         padding: 0;
         font-size: 18px;
       }
       .btn-expand:hover {
-        color: #212529;
+        color: var(--mf-fg);
       }
       .advisory-content {
         margin-top: 12px;
@@ -89,7 +89,7 @@ import { NgClass, NgIf, NgForOf } from '@angular/common';
         font-size: 13px;
         line-height: 1.5;
         align-items: flex-start;
-        color: #495057;
+        color: var(--mf-fg);
       }
       .advisory-item i {
         flex-shrink: 0;
@@ -102,7 +102,7 @@ import { NgClass, NgIf, NgForOf } from '@angular/common';
       .advisory-empty {
         padding: 8px 0;
         text-align: center;
-        color: #6c757d;
+        color: var(--mf-muted);
         font-size: 13px;
       }
       .advisory-preview {
@@ -111,12 +111,12 @@ import { NgClass, NgIf, NgForOf } from '@angular/common';
         gap: 8px;
         margin-top: 8px;
         padding-top: 8px;
-        border-top: 1px solid rgba(13, 202, 240, 0.1);
+        border-top: 1px solid rgba(var(--mf-sky-rgb), 0.1);
       }
       .preview-text {
         margin: 0;
         font-size: 13px;
-        color: #495057;
+        color: var(--mf-fg);
         flex: 1;
         overflow: hidden;
         text-overflow: ellipsis;

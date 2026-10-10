@@ -77,12 +77,16 @@
    - **Inline template colours:** `style="color:#…"` and `[style.color]` bindings become tone classes (`.tone-leaf|sun|sky|rose|muted`, setting `--tone`, `--tone-soft` and `--tone-ink`) or `[class]` bindings.
    - **TypeScript colour maps:** `activity-display.ts`, the profile crop options, the weather alert and advisory severities, the chat and workflow cards and the loader return a tone key (`'leaf' | 'sun' | …`) or a token name (`'--mf-type-spray'`), and templates turn that into a class. The lookup tables stay where they are.
    - **New data tokens:** `--mf-type-*` for the 12 activity types (from the prototype), `--mf-temp-cold|cool|warm|hot`, `--mf-chart-1…6`, and `--mf-map-draw`, `--mf-map-done` and `--mf-map-select`. Each has a light and a dark value.
-   - **Leaflet layers:** Leaflet writes colours as SVG presentation attributes, which cannot hold `var()`. Paths get a `className` (`map-draw`, `map-done`, `map-land--selected`), and their stroke and fill come from CSS using the tokens.
-   - **The weather history chart and sun path:** the inline SVG uses classes or `fill: var(--mf-…)` in `style`, which does resolve CSS variables.
+   - **Leaflet layers:** Leaflet writes colours as SVG presentation attributes, and browsers do resolve `var()` there. Path options use `var(--mf-map-draw)`, `var(--mf-map-done)` and `var(--mf-map-fill)` directly; a headless check confirmed the stroke and fill resolve and follow a token change live.
+   - **Canvas charts:** Chart.js draws on a canvas, which cannot read `var()`. A small `cssColor(token)` / `cssColorAlpha(token, alpha)` helper (`core/theme/css-token.ts`) resolves a token to an `rgb()` value when the chart is built.
+   - **The weather sun path:** the inline SVG uses `var(--mf-…)` in presentation attributes and `fill-opacity` instead of an rgba string.
+   - **Bootstrap fixed-colour utilities:** `bg-white`, `bg-light`, `bg-dark`, `bg-secondary`, `text-dark`, `text-secondary`, `border-light*` and the navbar colours are fixed in Bootstrap and ignore any theme. `_bootstrap-bridge.scss` maps them onto the tokens once, instead of editing about 100 template usages.
+   - **Bootstrap Sass colour variables** (`$light`, `$border-color`, `$text-muted`) used in component SCSS are replaced with tokens too.
    - **False positives:** `#123` issue references in comments and the generated `openapi-schema.ts` are excluded by the guard.
 11. **The colour guard: `scripts/check-colors.mjs`.**
    - It scans `projects/**/*.{scss,css,html,ts}`, skipping specs, `generated/` and `node_modules`.
    - It reports hex codes (`#rgb`, `#rrggbb`, `#rrggbbaa`) that are not inside a comment, `rgb(`/`rgba(`/`hsl(` with literal numbers, and named colours in style contexts.
+   - It also flags `rgba(var(--mf-leaf), …)`, which is invalid CSS because `rgba()` needs a channel token (`--mf-leaf-rgb`).
    - Allow-list: `_tokens.scss`, `_bootstrap-variables.scss` (Sass needs real colours for Bootstrap's maths), the `index.html` `theme-color` meta and `manifest.webmanifest`.
    - It is wired as `npm run lint:colors` and chained into `npm run lint`, so CI blocks regressions.
    - Alternative: Stylelint with `color-no-hex`. Rejected because it does not cover TS or templates, and the repo has no Stylelint today.
