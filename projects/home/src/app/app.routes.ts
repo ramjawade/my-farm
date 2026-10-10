@@ -72,6 +72,15 @@ export const routes: Routes = [
           ),
       },
       {
+        path: ':cropId/edit',
+        title: 'shell.title.editCrop',
+        data: { parent: '/crops/:cropId' },
+        loadComponent: () =>
+          import('./features/crop-timeline/add-crop/add-crop.component').then(
+            (m) => m.AddCropComponent,
+          ),
+      },
+      {
         path: ':cropId',
         title: 'shell.title.cropDetail',
         data: { parent: '/crops' },
@@ -80,14 +89,6 @@ export const routes: Routes = [
             (m) => m.CropActivityComponent,
           ),
         children: [
-          {
-            path: '',
-            data: { embedded: true },
-            loadComponent: () =>
-              import('./features/farm-activity/dashboard/activity-dashboard.component').then(
-                (m) => m.ActivityDashboardComponent,
-              ),
-          },
           {
             path: 'list',
             title: 'shell.title.activityList',

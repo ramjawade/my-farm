@@ -1,69 +1,65 @@
 <form class="card" novalidate [formGroup]="form" (ngSubmit)="submit()">
-  <div class="card-body">
-    <h2 class="h6 d-flex align-items-center gap-2 mb-3">
-      {{ 'lands.saveLand' | translate }}
-      <span class="badge text-bg-warning">
-        {{ area().acres | localNumber: '1.0-2' }} {{ 'landEdit.acres' | translate }}
-      </span>
-    </h2>
+  <h2 class="h6 d-flex align-items-center gap-2 mb-3">
+    {{ 'lands.saveLand' | translate }}
+    <span class="badge text-bg-warning">
+      {{ area().acres | localNumber: '1.0-2' }} {{ 'landEdit.acres' | translate }}
+    </span>
+  </h2>
 
-    <div class="mb-3">
-      <label class="form-label" for="land-name">{{ 'lands.landName' | translate }}</label>
-      <input
-        id="land-name"
-        class="form-control"
-        formControlName="name"
-        autocomplete="off"
-        [class.is-invalid]="form.controls.name.touched && form.controls.name.invalid"
-        [attr.aria-invalid]="form.controls.name.touched && form.controls.name.invalid"
-      />
-      @if (form.controls.name.touched && form.controls.name.invalid) {
-        <div class="invalid-feedback d-block" role="alert">
-          {{ 'lands.nameRequired' | translate }}
-        </div>
+  <div class="mb-3">
+    <label class="form-label" for="land-name">{{ 'lands.landName' | translate }}</label>
+    <input
+      id="land-name"
+      class="form-control"
+      formControlName="name"
+      autocomplete="off"
+      [class.is-invalid]="form.controls.name.touched && form.controls.name.invalid"
+      [attr.aria-invalid]="form.controls.name.touched && form.controls.name.invalid"
+    />
+    @if (form.controls.name.touched && form.controls.name.invalid) {
+      <div class="invalid-feedback d-block" role="alert">
+        {{ 'lands.nameRequired' | translate }}
+      </div>
+    }
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label" for="land-area">{{ 'landDetail.landArea' | translate }}</label>
+    <output id="land-area" class="form-control bg-body-tertiary d-block">
+      {{ area().acres | localNumber: '1.0-2' }} {{ 'landEdit.acres' | translate }} ·
+      {{ area().hectares | localNumber: '1.0-2' }} {{ 'mapMyFarm.ha' | translate }}
+    </output>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label" for="land-water">{{ 'lands.waterSourceOptional' | translate }}</label>
+    <select id="land-water" class="form-select" formControlName="waterSource">
+      <option value="">{{ 'lands.waterNotSet' | translate }}</option>
+      @for (source of waterSources; track source) {
+        <option [value]="source">{{ waterKey(source) | translate }}</option>
       }
-    </div>
+    </select>
+  </div>
 
-    <div class="mb-3">
-      <label class="form-label" for="land-area">{{ 'landDetail.landArea' | translate }}</label>
-      <output id="land-area" class="form-control bg-body-tertiary d-block">
-        {{ area().acres | localNumber: '1.0-2' }} {{ 'landEdit.acres' | translate }} ·
-        {{ area().hectares | localNumber: '1.0-2' }} {{ 'mapMyFarm.ha' | translate }}
-      </output>
-    </div>
+  <div class="mb-3">
+    <label class="form-label" for="land-notes">{{ 'landDetail.notes' | translate }}</label>
+    <textarea
+      id="land-notes"
+      class="form-control"
+      rows="3"
+      formControlName="notes"
+      [placeholder]="'lands.notesPlaceholder' | translate"
+    ></textarea>
+  </div>
 
-    <div class="mb-3">
-      <label class="form-label" for="land-water">{{
-        'lands.waterSourceOptional' | translate
-      }}</label>
-      <select id="land-water" class="form-select" formControlName="waterSource">
-        <option value="">{{ 'lands.waterNotSet' | translate }}</option>
-        @for (source of waterSources; track source) {
-          <option [value]="source">{{ waterKey(source) | translate }}</option>
-        }
-      </select>
-    </div>
+  <p class="small text-body-secondary">{{ 'lands.areaHint' | translate }}</p>
 
-    <div class="mb-3">
-      <label class="form-label" for="land-notes">{{ 'landDetail.notes' | translate }}</label>
-      <textarea
-        id="land-notes"
-        class="form-control"
-        rows="3"
-        formControlName="notes"
-        [placeholder]="'lands.notesPlaceholder' | translate"
-      ></textarea>
-    </div>
-
-    <p class="small text-body-secondary">{{ 'lands.areaHint' | translate }}</p>
-
-    <div class="d-flex gap-2">
-      <button type="submit" class="btn btn-primary flex-grow-1" [disabled]="saving()">
-        {{ 'lands.saveLand' | translate }}
-      </button>
-      <button type="button" class="btn btn-secondary" (click)="discard.emit()">
-        {{ 'lands.discard' | translate }}
-      </button>
-    </div>
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-primary flex-grow-1" [disabled]="saving()">
+      {{ 'lands.saveLand' | translate }}
+    </button>
+    <button type="button" class="btn btn-secondary" (click)="discard.emit()">
+      {{ 'lands.discard' | translate }}
+    </button>
   </div>
 </form>

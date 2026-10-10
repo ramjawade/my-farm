@@ -42,7 +42,7 @@ describe('LandsListComponent', () => {
 
   it('shows the count and one card per land', () => {
     expect(cards().length).toBe(2);
-    expect(el().querySelector('h2 .badge')?.textContent?.trim()).toBe('2');
+    expect(el().querySelector('h2 span')?.textContent?.trim()).toBe('2');
   });
 
   it('shows crop names on a planted land and a Fallow badge otherwise', () => {

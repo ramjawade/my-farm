@@ -6,14 +6,17 @@ import {
   OnInit,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CropDashboardService } from './crop-dashboard.service';
 import { ActivityService } from '../../activity/activity.service';
-import { CropEntity, CropStage, CROP_STAGES } from '../crop-timeline.models';
-import { stageIndex, stageProgressPercent } from '../crop-timeline.utils';
+import { ConfirmDialogComponent, ToastService } from 'shared';
+import { CropEntity } from '../crop-timeline.models';
+import { CropTimelineService } from '../crop-timeline.service';
+import { cropIconClass, daysAfterSowing } from '../crop-timeline.utils';
+import { StageBarComponent } from '../stage-bar/stage-bar.component';
+import { LocalNumberPipe } from '../../../core/i18n/localized.pipes';
 import { ReferenceNamePipe } from '../../../core/i18n/reference-name.pipe';
 import { AuthService } from '../../../core/auth/auth.service';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
@@ -21,7 +24,15 @@ import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
 @Component({
   standalone: true,
   selector: 'app-crop-dashboard',
-  imports: [CommonModule, FormsModule, TranslatePipe, ReferenceNamePipe],
+  imports: [
+    FormsModule,
+    ConfirmDialogComponent,
+    LocalNumberPipe,
+    StageBarComponent,
+    TranslatePipe,
+    ReferenceNamePipe,
+  ],
+  host: { '(document:keydown.escape)': 'menuId.set(null)' },
   templateUrl: './crop-dashboard.component.html',
   styleUrl: './crop-dashboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,6 +44,12 @@ export class CropDashboardComponent implements OnInit {
   private readonly translate = inject(TranslateService);
   private readonly authService = inject(AuthService);
   private readonly farmDraw = inject(FarmDrawService);
+  private readonly timeline = inject(CropTimelineService);
+  private readonly toast = inject(ToastService);
+
+  readonly menuId = signal<number | null>(null);
+  readonly pendingDelete = signal<CropEntity | null>(null);
+  readonly showDeleteConfirm = signal(false);
 
   readonly searchTerm = signal<string>('');
   readonly crops = signal<CropEntity[]>([]);
@@ -57,8 +74,6 @@ export class CropDashboardComponent implements OnInit {
         this.landName(c.fieldId).toLowerCase().includes(term),
     );
   });
-
-  readonly stages = CROP_STAGES;
 
   /** True when there are zero crops on the account at all -- distinct from
    * a search term simply matching nothing, so the empty state can tell the
@@ -110,45 +125,46 @@ export class CropDashboardComponent implements OnInit {
   }
 
   getDaysAfterSowing(sowingDate: number | undefined): number {
-    if (!sowingDate) return 0;
-    const diff = Date.now() - sowingDate;
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    return days < 0 ? 0 : days;
+    return daysAfterSowing(sowingDate) ?? 0;
   }
 
-  getDaysSinceLastActivity(cropId: number): string {
-    const cropActs = this.activityService
+  /** Days since sowing, or null when the crop has no sowing date. */
+  age(crop: CropEntity): number | null {
+    return daysAfterSowing(crop.sowingDate);
+  }
+
+  iconClass(crop: CropEntity): string {
+    return cropIconClass(crop.name);
+  }
+
+  /** Activities logged or planned for a crop (sub-activities are not counted). */
+  activityCount(cropId: number): number {
+    return this.activityService
       .activities()
-      .filter((a) => a.cropId === cropId && a.status === 'Completed' && !a.parentActivityId)
-      .sort((a, b) => (b.date || 0) - (a.date || 0));
-
-    if (cropActs.length === 0) {
-      return this.translate.instant('cropDashboard.noActivityLogged');
-    }
-
-    const lastDate = cropActs[0].date;
-    if (!lastDate) return this.translate.instant('cropDashboard.noActivityLogged');
-    const diff = Date.now() - lastDate;
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-    if (days <= 0) return this.translate.instant('cropDashboard.today');
-    if (days === 1) return this.translate.instant('cropDashboard.oneDay');
-    return this.translate.instant('cropDashboard.daysCount', { days });
+      .filter((a) => a.cropId === cropId && !a.parentActivityId).length;
   }
 
-  getNextStage(currentStage: CropStage): string {
-    const idx = stageIndex(currentStage);
-    if (idx === -1 || idx === this.stages.length - 1) {
-      return this.translate.instant('cropDashboard.fullyMature');
-    }
-    return this.stages[idx + 1];
+  toggleMenu(cropId: number): void {
+    this.menuId.update((open) => (open === cropId ? null : cropId));
   }
 
-  getStageIndex(stage: CropStage): number {
-    return stageIndex(stage);
+  onEditCrop(crop: CropEntity): void {
+    this.menuId.set(null);
+    this.router.navigate(['/crops', crop.id, 'edit']);
   }
 
-  getStagePercent(stage: CropStage): number {
-    return stageProgressPercent(stage);
+  onDeleteCrop(crop: CropEntity): void {
+    this.menuId.set(null);
+    this.pendingDelete.set(crop);
+    this.showDeleteConfirm.set(true);
+  }
+
+  confirmDelete(): void {
+    const crop = this.pendingDelete();
+    if (!crop) return;
+    this.timeline.deleteCrop(crop.id);
+    this.crops.update((list) => list.filter((c) => c.id !== crop.id));
+    this.pendingDelete.set(null);
+    this.toast.success(this.translate.instant('cropActivity.deletedToast'));
   }
 }

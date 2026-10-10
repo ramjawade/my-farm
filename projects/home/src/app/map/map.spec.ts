@@ -74,19 +74,30 @@ describe('MapComponent (Lands page)', () => {
     expect(TestBed.inject(FarmDrawService).isDrawing()).toBeTrue();
   });
 
-  it('shows the detail of the selected land under the map', async () => {
-    await open([land(1, 'North', 2)]);
-    expect(el().querySelector('app-land-detail')).toBeNull();
-    fixture.componentInstance.onSelectFarm(fixture.componentInstance.farms()[0]);
-    fixture.detectChanges();
+  it('selects the first land on load and shows its detail under the map', async () => {
+    await open([land(1, 'North', 2), land(2, 'South', 1)]);
+    expect(fixture.componentInstance.selected()?.id).toBe(1);
     expect(el().querySelector('app-land-detail')).not.toBeNull();
     expect(el().textContent).toContain('lands.nothingGrowing');
+  });
+
+  it('keeps the first land selected after the user picks another', async () => {
+    await open([land(1, 'North', 2), land(2, 'South', 1)]);
+    fixture.componentInstance.onSelectFarm(fixture.componentInstance.farms()[1]);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.selected()?.id).toBe(2);
+  });
+
+  it('puts the lands list before the map in the page so it leads on a phone', async () => {
+    await open([land(1, 'North', 2)]);
+    const grid = el().querySelector('.lands-grid')!;
+    expect(grid.querySelector('app-lands-list')).not.toBeNull();
+    expect(grid.querySelector('.lands-map')).not.toBeNull();
   });
 
   it('sums expenses over the crops on the selected land', async () => {
     crops.set([{ id: 9, fieldId: 1, name: 'Onion' } as CropEntity]);
     await open([land(1, 'North', 2)]);
-    fixture.componentInstance.onSelectFarm(fixture.componentInstance.farms()[0]);
     expect(fixture.componentInstance.selectedExpenses()).toBe(6000);
   });
 

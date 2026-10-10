@@ -11,6 +11,9 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CROP_STAGES, CropEntity } from '../crop-timeline.models';
+import { CropTimelineService } from '../crop-timeline.service';
+import { FARMING_METHODS, IRRIGATION_TYPES } from '../crop-timeline.utils';
+import { parseId } from '../../../core/models/entity-id';
 import { AddCropService } from './add-crop.service';
 import { FarmLookupService } from '../../../core/farms/farm-lookup.service';
 import { SavedFarm } from '../../../map/models/map.models';
@@ -41,6 +44,13 @@ export class AddCropComponent implements OnInit {
   private readonly translate = inject(TranslateService);
   private readonly workflowService = inject(WorkflowStateService);
   private readonly referenceData = inject(ReferenceDataService);
+  private readonly timeline = inject(CropTimelineService);
+
+  /** Set when editing an existing crop (`/crops/:cropId/edit`). */
+  readonly editId = parseId(this.route.snapshot.paramMap.get('cropId'));
+  readonly isEdit = this.editId !== null;
+  readonly irrigationTypes = IRRIGATION_TYPES;
+  readonly farmingMethods = FARMING_METHODS;
 
   readonly savedFarms = signal<SavedFarm[]>([]);
   readonly crops = signal<CropEntity[]>([]);
@@ -54,8 +64,14 @@ export class AddCropComponent implements OnInit {
     fieldId: [null as number | null, Validators.required],
     area: ['', [Validators.required, Validators.min(0.01)]],
     areaUnit: ['hectares', Validators.required],
-    sowingDate: [''],
+    sowingDate: ['', Validators.required],
+    irrigationType: [''],
+    farmingMethod: [''],
   });
+
+  /** No saved land to link a crop to. */
+  readonly noLands = computed(() => this.loaded() && this.savedFarms().length === 0);
+  private readonly loaded = signal(false);
 
   readonly seasons = SEASONS;
   readonly cropNames = computed(() => {
@@ -115,6 +131,11 @@ export class AddCropComponent implements OnInit {
       ]);
       this.savedFarms.set(farms);
       this.crops.set(crops);
+      this.loaded.set(true);
+      if (this.isEdit) {
+        this.prefill(crops.find((c) => c.id === this.editId));
+        return;
+      }
       // Preselect the land the farmer came from (?landId=), else the only land
       const landId = Number(this.route.snapshot.queryParamMap.get('landId'));
       const requested = this.savedFarms().find((f) => f.id === landId);
@@ -126,8 +147,31 @@ export class AddCropComponent implements OnInit {
     }
   }
 
+  /** Fill the form from the crop being edited; its land cannot change. */
+  private prefill(crop: CropEntity | undefined): void {
+    if (!crop) {
+      this.router.navigate(['/crops']);
+      return;
+    }
+    this.cropForm.patchValue(
+      {
+        season: crop.season ?? seasonForDate(),
+        name: crop.name,
+        fieldId: crop.fieldId,
+        area: String(crop.area),
+        areaUnit: crop.areaUnit,
+        sowingDate: crop.sowingDate ? new Date(crop.sowingDate).toISOString().slice(0, 10) : '',
+        irrigationType: crop.irrigationType ?? '',
+        farmingMethod: crop.farmingMethod ?? '',
+      },
+      { emitEvent: false },
+    );
+    this.cropForm.controls.fieldId.disable({ emitEvent: false });
+    this.areaIsAutoFilled.set(false);
+  }
+
   onCancel(): void {
-    this.router.navigate(['/crops']);
+    this.router.navigate(this.isEdit ? ['/crops', this.editId] : ['/crops']);
   }
 
   onNameAdded(newName: string): void {
@@ -146,6 +190,25 @@ export class AddCropComponent implements OnInit {
     try {
       // Create-or-get: a farmer-typed crop name with no catalog entry becomes one.
       const cropCatalogId = await this.referenceData.cropCatalogIdForName(values.name);
+      const sowingDate = values.sowingDate ? new Date(values.sowingDate).getTime() : undefined;
+
+      if (this.isEdit && this.editId !== null) {
+        // An empty choice clears the optional field.
+        this.timeline.updateCrop(this.editId, {
+          name: values.name,
+          cropCatalogId,
+          area: Number(values.area),
+          areaUnit: values.areaUnit as 'acres' | 'hectares',
+          season: values.season,
+          sowingDate,
+          irrigationType: values.irrigationType,
+          farmingMethod: values.farmingMethod,
+        });
+        this.toast.success(this.translate.instant('addCrop.updatedToast', { name: values.name }));
+        this.router.navigate(['/crops', this.editId]);
+        return;
+      }
+
       const newCrop = await this.addCropService.createCrop({
         name: values.name,
         cropCatalogId,
@@ -153,7 +216,9 @@ export class AddCropComponent implements OnInit {
         area: Number(values.area),
         areaUnit: values.areaUnit as 'acres' | 'hectares',
         season: values.season,
-        sowingDate: values.sowingDate ? new Date(values.sowingDate).getTime() : undefined,
+        sowingDate,
+        irrigationType: values.irrigationType || undefined,
+        farmingMethod: values.farmingMethod || undefined,
         currentStage: CROP_STAGES[0],
         status: 'Active',
       });
@@ -168,6 +233,8 @@ export class AddCropComponent implements OnInit {
         area: '',
         areaUnit: 'hectares',
         sowingDate: '',
+        irrigationType: '',
+        farmingMethod: '',
       });
 
       this.router.navigate(['/crops']);

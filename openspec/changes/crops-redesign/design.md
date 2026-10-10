@@ -10,7 +10,7 @@ Crop screens live in `features/crop-timeline/`: `CropDashboardComponent` (list),
 
 ## Decisions
 
-1. **Rework the existing components in place.** Routes stay (`/crops`, `/crops/add`, `/crops/:cropId`); add `/crops/:cropId/edit` that reuses `AddCropComponent` in edit mode (it reads the crop by id, fills the form, and calls `updateCrop`). The old long timeline template is replaced by the new detail layout, keeping the `create` activity child route.
+1. **Rework the existing components in place.** Routes stay (`/crops`, `/crops/add`, `/crops/:cropId`); add `/crops/:cropId/edit` that reuses `AddCropComponent` in edit mode (it reads the crop by id, fills the form, and calls `updateCrop`). The old long timeline template is replaced by the new detail layout. The detail page's embedded activity dashboard (the empty child route) is removed; the Activities card lists the crop's activities with links to each activity, and the `list` and `create` child routes stay and replace the detail while open.
 2. **Stage display only.** `crop-timeline.utils.ts` gets `stageStep(stage): 0..3` and `STAGE_STEPS` (labels as translation keys). A small presentational `StageBarComponent` takes `step` and renders four marks plus labels, with `role="img"` and an `aria-label` such as "Stage 3 of 4: Flowering". The stored stage stays one of the eight, so advancing and activity syncing do not change.
 3. **Crop-type icon** from the catalog name with a small lookup (maize, cereal, fruit, vegetable fallback) like the prototype's `cropIcon`, as Bootstrap Icons classes.
 4. **Detail tiles from existing data.** Age from `sowingDate`; Activities from `getActivitiesForCrop` (done = Completed, planned = not Completed and not Cancelled); Crop cost from `costForCrop`; Area from the crop's own area and unit. Chips filter the list; counts shown on each chip.
@@ -19,6 +19,7 @@ Crop screens live in `features/crop-timeline/`: `CropDashboardComponent` (list),
 7. **Layout with Bootstrap.** Cards in a two-column grid from `md` (one column on phones); detail tiles in a four-column row from `md`, two columns below; Activities and Timeline side by side from `lg`.
 8. **Delete** keeps the shared confirm dialog and the existing toast; the list card menu is a Bootstrap dropdown driven by a signal, as in the Lands list.
 9. **Translation.** New strings in mr, hi and en; the completeness check must stay green.
+10. **Lifecycle stepper moves to the shared library.** The old eight-step horizontal stepper on the crop detail is not part of the new design, so it moves, unchanged in look, to `projects/shared` as `LifecycleStepperComponent` (inputs: steps with caption and name, current index, accessible label) with its own specs. No screen uses it yet; it is kept for later reuse.
 
 ## Risks / Trade-offs
 

@@ -1,52 +1,61 @@
-<section class="card">
-  <div class="card-body">
-    @if (crops().length === 0) {
-      <div class="empty-state">
-        <span class="empty-state__icon" aria-hidden="true"><i class="bi bi-flower1"></i></span>
-        <h2 class="empty-state__title">
-          {{ 'lands.nothingGrowing' | translate: { name: land().name } }}
-        </h2>
-        <p class="empty-state__text">{{ 'lands.nothingGrowingHint' | translate }}</p>
-        <button type="button" class="btn btn-primary" (click)="addCrop.emit()">
-          {{ 'lands.addCrop' | translate }}
-        </button>
-      </div>
-      <p class="small text-body-secondary mt-2 mb-0">
-        {{ land().area.acres | localNumber: '1.0-2' }} {{ 'landEdit.acres' | translate }}
-        @if (land().waterSource) {
-          · {{ waterLabel() }}
-        }
-      </p>
-    } @else {
-      <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
-        <h2 class="h5 mb-0">{{ land().name }}</h2>
-        <button
-          type="button"
-          class="btn btn-link p-0 text-nowrap"
-          (click)="viewCrop.emit(crops()[0].id)"
-        >
-          {{ 'lands.viewCropDetails' | translate }}
-          <i class="bi bi-chevron-right small" aria-hidden="true"></i>
-        </button>
-      </div>
-      <dl class="row row-cols-2 row-cols-sm-3 g-3 mb-2">
-        <div class="col">
+<section class="border-top" style="margin-top: 10px; padding: 10px 4px 2px">
+  @if (crops().length === 0) {
+    <div
+      class="empty-state rounded-3 bg-body-tertiary"
+      style="border: 1.5px dashed var(--mf-line); padding: var(--mf-s-4)"
+    >
+      <span class="empty-state__icon" aria-hidden="true"><i class="bi bi-flower1"></i></span>
+      <h2 class="empty-state__title">
+        {{ 'lands.nothingGrowing' | translate: { name: land().name } }}
+      </h2>
+      <p class="empty-state__text">{{ 'lands.nothingGrowingHint' | translate }}</p>
+      <button type="button" class="btn btn-primary" (click)="addCrop.emit()">
+        {{ 'lands.addCrop' | translate }}
+      </button>
+    </div>
+    <p class="small text-body-secondary mb-0" style="margin: 8px 2px 0">
+      {{ land().area.acres | localNumber: '1.0-2' }} {{ 'landEdit.acres' | translate }}
+      @if (land().waterSource) {
+        · {{ waterLabel() }}
+      }
+    </p>
+  } @else {
+    <div class="d-flex align-items-center flex-wrap justify-content-between gap-2 mb-2">
+      <h2 class="fs-6 fw-bold mb-0">{{ land().name }}</h2>
+      <button
+        type="button"
+        class="btn btn-link p-0 text-nowrap"
+        (click)="viewCrop.emit(crops()[0].id)"
+      >
+        {{ 'lands.viewCropDetails' | translate }}
+        <i class="bi bi-chevron-right small" aria-hidden="true"></i>
+      </button>
+    </div>
+    <dl class="row row-cols-2 row-cols-md-4 g-2 mb-0">
+      <div class="col">
+        <div class="bg-body-tertiary rounded-3 h-100" style="padding: 10px 12px">
           <dt class="small text-body-secondary fw-normal">{{ 'lands.kpi.area' | translate }}</dt>
           <dd class="fw-bold mb-0">
             {{ land().area.acres | localNumber: '1.0-2' }} {{ 'landEdit.acres' | translate }}
           </dd>
         </div>
-        <div class="col">
+      </div>
+      <div class="col">
+        <div class="bg-body-tertiary rounded-3 h-100" style="padding: 10px 12px">
           <dt class="small text-body-secondary fw-normal">{{ 'lands.kpi.crops' | translate }}</dt>
           <dd class="fw-bold mb-0">{{ crops().length | localNumber }}</dd>
         </div>
-        <div class="col">
+      </div>
+      <div class="col">
+        <div class="bg-body-tertiary rounded-3 h-100" style="padding: 10px 12px">
           <dt class="small text-body-secondary fw-normal">
             {{ 'lands.kpi.expenses' | translate }}
           </dt>
           <dd class="fw-bold mb-0">₹{{ expenses() | localNumber: '1.0-0' }}</dd>
         </div>
-        <div class="col">
+      </div>
+      <div class="col">
+        <div class="bg-body-tertiary rounded-3 h-100" style="padding: 10px 12px">
           <dt class="small text-body-secondary fw-normal">
             {{ 'lands.kpi.costPerAcre' | translate }}
           </dt>
@@ -58,23 +67,31 @@
             }
           </dd>
         </div>
-        @if (land().waterSource) {
-          <div class="col">
+      </div>
+      @if (land().waterSource) {
+        <div class="col">
+          <div class="bg-body-tertiary rounded-3 h-100" style="padding: 10px 12px">
             <dt class="small text-body-secondary fw-normal">
               {{ 'lands.waterSource' | translate }}
             </dt>
             <dd class="fw-bold mb-0">{{ waterLabel() }}</dd>
           </div>
-        }
-      </dl>
-      <button type="button" class="btn btn-link p-0" (click)="addCrop.emit()">
-        {{ 'lands.addAnotherCrop' | translate }}
-      </button>
-    }
+        </div>
+      }
+    </dl>
+    <button
+      type="button"
+      class="btn btn-link p-0"
+      style="margin-top: 10px"
+      (click)="addCrop.emit()"
+    >
+      {{ 'lands.addAnotherCrop' | translate }}
+    </button>
+  }
 
-    <hr />
+  <div class="border-top" style="margin-top: 12px; padding-top: 10px">
     <div class="d-flex align-items-center justify-content-between mb-1">
-      <h3 class="h6 mb-0">{{ 'landDetail.notes' | translate }}</h3>
+      <h3 class="fs-6 fw-bold mb-0">{{ 'landDetail.notes' | translate }}</h3>
       @if (!editingNotes()) {
         <button
           type="button"

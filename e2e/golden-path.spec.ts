@@ -77,19 +77,20 @@ test.describe('Golden path', () => {
         await page.waitForTimeout(150);
       }
 
-      const panel = page.locator('.map-my-farm');
-      await panel.getByRole('button', { name: 'Map my farm', exact: true }).click();
+      await page
+        .getByRole('button', { name: /Draw land|Draw your first land/ })
+        .first()
+        .click();
 
       const box = await mapContainer.boundingBox();
       if (!box) throw new Error('Map container has no bounding box');
 
-      // The "Map my farm" panel (map.scss's .map-page__farm-draw) floats over
-      // the map bottom-center, and the search box top-center. The top-right
-      // corner is clear of both on any viewport size.
+      // While drawing, a hint floats top-center and Undo / Finish / Cancel sit
+      // bottom-center, so keep the vertices in the middle band of the map.
       const vertices = [
-        { x: box.width * 0.7, y: box.height * 0.12 },
-        { x: box.width * 0.92, y: box.height * 0.12 },
-        { x: box.width * 0.81, y: box.height * 0.28 },
+        { x: box.width * 0.3, y: box.height * 0.35 },
+        { x: box.width * 0.7, y: box.height * 0.35 },
+        { x: box.width * 0.5, y: box.height * 0.6 },
       ];
       for (const vertex of vertices) {
         await mapContainer.click({ position: vertex });
@@ -98,8 +99,7 @@ test.describe('Golden path', () => {
         // dblclick (which also triggers Leaflet's default zoom-on-dblclick).
         await page.waitForTimeout(300);
       }
-      // Click back on the first vertex to close (and finish) the polygon.
-      await mapContainer.click({ position: vertices[0] });
+      await page.getByRole('button', { name: 'Finish', exact: true }).click();
 
       // The save-land form appears beside (or below) the map once the
       // boundary is closed. Wait for the actual POST response so the land

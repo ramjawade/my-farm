@@ -137,11 +137,25 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     const user = this.authService.currentUser();
     if (user) {
       this.farms.set(await this.farmDraw.loadFarms(user.id));
+      this.selectFirstLand();
     }
   }
 
   ngAfterViewInit(): void {
     this.initMap();
+    this.selectFirstLand();
+  }
+
+  private initialSelectionDone = false;
+
+  /** Select the first land and show it on the map, once both the lands and the map are ready. */
+  private selectFirstLand(): void {
+    const first = this.farms()[0];
+    if (this.isPicker || this.initialSelectionDone || !this.map || !first || this.selected()) {
+      return;
+    }
+    this.initialSelectionDone = true;
+    this.onSelectFarm(first);
   }
 
   async onSaveLand(details: LandDetails): Promise<void> {
@@ -246,6 +260,8 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.farmDrawLayer?.destroy();
     this.map?.remove();
+    // Late callbacks (e.g. the first invalidateSize) must not touch a removed map.
+    this.map = undefined;
   }
 
   selectResult(result: MapSearchResult): void {

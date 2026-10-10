@@ -38,6 +38,8 @@ export class CropMapperService {
       currentStage: (item.current_stage ?? 'Land Preparation') as CropStage,
       status: normalizeCropStatus(item.status),
       expectedHarvestDate: dateStringToTimestamp(item.expected_harvest_date),
+      irrigationType: item.irrigation_type ?? undefined,
+      farmingMethod: item.farming_method ?? undefined,
     };
   }
 
@@ -53,6 +55,9 @@ export class CropMapperService {
       current_stage: crop.currentStage,
       status: crop.status,
       expected_harvest_date: timestampToDateString(crop.expectedHarvestDate),
+      // undefined leaves the stored value alone; '' clears it.
+      irrigation_type: crop.irrigationType === undefined ? undefined : crop.irrigationType || null,
+      farming_method: crop.farmingMethod === undefined ? undefined : crop.farmingMethod || null,
     };
   }
 }

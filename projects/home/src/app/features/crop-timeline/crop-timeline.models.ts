@@ -40,6 +40,8 @@ export interface CropEntity {
   currentStage: CropStage;
   status: CropStatus;
   expectedHarvestDate?: number; // timestamp number
+  irrigationType?: string; // optional, e.g. Drip
+  farmingMethod?: string; // optional, e.g. Organic
   upcomingActivity?: string; // Quick dashboard note
 }
 

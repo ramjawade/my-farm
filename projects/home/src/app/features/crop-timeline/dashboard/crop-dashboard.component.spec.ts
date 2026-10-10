@@ -10,6 +10,7 @@ import { ActivitiesApiService } from '../../../core/api/activities-api.service';
 import { FakeActivitiesApiService } from '../../../testing/fake-activities-api.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
+import { CropTimelineService } from '../crop-timeline.service';
 
 describe('CropDashboardComponent', () => {
   let component: CropDashboardComponent;
@@ -17,6 +18,7 @@ describe('CropDashboardComponent', () => {
   let router: Router;
   let getCropsSpy: jasmine.Spy;
   let loadFarmsSpy: jasmine.Spy;
+  let deleteCropSpy: jasmine.Spy;
 
   const mockCrop: CropEntity = {
     id: 1,
@@ -33,6 +35,7 @@ describe('CropDashboardComponent', () => {
   beforeEach(async () => {
     getCropsSpy = jasmine.createSpy('getCrops').and.resolveTo([]);
     loadFarmsSpy = jasmine.createSpy('loadFarms').and.resolveTo([]);
+    deleteCropSpy = jasmine.createSpy('deleteCrop');
 
     await TestBed.configureTestingModule({
       imports: [CropDashboardComponent],
@@ -47,6 +50,7 @@ describe('CropDashboardComponent', () => {
         { provide: CropDashboardService, useValue: { getCrops: getCropsSpy } },
         { provide: AuthService, useValue: { currentUser: () => ({ id: 1 }) } },
         { provide: FarmDrawService, useValue: { loadFarms: loadFarmsSpy } },
+        { provide: CropTimelineService, useValue: { deleteCrop: deleteCropSpy } },
       ],
     }).compileComponents();
 
@@ -64,16 +68,6 @@ describe('CropDashboardComponent', () => {
   it('should calculate days after sowing', () => {
     const today = Date.now();
     expect(component.getDaysAfterSowing(today)).toBe(0);
-  });
-
-  it('should resolve the correct stage index', () => {
-    expect(component.getStageIndex('Sowing')).toBe(1);
-    expect(component.getStageIndex('Harvest')).toBe(7);
-  });
-
-  it('should resolve next stage correctly', () => {
-    expect(component.getNextStage('Sowing')).toBe('Germination');
-    expect(component.getNextStage('Harvest')).toBe('cropDashboard.fullyMature');
   });
 
   it('should navigate to crop detail on card click', () => {
@@ -131,8 +125,7 @@ describe('CropDashboardComponent', () => {
     it('shows the land name, never the numeric land id', async () => {
       await showCrops([northPlot]);
 
-      const badge = fixture.nativeElement.querySelector('.bi-pin-map-fill')?.parentElement;
-      expect(badge?.textContent?.trim()).toBe('North Plot');
+      expect(fixture.nativeElement.textContent).toContain('North Plot');
       expect(component.landName(7)).toBe('North Plot');
     });
 
@@ -140,7 +133,8 @@ describe('CropDashboardComponent', () => {
       await showCrops([]);
 
       expect(component.landName(7)).toBe('');
-      expect(fixture.nativeElement.querySelector('.bi-pin-map-fill')).toBeNull();
+      expect(fixture.nativeElement.textContent).not.toContain('7');
+      expect(fixture.nativeElement.textContent).toContain('–');
     });
 
     it('finds crops by land name when searching', async () => {
@@ -157,6 +151,70 @@ describe('CropDashboardComponent', () => {
       component.onSearchTermChange('7');
 
       expect(component.filteredCrops()).toEqual([]);
+    });
+  });
+
+  describe('crop cards', () => {
+    const cards = () => Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.card'));
+
+    async function showOne(): Promise<void> {
+      loadFarmsSpy.and.resolveTo([{ id: 7, name: 'North Plot', points: [] }]);
+      getCropsSpy.and.resolveTo([
+        { ...mockCrop, sowingDate: Date.now() - 12 * 86_400_000, currentStage: 'Flowering' },
+      ]);
+      await component.load();
+      await fixture.whenStable();
+      fixture.detectChanges();
+    }
+
+    it('shows plot, age, area and a four-step stage bar', async () => {
+      await showOne();
+      const text = cards()[0].textContent ?? '';
+      expect(text).toContain('North Plot');
+      expect(text).toContain('cropDashboard.daysCount');
+      expect(text).toContain('10');
+      expect(cards()[0].querySelector('app-stage-bar')).not.toBeNull();
+      expect(component.age({ ...mockCrop, sowingDate: Date.now() - 12 * 86_400_000 })).toBe(12);
+    });
+
+    it('opens the detail when the card is selected', async () => {
+      await showOne();
+      spyOn(router, 'navigate');
+      cards()[0].querySelector<HTMLButtonElement>('button')!.click();
+      expect(router.navigate).toHaveBeenCalledWith(['/crops', mockCrop.id]);
+    });
+
+    it('opens the edit form from the actions menu', async () => {
+      await showOne();
+      spyOn(router, 'navigate');
+      cards()[0].querySelector<HTMLButtonElement>('[aria-haspopup="menu"]')!.click();
+      fixture.detectChanges();
+      fixture.nativeElement.querySelector('[role="menuitem"]').click();
+      expect(router.navigate).toHaveBeenCalledWith(['/crops', mockCrop.id, 'edit']);
+    });
+
+    it('asks before deleting, then removes the crop and its card', async () => {
+      await showOne();
+      component.onDeleteCrop(mockCrop);
+      expect(component.showDeleteConfirm()).toBeTrue();
+      expect(deleteCropSpy).not.toHaveBeenCalled();
+      component.confirmDelete();
+      fixture.detectChanges();
+      expect(deleteCropSpy).toHaveBeenCalledWith(mockCrop.id);
+      expect(component.crops().length).toBe(0);
+    });
+
+    it('does not delete when the confirmation is cancelled', async () => {
+      await showOne();
+      component.onDeleteCrop(mockCrop);
+      component.showDeleteConfirm.set(false);
+      expect(deleteCropSpy).not.toHaveBeenCalled();
+      expect(component.crops().length).toBe(1);
+    });
+
+    it('shows the empty state with Add crop when there are no crops', () => {
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.empty-state')).not.toBeNull();
     });
   });
 });

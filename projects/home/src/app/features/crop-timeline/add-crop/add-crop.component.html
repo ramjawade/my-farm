@@ -2,7 +2,8 @@
   <div class="card shadow-sm border rounded bg-white p-4 text-start">
     <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
       <h4 class="text-success font-semibold m-0">
-        <i class="bi bi-plus-circle-fill me-2"></i>{{ 'addCrop.title' | translate }}
+        <i class="bi me-2" [class.bi-plus-circle-fill]="!isEdit" [class.bi-pencil-fill]="isEdit"></i
+        >{{ (isEdit ? 'addCrop.editTitle' : 'addCrop.title') | translate }}
       </h4>
       <button class="btn btn-outline-secondary btn-sm px-3" (click)="onCancel()">
         <i class="bi bi-arrow-left me-1"></i>{{ 'common.cancel' | translate }}
@@ -49,11 +50,16 @@
               cropForm.get('fieldId')?.touched && cropForm.get('fieldId')?.invalid
             "
           >
-            <option [ngValue]="null">{{ 'addCrop.selectSavedLand' | translate }}</option>
+            <option [ngValue]="null">
+              {{ (noLands() ? 'addCrop.noSavedLands' : 'addCrop.selectSavedLand') | translate }}
+            </option>
             @for (f of savedFarms(); track f.id) {
               <option [ngValue]="f.id">{{ f.name }}</option>
             }
           </select>
+          @if (noLands()) {
+            <div class="form-text">{{ 'addCrop.drawLandFirst' | translate }}</div>
+          }
           @if (cropForm.get('fieldId')?.touched && cropForm.get('fieldId')?.invalid) {
             <div class="text-danger small mt-1">{{ 'addCrop.linkLandRequired' | translate }}</div>
           }
@@ -95,13 +101,40 @@
           <input type="date" id="sowingDate" class="form-control" formControlName="sowingDate" />
         </div>
 
+        <div class="col-md-6">
+          <label for="irrigationType" class="field-label">{{
+            'addCrop.irrigationType' | translate
+          }}</label>
+          <select id="irrigationType" class="form-select" formControlName="irrigationType">
+            <option value="">{{ 'addCrop.notSet' | translate }}</option>
+            @for (type of irrigationTypes; track type) {
+              <option [value]="type">{{ 'cropOptions.irrigation.' + type | translate }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label for="farmingMethod" class="field-label">{{
+            'addCrop.farmingMethod' | translate
+          }}</label>
+          <select id="farmingMethod" class="form-select" formControlName="farmingMethod">
+            <option value="">{{ 'addCrop.notSet' | translate }}</option>
+            @for (method of farmingMethods; track method) {
+              <option [value]="method">
+                {{ 'cropOptions.method.' + method.replace(' ', '') | translate }}
+              </option>
+            }
+          </select>
+        </div>
+
         <div class="col-12 mt-4 pt-3 border-top text-end">
           <button
             type="submit"
             class="btn btn-success px-4"
-            [disabled]="cropForm.invalid || creatingName()"
+            [disabled]="cropForm.invalid || creatingName() || noLands() || saving()"
           >
-            <i class="bi bi-check-lg me-1"></i>{{ 'addCrop.createProfile' | translate }}
+            <i class="bi bi-check-lg me-1"></i
+            >{{ (isEdit ? 'addCrop.saveChanges' : 'addCrop.createProfile') | translate }}
           </button>
         </div>
       </div>

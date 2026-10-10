@@ -1,29 +1,35 @@
-import { provideZonelessChangeDetection } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
-import { TestBed } from '@angular/core/testing';
 import { provideTranslateService } from '@ngx-translate/core';
 import { MapMyFarmComponent } from './map-my-farm.component';
 import { FarmDrawService } from '../../farm-draw/farm-draw.service';
-import { FarmAreaResult } from '../../models/map.models';
-import { signal } from '@angular/core';
+import { LatLngPoint } from '../../models/map.models';
 
 describe('MapMyFarmComponent', () => {
-  let mockFarmDraw: jasmine.SpyObj<FarmDrawService>;
+  let fixture: ComponentFixture<MapMyFarmComponent>;
+  let component: MapMyFarmComponent;
+  const isDrawing = signal(false);
+  const points = signal<LatLngPoint[]>([]);
+  let draw: jasmine.SpyObj<FarmDrawService>;
+  const el = () => fixture.nativeElement as HTMLElement;
+  const buttons = () => Array.from(el().querySelectorAll<HTMLButtonElement>('button'));
 
   beforeEach(async () => {
-    mockFarmDraw = jasmine.createSpyObj('FarmDrawService', [
+    isDrawing.set(false);
+    points.set([]);
+    draw = jasmine.createSpyObj('FarmDrawService', [
       'startDrawing',
       'cancelDrawing',
       'undoLastPoint',
-      'saveFarm',
+      'finishDrawing',
     ]);
-
-    // Setup mock signal states
-    (mockFarmDraw as any).isDrawing = signal(false);
-    (mockFarmDraw as any).isCompleted = signal(false);
-    (mockFarmDraw as any).area = signal(null);
-    (mockFarmDraw as any).pointCount = signal(0);
-    (mockFarmDraw as any).points = signal([]);
+    Object.assign(draw, {
+      isDrawing,
+      points,
+      pointCount: () => points().length,
+      canFinish: () => points().length >= 3,
+    });
 
     await TestBed.configureTestingModule({
       imports: [MapMyFarmComponent],
@@ -31,73 +37,74 @@ describe('MapMyFarmComponent', () => {
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideTranslateService(),
-        { provide: FarmDrawService, useValue: mockFarmDraw },
+        { provide: FarmDrawService, useValue: draw },
       ],
     }).compileComponents();
+    fixture = TestBed.createComponent(MapMyFarmComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
   });
 
-  it('should create', () => {
-    const fixture = TestBed.createComponent(MapMyFarmComponent);
-    const component = fixture.componentInstance;
-    expect(component).toBeTruthy();
+  const square: LatLngPoint[] = [
+    { lat: 10, lng: 20 },
+    { lat: 10, lng: 20.001 },
+    { lat: 10.001, lng: 20.001 },
+    { lat: 10.001, lng: 20 },
+  ];
+
+  it('shows nothing until drawing starts', () => {
+    expect(buttons().length).toBe(0);
   });
 
-  it('should start drawing when toggleMapMyFarm is called and drawing is not active', () => {
-    const fixture = TestBed.createComponent(MapMyFarmComponent);
-    const component = fixture.componentInstance;
-
-    (mockFarmDraw as any).isDrawing.set(false);
-    (mockFarmDraw as any).isCompleted.set(false);
-
-    component.toggleMapMyFarm();
-
-    expect(mockFarmDraw.startDrawing).toHaveBeenCalled();
+  it('shows the tap hint and Undo, Finish, Cancel while drawing', () => {
+    isDrawing.set(true);
+    fixture.detectChanges();
+    expect(el().querySelector('[role="status"]')?.textContent).toContain('lands.tapToAdd');
+    expect(
+      buttons()
+        .map((b) => b.textContent?.trim())
+        .slice(0, 3),
+    ).toEqual(['landEdit.undo', 'lands.finish', 'landEdit.cancel']);
   });
 
-  it('should cancel drawing when toggleMapMyFarm is called and drawing is active', () => {
-    const fixture = TestBed.createComponent(MapMyFarmComponent);
-    const component = fixture.componentInstance;
+  it('disables Undo with no points and Finish with fewer than three', () => {
+    isDrawing.set(true);
+    fixture.detectChanges();
+    expect(buttons()[0].disabled).toBeTrue();
+    expect(buttons()[1].disabled).toBeTrue();
 
-    (mockFarmDraw as any).isDrawing.set(true);
+    points.set(square.slice(0, 2));
+    fixture.detectChanges();
+    expect(buttons()[0].disabled).toBeFalse();
+    expect(buttons()[1].disabled).toBeTrue();
 
-    component.toggleMapMyFarm();
-
-    expect(mockFarmDraw.cancelDrawing).toHaveBeenCalled();
+    points.set(square);
+    fixture.detectChanges();
+    expect(buttons()[1].disabled).toBeFalse();
   });
 
-  it('should trigger cancel drawing when cancel is called', () => {
-    const fixture = TestBed.createComponent(MapMyFarmComponent);
-    const component = fixture.componentInstance;
+  it('shows the point count and the live area from three points', () => {
+    isDrawing.set(true);
+    points.set(square.slice(0, 2));
+    fixture.detectChanges();
+    expect(el().querySelector('[role="status"]')?.textContent).toContain('lands.pointsHint');
+    expect(component.liveAcres()).toBeNull();
 
-    component.cancel();
-    expect(mockFarmDraw.cancelDrawing).toHaveBeenCalled();
+    points.set(square);
+    fixture.detectChanges();
+    expect(component.liveAcres()).toBeGreaterThan(0);
+    expect(el().querySelector('[role="status"] strong')).not.toBeNull();
   });
 
-  it('should trigger undo point when undo is called', () => {
-    const fixture = TestBed.createComponent(MapMyFarmComponent);
-    const component = fixture.componentInstance;
-
-    component.undo();
-    expect(mockFarmDraw.undoLastPoint).toHaveBeenCalled();
-  });
-
-  it('should return null formattedArea if service has no computed area', () => {
-    const fixture = TestBed.createComponent(MapMyFarmComponent);
-    const component = fixture.componentInstance;
-
-    expect(component.formattedArea()).toBeNull();
-  });
-
-  it('should format farm area results correctly in computed property', () => {
-    const fixture = TestBed.createComponent(MapMyFarmComponent);
-    const component = fixture.componentInstance;
-
-    const mockArea: FarmAreaResult = { squareMeters: 20000, hectares: 2.0, acres: 4.94 };
-    (mockFarmDraw as any).area.set(mockArea);
-
-    const formatted = component.formattedArea();
-    expect(formatted).not.toBeNull();
-    expect(formatted!.hectares).toBe('2.00');
-    expect(formatted!.acres).toBe('4.94');
+  it('undoes, finishes and cancels through the drawing service', () => {
+    isDrawing.set(true);
+    points.set(square);
+    fixture.detectChanges();
+    buttons()[0].click();
+    buttons()[1].click();
+    buttons()[2].click();
+    expect(draw.undoLastPoint).toHaveBeenCalled();
+    expect(draw.finishDrawing).toHaveBeenCalled();
+    expect(draw.cancelDrawing).toHaveBeenCalled();
   });
 });
