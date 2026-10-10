@@ -31,6 +31,7 @@ import { CropStage } from '../crop-timeline.models';
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'd-block' },
 })
 export class StageBarComponent {
   private readonly translate = inject(TranslateService);
