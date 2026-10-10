@@ -164,7 +164,7 @@
     @if (filteredCrops().length === 0) {
       <div class="col-12">
         <div class="card">
-          <div class="card-body empty-state">
+          <div class="empty-state">
             <span class="empty-state__icon" aria-hidden="true"><i class="bi bi-flower1"></i></span>
             @if (hasNoCropsAtAll()) {
               <h2 class="empty-state__title">{{ 'cropDashboard.noCropsYet' | translate }}</h2>

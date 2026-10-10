@@ -43,9 +43,9 @@
         </div>
       </header>
 
-      <div class="d-flex flex-column gap-3">
+      <div class="d-flex flex-column" style="gap: 12px">
         <section class="card">
-          <div class="card-body">
+          <div>
             <div class="d-flex justify-content-between align-items-center mb-2">
               <h2 class="h6 mb-0">{{ 'cropActivity.stage' | translate }}</h2>
               @if (canAdvance()) {
@@ -58,14 +58,14 @@
           </div>
         </section>
 
-        <div class="row row-cols-2 row-cols-md-4 g-3">
+        <div class="row row-cols-2 row-cols-md-4" style="--bs-gutter-x: 12px; --bs-gutter-y: 12px">
           <div class="col">
             <div class="card h-100">
-              <div class="card-body">
+              <div>
                 <small class="text-body-secondary d-block">{{
                   'cropDashboard.age' | translate
                 }}</small>
-                <strong class="fs-5">
+                <strong class="d-block kpi-value">
                   @if (age() !== null) {
                     {{ 'cropDashboard.daysCount' | translate: { days: age() } }}
                   } @else {
@@ -83,11 +83,13 @@
           </div>
           <div class="col">
             <div class="card h-100">
-              <div class="card-body">
+              <div>
                 <small class="text-body-secondary d-block">{{
                   'cropActivity.activities' | translate
                 }}</small>
-                <strong class="fs-5">{{ done().length + planned().length | localNumber }}</strong>
+                <strong class="d-block kpi-value">{{
+                  done().length + planned().length | localNumber
+                }}</strong>
                 <small class="text-body-secondary d-block">
                   {{
                     'cropActivity.doneAndPlanned'
@@ -99,11 +101,11 @@
           </div>
           <div class="col">
             <div class="card h-100">
-              <div class="card-body">
+              <div>
                 <small class="text-body-secondary d-block">{{
                   'cropActivity.cropCost' | translate
                 }}</small>
-                <strong class="fs-5">₹{{ cropCost() | localNumber: '1.0-0' }}</strong>
+                <strong class="d-block kpi-value">₹{{ cropCost() | localNumber: '1.0-0' }}</strong>
                 <small class="text-body-secondary d-block">{{
                   'cropActivity.soFar' | translate
                 }}</small>
@@ -112,11 +114,11 @@
           </div>
           <div class="col">
             <div class="card h-100">
-              <div class="card-body">
+              <div>
                 <small class="text-body-secondary d-block">{{
                   'lands.kpi.area' | translate
                 }}</small>
-                <strong class="fs-5">
+                <strong class="d-block kpi-value">
                   {{ crop.area | localNumber: '1.0-2' }}
                   {{
                     (crop.areaUnit === 'hectares'
@@ -133,10 +135,10 @@
           </div>
         </div>
 
-        <div class="row g-3">
+        <div class="row" style="--bs-gutter-x: 12px; --bs-gutter-y: 12px">
           <div class="col-12 col-lg-6">
             <section class="card h-100">
-              <div class="card-body">
+              <div>
                 <div class="d-flex justify-content-between align-items-center mb-2">
                   <h2 class="h6 mb-0">{{ 'cropActivity.activities' | translate }}</h2>
                   <a routerLink="list" class="small">{{ 'cropActivity.viewAll' | translate }}</a>
@@ -198,7 +200,7 @@
           </div>
           <div class="col-12 col-lg-6">
             <section class="card h-100">
-              <div class="card-body">
+              <div>
                 <h2 class="h6 mb-3">{{ 'cropActivity.timeline' | translate }}</h2>
                 <ol class="list-unstyled d-flex flex-column gap-2 mb-0">
                   @for (activity of timeline(); track activity.id) {

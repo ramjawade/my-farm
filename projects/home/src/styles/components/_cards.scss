@@ -39,3 +39,26 @@
     outline-offset: 2px;
   }
 }
+
+// Phones use tighter cards, as in the prototype.
+@media (max-width: 767.98px) {
+  .card,
+  .card-box,
+  .glass-card,
+  .card-glass,
+  .activity-card {
+    padding: var(--mf-s-3);
+  }
+}
+
+// A key number on a card (crop detail tiles, land detail): display font, smaller on phones.
+.kpi-value {
+  font-family: var(--mf-font-display);
+  font-size: 1.125rem;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+
+  @media (min-width: 768px) {
+    font-size: 1.5rem;
+  }
+}
