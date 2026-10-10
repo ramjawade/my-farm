@@ -58,12 +58,13 @@
   }
 }
 
+// Covers the map so the drawing hint and buttons can sit on its edges; only
+// those controls take clicks, the rest passes through to the map.
 .map-page__farm-draw {
   position: absolute;
-  bottom: 0.75rem;
-  left: 50%;
-  transform: translateX(-50%);
+  inset: 0;
   z-index: 1000;
+  pointer-events: none;
 }
 
 // Position the attribution watermark horizontally left to the Home button

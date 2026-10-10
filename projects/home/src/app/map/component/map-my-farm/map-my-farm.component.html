@@ -1,107 +1,46 @@
-<div class="map-my-farm shadow-sm">
-  <!-- Workflow Prompt: Land Setup -->
-  @if (shouldShowLandPrompt()) {
-    <app-workflow-prompt-card
-      [title]="'mapMyFarm.drawBoundaryTitle' | translate"
-      [message]="'mapMyFarm.drawBoundaryMessage' | translate"
-      [actionLabel]="'mapMyFarm.startDrawing' | translate"
-      icon="bi-pin-map-fill"
-      color="var(--mf-leaf)"
-      buttonStyle="btn-success"
-      (action)="onLandPromptAction()"
-      (dismiss)="onLandPromptDismiss()"
-    />
-  }
-
-  @if (!hasFarms() && !draw.isDrawing() && !draw.isCompleted() && !shouldShowLandPrompt()) {
-    <div
-      class="alert alert-success p-2.5 mb-2 border-0 rounded-3 text-start animate-fade-in"
-      style="
-        background-color: rgba(var(--mf-leaf-rgb), 0.09);
-        font-size: 0.75rem;
-        color: var(--mf-leaf-ink);
-        line-height: 1.35;
-      "
-    >
-      <div class="fw-bold mb-0.5">
-        <i class="bi bi-pin-map-fill text-danger me-1"></i
-        >{{ 'mapMyFarm.mapBoundaryTitle' | translate }}
-      </div>
-      {{ 'mapMyFarm.mapBoundaryHint' | translate }}
-    </div>
-  }
-
-  <button
-    type="button"
-    class="btn btn-sm w-100"
-    [class.btn-success]="draw.isDrawing()"
-    [class.btn-outline-success]="!draw.isDrawing()"
-    (click)="toggleMapMyFarm()"
+@if (draw.isDrawing()) {
+  <div
+    class="position-absolute top-0 start-50 translate-middle-x mt-2 px-3 py-2 rounded-3 border bg-body shadow-sm small text-nowrap pe-auto"
+    role="status"
   >
-    {{ 'mapMyFarm.mapMyFarm' | translate }}
-  </button>
+    @if (draw.pointCount() > 0) {
+      {{ 'lands.pointsHint' | translate: { count: draw.pointCount() } }}
+    } @else {
+      {{ 'lands.tapToAdd' | translate }}
+    }
+    @if (liveAcres() !== null) {
+      <strong class="ms-2"
+        >{{ liveAcres() | localNumber: '1.0-2' }} {{ 'landEdit.acres' | translate }}</strong
+      >
+    }
+  </div>
 
-  @if (draw.isDrawing()) {
-    <p class="map-my-farm__hint mb-2">
-      {{ 'mapMyFarm.clickToAddPoints' | translate: { count: draw.pointCount() } }}
-    </p>
-    <div class="map-my-farm__locate-btn mb-2">
-      <button
-        type="button"
-        class="btn btn-sm btn-outline-primary w-100"
-        (click)="locateMe()"
-        [disabled]="geolocating()"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="13"
-          height="13"
-          fill="currentColor"
-          viewBox="0 0 16 16"
-          class="me-1"
-        >
-          <path
-            d="M8 0a1 1 0 0 1 1 1v1.06a7 7 0 0 1 5.94 5.94H15a1 1 0 1 1 0 2h-1.06a7 7 0 0 1-5.94 5.94V15a1 1 0 1 1-2 0v-1.06A7 7 0 0 1 2.06 9H1a1 1 0 0 1 0-2h1.06A7 7 0 0 1 7 2.06V1a1 1 0 0 1 1-1zm0 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"
-          />
-          <circle cx="8" cy="8" r="2" fill="currentColor" />
-        </svg>
-        {{
-          geolocating() ? ('mapMyFarm.locating' | translate) : ('mapMyFarm.locateMe' | translate)
-        }}
-      </button>
-    </div>
-    <div class="map-my-farm__actions btn-group btn-group-sm w-100">
-      <button
-        type="button"
-        class="btn btn-outline-secondary"
-        (click)="undo()"
-        [disabled]="draw.pointCount() === 0"
-      >
-        {{ 'landEdit.undo' | translate }}
-      </button>
-      <button type="button" class="btn btn-outline-danger" (click)="cancel()">
-        {{ 'landEdit.cancel' | translate }}
-      </button>
-    </div>
-  }
-
-  @if (draw.isCompleted() && formattedArea(); as area) {
-    <div class="map-my-farm__area mt-2">
-      <span class="map-my-farm__area-title">{{ 'mapMyFarm.farmArea' | translate }}</span>
-      <span class="map-my-farm__area-value"
-        >{{ area.hectares }} {{ 'mapMyFarm.ha' | translate }}</span
-      >
-      <span class="map-my-farm__area-sub">{{ area.acres }} {{ 'landEdit.acres' | translate }}</span>
-    </div>
-    <div class="map-my-farm__note mt-1">
-      {{ 'mapMyFarm.areaApproximateNote' | translate }}
-    </div>
+  <div
+    class="position-absolute bottom-0 start-50 translate-middle-x mb-4 d-flex align-items-center gap-2 pe-auto"
+  >
     <button
       type="button"
-      class="btn btn-sm btn-outline-secondary w-100 mt-2"
-      (click)="draw.startDrawing()"
+      class="btn btn-secondary"
+      [disabled]="draw.pointCount() === 0"
+      (click)="undo()"
     >
-      {{ 'mapMyFarm.drawAgain' | translate }}
+      {{ 'landEdit.undo' | translate }}
     </button>
-  }
-</div>
+    <button type="button" class="btn btn-primary" [disabled]="!draw.canFinish()" (click)="finish()">
+      {{ 'lands.finish' | translate }}
+    </button>
+    <button type="button" class="btn btn-secondary" (click)="cancel()">
+      {{ 'landEdit.cancel' | translate }}
+    </button>
+    <button
+      type="button"
+      class="btn btn-secondary px-2"
+      [disabled]="geolocating()"
+      [attr.aria-label]="'mapMyFarm.locateMe' | translate"
+      [title]="'mapMyFarm.locateMe' | translate"
+      (click)="locateMe()"
+    >
+      <i class="bi bi-crosshair" aria-hidden="true"></i>
+    </button>
+  </div>
+}

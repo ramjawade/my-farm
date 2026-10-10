@@ -1,41 +1,43 @@
-import { Component, inject, input, signal, computed, output, effect } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  output,
+  signal,
+} from '@angular/core';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-
-import { formatArea } from '../../farm-draw/farm-area.utils';
-import { FarmDrawService } from '../../farm-draw/farm-draw.service';
 import { ToastService } from 'shared';
-import { WorkflowStateService } from '../../../core/workflow/workflow-state.service';
-import { OnboardingGuideService } from '../../../core/workflow/onboarding-guide.service';
-import { WorkflowPromptCardComponent } from '../../../features/shared/components/workflow-prompt-card.component';
+import { LocalNumberPipe } from '../../../core/i18n/localized.pipes';
+import { calculateFarmArea } from '../../farm-draw/farm-area.utils';
+import { FarmDrawService } from '../../farm-draw/farm-draw.service';
 
+/**
+ * The drawing controls over the map: a hint at the top with the point count and
+ * live area, and Undo / Finish / Cancel at the bottom. Shown only while drawing;
+ * drawing starts from the page's "Draw land" button.
+ */
 @Component({
-  standalone: true,
-  imports: [WorkflowPromptCardComponent, TranslatePipe],
   selector: 'app-map-my-farm',
+  imports: [TranslatePipe, LocalNumberPipe],
   templateUrl: './map-my-farm.component.html',
-  styleUrl: './map-my-farm.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MapMyFarmComponent {
   readonly draw = inject(FarmDrawService);
   private readonly toast = inject(ToastService);
-  private readonly workflowService = inject(WorkflowStateService);
-  private readonly onboardingService = inject(OnboardingGuideService);
   private readonly translate = inject(TranslateService);
-  readonly hasFarms = input(false);
 
   readonly setSatelliteLayer = output<void>();
   readonly locateMeRequest = output<void>();
   readonly geolocating = signal(false);
 
-  readonly shouldShowLandPrompt = computed(() => {
-    const promptNotDismissed = this.onboardingService.shouldShowPrompt('land');
-    return !this.hasFarms() && promptNotDismissed && this.workflowService.isFirstTime();
+  /** Acres of the boundary drawn so far, once it has three points. */
+  readonly liveAcres = computed(() => {
+    const points = this.draw.points();
+    return points.length > 2 ? (calculateFarmArea(points)?.acres ?? null) : null;
   });
-
-  readonly formattedArea = () => {
-    const area = this.draw.area();
-    return area ? formatArea(area) : null;
-  };
 
   constructor() {
     effect(() => {
@@ -45,24 +47,16 @@ export class MapMyFarmComponent {
     });
   }
 
-  toggleMapMyFarm(): void {
-    if (this.draw.isDrawing()) {
-      this.draw.cancelDrawing();
-      return;
-    }
-    if (this.draw.isCompleted()) {
-      this.draw.startDrawing();
-      return;
-    }
-    this.draw.startDrawing();
+  undo(): void {
+    this.draw.undoLastPoint();
+  }
+
+  finish(): void {
+    this.draw.finishDrawing();
   }
 
   cancel(): void {
     this.draw.cancelDrawing();
-  }
-
-  undo(): void {
-    this.draw.undoLastPoint();
   }
 
   locateMe(): void {
@@ -73,7 +67,7 @@ export class MapMyFarmComponent {
 
     this.geolocating.set(true);
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      () => {
         this.locateMeRequest.emit();
         this.geolocating.set(false);
       },
@@ -87,13 +81,5 @@ export class MapMyFarmComponent {
       },
       { timeout: 10000, enableHighAccuracy: true },
     );
-  }
-
-  onLandPromptAction(): void {
-    this.toggleMapMyFarm();
-  }
-
-  onLandPromptDismiss(): void {
-    this.onboardingService.dismissPrompt('land');
   }
 }

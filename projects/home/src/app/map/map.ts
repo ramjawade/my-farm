@@ -246,6 +246,8 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.farmDrawLayer?.destroy();
     this.map?.remove();
+    // Late callbacks (e.g. the first invalidateSize) must not touch a removed map.
+    this.map = undefined;
   }
 
   selectResult(result: MapSearchResult): void {

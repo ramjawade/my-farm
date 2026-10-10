@@ -965,7 +965,10 @@
       "River": "River",
       "FarmPond": "Farm Pond",
       "Rainfed": "Rainfed"
-    }
+    },
+    "pointsHint": "{{count}} points",
+    "tapToAdd": "Tap the map to add points",
+    "finish": "Finish"
   },
   "crops": {
     "title": "Crops",

@@ -42,7 +42,7 @@
         }
 
         <div class="map-page__wrapper">
-          @if (!isPicker || showSearch) {
+          @if ((!isPicker && !farmDraw.isDrawing()) || (isPicker && showSearch)) {
             <app-map-search
               class="map-page__search"
               (resultSelected)="selectResult($event)"
@@ -53,7 +53,6 @@
           @if (!isPicker) {
             <app-map-my-farm
               class="map-page__farm-draw"
-              [hasFarms]="farms().length > 0"
               (setSatelliteLayer)="setLayer('satellite')"
               (locateMeRequest)="locateMeGPS()"
             />
