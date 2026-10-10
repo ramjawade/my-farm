@@ -1343,6 +1343,10 @@ export interface components {
       current_stage?: string | null;
       /** Expected Harvest Date */
       expected_harvest_date?: string | null;
+      /** Farming Method */
+      farming_method?: string | null;
+      /** Irrigation Type */
+      irrigation_type?: string | null;
       /** Label */
       label?: string | null;
       /** Land Id */
@@ -1384,8 +1388,12 @@ export interface components {
       expected_harvest_date?: string | null;
       /** Farmer Id */
       farmer_id: number;
+      /** Farming Method */
+      farming_method?: string | null;
       /** Id */
       id: number;
+      /** Irrigation Type */
+      irrigation_type?: string | null;
       /** Label */
       label?: string | null;
       /** Land Id */
@@ -1418,6 +1426,10 @@ export interface components {
       current_stage?: string | null;
       /** Expected Harvest Date */
       expected_harvest_date?: string | null;
+      /** Farming Method */
+      farming_method?: string | null;
+      /** Irrigation Type */
+      irrigation_type?: string | null;
       /** Label */
       label?: string | null;
       /** Season */
@@ -1650,6 +1662,8 @@ export interface components {
       notes?: string | null;
       /** Points */
       points?: components['schemas']['LandPointInput'][] | null;
+      /** Water Source */
+      water_source?: string | null;
     };
     /**
      * LandPoint
@@ -1702,6 +1716,8 @@ export interface components {
        * Format: date-time
        */
       updated_at: string;
+      /** Water Source */
+      water_source?: string | null;
     };
     /**
      * LandUpdate
@@ -1716,6 +1732,8 @@ export interface components {
       notes?: string | null;
       /** Points */
       points?: components['schemas']['LandPointInput'][] | null;
+      /** Water Source */
+      water_source?: string | null;
     };
     /**
      * RegisterRequest

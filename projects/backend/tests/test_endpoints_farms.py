@@ -6,6 +6,8 @@ from uuid import uuid4
 import pytest
 from firebase_admin import auth as firebase_auth
 from httpx import AsyncClient
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncEngine
 
 
 @pytest.mark.asyncio
@@ -180,3 +182,72 @@ async def test_farm_crops_and_setup_flag_round_trip(
             f"/api/v1/farms/{farm['id']}", headers=headers, json={"crop_catalog_ids": None}
         )
         assert null.status_code == 422
+
+
+_COPY_LAND = (
+    "UPDATE land SET water_source = farm.water_source FROM farm WHERE land.farm_id = farm.id"
+)
+_COPY_CROP = (
+    "UPDATE crop SET irrigation_type = farm.irrigation_type, "
+    "farming_method = farm.farming_method "
+    "FROM land JOIN farm ON land.farm_id = farm.id WHERE crop.land_id = land.id"
+)
+
+
+@pytest.mark.asyncio
+async def test_migration_0007_copies_farm_values_down(superuser_engine: AsyncEngine) -> None:
+    """The 0007 copy statements push farm values onto lands and crops."""
+    async with superuser_engine.connect() as conn:
+        farmer = (
+            await conn.execute(
+                text("INSERT INTO farmer (auth_uid) VALUES (:u) RETURNING id"),
+                {"u": f"mig_{uuid4()}"},
+            )
+        ).scalar_one()
+        farm = (
+            await conn.execute(
+                text(
+                    "INSERT INTO farm (farmer_id, name, water_source, irrigation_type, "
+                    "farming_method) VALUES (:f, 'F', 'Canal', 'Drip', 'Organic') RETURNING id"
+                ),
+                {"f": farmer},
+            )
+        ).scalar_one()
+        land = (
+            await conn.execute(
+                text(
+                    "INSERT INTO land (farmer_id, farm_id, name) "
+                    "VALUES (:f, :fa, 'L') RETURNING id"
+                ),
+                {"f": farmer, "fa": farm},
+            )
+        ).scalar_one()
+        catalog = (
+            await conn.execute(
+                text("INSERT INTO crop_catalog (name) VALUES (:n) RETURNING id"),
+                {"n": f"Wheat {uuid4()}"},
+            )
+        ).scalar_one()
+        crop = (
+            await conn.execute(
+                text(
+                    "INSERT INTO crop (farmer_id, land_id, crop_catalog_id) "
+                    "VALUES (:f, :l, :c) RETURNING id"
+                ),
+                {"f": farmer, "l": land, "c": catalog},
+            )
+        ).scalar_one()
+        await conn.execute(text(_COPY_LAND))
+        await conn.execute(text(_COPY_CROP))
+        water = (
+            await conn.execute(text("SELECT water_source FROM land WHERE id = :i"), {"i": land})
+        ).scalar_one()
+        crop_row = (
+            await conn.execute(
+                text("SELECT irrigation_type, farming_method FROM crop WHERE id = :i"),
+                {"i": crop},
+            )
+        ).one()
+        await conn.rollback()
+    assert water == "Canal"
+    assert tuple(crop_row) == ("Drip", "Organic")

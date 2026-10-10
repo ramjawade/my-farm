@@ -7,11 +7,11 @@ test.beforeEach(async ({ page }) => {
 });
 
 /**
- * Profile settings survive a reload (#327): crops chosen in the profile dialog
- * are written to the backend and read back after the app restarts.
- * Needs the same backend + seeded reference data as the golden path.
+ * Profile settings survive a reload (#327): a village and pincode saved from
+ * the profile rows are written to the backend and read back after the app
+ * restarts. Needs the same backend as the golden path.
  */
-test('primary crops saved in the profile are still there after a reload', async ({
+test('village and pincode saved in the profile are still there after a reload', async ({
   page,
 }, testInfo) => {
   const digit = testInfo.project.name.toLowerCase().includes('mobile') ? '4' : '3';
@@ -22,13 +22,18 @@ test('primary crops saved in the profile are still there after a reload', async 
   await expect(page).toHaveURL(/\/map$/, { timeout: 15_000 });
 
   await page.goto('/profile');
-  await page.locator('button:has(.bi-pencil-square)').nth(3).click();
-  await page.getByRole('button', { name: 'Wheat' }).click();
-  await page.getByRole('button', { name: 'Rice' }).click();
-  await page.getByRole('button', { name: 'Save Changes' }).click();
-  await expect(page.getByText('Profile updated.')).toBeVisible();
+
+  await page.getByRole('button', { name: /Village/ }).click();
+  await page.locator('#pf-village').fill('Sinnar');
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByText('Village saved.')).toBeVisible();
+
+  await page.getByRole('button', { name: /Pincode/ }).click();
+  await page.locator('#pf-pincode').fill('422103');
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByText('Pincode saved.')).toBeVisible();
 
   await page.reload();
-  await expect(page.getByText('Wheat')).toBeVisible();
-  await expect(page.getByText('Rice')).toBeVisible();
+  await expect(page.getByRole('button', { name: /Village/ })).toContainText('Sinnar');
+  await expect(page.getByRole('button', { name: /Pincode/ })).toContainText('422103');
 });

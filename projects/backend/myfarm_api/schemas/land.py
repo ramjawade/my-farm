@@ -30,6 +30,7 @@ class LandBase(BaseModel):
     name: str = Field(..., max_length=255)
     farm_id: int
     area_sq_m: Decimal | None = None
+    water_source: str | None = None
     notes: str | None = None
     points: list[LandPoint] | None = None
 
@@ -58,6 +59,7 @@ class LandUpdate(NonNullUpdate):
 
     name: Name | None = None
     area_sq_m: Decimal12 | None = None
+    water_source: str | None = None
     notes: str | None = None
     points: list[LandPointInput] | None = None
 

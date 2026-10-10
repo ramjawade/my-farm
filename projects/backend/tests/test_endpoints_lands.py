@@ -153,3 +153,29 @@ async def test_update_and_delete_land(client: AsyncClient) -> None:
             headers={"Authorization": "Bearer test"},
         )
         assert get_resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_land_water_source_round_trip(client: AsyncClient) -> None:
+    """Water source is stored on the land and can be updated."""
+    uid = f"farmer_{uuid4()}"
+    headers = {"Authorization": "Bearer test"}
+
+    with patch.object(
+        firebase_auth, "verify_id_token", return_value={"uid": uid, "phone_number": None}
+    ):
+        farm = await client.post("/api/v1/farms", headers=headers, json={"name": "F"})
+        land = await client.post(
+            "/api/v1/lands",
+            headers=headers,
+            json={"name": "L", "farm_id": str(farm.json()["id"]), "water_source": "Canal"},
+        )
+        assert land.status_code == 201
+        assert land.json()["water_source"] == "Canal"
+
+        updated = await client.patch(
+            f"/api/v1/lands/{land.json()['id']}",
+            headers=headers,
+            json={"water_source": "Borewell"},
+        )
+        assert updated.json()["water_source"] == "Borewell"

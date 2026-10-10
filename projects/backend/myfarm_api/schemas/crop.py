@@ -16,6 +16,8 @@ class CropBase(BaseModel):
     label: str | None = None
     area: Decimal | None = None
     area_unit: str = Field(default="sq_m", max_length=50)
+    irrigation_type: str | None = None
+    farming_method: str | None = None
     season: str | None = None
     sowing_date: str | None = None
     current_stage: str | None = None
@@ -41,6 +43,8 @@ class CropUpdate(NonNullUpdate):
     label: str | None = None
     area: Decimal10 | None = None
     area_unit: str | None = Field(None, max_length=50)
+    irrigation_type: str | None = None
+    farming_method: str | None = None
     season: str | None = None
     sowing_date: IsoDate | None = None
     current_stage: str | None = None

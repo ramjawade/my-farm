@@ -1,116 +1,53 @@
-import { LocaleService } from '../../core/i18n/locale.service';
-import { I18n } from '../../core/i18n/i18n.service';
-import { LocalNumberPipe } from '../../core/i18n/localized.pipes';
-import {
-  Component,
-  inject,
-  signal,
-  computed,
-  OnInit,
-  ChangeDetectionStrategy,
-} from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { FarmerRegistrationData } from '../farmer-registration/farmer-registration.models';
+import { ToastService } from 'shared';
 import { AuthService } from '../../core/auth/auth.service';
-import { FarmLookupService } from '../../core/farms/farm-lookup.service';
-import { SavedFarm } from '../../map/models/map.models';
-import { ProfileEditDialogComponent } from './components/profile-edit-dialog.component';
-import { ReferenceNamePipe } from '../../core/i18n/reference-name.pipe';
+import { I18n } from '../../core/i18n/i18n.service';
+import { LocaleService } from '../../core/i18n/locale.service';
 import { SUPPORTED_LANGUAGES } from '../../core/i18n/supported-languages';
 import { ThemePreference, ThemeService } from '../../core/theme/theme.service';
-import { ToastService } from 'shared';
+import { FarmerRegistrationData } from '../farmer-registration/farmer-registration.models';
+import { ProfileFieldDialogComponent } from './components/profile-field-dialog.component';
+import {
+  PROFILE_GROUPS,
+  PROFILE_REQUIRED,
+  ProfileControl,
+  ProfileField,
+  ProfileFieldKey,
+  findProfileField,
+} from './profile.fields';
 
 @Component({
-  standalone: true,
   selector: 'app-profile',
-  imports: [
-    LocalNumberPipe,
-    CommonModule,
-    ProfileEditDialogComponent,
-    TranslatePipe,
-    ReferenceNamePipe,
-  ],
+  imports: [RouterLink, TranslatePipe, ProfileFieldDialogComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProfileComponent implements OnInit {
-  private readonly locale = inject(LocaleService);
+export class ProfileComponent {
+  private readonly auth = inject(AuthService);
   private readonly i18n = inject(I18n);
-  private readonly authService = inject(AuthService);
-  private readonly farmLookup = inject(FarmLookupService);
+  private readonly locale = inject(LocaleService);
+  private readonly theme = inject(ThemeService);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
-  private readonly router = inject(Router);
-  private readonly theme = inject(ThemeService);
 
-  // Read-only state
-  readonly currentUser = this.authService.currentUser;
+  readonly currentUser = this.auth.currentUser;
+  readonly editing = signal<ProfileField | null>(null);
+  readonly saving = signal(false);
+  readonly saveError = signal('');
 
-  // The onboarding wizard's `farmName`/`farmArea` are separate from the
-  // actual saved lands drawn on the map — a farmer who skipped the wizard
-  // and drew a land directly would otherwise see "Unnamed Farm" / 0 acres
-  // here despite having real land data. Prefer the saved lands when any
-  // exist; fall back to the onboarding fields only when there are none.
-  readonly savedFarms = signal<SavedFarm[]>([]);
-
-  async ngOnInit(): Promise<void> {
-    this.savedFarms.set(await this.farmLookup.loadForCurrentUser());
-  }
-
-  signOut(): void {
-    this.authService.logout();
-  }
-
-  onBackClicked(): void {
-    this.router.navigate(['/']);
-  }
-
-  readonly landSummary = computed(() => {
-    const farms = this.savedFarms();
-    const user = this.currentUser();
-    const unit = user?.farmAreaUnit === 'acres' ? 'acres' : 'hectares';
-
-    if (farms.length > 0) {
-      const totalArea = farms.reduce(
-        (sum, f) => sum + (unit === 'acres' ? f.area.acres : f.area.hectares),
-        0,
-      );
-      return {
-        name:
-          farms.length === 1
-            ? farms[0].name
-            : this.translate.instant('profile.landsCount', { count: farms.length }),
-        area: Math.round(totalArea * 100) / 100,
-        unit,
-      };
-    }
-
-    return {
-      name: user?.farmName || this.translate.instant('profile.unnamedFarm'),
-      area: user?.farmArea ?? 0,
-      unit,
-    };
+  readonly initial = computed(() => {
+    const field = this.editing();
+    return field ? Object.fromEntries(field.controls.map((c) => [c.name, this.valueOf(c)])) : {};
   });
 
-  // Modal dialog trigger states
-  readonly activeSection = signal<'account' | 'agronomic' | 'land' | 'operations'>('account');
-  readonly showEditDialog = signal(false);
+  readonly userInitial = computed(() =>
+    (this.currentUser()?.fullName ?? '').trim().charAt(0).toUpperCase(),
+  );
 
-  // computed helper properties
-  readonly userInitials = computed(() => {
-    const name = this.currentUser()?.fullName || 'User';
-    return name
-      .split(' ')
-      .map((part) => part.charAt(0))
-      .slice(0, 2)
-      .join('')
-      .toUpperCase();
-  });
-
-  /** The role in the active language ("Farmer" -> "शेतकरी"); unknown roles show as stored. */
+  /** The role in the active language; unknown roles show as stored. */
   readonly roleLabel = computed(() => {
     const role = this.currentUser()?.userRole;
     if (!role) return this.i18n.t('profile.farmerRole');
@@ -121,85 +58,89 @@ export class ProfileComponent implements OnInit {
 
   readonly memberSince = computed(() => {
     const time = this.currentUser()?.createdAt;
-    if (!time) return 'N/A';
-    try {
-      return this.locale.date(time, 'd MMMM yyyy');
-    } catch {
-      return 'N/A';
-    }
+    return time ? this.locale.date(time, 'd MMMM yyyy') : '';
   });
 
-  /**
-   * Resolves the human-readable, bilingual language label (e.g. "Marathi
-   * (मराठी)") from the stored short code — fixes #190/#202: the summary
-   * used to print the raw `preferredLanguage` code.
-   */
-  readonly preferredLanguageLabel = computed(() => {
-    const code = this.currentUser()?.preferredLanguage;
-    return SUPPORTED_LANGUAGES.find((lang) => lang.value === code)?.label || code || '';
-  });
+  readonly groups = computed(() =>
+    PROFILE_GROUPS.map((group) => ({
+      titleKey: group.titleKey,
+      rows: group.fields.map((field) => ({ field, display: this.display(field.key) })),
+    })),
+  );
 
-  /** Theme choices for the segmented control, in display order. */
-  readonly themeOptions: { value: ThemePreference; labelKey: string }[] = [
-    { value: 'system', labelKey: 'theme.system' },
-    { value: 'light', labelKey: 'theme.light' },
-    { value: 'dark', labelKey: 'theme.dark' },
-  ];
-  readonly themePreference = this.theme.preference;
+  /** Empty required rows, in the order they are offered. */
+  readonly missing = computed(() =>
+    PROFILE_REQUIRED.filter((key) => !this.display(key)).map((key) => findProfileField(key)!),
+  );
 
-  selectTheme(preference: ThemePreference): void {
-    this.theme.setPreference(preference);
+  edit(field: ProfileField): void {
+    this.saveError.set('');
+    this.editing.set(field);
   }
 
-  openEditDialog(section: 'account' | 'agronomic' | 'land' | 'operations'): void {
-    this.activeSection.set(section);
-    this.showEditDialog.set(true);
+  close(): void {
+    this.editing.set(null);
   }
 
-  private async saveDeletion(updates: Partial<FarmerRegistrationData>): Promise<void> {
-    try {
-      await this.authService.updateProfile(updates);
-    } catch (error) {
-      console.error('Failed to save profile', error);
-      this.toast.error(this.i18n.t('common.saveFailed'));
+  async save(values: Record<string, string>): Promise<void> {
+    const field = this.editing();
+    if (!field || this.saving()) return;
+
+    if (field.key === 'theme') {
+      this.theme.setPreference(values['theme'] as ThemePreference);
+    } else {
+      this.saving.set(true);
+      this.saveError.set('');
+      try {
+        await this.auth.updateProfile(values as Partial<FarmerRegistrationData>);
+      } catch (error) {
+        console.error('Failed to save profile', error);
+        this.saveError.set(this.i18n.t('common.saveFailed'));
+        return;
+      } finally {
+        this.saving.set(false);
+      }
     }
+    this.toast.success(
+      this.translate.instant('profile.saved', { field: this.translate.instant(field.labelKey) }),
+    );
+    this.close();
   }
 
-  async deleteAgronomic(): Promise<void> {
-    if (confirm(this.translate.instant('profile.confirmDeleteAgronomic'))) {
-      await this.saveDeletion({
-        userRole: 'Farmer',
-        farmingMethod: '',
-        farmSetupCompleted: false,
-      });
-    }
+  signOut(): void {
+    this.auth.logout();
   }
 
-  async deleteLandLocation(): Promise<void> {
-    if (confirm(this.translate.instant('profile.confirmDeleteLand'))) {
-      await this.saveDeletion({
-        farmName: '',
-        farmArea: 0,
-        farmAreaUnit: 'hectares',
-        village: '',
-        district: '',
-        state: '',
-        pincode: '',
-        location: null,
-        locationType: 'skipped',
-        farmSetupCompleted: false,
-      });
-    }
+  private valueOf(control: ProfileControl): string {
+    if (control.name === 'theme') return this.theme.preference();
+    return String(this.currentUser()?.[control.name] ?? '');
   }
 
-  async deleteOperations(): Promise<void> {
-    if (confirm(this.translate.instant('profile.confirmDeleteOperations'))) {
-      await this.saveDeletion({
-        waterSource: '',
-        irrigationType: '',
-        primaryCrops: [],
-        farmSetupCompleted: false,
-      });
+  private display(key: ProfileFieldKey): string {
+    const user = this.currentUser();
+    if (!user) return '';
+    switch (key) {
+      case 'fullName':
+        return user.fullName;
+      case 'phone':
+        return user.phone;
+      case 'email':
+        return user.email ?? '';
+      case 'userRole':
+        return this.roleLabel();
+      case 'village':
+        return user.village ?? '';
+      case 'location':
+        return [user.district, user.state].filter(Boolean).join(', ');
+      case 'pincode':
+        return user.pincode ?? '';
+      case 'preferredLanguage':
+        return (
+          SUPPORTED_LANGUAGES.find((l) => l.value === user.preferredLanguage)?.label ??
+          user.preferredLanguage
+        );
+      case 'theme':
+        return this.translate.instant('theme.' + this.theme.preference());
     }
   }
 }

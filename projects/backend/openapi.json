@@ -1544,6 +1544,28 @@
             ],
             "title": "Expected Harvest Date"
           },
+          "farming_method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Farming Method"
+          },
+          "irrigation_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Irrigation Type"
+          },
           "label": {
             "anyOf": [
               {
@@ -1665,9 +1687,31 @@
             "title": "Farmer Id",
             "type": "integer"
           },
+          "farming_method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Farming Method"
+          },
           "id": {
             "title": "Id",
             "type": "integer"
+          },
+          "irrigation_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Irrigation Type"
           },
           "label": {
             "anyOf": [
@@ -1782,6 +1826,28 @@
               }
             ],
             "title": "Expected Harvest Date"
+          },
+          "farming_method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Farming Method"
+          },
+          "irrigation_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Irrigation Type"
           },
           "label": {
             "anyOf": [
@@ -2632,6 +2698,17 @@
               }
             ],
             "title": "Points"
+          },
+          "water_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Water Source"
           }
         },
         "required": [
@@ -2779,6 +2856,17 @@
             "format": "date-time",
             "title": "Updated At",
             "type": "string"
+          },
+          "water_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Water Source"
           }
         },
         "required": [
@@ -2849,6 +2937,17 @@
               }
             ],
             "title": "Points"
+          },
+          "water_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Water Source"
           }
         },
         "title": "LandUpdate",

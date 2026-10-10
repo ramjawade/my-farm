@@ -16,7 +16,8 @@
     "getStarted": "Get Started",
     "today": "Today",
     "tomorrow": "Tomorrow",
-    "inDays": "In {{count}} days"
+    "inDays": "In {{count}} days",
+    "save": "Save"
   },
   "theme": {
     "system": "Same as phone",
@@ -61,7 +62,39 @@
     "confirmDeleteAgronomic": "Are you sure you want to delete and reset your Agronomic Settings?",
     "confirmDeleteLand": "Are you sure you want to delete and reset your Land & Location settings?",
     "confirmDeleteOperations": "Are you sure you want to delete and reset your Operational Settings?",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "add": "Add",
+    "groups": {
+      "account": "Account",
+      "location": "Location",
+      "app": "App"
+    },
+    "village": "Village",
+    "district": "District",
+    "state": "State",
+    "phoneLocked": "Your phone number is your sign-in and cannot be changed here.",
+    "nudge": {
+      "title": "Add your {{field}}",
+      "one": "One detail left to finish your profile.",
+      "many": "{{count}} details left to finish your profile.",
+      "action": "Add"
+    },
+    "saved": "{{field}} saved.",
+    "help": {
+      "fullName": "Shown on your profile and in greetings.",
+      "email": "Optional. Used only for account notices.",
+      "userRole": "Tells us how you work on the farm.",
+      "village": "Helps show local weather and mandi prices.",
+      "location": "Helps show local weather and mandi prices.",
+      "pincode": "Six digits, for example 422103.",
+      "language": "The app text and crop names change to this language.",
+      "theme": "Light is easier to read in bright sun. Dark is easier on the eyes at night. Same as phone follows your phone setting."
+    },
+    "errors": {
+      "nameRequired": "Enter your name.",
+      "emailInvalid": "Enter a valid email address.",
+      "pincodeInvalid": "A pincode has 6 digits."
+    }
   },
   "home": {
     "greeting": {

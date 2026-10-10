@@ -10,14 +10,14 @@ Profile today is `features/profile/profile.component` (three cards) plus an 800-
 
 ## Decisions
 
-1. **Rewrite, not patch.** The old dialog's sections, map picker and crop chips are deleted. A new small `ProfileFieldDialogComponent` takes a field key and renders the right control (text, email, role select, language select, theme select). Field metadata is one array of groups in `profile.fields.ts`, mirroring `PGRP`, so rows, validation and dialog share it.
+1. **Rewrite, not patch.** Profile stops using the old dialog; it stays in place only because Home and Weather still embed it, and goes with their redesigns. A new small `ProfileFieldDialogComponent` takes a field key and renders the right control (text, email, role select, language select, theme select). Field metadata is one array of groups in `profile.fields.ts`, mirroring `PGRP`, so rows, validation and dialog share it.
 2. **Dialog presentation with Bootstrap.** Use Bootstrap modal classes with `modal-dialog-centered` on `md` and up; below `md` a bottom-aligned sheet using utilities (`align-items-end`, full width, rounded top). Custom CSS only if utilities fall short.
 3. **Where each field saves.** Name, email, role and language go to `/me` as now. Village, pincode, district and state go to the default farm update (create on first save) through the existing `farmer-profile-api.service`. Theme stays in `ThemeService` (device). "District and state" is one row; its dialog has two inputs and saves both.
 4. **Validation** copies the prototype: name required, email shaped like an address when present, pincode exactly 6 digits when present. Email, village, district and pincode count as "missing" for the banner (state is bundled with district).
 5. **Migration `0007`.** Add nullable `land.water_source`, `crop.irrigation_type`, `crop.farming_method`. Copy with Postgres `UPDATE ... FROM`: lands from their farm, crops from the farm of their land. Downgrade drops the three columns. The old `farm` columns and `farm_crop` stay (the roadmap drops them one PR later), so rolling the app back is safe.
 6. **API shape.** Add the fields to land and crop create, update and read schemas as optional strings (same type as the farm fields today). Regenerate `openapi.json` and the TypeScript contracts.
 7. **Translation.** New row labels, help text and error strings go in mr, hi and en; the translation completeness check from `marathi-language-switching` must stay green.
-8. **Removed UI.** Delete buttons, the "profile complete" badge, farm name/area and primary crop chips are removed. Home and weather keep working because the `/me` and farm reads are unchanged in this PR.
+8. **Removed UI.** On Profile: Delete buttons, the "profile complete" badge, farm name/area and primary crop chips are removed. Home and weather keep working because the `/me` and farm reads are unchanged in this PR.
 
 ## Risks / Trade-offs
 
