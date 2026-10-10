@@ -24,12 +24,12 @@ test('village and pincode saved in the profile are still there after a reload', 
   await page.goto('/profile');
 
   await page.getByRole('button', { name: /Village/ }).click();
-  await page.getByLabel('Village').fill('Sinnar');
+  await page.locator('#pf-village').fill('Sinnar');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('Village saved.')).toBeVisible();
 
   await page.getByRole('button', { name: /Pincode/ }).click();
-  await page.getByLabel('Pincode').fill('422103');
+  await page.locator('#pf-pincode').fill('422103');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('Pincode saved.')).toBeVisible();
 
