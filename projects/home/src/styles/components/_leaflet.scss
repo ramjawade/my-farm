@@ -1,0 +1,61 @@
+// Leaflet ships white controls and popups. Map tiles stay as they are, but
+// everything drawn on top uses the theme tokens. Selectors start at
+// `.leaflet-container` because leaflet.css is loaded after this file.
+
+.leaflet-container {
+  font-family: var(--mf-font-body);
+  background: var(--mf-surface2);
+
+  a {
+    color: var(--mf-leaf-ink);
+  }
+
+  .leaflet-bar {
+    border: 1px solid var(--mf-line);
+    box-shadow: var(--mf-shadow-1);
+
+    a {
+      background-color: var(--mf-surface);
+      border-bottom: 1px solid var(--mf-line);
+      color: var(--mf-fg);
+
+      &:hover,
+      &:focus-visible {
+        background-color: var(--mf-surface2);
+        color: var(--mf-fg);
+      }
+
+      &.leaflet-disabled {
+        background-color: var(--mf-surface2);
+        color: var(--mf-muted);
+      }
+    }
+  }
+
+  .leaflet-control-attribution,
+  .leaflet-control-scale-line {
+    background: rgba(var(--mf-surface-rgb), 0.85);
+    color: var(--mf-muted);
+  }
+
+  .leaflet-control-layers {
+    background: var(--mf-surface);
+    color: var(--mf-fg);
+    border: 1px solid var(--mf-line);
+    box-shadow: var(--mf-shadow-1);
+  }
+
+  .leaflet-popup-content-wrapper,
+  .leaflet-popup-tip {
+    background: var(--mf-surface);
+    color: var(--mf-fg);
+    box-shadow: var(--mf-shadow-2);
+  }
+
+  .leaflet-tooltip {
+    background: var(--mf-surface);
+    color: var(--mf-fg);
+    border-color: var(--mf-line);
+    box-shadow: var(--mf-shadow-1);
+  }
+}

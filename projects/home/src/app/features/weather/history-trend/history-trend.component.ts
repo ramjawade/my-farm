@@ -5,11 +5,13 @@ import {
   Input,
   computed,
   effect,
+  inject,
   viewChild,
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { Chart, registerables } from 'chart.js';
 import { cssColor, cssColorAlpha } from '../../../core/theme/css-token';
+import { ThemeService } from '../../../core/theme/theme.service';
 
 Chart.register(...registerables);
 
@@ -21,6 +23,8 @@ Chart.register(...registerables);
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HistoryTrendComponent {
+  private readonly theme = inject(ThemeService);
+
   readonly chartCanvas = viewChild<ElementRef<HTMLCanvasElement>>('chartCanvas');
 
   // Internal active chart tab signal
@@ -122,6 +126,9 @@ export class HistoryTrendComponent {
 
   constructor() {
     effect((onCleanup) => {
+      // Colours are resolved from the tokens when the chart is built, so
+      // rebuild it when the theme changes.
+      this.theme.resolved();
       const canvasEl = this.chartCanvas();
       const data = this.activeData();
 

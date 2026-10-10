@@ -135,4 +135,38 @@ describe('ProfileComponent', () => {
     expect(user?.primaryCrops?.length).toBe(0);
     expect(user?.farmSetupCompleted).toBeFalse();
   });
+
+  describe('theme row', () => {
+    afterEach(() => document.documentElement.removeAttribute('data-bs-theme'));
+
+    const buttons = () =>
+      Array.from(
+        (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>('.seg button'),
+      );
+
+    it('shows the three choices with Same as phone selected by default', () => {
+      expect(buttons().map((b) => b.getAttribute('aria-pressed'))).toEqual([
+        'true',
+        'false',
+        'false',
+      ]);
+      expect(buttons().map((b) => b.textContent?.trim())).toEqual([
+        'theme.system',
+        'theme.light',
+        'theme.dark',
+      ]);
+    });
+
+    it('saves the choice, applies it and marks it selected', () => {
+      buttons()[2].click();
+      fixture.detectChanges();
+
+      expect(localStorage.getItem('my_farm_theme')).toBe('dark');
+      expect(buttons().map((b) => b.getAttribute('aria-pressed'))).toEqual([
+        'false',
+        'false',
+        'true',
+      ]);
+    });
+  });
 });

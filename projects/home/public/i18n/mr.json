@@ -10,6 +10,11 @@
     "cancel": "रद्द करा",
     "later": "नंतर"
   },
+  "theme": {
+    "system": "फोनप्रमाणे",
+    "light": "फिकट",
+    "dark": "गडद"
+  },
   "profile": {
     "farmerRole": "शेतकरी",
     "complete": "प्रोफाइल पूर्ण",
@@ -19,6 +24,7 @@
     "phoneNumber": "फोन नंबर",
     "emailAddress": "ईमेल पत्ता",
     "language": "भाषा",
+    "theme": "थीम",
     "agronomicSettings": "कृषी सेटिंग्ज",
     "resetAgronomic": "कृषी सेटिंग्ज रीसेट करा",
     "userRole": "वापरकर्ता भूमिका",

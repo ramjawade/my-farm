@@ -14,6 +14,7 @@ import { IWeatherService } from './core/weather/weather.interface';
 import { WeatherService } from './core/weather/weather.service';
 import { provideEnvironmentInitializer } from './core/services/environment.initializer';
 import { provideLanguageInitializer } from './core/i18n/language.initializer';
+import { provideThemeInitializer } from './core/theme/theme.initializer';
 import { provideServiceWorker } from '@angular/service-worker';
 
 export const appConfig: ApplicationConfig = {
@@ -36,6 +37,7 @@ export const appConfig: ApplicationConfig = {
       fallbackLang: 'en',
     }),
     provideLanguageInitializer(),
+    provideThemeInitializer(),
     { provide: IWeatherService, useClass: WeatherService },
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),

@@ -24,6 +24,14 @@ describe('cleanupLegacyLocalStorage', () => {
     expect(localStorage.length).toBe(3);
   });
 
+  it('keeps the saved theme choice', () => {
+    localStorage.setItem('my_farm_theme', 'dark');
+
+    cleanupLegacyLocalStorage();
+
+    expect(localStorage.getItem('my_farm_theme')).toBe('dark');
+  });
+
   it('keeps the per-farmer "report generated" flags so progress survives a reload', () => {
     localStorage.setItem('my_farm_report_generated_3', '1');
     localStorage.setItem('my_farm_report_generated_8', '1');

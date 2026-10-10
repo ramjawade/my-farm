@@ -5,6 +5,24 @@
     <title>Home</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#eef1ec" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f1611" media="(prefers-color-scheme: dark)" />
+    <!-- Apply the saved theme before the first paint so there is no flash.
+         ThemeService (core/theme) takes over once the app boots; keep the key
+         and the media query in sync with it. -->
+    <script>
+      (function () {
+        var saved = null;
+        try {
+          saved = localStorage.getItem('my_farm_theme');
+        } catch (e) {}
+        var dark =
+          saved === 'dark' ||
+          (saved !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.setAttribute('data-bs-theme', dark ? 'dark' : 'light');
+      })();
+    </script>
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
