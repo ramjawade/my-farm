@@ -17,7 +17,7 @@ Each task is one child change: run `/opsx:propose`, get approval, apply it, merg
 
 ## 3. Phase 2: Core farm screens
 
-- [ ] 3.1 `home-redesign`: greeting with the avatar, KPI tiles, weather card, needs-attention list [prototype: home]
+- [x] 3.1 `home-redesign`: greeting with the avatar, KPI tiles, weather card, needs-attention list [prototype: home]
 - [ ] 3.2 `lands-redesign`: land cards with the map outline, water source, Fallow badge, "Nothing growing" empty state with Add crop [prototype: lands]
 - [ ] 3.3 `crops-redesign`: crop cards, crop detail, add crop with optional irrigation and farming method [prototype: crops, cropdetail, addcrop]
 - [ ] 3.4 `activity-types-and-statuses`: 12 types with icons, 5 statuses that follow the date, action buttons that depend on the status, edit and delete [prototype: addact, actdetail]
