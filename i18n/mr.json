@@ -320,7 +320,15 @@
     "sowingDate": "पेरणीची तारीख",
     "createProfile": "प्रोफाइल तयार करा",
     "savedToast": "{{name}} त्याच्या वाढीच्या टाइमलाइनसह जोडले गेले.",
-    "saveError": "पीक जतन करता आले नाही. कृपया पुन्हा प्रयत्न करा."
+    "saveError": "पीक जतन करता आले नाही. कृपया पुन्हा प्रयत्न करा.",
+    "editTitle": "पीक संपादित करा",
+    "saveChanges": "बदल जतन करा",
+    "updatedToast": "{{name}} अद्ययावत केले.",
+    "noSavedLands": "अजून जतन केलेल्या जमिनी नाहीत",
+    "drawLandFirst": "आधी जमीन काढा.",
+    "irrigationType": "सिंचनाचा प्रकार (ऐच्छिक)",
+    "farmingMethod": "शेतीची पद्धत (ऐच्छिक)",
+    "notSet": "निवडलेले नाही"
   },
   "cropActivity": {
     "timeline": "टाइमलाइन",
@@ -335,7 +343,26 @@
     "active": "सक्रिय",
     "stageOrdinal": "अवस्था {{n}}",
     "addDailyActivity": "दैनिक काम जोडा",
-    "deletedToast": "पीक आणि त्याचे काम हटवले."
+    "deletedToast": "पीक आणि त्याचे काम हटवले.",
+    "allCrops": "सर्व पिके",
+    "stage": "टप्पा",
+    "advanceStage": "पुढील टप्पा",
+    "activities": "कामे",
+    "since": "पासून",
+    "doneAndPlanned": "{{done}} पूर्ण · {{planned}} नियोजित",
+    "cropCost": "पिकाचा खर्च",
+    "soFar": "आतापर्यंत",
+    "underCrop": "पिकाखाली",
+    "viewAll": "सर्व पहा",
+    "filterActivities": "कामे गाळा",
+    "tab": {
+      "all": "सर्व",
+      "upcoming": "आगामी",
+      "recent": "अलीकडील"
+    },
+    "noActivities": "अजून कामे नाहीत.",
+    "planting": "लागवड",
+    "irrigationLine": "{{type}} सिंचन"
   },
   "activityList": {
     "title": "कामांच्या नोंदी",
@@ -668,7 +695,8 @@
       "activity": "कामे",
       "activityDetail": "कामाचा तपशील",
       "reports": "अहवाल",
-      "notFound": "पृष्ठ सापडले नाही"
+      "notFound": "पृष्ठ सापडले नाही",
+      "editCrop": "पीक संपादित करा"
     }
   },
   "login": {
@@ -937,6 +965,39 @@
       "River": "नदी",
       "FarmPond": "शेततळे",
       "Rainfed": "पावसावर अवलंबून"
+    },
+    "pointsHint": "{{count}} बिंदू",
+    "tapToAdd": "बिंदू जोडण्यासाठी नकाशावर टॅप करा",
+    "finish": "पूर्ण करा"
+  },
+  "crops": {
+    "title": "पिके",
+    "subtitle": "प्रत्येक पिकाचा पेरणीपासून काढणीपर्यंत मागोवा घ्या.",
+    "openDetails": "{{name}} चा तपशील उघडा",
+    "activityOne": "{{count}} काम",
+    "activityCount": "{{count}} कामे",
+    "actionsFor": "{{name}} साठी कृती",
+    "editCrop": "पीक संपादित करा"
+  },
+  "cropStages": {
+    "sowing": "पेरणी",
+    "growth": "वाढ",
+    "flowering": "फुलोरा",
+    "harvest": "काढणी",
+    "ariaLabel": "टप्पा {{n}} पैकी {{total}}: {{name}}"
+  },
+  "cropOptions": {
+    "irrigation": {
+      "Drip": "ठिबक",
+      "Sprinkler": "तुषार",
+      "Flood": "पाटपाणी",
+      "Manual": "हाताने"
+    },
+    "method": {
+      "Organic": "सेंद्रिय",
+      "Conventional": "पारंपरिक",
+      "ConservationFarming": "संवर्धन शेती",
+      "NaturalFarming": "नैसर्गिक शेती"
     }
   }
 }
