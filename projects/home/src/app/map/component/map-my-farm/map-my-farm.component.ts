@@ -1,9 +1,8 @@
 import { Component, inject, input, signal, computed, output, effect } from '@angular/core';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
-import { formatArea, getPolygonCentroid } from '../../farm-draw/farm-area.utils';
+import { formatArea } from '../../farm-draw/farm-area.utils';
 import { FarmDrawService } from '../../farm-draw/farm-draw.service';
-import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from 'shared';
 import { WorkflowStateService } from '../../../core/workflow/workflow-state.service';
 import { OnboardingGuideService } from '../../../core/workflow/onboarding-guide.service';
@@ -19,16 +18,13 @@ import { WorkflowPromptCardComponent } from '../../../features/shared/components
 export class MapMyFarmComponent {
   readonly draw = inject(FarmDrawService);
   private readonly toast = inject(ToastService);
-  private readonly authService = inject(AuthService);
   private readonly workflowService = inject(WorkflowStateService);
   private readonly onboardingService = inject(OnboardingGuideService);
   private readonly translate = inject(TranslateService);
   readonly hasFarms = input(false);
 
-  readonly farmName = signal('');
   readonly setSatelliteLayer = output<void>();
   readonly locateMeRequest = output<void>();
-  readonly farmSaved = output<string>();
   readonly geolocating = signal(false);
 
   readonly shouldShowLandPrompt = computed(() => {
@@ -91,60 +87,6 @@ export class MapMyFarmComponent {
       },
       { timeout: 10000, enableHighAccuracy: true },
     );
-  }
-
-  onNameInput(event: Event): void {
-    this.farmName.set((event.target as HTMLInputElement).value);
-  }
-
-  save(): void {
-    const nameVal = this.farmName();
-    this.farmSaved.emit(nameVal);
-    const savedName = nameVal.trim() || this.translate.instant('mapMyFarm.farmFallbackName');
-    this.toast.success(this.translate.instant('mapMyFarm.landSavedToast', { name: savedName }));
-
-    // Mark land workflow phase complete
-    this.workflowService.markPhaseComplete('land');
-    this.onboardingService.dismissPrompt('land');
-
-    // Progressive Profiling: Update active user coordinates, farm name, and area if empty/default
-    const user = this.authService.currentUser();
-    if (user) {
-      const updates: any = {};
-
-      // Update coordinates
-      if (!user.location) {
-        // If drawing has finished, we can use the last drawn points from this.draw.points()
-        const points = this.draw.points();
-        const centroid = getPolygonCentroid(points);
-        if (centroid) {
-          updates.location = centroid;
-          updates.locationType = 'map';
-        }
-      }
-
-      // Update farm area
-      if (user.farmArea === 0) {
-        const area = this.draw.area();
-        if (area) {
-          updates.farmArea = area.hectares;
-          updates.farmAreaUnit = 'hectares';
-        }
-      }
-
-      // Update farm name
-      if (nameVal && (user.farmName === `${user.fullName}'s Farm` || !user.farmName)) {
-        updates.farmName = nameVal;
-      }
-
-      if (Object.keys(updates).length > 0) {
-        this.authService
-          .updateProfile(updates)
-          .catch((e) => console.error('Failed to save farm details', e));
-      }
-    }
-
-    this.farmName.set('');
   }
 
   onLandPromptAction(): void {

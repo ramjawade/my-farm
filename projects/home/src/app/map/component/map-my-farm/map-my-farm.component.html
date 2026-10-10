@@ -96,27 +96,12 @@
     <div class="map-my-farm__note mt-1">
       {{ 'mapMyFarm.areaApproximateNote' | translate }}
     </div>
-    <div class="mt-2">
-      <input
-        type="text"
-        class="form-control form-control-sm mb-1"
-        [placeholder]="'mapMyFarm.enterFarmName' | translate"
-        [value]="farmName()"
-        (input)="onNameInput($event)"
-      />
-      <div class="btn-group btn-group-sm w-100">
-        <button
-          type="button"
-          class="btn btn-success"
-          (click)="save()"
-          [disabled]="!farmName().trim()"
-        >
-          {{ 'mapMyFarm.save' | translate }}
-        </button>
-        <button type="button" class="btn btn-outline-secondary" (click)="draw.startDrawing()">
-          {{ 'mapMyFarm.drawAgain' | translate }}
-        </button>
-      </div>
-    </div>
+    <button
+      type="button"
+      class="btn btn-sm btn-outline-secondary w-100 mt-2"
+      (click)="draw.startDrawing()"
+    >
+      {{ 'mapMyFarm.drawAgain' | translate }}
+    </button>
   }
 </div>

@@ -92,7 +92,11 @@ export class FarmDrawService {
    * (server-minted id), or null if the drawing isn't valid or nobody is signed in.
    * The drawing is kept if the save fails, so the farmer can retry.
    */
-  async saveFarm(name: string, currentFarms: SavedFarm[]): Promise<SavedFarm | null> {
+  async saveFarm(
+    name: string,
+    currentFarms: SavedFarm[],
+    details: { waterSource?: string; notes?: string } = {},
+  ): Promise<SavedFarm | null> {
     const user = this.authService.currentUser();
     if (!user || !this.isCompleted()) {
       return null;
@@ -108,6 +112,8 @@ export class FarmDrawService {
       points: currentPoints,
       area: currentArea,
       geoJson: toGeoJsonPolygon(currentPoints),
+      waterSource: details.waterSource || undefined,
+      notes: details.notes?.trim() || undefined,
     };
 
     const saved = await this.storage.saveFarm(user.id, draft);

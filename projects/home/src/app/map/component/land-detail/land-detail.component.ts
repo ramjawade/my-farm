@@ -1,82 +1,66 @@
-import { Component, inject, input, output, computed, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
+import { I18n } from '../../../core/i18n/i18n.service';
+import { waterSourceKey } from '../../models/land-options';
+import { CropEntity } from '../../../features/crop-timeline/crop-timeline.models';
+import { LocalNumberPipe } from '../../../core/i18n/localized.pipes';
 import { SavedFarm } from '../../models/map.models';
-import { CropTimelineService } from '../../../features/crop-timeline/crop-timeline.service';
 
-type LandStatus = 'planted' | 'fallow' | 'multiple';
-
+/** The selected land: what grows on it and what it costs. Presentation only. */
 @Component({
   selector: 'app-land-detail',
-  standalone: true,
-  imports: [CommonModule, FormsModule, TranslatePipe],
+  imports: [TranslatePipe, LocalNumberPipe],
   templateUrl: './land-detail.component.html',
-  styleUrl: './land-detail.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LandDetailComponent {
-  readonly land = input<SavedFarm | null>(null);
-  readonly closed = output<void>();
-  readonly notesUpdated = output<{ id: number; notes: string }>();
+  private readonly i18n = inject(I18n);
 
-  private readonly cropService = inject(CropTimelineService);
-  private readonly translate = inject(TranslateService);
+  readonly land = input.required<SavedFarm>();
+  readonly crops = input<CropEntity[]>([]);
+  /** Expenses logged on this land's crops. */
+  readonly expenses = input(0);
+
+  readonly addCrop = output<void>();
+  readonly viewCrop = output<number>();
+  readonly notesUpdated = output<{ id: number; notes: string }>();
 
   readonly editingNotes = signal(false);
   readonly notesValue = signal('');
 
-  readonly cropsOnLand = computed(() => {
-    const land = this.land();
-    if (!land) return [];
-    return this.cropService.cropsForField(land.id);
+  readonly costPerAcre = computed(() => {
+    const acres = this.land().area.acres;
+    return acres > 0 ? Math.round(this.expenses() / acres) : null;
   });
 
-  getLandStatus(): LandStatus {
-    if (!this.land()) return 'fallow';
-    const count = this.cropsOnLand().length;
-    if (count === 0) return 'fallow';
-    if (count === 1) return 'planted';
-    return 'multiple';
-  }
-
-  getStatusBadgeClass(): string {
-    const status = this.getLandStatus();
-    switch (status) {
-      case 'planted':
-        return 'status-planted';
-      case 'multiple':
-        return 'status-multiple';
-      case 'fallow':
-        return 'status-fallow';
-    }
-  }
-
-  getStatusLabel(): string {
-    const status = this.getLandStatus();
-    switch (status) {
-      case 'planted':
-        return this.translate.instant('savedFarms.planted');
-      case 'multiple':
-        return this.translate.instant('savedFarms.multipleCrops');
-      case 'fallow':
-        return this.translate.instant('savedFarms.fallow');
-    }
-  }
+  /** The water source in the active language; unknown values show as stored. */
+  readonly waterLabel = computed(() => {
+    const value = this.land().waterSource;
+    if (!value) return '';
+    const key = waterSourceKey(value);
+    const label = this.i18n.t(key);
+    return label === key ? value : label;
+  });
 
   startEditingNotes(): void {
-    this.notesValue.set(this.land()?.notes || '');
+    this.notesValue.set(this.land().notes ?? '');
     this.editingNotes.set(true);
   }
 
   saveNotes(): void {
-    const land = this.land();
-    if (land) {
-      this.notesUpdated.emit({ id: land.id, notes: this.notesValue() });
-      this.editingNotes.set(false);
-    }
+    this.notesUpdated.emit({ id: this.land().id, notes: this.notesValue() });
+    this.editingNotes.set(false);
   }
 
-  cancelEditingNotes(): void {
-    this.editingNotes.set(false);
+  onNotesInput(event: Event): void {
+    this.notesValue.set((event.target as HTMLTextAreaElement).value);
   }
 }

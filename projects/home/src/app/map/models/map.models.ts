@@ -26,6 +26,7 @@ export interface SavedFarm {
   geoJson: any;
   createdAt: number;
   notes?: string;
+  waterSource?: string;
 }
 
 export type NewSavedFarm = Omit<SavedFarm, 'id' | 'createdAt'>;

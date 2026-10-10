@@ -1,41 +1,133 @@
-<div class="map-page h-100">
-  <div class="map-page__wrapper">
-    <!-- Saved Farms Panel -->
+<div class="lands-page" [class.lands-page--picker]="isPicker" [class.pb-5]="!isPicker">
+  @if (!isPicker) {
+    <header class="d-flex justify-content-between align-items-start gap-3 mb-3">
+      <div class="min-w-0">
+        <h1 class="h4 mb-1">{{ 'lands.title' | translate }}</h1>
+        <p class="text-body-secondary mb-0">
+          {{
+            'lands.subtitle'
+              | translate: { count: farms().length, area: (totalAcres() | localNumber: '1.0-2') }
+          }}
+        </p>
+      </div>
+      <button type="button" class="btn btn-primary text-nowrap" (click)="startDraw()">
+        + {{ 'lands.drawLand' | translate }}
+      </button>
+    </header>
+  }
+
+  <div class="row g-3 lands-grid">
+    <div class="col-12" [class.col-lg-7]="!isPicker">
+      @if (!isPicker && (farmDraw.isDrawing() || farmDraw.isCompleted())) {
+        <div class="d-flex gap-2 mb-2">
+          <span
+            class="badge"
+            [class.text-bg-success]="farmDraw.isDrawing()"
+            [class.text-bg-secondary]="!farmDraw.isDrawing()"
+          >
+            1 {{ 'lands.step1' | translate }}
+          </span>
+          <span
+            class="badge"
+            [class.text-bg-success]="farmDraw.isCompleted()"
+            [class.text-bg-secondary]="!farmDraw.isCompleted()"
+          >
+            2 {{ 'lands.step2' | translate }}
+          </span>
+        </div>
+      }
+
+      <div class="map-page__wrapper">
+        @if (!isPicker || showSearch) {
+          <app-map-search
+            class="map-page__search"
+            (resultSelected)="selectResult($event)"
+            (searchCleared)="clearSearch()"
+          />
+        }
+
+        @if (!isPicker) {
+          <app-map-my-farm
+            class="map-page__farm-draw"
+            [hasFarms]="farms().length > 0"
+            (setSatelliteLayer)="setLayer('satellite')"
+            (locateMeRequest)="locateMeGPS()"
+          />
+        }
+
+        <div
+          #mapContainer
+          class="map-page__container"
+          role="region"
+          [attr.aria-label]="'mapMyFarm.mapAriaLabel' | translate"
+        ></div>
+      </div>
+
+      @if (!isPicker && !farmDraw.isDrawing() && !farmDraw.isCompleted()) {
+        @if (selected(); as land) {
+          <div class="mt-3">
+            <app-land-detail
+              [land]="land"
+              [crops]="selectedCrops()"
+              [expenses]="selectedExpenses()"
+              (addCrop)="addCrop(land.id)"
+              (viewCrop)="viewCrop($event)"
+              (notesUpdated)="onUpdateFarmNotes($event.id, $event.notes)"
+            />
+          </div>
+        } @else if (farms().length === 0) {
+          <div class="card mt-3">
+            <div class="card-body empty-state">
+              <span class="empty-state__icon" aria-hidden="true"><i class="bi bi-map"></i></span>
+              <h2 class="empty-state__title">{{ 'lands.noLandsTitle' | translate }}</h2>
+              <p class="empty-state__text">{{ 'lands.noLandsHint' | translate }}</p>
+              <button type="button" class="btn btn-primary" (click)="startDraw()">
+                {{ 'lands.drawFirst' | translate }}
+              </button>
+            </div>
+          </div>
+        }
+      }
+    </div>
+
     @if (!isPicker) {
-      <app-saved-farms
-        [farms]="farms()"
-        [selected]="selected()"
-        (selectFarm)="onSelectFarm($event)"
-        (renameFarm)="onRenameFarm($event.id, $event.newName)"
-        (deleteFarm)="onDeleteFarm($event)"
-        (updateNotes)="onUpdateFarmNotes($event.id, $event.notes)"
-      />
-    }
+      <div class="col-12 col-lg-5 d-flex flex-column gap-3">
+        @if (farmDraw.isCompleted() && farmDraw.area(); as area) {
+          <app-land-save-form
+            [area]="area"
+            [saving]="saving()"
+            (save)="onSaveLand($event)"
+            (discard)="discardDraft()"
+          />
+        } @else if (justSaved(); as saved) {
+          <section class="card border-success">
+            <div class="card-body">
+              <h2 class="h6">{{ 'lands.savedTitle' | translate: { name: saved.name } }}</h2>
+              <p class="small">{{ 'lands.savedMessage' | translate }}</p>
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-primary" (click)="addCrop(saved.id)">
+                  {{ 'lands.addCrop' | translate }}
+                </button>
+                <button type="button" class="btn btn-secondary" (click)="justSaved.set(null)">
+                  {{ 'lands.notNow' | translate }}
+                </button>
+              </div>
+            </div>
+          </section>
+        }
 
-    @if (!isPicker || showSearch) {
-      <app-map-search
-        class="map-page__search"
-        (resultSelected)="selectResult($event)"
-        (searchCleared)="clearSearch()"
-      />
+        @if (farms().length > 0) {
+          <app-lands-list
+            [farms]="farms()"
+            [selectedId]="selected()?.id ?? null"
+            [cropsByLand]="cropsByLand()"
+            (selectLand)="onSelectFarm($event)"
+            (renameLand)="onRenameLand($event)"
+            (deleteLand)="requestDelete($event)"
+          />
+        }
+      </div>
     }
-
-    @if (!isPicker) {
-      <app-map-my-farm
-        class="map-page__farm-draw"
-        [hasFarms]="farms().length > 0"
-        (setSatelliteLayer)="setLayer('satellite')"
-        (locateMeRequest)="locateMeGPS()"
-        (farmSaved)="onSaveFarm($event)"
-      />
-    }
-
-    <div
-      #mapContainer
-      class="map-page__container"
-      role="region"
-      [attr.aria-label]="'mapMyFarm.mapAriaLabel' | translate"
-    ></div>
   </div>
 
   @if (!isPicker) {
@@ -50,3 +142,12 @@
     </button>
   }
 </div>
+
+<lib-confirm-dialog
+  [(isOpen)]="showDeleteConfirm"
+  [title]="'savedFarms.deleteLand' | translate"
+  [message]="'savedFarms.deleteLandConfirm' | translate"
+  [confirmText]="'common.delete' | translate"
+  [isDestructive]="true"
+  (confirm)="confirmDelete()"
+/>

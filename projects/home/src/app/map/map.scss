@@ -11,6 +11,25 @@
   min-height: 20rem;
 }
 
+// Picker mode (inside a dialog) keeps the full-height map.
+.lands-page--picker,
+.lands-page--picker .lands-grid,
+.lands-page--picker .lands-grid > div {
+  height: 100%;
+}
+
+// The Lands page flows like any page; the map gets a fixed height.
+:host(.lands-host) {
+  position: static;
+  inset: auto;
+  min-height: 0;
+  padding: 1rem;
+
+  .map-page__wrapper {
+    height: clamp(20rem, 60vh, 40rem);
+  }
+}
+
 .map-page__container {
   height: 100%;
   border: 1px solid var(--bs-border-color);

@@ -110,6 +110,21 @@ describe('FarmDrawService', () => {
     expect(service.status()).toBe('idle'); // Automatically resets on save
   });
 
+  it('should store the water source and notes with the land', async () => {
+    TestBed.inject(AuthService).login({ id: 1 } as any);
+    service.status.set('completed');
+    service.points.set(mockPoints);
+    service.finishDrawing();
+
+    const farm = await service.saveFarm('East', [], {
+      waterSource: 'Canal',
+      notes: ' Black soil ',
+    });
+
+    expect(farm?.waterSource).toBe('Canal');
+    expect(farm?.notes).toBe('Black soil');
+  });
+
   it('should return null when saving without a completed drawing', async () => {
     service.status.set('idle');
     expect(await service.saveFarm('Green Acres', [])).toBeNull();
