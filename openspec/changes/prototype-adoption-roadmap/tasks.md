@@ -6,7 +6,7 @@ Each task is one child change: run `/opsx:propose`, get approval, apply it, merg
 
 - [x] 1.1 `design-tokens-foundation`: map the prototype colour, type, spacing, radius and shadow tokens onto Bootstrap variables; replace the Outfit "premium" theme; restyle the shared buttons, cards, badges, chips, segmented control, fields, toast, the dialog/bottom sheet and the empty state; remove every hard-coded colour and add a lint guard so none come back (two PRs) [design system: Foundations, Components]
 - [x] 1.2 `light-dark-theme`: both palettes as Bootstrap colour modes, Theme setting (System / Light / Dark) under Profile → App, applied before first paint, check every route in both themes [prototype: profile → Theme; design system: theme toggle]
-- [ ] 1.3 `brand-logo`: leaf logo assets, a simplified mark for 32 px and below, favicon, PWA manifest icons [design system: Brand]
+- [x] 1.3 `brand-logo`: leaf logo assets, a simplified mark for 32 px and below, favicon, PWA manifest icons [design system: Brand]
 - [ ] 1.4 `app-shell-navigation`: desktop sidebar, phone bottom tabs, header with the avatar opening Profile, route `title`/`parent` data for titles and the back button [prototype: shell on every screen]
 - [ ] 1.5 `marathi-language-switching`: add `mr`, port the prototype `TR` strings, switch language from login and Profile, Marathi default for new farmers [prototype: language toggle]
 
