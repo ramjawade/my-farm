@@ -29,4 +29,4 @@
 
 ## 5. Wrap-up
 
-- [ ] 5.1 After the PR merges, archive this change and tick task 1.2 in `prototype-adoption-roadmap/tasks.md`
+- [x] 5.1 After the PR merges, archive this change and tick task 1.2 in `prototype-adoption-roadmap/tasks.md`

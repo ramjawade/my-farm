@@ -5,21 +5,6 @@ The design system is the shared visual language of MyFarm: colour, type, spacing
 
 ## Requirements
 
-### Requirement: Design tokens drive colour, spacing, radius and elevation
-The app SHALL define its colours, spacing steps, corner radii, shadows, layers and motion duration as named design tokens whose light values match the prototype design system. Shared styles and shared components SHALL take these values from the tokens rather than from literal colour codes.
-
-#### Scenario: Page background and text use the token palette
-- **WHEN** any signed-in screen loads in the default (light) appearance
-- **THEN** the page background is the prototype's light background (#eef1ec), body text is the prototype foreground (#18231a), and cards use the surface colour (#ffffff) with the line colour (#dde3d8) as their border
-
-#### Scenario: Brand colour is the prototype leaf green
-- **WHEN** a primary button, active chip, active segment or link is shown
-- **THEN** its accent colour is the prototype leaf green (#2f7a3f), not the previous Material green (#2e7d32)
-
-#### Scenario: Dark values exist but are inactive
-- **WHEN** the app loads on a device set to dark mode
-- **THEN** the app still renders in the light palette (switching to dark is out of scope for this capability version)
-
 ### Requirement: No colour is hard-coded outside the token layer
 Every colour the app renders SHALL come from a design token, including component styles, inline template styles, colours chosen in code (activity types, crop icons, weather severity, chart series, map drawing layers) and shadows or overlays. Colour literals (hex, `rgb()`/`rgba()`, `hsl()`, and named colours other than `transparent`, `currentColor` and `inherit`) SHALL appear only in the token definitions and Bootstrap build configuration. An automated check SHALL fail the lint step when a colour literal appears anywhere else.
 
@@ -110,3 +95,18 @@ Lists and sections with no content SHALL use one empty-state pattern: a round le
 #### Scenario: Empty list
 - **WHEN** a list has no items, such as no activities yet
 - **THEN** it shows the empty-state block with an icon, a title, help text and, where relevant, an action button
+
+### Requirement: Design tokens drive colour, spacing, radius and elevation in both palettes
+The app SHALL define its colours, spacing steps, corner radii, shadows, layers and motion duration as named design tokens whose light values match the prototype design system and whose dark values match the prototype's dark palette. Shared styles and shared components SHALL take these values from the tokens rather than from literal colour codes, so that both palettes work on every screen.
+
+#### Scenario: Page background and text use the token palette
+- **WHEN** any signed-in screen loads in the light appearance
+- **THEN** the page background is the prototype's light background (#eef1ec), body text is the prototype foreground (#18231a), and cards use the surface colour (#ffffff) with the line colour (#dde3d8) as their border
+
+#### Scenario: Brand colour is the prototype leaf green
+- **WHEN** a primary button, active chip, active segment or link is shown in the light appearance
+- **THEN** its accent colour is the prototype leaf green (#2f7a3f), not the previous Material green (#2e7d32)
+
+#### Scenario: Dark appearance uses the dark palette
+- **WHEN** the app's theme resolves to dark
+- **THEN** the page background is the prototype's dark background (#0f1611), body text is the dark foreground (#e8efe8), cards use the dark surface (#17211a) with the dark line colour (#2a3a2d), and accents use the dark palette's leaf green (#5fbf72)
