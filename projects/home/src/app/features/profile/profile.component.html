@@ -86,6 +86,26 @@
                 {{ preferredLanguageLabel() }}
               </div>
             </div>
+            <div class="row align-items-center">
+              <div
+                class="col-12 col-sm-4 mb-1 mb-sm-0 text-xs text-muted uppercase tracking-wider font-semibold"
+              >
+                {{ 'profile.theme' | translate }}
+              </div>
+              <div class="col-12 col-sm-8">
+                <div class="seg" role="group" [attr.aria-label]="'profile.theme' | translate">
+                  @for (option of themeOptions; track option.value) {
+                    <button
+                      type="button"
+                      [attr.aria-pressed]="themePreference() === option.value"
+                      (click)="selectTheme(option.value)"
+                    >
+                      {{ option.labelKey | translate }}
+                    </button>
+                  }
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

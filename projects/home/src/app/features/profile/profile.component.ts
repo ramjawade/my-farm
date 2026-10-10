@@ -16,6 +16,7 @@ import { SavedFarm } from '../../map/models/map.models';
 import { ProfileEditDialogComponent } from './components/profile-edit-dialog.component';
 import { ReferenceNamePipe } from '../../core/i18n/reference-name.pipe';
 import { SUPPORTED_LANGUAGES } from '../../core/i18n/supported-languages';
+import { ThemePreference, ThemeService } from '../../core/theme/theme.service';
 import { ToastService } from 'shared';
 
 @Component({
@@ -32,6 +33,7 @@ export class ProfileComponent implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly router = inject(Router);
+  private readonly theme = inject(ThemeService);
 
   // Read-only state
   readonly currentUser = this.authService.currentUser;
@@ -116,6 +118,18 @@ export class ProfileComponent implements OnInit {
     const code = this.currentUser()?.preferredLanguage;
     return SUPPORTED_LANGUAGES.find((lang) => lang.value === code)?.label || code || '';
   });
+
+  /** Theme choices for the segmented control, in display order. */
+  readonly themeOptions: { value: ThemePreference; labelKey: string }[] = [
+    { value: 'system', labelKey: 'theme.system' },
+    { value: 'light', labelKey: 'theme.light' },
+    { value: 'dark', labelKey: 'theme.dark' },
+  ];
+  readonly themePreference = this.theme.preference;
+
+  selectTheme(preference: ThemePreference): void {
+    this.theme.setPreference(preference);
+  }
 
   openEditDialog(section: 'account' | 'agronomic' | 'land' | 'operations'): void {
     this.activeSection.set(section);

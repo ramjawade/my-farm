@@ -10,6 +10,11 @@
     "cancel": "Cancel",
     "later": "Later"
   },
+  "theme": {
+    "system": "Same as phone",
+    "light": "Light",
+    "dark": "Dark"
+  },
   "profile": {
     "farmerRole": "Farmer",
     "complete": "Profile Complete",
@@ -19,6 +24,7 @@
     "phoneNumber": "Phone Number",
     "emailAddress": "Email Address",
     "language": "Language",
+    "theme": "Theme",
     "agronomicSettings": "Agronomic Settings",
     "resetAgronomic": "Reset Agronomic Settings",
     "userRole": "User Role",
