@@ -90,6 +90,9 @@
   --mf-map-select: #f0b429;
   --mf-map-fill: #ffffff;
 
+  // Round backing behind the full logo; the same in both themes so its dark ring stays visible
+  --mf-logo-backing: #ffffff;
+
   // Overlays and elevation
   --mf-scrim: rgba(0, 0, 0, 0.5);
   --mf-scrim-soft: rgba(0, 0, 0, 0.4);
@@ -167,6 +170,8 @@
   --mf-ember-rgb: 232, 160, 106;
   --mf-teal: #6cc8bf;
   --mf-teal-rgb: 108, 200, 191;
+
+  --mf-logo-backing: #ffffff;
 
   --mf-scrim: rgba(0, 0, 0, 0.6);
   --mf-scrim-soft: rgba(0, 0, 0, 0.5);

@@ -1,0 +1,5 @@
+// The emblem's dark ring and soil vanish on a dark page, so it always sits on
+// a light round backing (token, same in both themes).
+.brand-logo__backing {
+  background: var(--mf-logo-backing);
+}
