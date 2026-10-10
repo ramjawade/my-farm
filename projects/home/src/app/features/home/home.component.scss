@@ -228,3 +228,59 @@
 .font-semibold {
   font-weight: 600;
 }
+
+// Signed-in Home. On a phone the cards stack in one column in this order:
+// weather, needs attention, today, your farm. From lg up, today and your farm
+// take the wider left column and weather and attention the right one.
+.home-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+
+  > .home-col {
+    display: contents;
+  }
+
+  .home-weather {
+    order: 0;
+  }
+
+  .home-attention {
+    order: 1;
+  }
+
+  .home-today {
+    order: 2;
+  }
+
+  .home-farm {
+    order: 3;
+  }
+
+  @media (min-width: 992px) {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    align-items: start;
+
+    > .home-col {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    > .home-col--main {
+      grid-column: 1;
+      grid-row: 1;
+
+      // The farm map leads the left column, as in the prototype.
+      .home-farm {
+        order: -1;
+      }
+    }
+
+    > .home-col:not(.home-col--main) {
+      grid-column: 2;
+      grid-row: 1;
+    }
+  }
+}
