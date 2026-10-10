@@ -25,7 +25,7 @@
             <i class="bi bi-thermometer-half text-white fs-4"></i>
           </div>
           <h6 class="text-muted fw-semibold mb-1 text-sm text-truncate w-100 text-center">
-            Avg Temp
+            {{ 'weather.avgTemp' | translate }}
           </h6>
           <h4 class="fw-bold mb-0 text-dark">{{ avgTemp() }}°C</h4>
         </div>
@@ -43,7 +43,7 @@
             <i class="bi bi-cloud-rain-fill text-white fs-4"></i>
           </div>
           <h6 class="text-muted fw-semibold mb-1 text-sm text-truncate w-100 text-center">
-            Rainfall
+            {{ 'weather.rainfall' | translate }}
           </h6>
           <h4 class="fw-bold mb-0 text-dark">{{ totalRainfall() }}mm</h4>
         </div>
@@ -61,7 +61,7 @@
             <i class="bi bi-droplet-half text-white fs-4"></i>
           </div>
           <h6 class="text-muted fw-semibold mb-1 text-sm text-truncate w-100 text-center">
-            Humidity
+            {{ 'weather.humidity' | translate }}
           </h6>
           <h4 class="fw-bold mb-0 text-dark">{{ avgHumidity() }}%</h4>
         </div>
@@ -78,7 +78,9 @@
           >
             <i class="bi bi-wind text-white fs-4"></i>
           </div>
-          <h6 class="text-muted fw-semibold mb-1 text-sm text-truncate w-100 text-center">Wind</h6>
+          <h6 class="text-muted fw-semibold mb-1 text-sm text-truncate w-100 text-center">
+            {{ 'weather.wind' | translate }}
+          </h6>
           <h4 class="fw-bold mb-0 text-dark">{{ avgWind() }} km/h</h4>
         </div>
       </div>

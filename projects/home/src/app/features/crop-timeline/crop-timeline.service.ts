@@ -1,3 +1,4 @@
+import { I18n } from '../../core/i18n/i18n.service';
 import { Injectable, signal, inject, effect, computed } from '@angular/core';
 import {
   CropEntity,
@@ -66,6 +67,7 @@ function defaultExpenseCategory(type: string): string {
   providedIn: 'root',
 })
 export class CropTimelineService {
+  private readonly i18n = inject(I18n);
   private readonly authService = inject(AuthService);
   private readonly activityService = inject(ActivityService);
   private readonly storage = inject(CropsApiService);
@@ -411,7 +413,12 @@ export class CropTimelineService {
       return;
     }
     const days = Math.ceil((next.date - Date.now()) / ONE_DAY);
-    const relative = days <= 0 ? 'Today' : days === 1 ? 'Tomorrow' : `In ${days} Days`;
+    const relative =
+      days <= 0
+        ? this.i18n.t('common.today')
+        : days === 1
+          ? this.i18n.t('common.tomorrow')
+          : this.i18n.t('common.inDays', { count: days });
     this.updateCrop(cropId, {
       upcomingActivity: `${this.referenceData.activityTypeName(next.activityTypeId)} (${relative})`,
     });

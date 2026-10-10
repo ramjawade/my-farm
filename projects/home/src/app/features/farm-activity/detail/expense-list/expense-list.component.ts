@@ -1,3 +1,4 @@
+import { LocalNumberPipe } from '../../../../core/i18n/localized.pipes';
 import {
   Component,
   ChangeDetectionStrategy,
@@ -19,7 +20,7 @@ import { ReferenceDataService } from '../../../../core/api/reference-data.servic
 @Component({
   selector: 'app-expense-list',
   standalone: true,
-  imports: [DecimalPipe, ConfirmDialogComponent, TranslatePipe, ReferenceNamePipe],
+  imports: [LocalNumberPipe, ConfirmDialogComponent, TranslatePipe, ReferenceNamePipe],
   templateUrl: './expense-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

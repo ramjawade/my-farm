@@ -1,3 +1,4 @@
+import { provideTranslateService } from '@ngx-translate/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { WeatherAdvisoryComponent } from './weather-advisory.component';
@@ -15,7 +16,7 @@ describe('WeatherAdvisoryComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [WeatherAdvisoryComponent],
-      providers: [provideZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection(), provideTranslateService()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(WeatherAdvisoryComponent);
@@ -72,7 +73,7 @@ describe('WeatherAdvisoryComponent', () => {
 
   it('should display advisory count badge', () => {
     const badge = fixture.nativeElement.querySelector('.badge');
-    expect(badge.textContent).toContain('3 tips');
+    expect(badge.textContent).toContain('weather.tipsCount');
   });
 
   it('should handle empty advisories', () => {

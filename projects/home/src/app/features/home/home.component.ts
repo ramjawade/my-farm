@@ -1,3 +1,5 @@
+import { LocaleService } from '../../core/i18n/locale.service';
+import { LocalNumberPipe } from '../../core/i18n/localized.pipes';
 import {
   Component,
   inject,
@@ -35,6 +37,7 @@ import { WorkflowProgressBarComponent } from '../shared/components/workflow-prog
   standalone: true,
   selector: 'app-home',
   imports: [
+    LocalNumberPipe,
     CommonModule,
     FormsModule,
     RouterLink,
@@ -49,6 +52,7 @@ import { WorkflowProgressBarComponent } from '../shared/components/workflow-prog
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomeComponent implements OnInit {
+  private readonly locale = inject(LocaleService);
   readonly authService = inject(AuthService);
   private readonly cropService = inject(CropTimelineService);
   private readonly activityService = inject(ActivityService);
@@ -227,7 +231,7 @@ export class HomeComponent implements OnInit {
 
     // Calculate total expenses this month
     const currentMonth = new Date().getMonth();
-    const monthName = new Date().toLocaleDateString(undefined, { month: 'long' });
+    const monthName = this.locale.date(new Date(), 'LLLL');
     const currentYear = new Date().getFullYear();
     const totalExpenses = this.activityService
       .expenses()
@@ -299,8 +303,7 @@ export class HomeComponent implements OnInit {
   private formatDate(timestamp: number | undefined): string {
     if (!timestamp) return '';
     try {
-      const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-      return new Date(timestamp).toLocaleDateString(undefined, options);
+      return this.locale.date(timestamp, 'd MMM');
     } catch {
       return '';
     }

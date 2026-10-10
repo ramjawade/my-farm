@@ -1,3 +1,6 @@
+import { I18n } from '../../core/i18n/i18n.service';
+import { LocaleService } from '../../core/i18n/locale.service';
+import { TranslatePipe } from '@ngx-translate/core';
 import { Component, computed, signal, HostListener, inject, effect, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { SunPathComponent } from './sun-path/sun-path.component';
@@ -39,6 +42,7 @@ interface SoilMetric {
 @Component({
   selector: 'app-weather',
   imports: [
+    TranslatePipe,
     SunPathComponent,
     HistoryTrendComponent,
     ProfileEditDialogComponent,
@@ -48,6 +52,8 @@ interface SoilMetric {
   styleUrl: './weather.component.scss',
 })
 export class WeatherComponent implements OnInit {
+  private readonly i18n = inject(I18n);
+  private readonly locale = inject(LocaleService);
   private readonly authService = inject(AuthService);
   private readonly weatherService = inject(IWeatherService);
   private readonly farmDraw = inject(FarmDrawService);
@@ -142,15 +148,19 @@ export class WeatherComponent implements OnInit {
   readonly locationSub = computed(() => {
     const source = this.weatherService.source();
     return source === 'live'
-      ? 'Live Weather Monitoring'
+      ? this.i18n.t('weather.sourceLive')
       : source === 'cache'
-        ? 'Cached Weather Data'
-        : 'Sample Weather Data';
+        ? this.i18n.t('weather.sourceCached')
+        : this.i18n.t('weather.sourceSample');
   });
 
   readonly sourceDisplay = computed(() => {
     const source = this.weatherService.source();
-    return source === 'live' ? 'Live' : source === 'cache' ? 'Cached' : 'Demo';
+    return source === 'live'
+      ? this.i18n.t('weather.badgeLive')
+      : source === 'cache'
+        ? this.i18n.t('weather.badgeCached')
+        : this.i18n.t('weather.badgeDemo');
   });
 
   readonly sourceBadgeClass = computed(() => {
@@ -171,7 +181,7 @@ export class WeatherComponent implements OnInit {
   // Today's weather computed signals
   readonly currentTemp = computed(() => this.weatherData()?.current.temp ?? 28);
   readonly currentCondition = computed(
-    () => this.weatherData()?.current.condition ?? 'Partly Cloudy',
+    () => this.weatherData()?.current.condition ?? this.i18n.t('weather.partlyCloudy'),
   );
   readonly feelsLike = computed(() => this.weatherData()?.current.feelsLike ?? 31);
 
@@ -194,25 +204,25 @@ export class WeatherComponent implements OnInit {
     const weather = this.weatherData();
     return [
       {
-        title: 'Temperature',
+        title: this.i18n.t('weather.temperature'),
         value: `${this.currentTemp()}°C`,
         iconClass: 'bi-thermometer-half',
         textColorClass: 'text-temp',
       },
       {
-        title: 'Rain Chance',
+        title: this.i18n.t('weather.rainChance'),
         value: `${weather?.current.rainProbability ?? 72}%`,
         iconClass: 'bi-cloud-rain-heavy-fill',
         textColorClass: 'text-rain',
       },
       {
-        title: 'Wind Speed',
+        title: this.i18n.t('weather.windSpeed'),
         value: `${weather?.current.windSpeed ?? 14} km/h`,
         iconClass: 'bi-wind',
         textColorClass: 'text-wind',
       },
       {
-        title: 'Humidity',
+        title: this.i18n.t('weather.humidity'),
         value: `${weather?.current.humidity ?? 68}%`,
         iconClass: 'bi-droplet-half',
         textColorClass: 'text-humidity',
@@ -227,8 +237,8 @@ export class WeatherComponent implements OnInit {
   readonly forecast = computed(() => {
     const days = this.weatherData()?.forecast.days ?? [];
     return days.slice(0, 7).map((day: any) => ({
-      dayName: day.dayName,
-      dateLabel: day.dateLabel,
+      dayName: this.locale.date(day.date, 'EEE'),
+      dateLabel: this.locale.date(day.date, 'd MMM'),
       temp: day.tempMax,
       condition: day.condition,
       iconClass: this.getIconClass(day.conditionCode),
@@ -238,13 +248,17 @@ export class WeatherComponent implements OnInit {
 
   readonly currentRange = computed(() => {
     const days = this.weatherData()?.forecast.days ?? [];
-    if (days.length === 0) return '2 May – 8 May';
+    if (days.length === 0) {
+      const start = new Date();
+      const end = new Date(start.getTime() + 6 * 86_400_000);
+      return `${this.locale.date(start, 'd MMM')} – ${this.locale.date(end, 'd MMM')}`;
+    }
     const first = new Date(days[0].date);
     if (days.length === 1) {
-      return first.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      return this.locale.date(first, 'd MMM');
     }
     const last = new Date(days[Math.min(6, days.length - 1)].date);
-    return `${first.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${last.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+    return `${this.locale.date(first, 'd MMM')} – ${this.locale.date(last, 'd MMM')}`;
   });
 
   /**
@@ -256,7 +270,9 @@ export class WeatherComponent implements OnInit {
    */
   readonly forecastHeading = computed(() => {
     const count = this.forecast().length;
-    return count > 1 ? `${count} Day Forecast` : "Today's Forecast";
+    return count > 1
+      ? this.i18n.t('weather.forecastDays', { count })
+      : this.i18n.t('weather.forecastToday');
   });
 
   // Navigation handlers
@@ -277,31 +293,31 @@ export class WeatherComponent implements OnInit {
   readonly cropAdvisory = computed<string[]>(() => {
     const weather = this.weatherData();
     const user = this.authService.currentUser();
-    if (!weather) return ['Unable to generate advisories'];
+    if (!weather) return [this.i18n.t('weather.noAdvisories')];
     return this.generateAdvisory(weather, user?.primaryCrops || []);
   });
 
   readonly farmerTip = computed(() => {
     const rain = this.weatherData()?.current.rainProbability ?? 0;
     if (rain > 70) {
-      return 'Due to expected rainfall, delay fertilizer spraying to avoid nutrient washout and save costs.';
+      return this.i18n.t('weather.tipRain');
     }
     if ((this.weatherData()?.current.temp ?? 28) > 35) {
-      return 'High temperature ahead - ensure fields are adequately irrigated to prevent crop stress.';
+      return this.i18n.t('weather.tipHeat');
     }
-    return 'Monitor weather conditions for optimal farming decisions.';
+    return this.i18n.t('weather.tipDefault');
   });
 
   // Soil metrics signal (placeholder data awaiting IoT integration - Phase 5+)
   readonly soilMoisture = signal<SoilMetric>({
-    name: 'Moisture',
+    name: 'weather.moisture',
     value: 62,
     unit: '%',
     progressClass: 'bg-success',
   });
 
   readonly soilTemp = signal<SoilMetric>({
-    name: 'Soil Temperature',
+    name: 'weather.soilTemperature',
     value: 24,
     unit: '°C',
     progressClass: 'bg-warning',
@@ -361,30 +377,30 @@ export class WeatherComponent implements OnInit {
     const advisory: string[] = [];
 
     if (weather.current.rainProbability > 70) {
-      advisory.push('High rain expected — delay pesticide spraying');
-      advisory.push('Good time for irrigation (rain will reduce water need)');
+      advisory.push(this.i18n.t('weather.advRain1'));
+      advisory.push(this.i18n.t('weather.advRain2'));
     }
 
     if (weather.current.temp > 35) {
-      advisory.push('High temperature — ensure adequate irrigation');
-      advisory.push('Mulch fields to conserve soil moisture');
+      advisory.push(this.i18n.t('weather.advHeat1'));
+      advisory.push(this.i18n.t('weather.advHeat2'));
     }
 
     if (weather.current.windSpeed > 30) {
-      advisory.push('Strong winds — secure tall crops');
-      advisory.push('Avoid chemical applications — spray drift risk');
+      advisory.push(this.i18n.t('weather.advWind1'));
+      advisory.push(this.i18n.t('weather.advWind2'));
     }
 
     if (crops.includes('onion') && weather.current.humidity > 80) {
-      advisory.push('High humidity — monitor for fungal diseases in onions');
+      advisory.push(this.i18n.t('weather.advOnion'));
     }
 
     if (crops.includes('grape') && weather.current.uvIndex && weather.current.uvIndex > 8) {
-      advisory.push('High UV index — provide shade for grape vines if possible');
+      advisory.push(this.i18n.t('weather.advGrape'));
     }
 
     if (advisory.length === 0) {
-      advisory.push('Current weather conditions are favorable for farming operations');
+      advisory.push(this.i18n.t('weather.advFavorable'));
     }
 
     return advisory;

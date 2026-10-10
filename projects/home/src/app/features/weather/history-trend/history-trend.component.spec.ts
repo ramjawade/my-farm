@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideTranslateService } from '@ngx-translate/core';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
@@ -10,7 +12,7 @@ describe('HistoryTrendComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [HistoryTrendComponent],
-      providers: [provideZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection(), provideHttpClient(), provideTranslateService()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(HistoryTrendComponent);

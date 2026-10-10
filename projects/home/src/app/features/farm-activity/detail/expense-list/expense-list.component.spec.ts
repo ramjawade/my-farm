@@ -1,3 +1,4 @@
+import { provideHttpClient } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideTranslateService } from '@ngx-translate/core';
@@ -30,6 +31,7 @@ describe('ExpenseListComponent', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideTranslateService(),
+        provideHttpClient(),
         {
           provide: ActivityExpensesService,
           useValue: { getExpenses: getExpensesSpy, deleteExpense: deleteExpenseSpy },

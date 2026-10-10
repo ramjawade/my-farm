@@ -1,8 +1,9 @@
+import { TranslatePipe } from '@ngx-translate/core';
 import { Component, computed, input, OnDestroy, OnInit, signal } from '@angular/core';
 
 @Component({
   selector: 'app-sun-path',
-  imports: [],
+  imports: [TranslatePipe],
   templateUrl: './sun-path.component.html',
   styleUrl: './sun-path.component.scss',
 })

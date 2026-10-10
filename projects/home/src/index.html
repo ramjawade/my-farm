@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="mr">
   <head>
     <meta charset="utf-8" />
     <title>Home</title>
@@ -21,6 +21,12 @@
           saved === 'dark' ||
           (saved !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
         document.documentElement.setAttribute('data-bs-theme', dark ? 'dark' : 'light');
+        // Saved language (key my_farm_language, see core/i18n/app-language.ts); Marathi otherwise.
+        var lang = null;
+        try {
+          lang = localStorage.getItem('my_farm_language');
+        } catch (e) {}
+        if (lang === 'hi' || lang === 'en') document.documentElement.lang = lang;
       })();
     </script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />

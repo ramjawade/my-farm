@@ -1,3 +1,5 @@
+import { I18n } from '../../../core/i18n/i18n.service';
+import { LocalDatePipe, LocalNumberPipe } from '../../../core/i18n/localized.pipes';
 import {
   Component,
   inject,
@@ -9,7 +11,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { map } from 'rxjs/operators';
 import { ActivityDetailService } from './activity-detail.service';
 import { ExpenseListComponent } from './expense-list/expense-list.component';
@@ -33,9 +35,9 @@ import { parseId } from '../../../core/models/entity-id';
   selector: 'app-activity-detail',
   standalone: true,
   imports: [
+    LocalDatePipe,
+    LocalNumberPipe,
     RouterLink,
-    DatePipe,
-    DecimalPipe,
     ConfirmDialogComponent,
     ExpenseListComponent,
     AddExpenseComponent,
@@ -47,6 +49,7 @@ import { parseId } from '../../../core/models/entity-id';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ActivityDetailComponent implements OnInit {
+  private readonly i18n = inject(I18n);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
@@ -78,7 +81,7 @@ export class ActivityDetailComponent implements OnInit {
     const act = this.activity();
     if (!act || !act.cropId) return '';
     const crop = this.cropService.crops().find((c) => c.id === act.cropId);
-    return crop ? crop.name : 'Unknown Crop';
+    return crop ? crop.name : this.i18n.t('common.unknownCrop');
   });
 
   readonly fieldName = computed(() => {
@@ -115,7 +118,7 @@ export class ActivityDetailComponent implements OnInit {
       this.summary.set(summary);
       this.history.set(history);
     } catch {
-      this.error.set('Could not load this activity. Please try again.');
+      this.error.set(this.i18n.t('activityDetail.loadFailed'));
     } finally {
       this.loading.set(false);
     }

@@ -1,3 +1,4 @@
+import { provideHttpClient } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, Router } from '@angular/router';
@@ -33,6 +34,7 @@ describe('CropActivityComponent', () => {
         provideZonelessChangeDetection(),
         provideRouter([]),
         provideTranslateService(),
+        provideHttpClient(),
         {
           provide: ActivatedRoute,
           useValue: {

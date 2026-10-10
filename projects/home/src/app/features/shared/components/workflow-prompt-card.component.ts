@@ -25,7 +25,7 @@ import { TranslatePipe } from '@ngx-translate/core';
             (click)="onAction()"
             class="me-2"
           >
-            {{ actionLabel }}
+            {{ actionLabel || ('common.getStarted' | translate) }}
           </button>
           <button type="button" class="btn btn-sm btn-outline-secondary" (click)="onDismiss()">
             {{ 'common.later' | translate }}
@@ -38,7 +38,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 export class WorkflowPromptCardComponent {
   @Input() title: string = '';
   @Input() message: string = '';
-  @Input() actionLabel: string = 'Get Started';
+  @Input() actionLabel: string = '';
   @Input() icon: string = 'bi-info-circle';
   @Input() color: string = 'var(--mf-leaf)';
   @Input() buttonStyle: string = 'btn-success';

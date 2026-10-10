@@ -77,7 +77,7 @@ describe('ProfileComponent', () => {
     expect(compiled.textContent).toContain('Mulshi');
     expect(compiled.textContent).toContain('Pune');
     expect(compiled.textContent).toContain('Maharashtra');
-    expect(compiled.textContent).toContain('5.5 acres');
+    expect(compiled.textContent).toContain('5.5 landEdit.acres');
     expect(compiled.textContent).toContain('Borewell');
     expect(compiled.textContent).toContain('Drip');
     expect(compiled.textContent).toContain('Organic');

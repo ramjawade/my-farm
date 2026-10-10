@@ -1,3 +1,4 @@
+import { I18n } from '../i18n/i18n.service';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -14,6 +15,7 @@ import { LoaderService, ToastService } from 'shared';
  */
 @Injectable({ providedIn: 'root' })
 export class HttpService {
+  private readonly i18n = inject(I18n);
   private readonly http = inject(HttpClient);
   private readonly envService = inject(EnvironmentService);
   private readonly toast = inject(ToastService);
@@ -100,7 +102,7 @@ export class HttpService {
       return await request;
     } catch (error) {
       if (error instanceof HttpErrorResponse && (error.status === 0 || error.status >= 500)) {
-        this.toast.error("Couldn't reach the server. Please check your connection and try again.");
+        this.toast.error(this.i18n.t('common.serverUnreachable'));
       }
       throw error;
     }

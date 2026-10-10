@@ -180,7 +180,7 @@ describe('ProfileEditDialogComponent', () => {
     await component.save();
 
     expect(component.show()).toBeTrue();
-    expect(component.saveError()).toContain("Couldn't save");
+    expect(component.saveError()).toBe('common.saveFailed');
     expect(component.saving()).toBeFalse();
     expect(component.editFarmName()).toBe('Changed Name');
     expect(authService.currentUser()?.farmName).toBe('Green Acres');

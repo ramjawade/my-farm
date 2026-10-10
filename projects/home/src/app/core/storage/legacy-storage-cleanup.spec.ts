@@ -32,6 +32,14 @@ describe('cleanupLegacyLocalStorage', () => {
     expect(localStorage.getItem('my_farm_theme')).toBe('dark');
   });
 
+  it('keeps the saved language choice', () => {
+    localStorage.setItem('my_farm_language', 'mr');
+
+    cleanupLegacyLocalStorage();
+
+    expect(localStorage.getItem('my_farm_language')).toBe('mr');
+  });
+
   it('keeps the per-farmer "report generated" flags so progress survives a reload', () => {
     localStorage.setItem('my_farm_report_generated_3', '1');
     localStorage.setItem('my_farm_report_generated_8', '1');

@@ -1,5 +1,6 @@
+import { LocalDatePipe, LocalNumberPipe } from '../../../core/i18n/localized.pipes';
 import { Component, ChangeDetectionStrategy, OnInit, inject, input, signal } from '@angular/core';
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
@@ -14,7 +15,7 @@ import { ReferenceDataService } from '../../../core/api/reference-data.service';
 @Component({
   selector: 'app-activity-dashboard',
   standalone: true,
-  imports: [DatePipe, DecimalPipe, RouterLink, TranslatePipe, ReferenceNamePipe],
+  imports: [LocalDatePipe, LocalNumberPipe, RouterLink, TranslatePipe, ReferenceNamePipe],
   templateUrl: './activity-dashboard.component.html',
   styleUrl: './activity-dashboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

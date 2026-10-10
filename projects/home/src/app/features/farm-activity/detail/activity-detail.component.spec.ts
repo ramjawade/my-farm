@@ -45,6 +45,7 @@ describe('ActivityDetailComponent', () => {
   ];
 
   beforeEach(async () => {
+    localStorage.setItem('my_farm_language', 'en');
     getActivitySpy = jasmine.createSpy('getActivity').and.resolveTo(mockActivity);
     getSummarySpy = jasmine.createSpy('getSummary').and.resolveTo(mockSummary);
     getHistorySpy = jasmine.createSpy('getHistory').and.resolveTo(mockHistory);
@@ -120,7 +121,7 @@ describe('ActivityDetailComponent', () => {
     getActivitySpy.and.rejectWith(new Error('network down'));
     await (component as any).reload(5);
 
-    expect(component.error()).toBe('Could not load this activity. Please try again.');
+    expect(component.error()).toBe('activityDetail.loadFailed');
   });
 
   describe('notes', () => {

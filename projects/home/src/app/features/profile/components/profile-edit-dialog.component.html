@@ -11,18 +11,27 @@
       <div class="d-flex justify-content-between align-items-center pb-3 border-bottom mb-4">
         <h4 class="h5 fw-bold text-success-dark mb-0">
           @if (section() === 'account') {
-            <i class="bi bi-person-fill text-success me-2"></i>Edit Account Information
+            <i class="bi bi-person-fill text-success me-2"></i
+            >{{ 'profileEdit.editAccount' | translate }}
           } @else if (section() === 'agronomic') {
-            <i class="bi bi-shield-fill text-success me-2"></i>Edit Agronomic Settings
+            <i class="bi bi-shield-fill text-success me-2"></i
+            >{{ 'profileEdit.editAgronomic' | translate }}
           } @else if (section() === 'land') {
             <i class="bi bi-geo-alt-fill text-success me-2"></i>{{ 'landEdit.title' | translate }}
           } @else if (section() === 'operations') {
-            <i class="bi bi-gear-fill text-success me-2"></i>Edit Operational Settings
+            <i class="bi bi-gear-fill text-success me-2"></i
+            >{{ 'profileEdit.editOperational' | translate }}
           } @else if (section() === 'setup') {
-            <i class="bi bi-gear-fill text-success me-2"></i>Complete Farm Setup
+            <i class="bi bi-gear-fill text-success me-2"></i
+            >{{ 'profileEdit.completeSetup' | translate }}
           }
         </h4>
-        <button type="button" class="btn-close" (click)="close()" aria-label="Close"></button>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="close()"
+          [attr.aria-label]="'common.close' | translate"
+        ></button>
       </div>
 
       <!-- MODAL BODY -->
@@ -31,7 +40,9 @@
         @if (section() === 'account') {
           <div class="row g-3">
             <div class="col-md-12">
-              <label for="fullName" class="field-label required-label">Farmer Name</label>
+              <label for="fullName" class="field-label required-label">{{
+                'profileEdit.farmerName' | translate
+              }}</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
                 <input
@@ -41,27 +52,31 @@
                   maxlength="255"
                   [ngModel]="editFullName()"
                   (ngModelChange)="editFullName.set($event)"
-                  placeholder="e.g. Rajesh Kumar"
+                  [placeholder]="'profileEdit.namePlaceholder' | translate"
                 />
               </div>
               @if (!isNamePatternValid()) {
                 <div class="text-danger small mt-1">
-                  Please enter a valid farmer name (3-255 characters).
+                  {{ 'profileEdit.errName' | translate }}
                 </div>
               }
             </div>
 
             <div class="col-md-12">
-              <label for="phone" class="field-label">Contact Number</label>
+              <label for="phone" class="field-label">{{
+                'profileEdit.contactNumber' | translate
+              }}</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-telephone-fill"></i></span>
                 <input type="tel" id="phone" class="form-control" [value]="editPhone()" readonly />
               </div>
-              <div class="form-text">Your sign-in number can't be changed here.</div>
+              <div class="form-text">{{ 'profileEdit.signInNumberLocked' | translate }}</div>
             </div>
 
             <div class="col-md-12">
-              <label for="email" class="field-label">Email Address (Optional)</label>
+              <label for="email" class="field-label">{{
+                'profileEdit.emailOptional' | translate
+              }}</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
                 <input
@@ -70,18 +85,18 @@
                   class="form-control"
                   [ngModel]="editEmail()"
                   (ngModelChange)="editEmail.set($event)"
-                  placeholder="e.g. rajesh@farm.com"
+                  [placeholder]="'profileEdit.emailPlaceholder' | translate"
                 />
               </div>
               @if (!isEmailPatternValid()) {
-                <div class="text-danger small mt-1">Please enter a valid email format.</div>
+                <div class="text-danger small mt-1">{{ 'profileEdit.errEmail' | translate }}</div>
               }
             </div>
 
             <div class="col-md-12">
-              <label for="preferredLanguage" class="field-label required-label"
-                >Preferred Language</label
-              >
+              <label for="preferredLanguage" class="field-label required-label">{{
+                'profileEdit.preferredLanguage' | translate
+              }}</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-translate"></i></span>
                 <select
@@ -92,7 +107,10 @@
                 >
                   @for (lang of languages; track lang.value) {
                     <option [value]="lang.value" [disabled]="!lang.supported">
-                      {{ lang.label }}{{ lang.supported ? '' : ' (Coming soon)' }}
+                      {{ lang.label
+                      }}{{
+                        lang.supported ? '' : ' (' + ('profileEdit.comingSoon' | translate) + ')'
+                      }}
                     </option>
                   }
                 </select>
@@ -106,9 +124,11 @@
           <div>
             <!-- Who are you? Visual Options -->
             <div class="mb-4">
-              <label class="field-label required-label">Who are you?</label>
+              <label class="field-label required-label">{{
+                'profileEdit.whoAreYou' | translate
+              }}</label>
               <p class="field-sub-label">
-                Please select your primary role profile to personalize your experience.
+                {{ 'profileEdit.errRole' | translate }}
               </p>
 
               <div class="row g-3">
@@ -127,7 +147,9 @@
                           editUserRole() === role.value ? 'var(--mf-leaf)' : role.color
                         "
                       ></i>
-                      <span class="fw-semibold role-label-text ms-2">{{ role.label }}</span>
+                      <span class="fw-semibold role-label-text ms-2">{{
+                        optionKey(role.value) | translate
+                      }}</span>
                     </button>
                   </div>
                 }
@@ -136,9 +158,11 @@
 
             <!-- Farming Method Visual Options -->
             <div class="mb-4 mt-3 pt-3 border-top">
-              <label class="field-label required-label">Farming Method</label>
+              <label class="field-label required-label">{{
+                'profileEdit.farmingMethod' | translate
+              }}</label>
               <p class="field-sub-label">
-                Please select your primary soil and cultivation practice standard.
+                {{ 'profileEdit.errMethod' | translate }}
               </p>
 
               <div class="row g-3">
@@ -157,7 +181,9 @@
                           editFarmingMethod() === method.value ? 'var(--mf-leaf)' : method.color
                         "
                       ></i>
-                      <span class="fw-semibold role-label-text ms-2">{{ method.label }}</span>
+                      <span class="fw-semibold role-label-text ms-2">{{
+                        optionKey(method.value) | translate
+                      }}</span>
                     </button>
                   </div>
                 }
@@ -185,7 +211,7 @@
                   class="form-control"
                   [ngModel]="editFarmName()"
                   (ngModelChange)="editFarmName.set($event)"
-                  placeholder="e.g. Green Valley Farm"
+                  [placeholder]="'profileEdit.farmNamePlaceholder' | translate"
                 />
               </div>
               @if (editFarmName() && editFarmName().trim().length < 2) {
@@ -208,7 +234,7 @@
                   class="form-control"
                   [ngModel]="editFarmArea()"
                   (ngModelChange)="editFarmArea.set($event)"
-                  placeholder="e.g. 6.25"
+                  [placeholder]="'profileEdit.areaPlaceholder' | translate"
                 />
               </div>
               <div class="col-4">
@@ -447,7 +473,7 @@
                     class="form-control"
                     [ngModel]="editState()"
                     (ngModelChange)="editState.set($event)"
-                    placeholder="e.g. Maharashtra"
+                    [placeholder]="'profileEdit.statePlaceholder' | translate"
                   />
                   @if (
                     locationMethod() === 'manual' && editState() && editState().trim().length < 2
@@ -468,7 +494,7 @@
                     class="form-control"
                     [ngModel]="editDistrict()"
                     (ngModelChange)="editDistrict.set($event)"
-                    placeholder="e.g. Nashik"
+                    [placeholder]="'profileEdit.districtPlaceholder' | translate"
                   />
                   @if (
                     locationMethod() === 'manual' &&
@@ -491,7 +517,7 @@
                     class="form-control"
                     [ngModel]="editVillage()"
                     (ngModelChange)="editVillage.set($event)"
-                    placeholder="e.g. Pimpalgaon"
+                    [placeholder]="'profileEdit.villagePlaceholder' | translate"
                   />
                   @if (
                     locationMethod() === 'manual' &&
@@ -514,7 +540,7 @@
                     class="form-control"
                     [ngModel]="editPincode()"
                     (ngModelChange)="editPincode.set($event)"
-                    placeholder="e.g. 422209"
+                    [placeholder]="'profileEdit.pincodePlaceholder' | translate"
                   />
                   @if (
                     locationMethod() === 'manual' &&
@@ -537,10 +563,11 @@
             <!-- Primary Crops selection visually matching wizard tags -->
             <div class="mb-4">
               <label class="field-label required-label"
-                ><i class="bi bi-patch-check me-1"></i>Primary Crops Grown</label
+                ><i class="bi bi-patch-check me-1"></i
+                >{{ 'profileEdit.primaryCrops' | translate }}</label
               >
               <p class="field-sub-label">
-                Please select at least one primary crop grown on your farm.
+                {{ 'profileEdit.errCropsFarm' | translate }}
               </p>
 
               <div class="row g-3">
@@ -559,23 +586,26 @@
                           selectedCrops().includes(crop.value) ? 'var(--mf-leaf)' : crop.color
                         "
                       ></i>
-                      <span class="fw-semibold role-label-text ms-2">{{ crop.label }}</span>
+                      <span class="fw-semibold role-label-text ms-2">{{
+                        optionKey(crop.value) | translate
+                      }}</span>
                     </button>
                   </div>
                 }
               </div>
               @if (selectedCrops().length === 0) {
-                <div class="text-danger small mt-2">Please select at least one primary crop.</div>
+                <div class="text-danger small mt-2">{{ 'profileEdit.errCrop' | translate }}</div>
               }
             </div>
 
             <!-- Water Source Visual Options -->
             <div class="mb-4 mt-3 pt-3 border-top">
               <label class="field-label required-label"
-                ><i class="bi bi-droplet-fill me-1"></i>Water Source</label
+                ><i class="bi bi-droplet-fill me-1"></i
+                >{{ 'profileEdit.waterSource' | translate }}</label
               >
               <p class="field-sub-label">
-                Please select the primary water supply sourcing method used on your fields.
+                {{ 'profileEdit.errWater' | translate }}
               </p>
 
               <div class="row g-3">
@@ -592,7 +622,9 @@
                         [class]="ws.icon"
                         [style.color]="editWaterSource() === ws.value ? 'var(--mf-leaf)' : ws.color"
                       ></i>
-                      <span class="fw-semibold role-label-text ms-2">{{ ws.label }}</span>
+                      <span class="fw-semibold role-label-text ms-2">{{
+                        optionKey(ws.value) | translate
+                      }}</span>
                     </button>
                   </div>
                 }
@@ -602,10 +634,11 @@
             <!-- Irrigation Type Visual Options -->
             <div class="mb-4 mt-3 pt-3 border-top">
               <label class="field-label required-label"
-                ><i class="bi bi-moisture me-1"></i>Irrigation Type</label
+                ><i class="bi bi-moisture me-1"></i
+                >{{ 'profileEdit.irrigationType' | translate }}</label
               >
               <p class="field-sub-label">
-                Please select the core water delivery distribution mechanism applied.
+                {{ 'profileEdit.errIrrigation' | translate }}
               </p>
 
               <div class="row g-3">
@@ -624,7 +657,9 @@
                           editIrrigationType() === irr.value ? 'var(--mf-leaf)' : irr.color
                         "
                       ></i>
-                      <span class="fw-semibold role-label-text ms-2">{{ irr.label }}</span>
+                      <span class="fw-semibold role-label-text ms-2">{{
+                        optionKey(irr.value) | translate
+                      }}</span>
                     </button>
                   </div>
                 }
@@ -639,10 +674,11 @@
             <!-- Water Source Visual Options -->
             <div class="mb-4">
               <label class="field-label required-label"
-                ><i class="bi bi-droplet-fill me-1"></i>Water Source</label
+                ><i class="bi bi-droplet-fill me-1"></i
+                >{{ 'profileEdit.waterSource' | translate }}</label
               >
               <p class="field-sub-label">
-                Please select the primary water supply sourcing method used on your fields.
+                {{ 'profileEdit.errWater' | translate }}
               </p>
 
               <div class="row g-3">
@@ -659,7 +695,9 @@
                         [class]="ws.icon"
                         [style.color]="editWaterSource() === ws.value ? 'var(--mf-leaf)' : ws.color"
                       ></i>
-                      <span class="fw-semibold role-label-text ms-2">{{ ws.label }}</span>
+                      <span class="fw-semibold role-label-text ms-2">{{
+                        optionKey(ws.value) | translate
+                      }}</span>
                     </button>
                   </div>
                 }
@@ -669,10 +707,11 @@
             <!-- Irrigation Type Visual Options -->
             <div class="mb-4 mt-3 pt-3 border-top">
               <label class="field-label required-label"
-                ><i class="bi bi-moisture me-1"></i>Irrigation Type</label
+                ><i class="bi bi-moisture me-1"></i
+                >{{ 'profileEdit.irrigationType' | translate }}</label
               >
               <p class="field-sub-label">
-                Please select the core water delivery distribution mechanism applied.
+                {{ 'profileEdit.errIrrigation' | translate }}
               </p>
 
               <div class="row g-3">
@@ -691,7 +730,9 @@
                           editIrrigationType() === irr.value ? 'var(--mf-leaf)' : irr.color
                         "
                       ></i>
-                      <span class="fw-semibold role-label-text ms-2">{{ irr.label }}</span>
+                      <span class="fw-semibold role-label-text ms-2">{{
+                        optionKey(irr.value) | translate
+                      }}</span>
                     </button>
                   </div>
                 }
@@ -701,10 +742,11 @@
             <!-- Farming Method Visual Options -->
             <div class="mb-4 mt-3 pt-3 border-top">
               <label class="field-label required-label"
-                ><i class="bi bi-leaf-fill me-1"></i>Farming Method</label
+                ><i class="bi bi-leaf-fill me-1"></i
+                >{{ 'profileEdit.farmingMethod' | translate }}</label
               >
               <p class="field-sub-label">
-                Please select your primary soil and cultivation practice standard.
+                {{ 'profileEdit.errMethod' | translate }}
               </p>
 
               <div class="row g-3">
@@ -723,7 +765,9 @@
                           editFarmingMethod() === method.value ? 'var(--mf-leaf)' : method.color
                         "
                       ></i>
-                      <span class="fw-semibold role-label-text ms-2">{{ method.label }}</span>
+                      <span class="fw-semibold role-label-text ms-2">{{
+                        optionKey(method.value) | translate
+                      }}</span>
                     </button>
                   </div>
                 }
@@ -744,7 +788,7 @@
           [disabled]="saving()"
           (click)="close()"
         >
-          Cancel
+          {{ 'common.cancel' | translate }}
         </button>
         <button
           type="button"
@@ -758,9 +802,10 @@
           (click)="save()"
         >
           @if (saving()) {
-            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Saving…
+            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span
+            >{{ 'profileEdit.saving' | translate }}
           } @else {
-            Save Changes
+            {{ 'profileEdit.saveChanges' | translate }}
           }
         </button>
       </div>

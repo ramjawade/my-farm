@@ -1,3 +1,4 @@
+import { provideTranslateService } from '@ngx-translate/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
@@ -21,6 +22,7 @@ describe('ReportsComponent', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideHttpClient(),
+        provideTranslateService(),
         ActivityService,
         CropTimelineService,
         { provide: ActivitiesApiService, useClass: FakeActivitiesApiService },
@@ -50,7 +52,7 @@ describe('ReportsComponent', () => {
     expect(component.report()).not.toBeNull();
 
     const compiled: HTMLElement = fixture.nativeElement;
-    expect(compiled.textContent).toContain('Total Season Expenses');
+    expect(compiled.textContent).toContain('reports.totalSeasonExpenses');
   });
 
   it('renders real category/crop/month breakdowns for seeded data', async () => {
@@ -157,7 +159,7 @@ describe('ReportsComponent', () => {
   it('clicking the Generate Report button in the DOM populates the report', async () => {
     const compiled: HTMLElement = fixture.nativeElement;
     const button = Array.from(compiled.querySelectorAll('button')).find((b) =>
-      b.textContent?.includes('Generate Report'),
+      b.textContent?.includes('reports.generate'),
     );
     expect(button).withContext('Generate Report button should exist').toBeTruthy();
 
@@ -166,6 +168,6 @@ describe('ReportsComponent', () => {
     fixture.detectChanges();
 
     expect(component.report()).not.toBeNull();
-    expect(compiled.textContent).toContain('Total Season Expenses');
+    expect(compiled.textContent).toContain('reports.totalSeasonExpenses');
   });
 });

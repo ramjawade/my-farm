@@ -1,3 +1,4 @@
+import { I18n } from '../../core/i18n/i18n.service';
 import { Injectable, inject } from '@angular/core';
 import { ActivityService } from '../activity/activity.service';
 import { CropTimelineService } from '../crop-timeline/crop-timeline.service';
@@ -34,6 +35,7 @@ export interface SeasonReport {
 /** Aggregates expenses into season reports. */
 @Injectable({ providedIn: 'root' })
 export class ReportService {
+  private readonly i18n = inject(I18n);
   private readonly activityService = inject(ActivityService);
   private readonly cropService = inject(CropTimelineService);
   private readonly referenceData = inject(ReferenceDataService);
@@ -89,7 +91,7 @@ export class ReportService {
     activities.forEach((a) => {
       if (!a.cropId) return;
       const crop = this.cropService.getCropById(a.cropId);
-      const cropName = crop?.name || 'Unknown Crop';
+      const cropName = crop?.name || this.i18n.t('common.unknownCrop');
       const existing = map.get(a.cropId) || { cropName, total: 0, activities: 0 };
       map.set(a.cropId, {
         ...existing,
@@ -102,7 +104,7 @@ export class ReportService {
       const a = this.activityService.getActivityById(e.activityId);
       if (!a?.cropId) return;
       const crop = this.cropService.getCropById(a.cropId);
-      const cropName = crop?.name || 'Unknown Crop';
+      const cropName = crop?.name || this.i18n.t('common.unknownCrop');
       const existing = map.get(a.cropId);
       if (existing) {
         map.set(a.cropId, {
