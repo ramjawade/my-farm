@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { registerThroughPad } from './login-pad';
 
 // The app defaults to Marathi; these tests find controls by their English labels.
 test.beforeEach(async ({ page }) => {
@@ -17,16 +18,8 @@ test('primary crops saved in the profile are still there after a reload', async 
   const phone = `9${digit}${`${Date.now()}`.slice(-8)}`;
   const pin = '1234';
 
-  await page.goto('/login');
-  await page.locator('#phoneInput').fill(phone);
-  await page.getByRole('button', { name: 'Continue' }).click();
-  await page.locator('#pinInput').fill(pin);
-  await page.getByRole('button', { name: 'Access Account' }).click();
-  await page.locator('#nameInput').fill('Profile Persist');
-  await page.locator('#registerPinInput').fill(pin);
-  await page.locator('#confirmRegisterPinInput').fill(pin);
-  await page.getByRole('button', { name: 'Create Profile & Enter' }).click();
-  await expect(page).toHaveURL(/\/map$/);
+  await registerThroughPad(page, phone, pin, 'Profile Persist');
+  await expect(page).toHaveURL(/\/map$/, { timeout: 15_000 });
 
   await page.goto('/profile');
   await page.locator('button:has(.bi-pencil-square)').nth(3).click();

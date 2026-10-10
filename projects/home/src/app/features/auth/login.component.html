@@ -1,193 +1,194 @@
-<div class="login-wrapper">
-  <!-- Dynamic Organic Background Gradients -->
-  <div class="background-blob blob-top"></div>
-  <div class="background-blob blob-bottom"></div>
-
-  <a routerLink="/" class="home-btn" [attr.aria-label]="'login.backToHome' | translate">
-    <i class="bi bi-house-fill"></i>
-  </a>
-
-  <div class="login-container">
-    <div class="card card-glass login-card mx-auto animate-fade-in">
-      <div class="d-flex justify-content-center mb-2"><app-language-switch /></div>
-      <!-- Logo & Header -->
-      <div class="text-center mb-4 pt-2">
-        <app-brand-logo class="mb-3 shadow-sm rounded-circle" [size]="96" [priority]="true" />
-        <h2 class="brand-title mb-1">My Farm</h2>
-        <p class="brand-subtitle">{{ 'login.subtitle' | translate }}</p>
+<div class="login-screen">
+  <aside class="login-hero">
+    <div class="d-flex align-items-center justify-content-between gap-2">
+      <div class="d-flex align-items-center gap-2 login-brand">
+        <app-brand-logo [size]="40" [priority]="true" />
+        <span>My Farm</span>
       </div>
+      <div class="d-lg-none"><app-language-switch /></div>
+    </div>
 
-      @if (step() === 'phone') {
-        <form (ngSubmit)="onSubmitPhone()" class="login-form">
-          <div class="mb-3">
-            <label for="phoneInput" class="field-label required-label">{{
-              'login.mobileNumber' | translate
-            }}</label>
-            <div class="input-group">
-              <span class="input-group-text bg-white border-end-0 text-muted">
-                <i class="bi bi-telephone-fill"></i>
-              </span>
-              <input
-                type="tel"
-                id="phoneInput"
-                class="form-control border-start-0 ps-0"
-                [placeholder]="'login.phonePlaceholder' | translate"
-                inputmode="numeric"
-                maxlength="10"
-                [value]="phone()"
-                (input)="onPhoneInput($any($event.target).value)"
-                [class.is-invalid]="errorMessage()"
-              />
-            </div>
-            @if (errorMessage()) {
-              <div class="text-danger small mt-1">
-                <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errorMessage() }}
-              </div>
+    <div class="login-copy">
+      <h1>{{ 'login.greeting' | translate }}</h1>
+      <p>{{ 'login.tagline' | translate }}</p>
+      <ul class="login-chips list-unstyled d-none d-lg-flex flex-wrap gap-2 mb-0">
+        <li><i class="bi bi-map" aria-hidden="true"></i>{{ 'login.feature.map' | translate }}</li>
+        <li>
+          <i class="bi bi-list-check" aria-hidden="true"></i>{{ 'login.feature.diary' | translate }}
+        </li>
+        <li>
+          <i class="bi bi-currency-rupee" aria-hidden="true"></i
+          >{{ 'login.feature.expenses' | translate }}
+        </li>
+        <li>
+          <i class="bi bi-cloud-sun" aria-hidden="true"></i
+          >{{ 'login.feature.weather' | translate }}
+        </li>
+      </ul>
+    </div>
+
+    <div class="login-scene">
+      <div class="d-lg-none"><app-warli-scene [compact]="true" /></div>
+      <div class="d-none d-lg-block"><app-warli-scene /></div>
+    </div>
+  </aside>
+
+  <section class="login-panel">
+    <div class="d-none d-lg-flex justify-content-end"><app-language-switch /></div>
+
+    <div class="login-body">
+      <div class="login-card">
+        @if (step() !== 'done') {
+          <div class="login-steps d-flex gap-1 mb-3" aria-hidden="true">
+            @for (s of flow(); track s; let i = $index) {
+              <i [class.on]="i < stepIndex()" [class.now]="i === stepIndex()"></i>
             }
           </div>
+        }
 
-          <button
-            type="submit"
-            class="btn btn-success w-100 py-2.5 fw-semibold hover-lift shadow-xs d-flex align-items-center justify-content-center gap-2"
-          >
-            <i class="bi bi-arrow-right-circle-fill"></i>
-            <span>{{ 'login.continue' | translate }}</span>
-          </button>
-        </form>
-      }
+        @for (current of [step()]; track current) {
+          <div class="login-rise">
+            <h2 class="login-title" id="loginTitle">
+              @if (step() === 'done') {
+                {{ 'login.title.done' | translate: { name: welcomeName() } }}
+              } @else {
+                {{ titleKey() | translate }}
+              }
+            </h2>
+            <p class="login-sub text-body-secondary">
+              @switch (step()) {
+                @case ('pin') {
+                  {{ 'login.number' | translate }} <b>{{ displayPhone() }}</b> ·
+                  <button
+                    type="button"
+                    class="btn btn-link p-0 align-baseline"
+                    (click)="changeNumber()"
+                  >
+                    {{ 'login.change' | translate }}
+                  </button>
+                }
+                @case ('done') {
+                  {{ 'login.hint.done' | translate }}
+                }
+                @default {
+                  {{ hintKey() ?? '' | translate }}
+                }
+              }
+            </p>
+          </div>
+        }
 
-      @if (step() === 'pin') {
-        <form (ngSubmit)="onSubmitPin()" class="login-form animate-fade-in">
-          <p class="text-muted text-sm mb-3">
-            {{ 'login.enterPinFor' | translate }} <strong>{{ phone() }}</strong>
-          </p>
-          <div class="mb-3">
-            <label for="pinInput" class="field-label required-label">{{
-              'login.pin' | translate
-            }}</label>
-            <div class="input-group">
-              <span class="input-group-text bg-white border-end-0 text-muted">
-                <i class="bi bi-shield-lock-fill"></i>
+        @switch (step()) {
+          @case ('phone') {
+            <div
+              class="login-number"
+              [class.login-shake]="shake() === 'number'"
+              [class.is-invalid]="shake() === 'number'"
+              role="group"
+              [attr.aria-label]="('login.title.phone' | translate) + ': ' + phone()"
+            >
+              <span class="login-cc">+91</span>
+              <span class="login-digits">
+                @for (slot of phoneSlots(); track $index) {
+                  @if ($index === 5) {
+                    <span class="gap"></span>
+                  }
+                  <span [class.empty]="!slot.filled" [class.cursor]="slot.cursor">{{
+                    slot.digit
+                  }}</span>
+                }
               </span>
-              <input
-                type="password"
-                inputmode="numeric"
-                maxlength="6"
-                id="pinInput"
-                class="form-control border-start-0 ps-0"
-                [placeholder]="'login.pinPlaceholder' | translate"
-                [value]="pin()"
-                (input)="pin.set($any($event.target).value)"
-                [class.is-invalid]="errorMessage()"
-              />
-            </div>
-            @if (errorMessage()) {
-              <div class="text-danger small mt-1">
-                <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errorMessage() }}
-              </div>
-            }
-          </div>
-
-          <button
-            type="submit"
-            [disabled]="busy()"
-            class="btn btn-success w-100 py-2.5 fw-semibold hover-lift shadow-xs d-flex align-items-center justify-content-center gap-2"
-          >
-            <i class="bi bi-box-arrow-in-right"></i>
-            <span>{{ (busy() ? 'login.signingIn' : 'login.accessAccount') | translate }}</span>
-          </button>
-
-          <button
-            type="button"
-            class="btn btn-link w-100 mt-2 text-muted"
-            (click)="resetToPhoneStep()"
-          >
-            <i class="bi bi-arrow-left me-1"></i>{{ 'login.differentNumber' | translate }}
-          </button>
-        </form>
-      }
-
-      @if (step() === 'register') {
-        <form (ngSubmit)="onSubmitRegister()" class="login-form animate-fade-in">
-          <p class="text-success text-xs mb-3 fw-semibold">
-            <i class="bi bi-info-circle-fill me-1"></i>{{ 'login.notRegistered' | translate }}
-          </p>
-          <div class="mb-3">
-            <label for="nameInput" class="field-label required-label">{{
-              'login.fullName' | translate
-            }}</label>
-            <input
-              type="text"
-              id="nameInput"
-              class="form-control"
-              [placeholder]="'login.namePlaceholder' | translate"
-              [value]="name()"
-              (input)="name.set($any($event.target).value)"
-            />
-          </div>
-          <div class="mb-3">
-            <label for="registerPinInput" class="field-label required-label">{{
-              'login.createPin' | translate
-            }}</label>
-            <input
-              type="password"
-              inputmode="numeric"
-              maxlength="6"
-              id="registerPinInput"
-              class="form-control"
-              [placeholder]="'login.pinPlaceholder' | translate"
-              [value]="pin()"
-              (input)="pin.set($any($event.target).value)"
-            />
-          </div>
-          <div class="mb-3">
-            <label for="confirmRegisterPinInput" class="field-label required-label">{{
-              'login.confirmPin' | translate
-            }}</label>
-            <input
-              type="password"
-              inputmode="numeric"
-              maxlength="6"
-              id="confirmRegisterPinInput"
-              class="form-control"
-              [placeholder]="'login.confirmPinPlaceholder' | translate"
-              [value]="confirmPin()"
-              (input)="confirmPin.set($any($event.target).value)"
-              [class.is-invalid]="errorMessage()"
-            />
-          </div>
-          @if (errorMessage()) {
-            <div class="text-danger small mt-1">
-              <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errorMessage() }}
             </div>
           }
+          @case ('name') {
+            <form (ngSubmit)="submit()" novalidate>
+              <label class="form-label fw-semibold" for="nameField">{{
+                'login.fullName' | translate
+              }}</label>
+              <input
+                #nameField
+                id="nameField"
+                type="text"
+                class="form-control form-control-lg"
+                [class.login-shake]="shake() === 'name'"
+                [class.is-invalid]="shake() === 'name'"
+                autocomplete="name"
+                name="fullName"
+                [placeholder]="'login.namePlaceholder' | translate"
+                [ngModel]="name()"
+                (ngModelChange)="onNameInput($event)"
+              />
+              <button type="submit" class="btn btn-success btn-lg w-100 mt-3">
+                {{ 'login.nextStep' | translate }}
+                <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i>
+              </button>
+            </form>
+          }
+          @case ('done') {
+            <div class="text-center py-3 login-tick text-success">
+              <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            </div>
+          }
+          @default {
+            <div
+              class="login-pin d-flex justify-content-center gap-2"
+              [class.login-shake]="shake() === 'pin'"
+              [class.is-invalid]="shake() === 'pin'"
+              role="group"
+              [attr.aria-label]="
+                ('login.pin' | translate) + ': ' + pinValue().length + ' / ' + pinBoxes().length
+              "
+            >
+              @for (box of pinBoxes(); track $index) {
+                <span [class.on]="box.filled" [class.cursor]="box.cursor" aria-hidden="true">{{
+                  box.filled ? box.char : ''
+                }}</span>
+              }
+            </div>
+            <button
+              type="button"
+              class="btn btn-link d-flex align-items-center gap-1 mx-auto mt-2"
+              [attr.aria-pressed]="reveal()"
+              (click)="toggleReveal()"
+            >
+              <i
+                class="bi"
+                [class.bi-eye]="!reveal()"
+                [class.bi-eye-slash]="reveal()"
+                aria-hidden="true"
+              ></i>
+              {{ (reveal() ? 'login.hidePin' : 'login.showPin') | translate }}
+            </button>
+          }
+        }
 
-          <button
-            type="submit"
-            [disabled]="busy()"
-            class="btn btn-success w-100 py-2.5 fw-semibold hover-lift shadow-xs d-flex align-items-center justify-content-center gap-2"
+        @if (error(); as messageKey) {
+          <div
+            class="alert alert-danger d-flex gap-2 align-items-start mt-3 mb-0 py-2"
+            role="alert"
           >
-            <i class="bi bi-person-plus-fill"></i>
-            <span>{{ (busy() ? 'login.creating' : 'login.createAndEnter') | translate }}</span>
-          </button>
+            <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+            <span>{{ messageKey | translate }}</span>
+          </div>
+        }
 
-          <button
-            type="button"
-            class="btn btn-link w-100 mt-2 text-muted"
-            (click)="resetToPhoneStep()"
-          >
-            <i class="bi bi-arrow-left me-1"></i>{{ 'login.differentNumber' | translate }}
-          </button>
-        </form>
-      }
+        @if (step() === 'phone') {
+          <div class="alert alert-warning small d-flex gap-2 align-items-start mt-2 mb-0 py-1 px-2">
+            <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+            <span>{{ 'login.newHere' | translate }}</span>
+          </div>
+        }
 
-      @if (step() === 'phone') {
-        <div class="text-center mt-4 border-top pt-3">
-          <p class="text-muted text-sm mb-0">
-            {{ 'login.newHere' | translate }}
-          </p>
-        </div>
-      }
+        @if (usesPad()) {
+          <div class="login-pad">
+            <app-number-pad [busy]="busy()" [devanagari]="showDevanagari()" (key)="onKey($event)" />
+          </div>
+        }
+
+        <p class="login-safe text-body-secondary small text-center mt-3 mb-0">
+          <i class="bi bi-shield-check me-1" aria-hidden="true"></i>{{ 'login.safe' | translate }}
+        </p>
+      </div>
     </div>
-  </div>
+  </section>
 </div>
