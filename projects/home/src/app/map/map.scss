@@ -30,7 +30,8 @@
   }
 
   .map-page__wrapper {
-    height: clamp(20rem, 60vh, 40rem);
+    height: clamp(16rem, 45vh, 28rem);
+    min-height: 0;
   }
 }
 
