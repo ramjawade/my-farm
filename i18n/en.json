@@ -999,5 +999,63 @@
       "ConservationFarming": "Conservation Farming",
       "NaturalFarming": "Natural Farming"
     }
+  },
+  "homeScreen": {
+    "greeting": {
+      "morning": "Good morning, {{name}}",
+      "afternoon": "Good afternoon, {{name}}",
+      "evening": "Good evening, {{name}}"
+    },
+    "openProfile": "Open profile",
+    "tiles": {
+      "activeCrops": "Active crops",
+      "acrossLand": "across {{count}} land",
+      "acrossLands": "across {{count}} lands",
+      "totalArea": "Total area",
+      "seasonSpend": "Season spend",
+      "since": "since",
+      "nextHarvest": "Next harvest",
+      "inDays": "{{count}} days",
+      "noHarvest": "Not set"
+    },
+    "weather": {
+      "title": "Today's weather",
+      "humidity": "Humidity",
+      "wind": "Wind"
+    },
+    "attention": {
+      "title": "Needs attention",
+      "none": "None",
+      "noActivityOn": "No activity on {{crop}}",
+      "lastDone": "last done",
+      "sinceSowing": "since sowing",
+      "allClear": "All clear",
+      "allClearHint": "Nothing overdue or idle."
+    },
+    "badge": {
+      "overdue": "Overdue {{days}}d",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "in2days": "In 2 days",
+      "idle": "{{days}} days"
+    },
+    "today": {
+      "title": "Today",
+      "doneOf": "{{done}} of {{total}} done",
+      "markDone": "Mark done: {{name}}",
+      "nothing": "Nothing planned for today."
+    },
+    "farm": {
+      "title": "Your farm",
+      "showing": "Showing {{shown}} of {{total}} crops",
+      "sownToday": "Sown today",
+      "toHarvest": "to harvest",
+      "expenses": "expenses",
+      "nothingPlanted": "Nothing planted yet",
+      "viewLand": "View land details",
+      "tapLand": "Tap a land",
+      "mapLabel": "Farm map with {{count}} lands",
+      "noCropYet": "No crop yet"
+    }
   }
 }
