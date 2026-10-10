@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="MyFarm">
+  <defs>
+    <clipPath id="disc"><circle cx="32" cy="32" r="28.5"/></clipPath>
+  </defs>
+  <circle cx="32" cy="32" r="30" fill="#ffffff"/>
+  <g clip-path="url(#disc)">
+    <circle cx="32" cy="41" r="11" fill="#f5b82e"/>
+    <rect x="0" y="41" width="64" height="6" fill="#5aa13a"/>
+    <rect x="0" y="47" width="64" height="20" fill="#7b4a2a"/>
+    <path d="M32 47 L24 58 M32 47 L40 58 M32 47 V60" stroke="#e0b27a" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+  </g>
+  <path d="M32 47 V35" stroke="#2f7a3f" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+  <path d="M32 36 C27 30 27 20 32 13 C37 20 37 30 32 36 Z" fill="#3d9a3a"/>
+  <path d="M31.5 40 C23 40 17 35 16 28 C25 28 31 32 31.5 40 Z" fill="#4eb046"/>
+  <path d="M32.5 40 C41 40 47 35 48 28 C39 28 33 32 32.5 40 Z" fill="#4eb046"/>
+  <circle cx="32" cy="32" r="29.5" fill="none" stroke="#2f7a3f" stroke-width="3"/>
+</svg>
