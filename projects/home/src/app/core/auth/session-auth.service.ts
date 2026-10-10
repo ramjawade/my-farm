@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { HttpService } from '../http/http.service';
+import { roleLabel } from '../api/farmer-profile-api.service';
 import { FarmerRegistrationData } from '../../features/farmer-registration/farmer-registration.models';
 import {
   FarmerResponse,
@@ -43,7 +44,7 @@ function mapFarmer(f: FarmerResponse): FarmerRegistrationData {
     phone: f.phone ?? '',
     email: f.email ?? undefined,
     preferredLanguage: f.preferred_language ?? 'en',
-    userRole: f.user_role ?? 'farmer',
+    userRole: roleLabel(f.user_role),
     // The backend Farmer row has no farm-setup fields — Farm is a separate
     // entity — so these stay at their empty defaults, exactly as
     // FarmerProfileApiService.mapFromBackendFarmer does.

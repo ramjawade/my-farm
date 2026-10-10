@@ -135,3 +135,19 @@ async def test_cross_tenant_cannot_view_other_farmer(
     assert response_a_again.status_code == 200
     assert response_a_again.json()["auth_uid"] == uid_a
     assert response_a_again.json()["id"] == farmer_a["id"]
+
+
+@pytest.mark.asyncio
+async def test_user_role_updates_and_validates(client: AsyncClient) -> None:
+    """A listed role saves and reads back; an unlisted one is rejected."""
+    uid = f"farmer_{uuid4()}"
+    headers = {"Authorization": "Bearer test"}
+    with patch.object(
+        firebase_auth, "verify_id_token", return_value={"uid": uid, "phone_number": None}
+    ):
+        await client.get("/api/v1/me", headers=headers)
+        ok = await client.patch("/api/v1/me", headers=headers, json={"user_role": "agronomist"})
+        assert ok.status_code == 200
+        assert (await client.get("/api/v1/me", headers=headers)).json()["user_role"] == "agronomist"
+        bad = await client.patch("/api/v1/me", headers=headers, json={"user_role": "admin"})
+        assert bad.status_code == 422

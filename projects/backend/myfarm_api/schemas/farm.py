@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from pydantic import BaseModel, Field
 
-from myfarm_api.schemas.common import Decimal10, Latitude, Longitude, Name, NonNullUpdate
+from myfarm_api.schemas.common import BodyId, Decimal10, Latitude, Longitude, Name, NonNullUpdate
 
 
 class FarmBase(BaseModel):
@@ -38,7 +38,7 @@ class FarmCreate(FarmBase):
 class FarmUpdate(NonNullUpdate):
     """Update farm fields."""
 
-    non_null = ("name", "area_unit")
+    non_null = ("name", "area_unit", "setup_completed", "crop_catalog_ids")
 
     name: Name | None = None
     area: Decimal10 | None = None
@@ -53,6 +53,8 @@ class FarmUpdate(NonNullUpdate):
     pincode: str | None = None
     lat: Latitude | None = None
     lng: Longitude | None = None
+    setup_completed: bool | None = None
+    crop_catalog_ids: list[BodyId] | None = None
 
 
 class FarmRead(FarmBase):
@@ -61,6 +63,7 @@ class FarmRead(FarmBase):
     id: int
     farmer_id: int
     setup_completed: bool
+    crop_catalog_ids: list[int] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime
     deleted_at: datetime | None = None
