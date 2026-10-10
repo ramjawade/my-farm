@@ -27,5 +27,5 @@
 - [x] 5.1 mr, hi and en strings; keep the translation check green
 - [x] 5.2 Update the Playwright golden path if it uses the old add-crop form or detail page
 - [x] 5.3 Run `npm run lint`, `npm run build` and `npm test`; fix findings
-- [ ] 5.4 Open the PR naming `crops-redesign`
-- [ ] 5.5 After the PR merges, archive this change and tick task 3.3 in `prototype-adoption-roadmap/tasks.md`
+- [x] 5.4 Open the PR naming `crops-redesign`
+- [x] 5.5 After the PR merges, archive this change and tick task 3.3 in `prototype-adoption-roadmap/tasks.md`
