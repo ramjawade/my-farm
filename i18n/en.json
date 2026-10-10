@@ -895,5 +895,48 @@
     "kharif": "Kharif",
     "rabi": "Rabi",
     "zaid": "Zaid"
+  },
+  "lands": {
+    "title": "Lands",
+    "subtitle": "{{count}} lands, {{area}} acres.",
+    "drawLand": "Draw land",
+    "allLands": "All lands",
+    "step1": "Draw boundary",
+    "step2": "Add details",
+    "saveLand": "Save land",
+    "landName": "Land name",
+    "nameRequired": "Enter a name for this land.",
+    "waterSourceOptional": "Water source (optional)",
+    "waterSource": "Water source",
+    "waterNotSet": "Not set",
+    "notesPlaceholder": "Soil, access road, water source",
+    "areaHint": "Area is calculated from the boundary you drew. You add crops to a land after saving it.",
+    "discard": "Discard",
+    "savedTitle": "{{name}} saved",
+    "savedMessage": "It is on your map. Add a crop to start tracking it.",
+    "addCrop": "Add crop",
+    "notNow": "Not now",
+    "nothingGrowing": "Nothing growing on {{name}}",
+    "nothingGrowingHint": "Plant a crop to start tracking its work and costs.",
+    "viewCropDetails": "View crop details",
+    "addAnotherCrop": "+ Add another crop",
+    "kpi": {
+      "area": "Area",
+      "crops": "Crops",
+      "expenses": "Total expenses",
+      "costPerAcre": "Cost per acre"
+    },
+    "editNotes": "Edit notes",
+    "actionsFor": "Actions for {{name}}",
+    "noLandsTitle": "No lands yet",
+    "noLandsHint": "Draw the boundary of your first field on the map. You add crops to it afterwards.",
+    "drawFirst": "Draw your first land",
+    "water": {
+      "Borewell": "Borewell",
+      "Canal": "Canal",
+      "River": "River",
+      "FarmPond": "Farm Pond",
+      "Rainfed": "Rainfed"
+    }
   }
 }
