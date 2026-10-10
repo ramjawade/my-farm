@@ -1,0 +1,13 @@
+<nav class="app-tabs d-flex" [attr.aria-label]="'shell.tabs' | translate">
+  @for (tab of tabs; track tab.key) {
+    <a
+      class="app-tabs__tab d-flex flex-column align-items-center justify-content-center flex-fill"
+      [class.active]="section() === tab.key"
+      [routerLink]="tab.link"
+      [attr.aria-current]="section() === tab.key ? 'page' : null"
+    >
+      <i class="bi {{ tab.icon }}" aria-hidden="true"></i>
+      <span>{{ tab.labelKey | translate }}</span>
+    </a>
+  }
+</nav>

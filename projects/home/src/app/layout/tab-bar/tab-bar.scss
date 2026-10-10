@@ -1,0 +1,32 @@
+.app-tabs {
+  height: var(--mf-tabbar-h);
+  padding-bottom: env(safe-area-inset-bottom);
+  background-color: var(--mf-surface);
+  border-top: 1px solid var(--mf-line);
+}
+
+.app-tabs__tab {
+  min-width: 0;
+  gap: 2px;
+  color: var(--mf-muted);
+  font-size: 0.6875rem;
+  text-decoration: none;
+
+  i {
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+
+  span {
+    max-width: 100%;
+    padding: 0 2px;
+    text-align: center;
+    overflow-wrap: anywhere;
+    line-height: 1.1;
+  }
+
+  &.active {
+    color: var(--mf-leaf-ink);
+    font-weight: 600;
+  }
+}

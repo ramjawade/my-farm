@@ -316,6 +316,11 @@
       </div>
     </div>
 
+    <button type="button" class="btn btn-outline-danger w-100 mb-4" (click)="signOut()">
+      <i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i
+      >{{ 'profile.signOut' | translate }}
+    </button>
+
     <!-- DIALOG COMPONENT FOR EDITING -->
     <app-profile-edit-dialog [section]="activeSection()" [(show)]="showEditDialog" />
   } @else {

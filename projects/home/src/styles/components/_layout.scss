@@ -250,3 +250,44 @@
   padding-top: 0.625rem !important;
   padding-bottom: 0.625rem !important;
 }
+
+// App shell: avatar chip, phone header and the skip link
+.app-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--mf-leaf);
+  color: var(--mf-on-leaf);
+  font-weight: 600;
+}
+
+.app-mobile-header {
+  min-height: 52px;
+  background-color: var(--mf-surface);
+  border-bottom: 1px solid var(--mf-line);
+
+  &__back {
+    width: 36px;
+    height: 36px;
+    color: var(--bs-body-color);
+  }
+}
+
+.app-skip-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: var(--mf-z-toast);
+  padding: 0.5rem 1rem;
+  background-color: var(--mf-surface);
+  color: var(--mf-leaf-ink);
+  transform: translateY(-120%);
+
+  &:focus {
+    transform: none;
+  }
+}

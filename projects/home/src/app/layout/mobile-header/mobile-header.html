@@ -1,0 +1,26 @@
+<header class="d-flex align-items-center gap-2 px-3 py-2 app-mobile-header">
+  @if (parentUrl(); as parent) {
+    <a
+      class="btn btn-link p-0 d-inline-flex align-items-center justify-content-center app-mobile-header__back"
+      [routerLink]="parent"
+      [attr.aria-label]="'shell.back' | translate"
+    >
+      <i class="bi bi-arrow-left fs-5" aria-hidden="true"></i>
+    </a>
+  } @else {
+    <a routerLink="/" class="d-inline-flex" aria-label="My Farm">
+      <app-brand-logo [size]="28" />
+    </a>
+  }
+  <h1 class="h6 fw-bold mb-0 flex-grow-1 text-truncate">
+    @if (titleKey(); as key) {
+      {{ key | translate }}
+    }
+  </h1>
+  <a
+    routerLink="/profile"
+    class="app-avatar text-decoration-none"
+    [attr.aria-label]="'shell.openProfile' | translate"
+    >{{ initials() }}</a
+  >
+</header>

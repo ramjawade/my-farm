@@ -1,15 +1,14 @@
 @if (!authService.initialized()) {
   <!-- Session restore in progress: avoid flashing the public layout -->
 } @else if (authService.isLoggedIn()) {
+  <a class="app-skip-link" href="#main-content" (click)="skipToContent($event)">{{
+    'shell.skip' | translate
+  }}</a>
   <div class="app-layout">
-    <app-toolbar [menuExpanded]="sidebarOpen()" (menuToggle)="toggleSidebar()" />
-    <div class="app-layout__body">
-      <app-sidebar [open]="sidebarOpen()" (close)="closeSidebar()" />
-      @if (sidebarOpen()) {
-        <div class="app-layout__backdrop" role="presentation" (click)="closeSidebar()"></div>
-      }
-      <app-main />
-    </div>
+    <app-sidebar class="app-layout__sidebar" />
+    <app-mobile-header class="app-layout__header" />
+    <app-main class="app-layout__main" />
+    <app-tab-bar class="app-layout__tabs" />
     <app-chat-bot-container />
   </div>
 } @else {

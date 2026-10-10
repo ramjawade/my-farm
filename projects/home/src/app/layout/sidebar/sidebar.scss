@@ -1,31 +1,43 @@
-@import '../../../styles/bootstrap-config';
-
 :host {
-  display: contents;
+  min-height: 0;
 }
 
 .app-sidebar {
-  grid-area: sidebar;
   background-color: var(--mf-surface2);
   border-right: 1px solid var(--mf-line);
   overflow-y: auto;
 }
 
-@include media-breakpoint-down(lg) {
-  .app-sidebar {
-    grid-area: auto !important;
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    z-index: $zindex-offcanvas;
-    width: $offcanvas-horizontal-width;
-    max-width: 85vw;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
+.app-sidebar__brand {
+  color: var(--mf-leaf-ink);
+}
 
-    &.open {
-      transform: translateX(0);
-    }
+.app-sidebar__link,
+.app-sidebar__who {
+  min-height: 44px;
+  color: var(--mf-muted);
+  text-decoration: none;
+
+  &:hover {
+    background-color: var(--mf-surface);
   }
+
+  &.active {
+    background-color: var(--mf-leaf-soft);
+    color: var(--mf-leaf-ink);
+    font-weight: 600;
+  }
+}
+
+.app-sidebar__who {
+  border: 1px solid var(--mf-line);
+  background-color: var(--mf-surface);
+
+  small {
+    color: var(--mf-muted);
+  }
+}
+
+.min-w-0 {
+  min-width: 0;
 }

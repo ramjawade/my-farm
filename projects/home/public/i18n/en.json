@@ -52,7 +52,8 @@
     "landsCount": "{{count}} lands",
     "confirmDeleteAgronomic": "Are you sure you want to delete and reset your Agronomic Settings?",
     "confirmDeleteLand": "Are you sure you want to delete and reset your Land & Location settings?",
-    "confirmDeleteOperations": "Are you sure you want to delete and reset your Operational Settings?"
+    "confirmDeleteOperations": "Are you sure you want to delete and reset your Operational Settings?",
+    "signOut": "Sign out"
   },
   "home": {
     "greeting": {
@@ -484,22 +485,6 @@
     "notes": "Notes",
     "noNotesHint": "No notes yet. Click the edit icon to add soil type, irrigation info, or lease details."
   },
-  "toolbar": {
-    "toggleMenu": "Toggle navigation menu",
-    "myProfile": "My Profile",
-    "settings": "Settings",
-    "logout": "Logout",
-    "comingSoon": "Coming soon"
-  },
-  "sidebar": {
-    "home": "Home",
-    "lands": "Lands",
-    "crops": "Crops",
-    "activities": "Activities",
-    "weather": "Weather",
-    "reports": "Reports",
-    "profile": "Profile"
-  },
   "onboardingChecklist": {
     "title": "Set up your farm",
     "stepsDone": "{{done}} of {{total}} steps done",
@@ -580,6 +565,37 @@
       "cancel": "Cancel",
       "save": "Save entry",
       "saveFailed": "Couldn't save that entry. Please try again."
+    }
+  },
+  "shell": {
+    "skip": "Skip to content",
+    "mainNav": "Main navigation",
+    "tabs": "Sections",
+    "openProfile": "Open profile",
+    "back": "Back",
+    "nav": {
+      "home": "Home",
+      "lands": "Lands",
+      "crops": "Crops",
+      "activity": "Activity",
+      "reports": "Reports",
+      "weather": "Weather"
+    },
+    "title": {
+      "home": "Home",
+      "login": "Sign in",
+      "lands": "Lands",
+      "weather": "Weather",
+      "profile": "Profile",
+      "crops": "Crops",
+      "addCrop": "Add crop",
+      "cropDetail": "Crop detail",
+      "activityList": "All activities",
+      "logActivity": "Log activity",
+      "activity": "Activity",
+      "activityDetail": "Activity detail",
+      "reports": "Reports",
+      "notFound": "Page not found"
     }
   }
 }

@@ -87,6 +87,19 @@ describe('ProfileComponent', () => {
     expect(compiled.textContent).toContain('Wheat');
   });
 
+  it('signs the farmer out from the Sign out button', () => {
+    const logout = spyOn(authService, 'logout');
+    const button = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>(
+        'button.btn-outline-danger',
+      ),
+    ).find((b) => b.textContent?.includes('profile.signOut'));
+
+    expect(button).toBeDefined();
+    button!.click();
+    expect(logout).toHaveBeenCalled();
+  });
+
   it('should set section and show dialog to true when openEditDialog is called', () => {
     expect(component.showEditDialog()).toBeFalse();
 
