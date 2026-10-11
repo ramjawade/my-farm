@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection, signal } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
 import { provideRouter, Router } from '@angular/router';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
@@ -53,6 +54,7 @@ describe('ActivityListComponent', () => {
       imports: [ActivityListComponent],
       providers: [
         provideZonelessChangeDetection(),
+        provideHttpClient(),
         provideRouter([]),
         provideTranslateService(),
         { provide: ActivatedRoute, useValue: { queryParams, paramMap } },
@@ -61,8 +63,8 @@ describe('ActivityListComponent', () => {
           provide: ActivityService,
           useValue: {
             activities: signal([]),
+            expenses: signal([]),
             getTotalExpenseForActivity: () => 0,
-            deleteActivity: jasmine.createSpy('deleteActivity'),
           },
         },
         { provide: CropTimelineService, useValue: { crops: signal([]) } },
@@ -168,15 +170,82 @@ describe('ActivityListComponent', () => {
     expect(component.error()).toBeNull();
   });
 
-  it('optimistically removes an activity from the local list on delete', async () => {
+  it('renders a row per activity and opens one', async () => {
+    setup();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    spyOn(TestBed.inject(Router), 'navigate');
+
+    const rows = (fixture.nativeElement as HTMLElement).querySelectorAll('app-activity-row button');
+    expect(rows.length).toBe(1);
+    (rows[0] as HTMLButtonElement).click();
+
+    expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith(['/activities', 1]);
+  });
+
+  it('shows the tiles and the season expenses card', async () => {
+    setup();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(text).toContain('activityLogScreen.totalExpenses');
+    expect(text).toContain('activityLogScreen.seasonExpenses');
+    expect(component.tiles().total).toBe(0);
+  });
+
+  it('lists the filters that are on as chips, without counting the sort', async () => {
     setup();
     fixture.detectChanges();
     await fixture.whenStable();
 
-    component.selectedActivityId.set(mockActivity.id);
-    component.confirmDeleteActivity();
+    component.seasonFilter.set('Kharif');
+    component.sortBy.set('cost');
 
-    expect(component.activities().length).toBe(0);
+    expect(component.chips().map((c) => c.key)).toEqual(['season']);
+    expect(component.filtersOn()).toBeTrue();
+  });
+
+  it('removing a chip refetches without that filter', async () => {
+    setup();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    component.setSeason('Kharif');
+    await fixture.whenStable();
+    loadSpy.calls.reset();
+
+    component.onFilterChange({ key: 'season', value: 'All' });
+    await fixture.whenStable();
+
+    expect(component.seasonFilter()).toBe('All');
+    expect(loadSpy).toHaveBeenCalledWith(noFilters);
+  });
+
+  it('says no activities match when filters leave nothing', async () => {
+    loadSpy.and.resolveTo(page([]));
+    setup();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    component.seasonFilter.set('Kharif');
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      'activityLogScreen.noMatch',
+    );
+  });
+
+  it('offers to log an activity when there are none and no filters', async () => {
+    loadSpy.and.resolveTo(page([]));
+    setup();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      'activityLogScreen.emptyTitle',
+    );
   });
 
   it('re-fetches when the manual crop filter changes', async () => {
@@ -206,7 +275,7 @@ describe('ActivityListComponent', () => {
     const loadMoreButton = (): HTMLButtonElement | null =>
       (fixture.nativeElement as HTMLElement).querySelector('button[aria-busy]');
     const cards = (): number =>
-      (fixture.nativeElement as HTMLElement).querySelectorAll('.card-interactive').length;
+      (fixture.nativeElement as HTMLElement).querySelectorAll('app-activity-row').length;
 
     it('renders only the first page and offers Load more', async () => {
       await openWithMore();

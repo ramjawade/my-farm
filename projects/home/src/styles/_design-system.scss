@@ -40,3 +40,8 @@ h6,
 .h6 {
   font-family: var(--mf-font-display);
 }
+
+// Lets a flex child shrink below its content so text-truncate works.
+.min-w-0 {
+  min-width: 0;
+}

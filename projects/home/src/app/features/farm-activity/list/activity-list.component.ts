@@ -1,4 +1,4 @@
-import { LocalDatePipe, LocalNumberPipe } from '../../../core/i18n/localized.pipes';
+import { LocalNumberPipe } from '../../../core/i18n/localized.pipes';
 import {
   Component,
   inject,
@@ -10,33 +10,35 @@ import {
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
-import { CommonModule } from '@angular/common';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ActivityService } from '../../activity/activity.service';
-import { ReferenceNamePipe } from '../../../core/i18n/reference-name.pipe';
+import { I18n } from '../../../core/i18n/i18n.service';
+import { resolveReferenceName } from '../../../core/i18n/reference-name';
 import { ActivityListFilters, ActivityListService } from './activity-list.service';
 import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
 import { SavedFarm } from '../../../map/models/map.models';
 import { AuthService } from '../../../core/auth/auth.service';
-import { Activity, ActivityType } from '../../activity/activity.models';
-import { ConfirmDialogComponent, ToastService } from 'shared';
-import { activityTypeEmoji } from '../../activity/activity-display';
+import { Activity } from '../../activity/activity.models';
+import { activityStatusKey } from '../../activity/activity-status';
 import { ReferenceDataService } from '../../../core/api/reference-data.service';
 import { ReferenceItem } from '../../../core/api/contracts';
 import { parseId } from '../../../core/models/entity-id';
+import { logTiles, seasonByCategory } from './activity-log-summary';
+import { ActivityFilterBarComponent, FilterChip, FilterKey } from './activity-filter-bar.component';
+import { ActivityRowComponent } from './activity-row.component';
+import { ActivitySeasonExpensesComponent } from './activity-season-expenses.component';
 
 @Component({
   selector: 'app-activity-list',
   standalone: true,
   imports: [
-    LocalDatePipe,
     LocalNumberPipe,
     RouterLink,
-    CommonModule,
-    ConfirmDialogComponent,
     TranslatePipe,
-    ReferenceNamePipe,
+    ActivityFilterBarComponent,
+    ActivityRowComponent,
+    ActivitySeasonExpensesComponent,
   ],
   templateUrl: './activity-list.component.html',
   styleUrl: './activity-list.component.scss',
@@ -45,7 +47,7 @@ import { parseId } from '../../../core/models/entity-id';
 export class ActivityListComponent implements OnInit {
   readonly activityService = inject(ActivityService);
   private readonly activityListService = inject(ActivityListService);
-  private readonly toast = inject(ToastService);
+  private readonly i18n = inject(I18n);
   private readonly translate = inject(TranslateService);
   private readonly cropService = inject(CropTimelineService);
   private readonly farmDrawService = inject(FarmDrawService);
@@ -79,9 +81,25 @@ export class ActivityListComponent implements OnInit {
   // Bumped on every reload/loadMore so a response that arrives after a newer request is dropped.
   private requestToken = 0;
 
-  readonly showDeleteConfirm = signal(false);
-  readonly selectedActivityId = signal<number | null>(null);
-  readonly viewMode = signal<'grid' | 'list'>('grid');
+  /** The moment the screen's season numbers are worked out for. */
+  readonly now = signal(Date.now());
+
+  readonly tiles = computed(() =>
+    logTiles(this.activityService.activities(), this.activityService.expenses(), this.now()),
+  );
+
+  readonly seasonRows = computed(() =>
+    seasonByCategory(
+      this.activityService.expenses(),
+      (id) =>
+        resolveReferenceName(
+          this.translate,
+          'expense',
+          this.referenceDataService.expenseCategoryName(id),
+        ),
+      this.now(),
+    ),
+  );
 
   // Server-driven filters — changing these triggers reload().
   readonly statusFilter = signal<string>('All');
@@ -120,6 +138,58 @@ export class ActivityListComponent implements OnInit {
       this.sortBy() !== 'latest'
     );
   });
+
+  /** The filters that are on (not the sort), as chips for the filter bar. */
+  readonly chips = computed<FilterChip[]>(() => {
+    const t = (key: string) => this.i18n.t(key);
+    const chips: FilterChip[] = [];
+    if (this.seasonFilter() !== 'All') {
+      chips.push({
+        key: 'season',
+        label: t('activityList.season'),
+        value: resolveReferenceName(this.translate, 'season', this.seasonFilter()),
+      });
+    }
+    if (this.cropFilter() !== 'All') {
+      chips.push({
+        key: 'crop',
+        label: t('activityList.linkedCrop'),
+        value: resolveReferenceName(this.translate, 'crop', this.cropFilterName()),
+      });
+    }
+    if (this.fieldFilter() !== 'All') {
+      chips.push({
+        key: 'field',
+        label: t('activityList.fieldPlot'),
+        value: this.fieldFilterName(),
+      });
+    }
+    if (this.typeFilter() !== 'All') {
+      chips.push({
+        key: 'type',
+        label: t('activityList.activityType'),
+        value: resolveReferenceName(this.translate, 'activity', this.typeFilter()),
+      });
+    }
+    if (this.statusFilter() !== 'All') {
+      const status = this.statusFilter();
+      chips.push({
+        key: 'status',
+        label: t('activityList.status'),
+        value: t(
+          status === 'Upcoming'
+            ? 'activityList.statusUpcoming'
+            : activityStatusKey(status as never),
+        ),
+      });
+    }
+    return chips;
+  });
+
+  /** True when a filter (not just the sort) narrows the list. */
+  readonly filtersOn = computed(() => this.chips().length > 0);
+
+  readonly cropOptions = computed(() => this.cropsList().map((c) => ({ id: c.id, name: c.name })));
 
   // Fetch dropdown lists dynamically
   readonly cropsList = computed(() => this.cropService.crops());
@@ -306,28 +376,25 @@ export class ActivityListComponent implements OnInit {
     if (!paramsChange) void this.reload();
   }
 
-  typeName(activityTypeId: number): string {
-    return this.referenceDataService.activityTypeName(activityTypeId);
-  }
-
-  getActivityEmoji(activityTypeId: number): string {
-    return activityTypeEmoji(this.typeName(activityTypeId) as ActivityType);
-  }
-
-  onDeleteActivityClick(id: number, event: Event): void {
-    event.stopPropagation();
-    event.preventDefault();
-    this.selectedActivityId.set(id);
-    this.showDeleteConfirm.set(true);
-  }
-
-  confirmDeleteActivity(): void {
-    const id = this.selectedActivityId();
-    if (id) {
-      this.activityService.deleteActivity(id);
-      this.activities.update((acts) => acts.filter((a) => a.id !== id));
-      this.toast.success(this.translate.instant('activityList.deletedToast'));
-      this.selectedActivityId.set(null);
+  /** Routes a change from the filter bar to the setter of that filter. */
+  onFilterChange(change: { key: FilterKey; value: string }): void {
+    switch (change.key) {
+      case 'season':
+        return this.setSeason(change.value);
+      case 'crop':
+        return this.setCrop(change.value);
+      case 'field':
+        return this.setField(change.value);
+      case 'type':
+        return this.setType(change.value);
+      case 'status':
+        return this.setStatus(change.value);
+      case 'sort':
+        return this.setSort(change.value);
     }
+  }
+
+  openActivity(activity: Activity): void {
+    void this.router.navigate(['/activities', activity.id]);
   }
 }
