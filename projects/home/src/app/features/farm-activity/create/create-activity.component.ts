@@ -22,8 +22,11 @@ import { WorkflowStateService } from '../../../core/workflow/workflow-state.serv
 import { ReferenceDataService } from '../../../core/api/reference-data.service';
 import { ReferenceItem } from '../../../core/api/contracts';
 import { parseId } from '../../../core/models/entity-id';
-import { Activity } from '../../activity/activity.models';
-import { ComboboxComponent, ToastService } from 'shared';
+import { Activity, ActivityType } from '../../activity/activity.models';
+import { ACTIVITY_STATUS_OPTIONS, ACTIVITY_TYPE_OPTIONS } from '../../activity/activity.constants';
+import { activityTypeIcon } from '../../activity/activity-display';
+import { activityStatusKey, statusForDate } from '../../activity/activity-status';
+import { ToastService } from 'shared';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ReferenceNamePipe } from '../../../core/i18n/reference-name.pipe';
 import { resolveReferenceName } from '../../../core/i18n/reference-name';
@@ -31,14 +34,7 @@ import { resolveReferenceName } from '../../../core/i18n/reference-name';
 @Component({
   selector: 'app-create-activity',
   standalone: true,
-  imports: [
-    LocalDatePipe,
-    CommonModule,
-    ReactiveFormsModule,
-    ComboboxComponent,
-    TranslatePipe,
-    ReferenceNamePipe,
-  ],
+  imports: [LocalDatePipe, CommonModule, ReactiveFormsModule, TranslatePipe, ReferenceNamePipe],
   templateUrl: './create-activity.component.html',
   styleUrl: './create-activity.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -72,6 +68,7 @@ export class CreateActivityComponent implements OnInit {
     date: [new Date().toISOString().substring(0, 10), Validators.required],
     season: ['Kharif', Validators.required],
     type: ['', Validators.required],
+    customName: [''],
     cropId: [null as number | null],
     fieldId: [null as number | null],
     parentActivityId: [null as number | null],
@@ -106,14 +103,41 @@ export class CreateActivityComponent implements OnInit {
 
   // Populate dropdowns from services
   readonly crops = this.cropService.crops;
+  readonly statusOptions = ACTIVITY_STATUS_OPTIONS;
+
+  /** True once the farmer picks a status; until then the date decides it. */
+  private statusTouched = false;
   readonly savedFarms = signal<SavedFarm[]>([]);
 
   readonly selectedCropId = signal<number | null>(null);
   readonly saving = signal(false);
 
-  // Real activity-type reference data, backing the "Activity Name / Type" combobox.
+  // Real activity-type reference data, shown as chips: the standard types in their usual
+  // order, any the farmer added before them, and Custom last.
   readonly referenceActivityTypes = signal<ReferenceItem[]>([]);
-  readonly activityTypeNames = computed(() => this.referenceActivityTypes().map((t) => t.name));
+  readonly typeChips = computed(() => {
+    const order = ACTIVITY_TYPE_OPTIONS.map((o) => o.value as string);
+    const rank = (name: string) => (name === 'Custom' ? 1000 : order.indexOf(name));
+    return [...this.referenceActivityTypes()].sort((a, b) => {
+      const ra = rank(a.name);
+      const rb = rank(b.name);
+      return (ra < 0 ? 500 : ra) - (rb < 0 ? 500 : rb);
+    });
+  });
+  private readonly selectedType = signal('');
+  readonly isCustomType = computed(() => this.selectedType() === 'Custom');
+
+  iconFor(name: string): string {
+    return activityTypeIcon(name as ActivityType);
+  }
+
+  statusKey = activityStatusKey;
+
+  onStatusPicked(): void {
+    this.statusTouched = true;
+  }
+
+  readonly today = new Date().toISOString().substring(0, 10);
 
   readonly uploadedImages = signal<string[]>([]);
 
@@ -160,6 +184,7 @@ export class CreateActivityComponent implements OnInit {
       }
       if (routeActivityId) {
         this.activityId = routeActivityId;
+        this.statusTouched = true;
       }
       if (routeFieldId) {
         this.form.patchValue({ fieldId: routeFieldId });
@@ -196,6 +221,14 @@ export class CreateActivityComponent implements OnInit {
       }
     }
 
+    this.form.get('type')!.valueChanges.subscribe((name: string) => this.selectedType.set(name));
+    this.selectedType.set(this.form.get('type')?.value ?? '');
+    this.form.get('date')!.valueChanges.subscribe((date: string) => {
+      if (!this.statusTouched && date) {
+        this.form.patchValue({ status: statusForDate(date, this.today) });
+      }
+    });
+
     // Subscribe to form cropId changes to update the signal reactively.
     // The land is derived from the crop (an activity can't be on a crop in one
     // land and a different land), so the field control follows the crop.
@@ -221,17 +254,19 @@ export class CreateActivityComponent implements OnInit {
     if (fieldControl.enabled) fieldControl.disable({ emitEvent: false });
   }
 
-  /** New activity type typed into the combobox — persist it and reload the dropdown. */
-  async onTypeAdded(name: string): Promise<void> {
-    try {
-      const created = await this.referenceDataService.createActivityType(name);
-      this.referenceActivityTypes.update((list) =>
-        list.some((t) => t.id === created.id) ? list : [...list, created],
-      );
-      this.form.patchValue({ type: created.name });
-    } catch {
-      this.toast.error(this.translate.instant('createActivity.saveTypeError'));
-    }
+  /**
+   * The type name to save. A Custom activity is saved under the name the farmer typed,
+   * creating that type the first time it is used.
+   */
+  private async resolveTypeName(): Promise<string> {
+    const val = this.form.getRawValue();
+    if (val.type !== 'Custom') return val.type.trim();
+    const name = val.customName.trim();
+    const known = this.referenceActivityTypes().find((t) => t.name === name);
+    if (known) return known.name;
+    const created = await this.referenceDataService.createActivityType(name);
+    this.referenceActivityTypes.update((list) => [...list, created]);
+    return created.name;
   }
 
   onImageSelected(event: Event): void {
@@ -254,8 +289,10 @@ export class CreateActivityComponent implements OnInit {
   }
 
   async onSubmit(): Promise<void> {
-    if (this.form.invalid) {
+    const customMissing = this.isCustomType() && !this.form.get('customName')?.value?.trim();
+    if (this.form.invalid || customMissing) {
       this.form.markAllAsTouched();
+      this.form.get('customName')?.setErrors(customMissing ? { required: true } : null);
       return;
     }
     if (this.saving()) return;
@@ -280,7 +317,7 @@ export class CreateActivityComponent implements OnInit {
       updates['fieldId'] = val.fieldId || undefined;
       try {
         updates['activityTypeId'] = await this.referenceDataService.activityTypeIdForName(
-          val.type.trim(),
+          await this.resolveTypeName(),
         );
       } catch {
         this.toast.error(this.translate.instant('createActivity.saveError'));
@@ -300,7 +337,9 @@ export class CreateActivityComponent implements OnInit {
         newAct = await this.activityService.addActivity({
           date: val.date ? new Date(val.date).getTime() : Date.now(),
           season: val.season,
-          activityTypeId: await this.referenceDataService.activityTypeIdForName(val.type.trim()),
+          activityTypeId: await this.referenceDataService.activityTypeIdForName(
+            await this.resolveTypeName(),
+          ),
           cropId: val.cropId || undefined,
           fieldId: val.fieldId || undefined,
           status: val.status,

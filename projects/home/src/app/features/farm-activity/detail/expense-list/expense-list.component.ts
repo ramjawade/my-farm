@@ -13,10 +13,12 @@ import { ConfirmDialogComponent, ToastService } from 'shared';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ActivityExpensesService } from '../activity-expenses.service';
 import { ActivityExpense } from '../../../activity/activity.models';
-import { expenseCategoryIcon } from '../../../activity/activity-display';
 import { ReferenceNamePipe } from '../../../../core/i18n/reference-name.pipe';
 import { ReferenceDataService } from '../../../../core/api/reference-data.service';
 
+const SPLIT_TONES = ['success', 'warning', 'info', 'danger', 'primary', 'secondary'];
+
+/** The activity's expenses: the total, a split bar and a row per expense. */
 @Component({
   selector: 'app-expense-list',
   standalone: true,
@@ -63,8 +65,18 @@ export class ExpenseListComponent implements OnInit {
     return this.referenceData.expenseCategoryName(expenseCategoryId);
   }
 
-  getCategoryIcon(expenseCategoryId: number): string {
-    return expenseCategoryIcon(this.categoryName(expenseCategoryId) as any);
+  total(): number {
+    return this.expenses.reduce((sum, e) => sum + e.amount, 0);
+  }
+
+  percent(expense: ActivityExpense): number {
+    const total = this.total();
+    return total ? Math.round((expense.amount / total) * 100) : 0;
+  }
+
+  /** Bootstrap colour of the i-th slice in the split bar. */
+  tone(index: number): string {
+    return SPLIT_TONES[index % SPLIT_TONES.length];
   }
 
   deleteExpense(expenseId: number): void {

@@ -14,156 +14,114 @@
       }}</a>
     </div>
   } @else if (activity(); as act) {
-    <!-- Dashboard Header panel -->
-    <header
-      class="detail-header mf-header-pacing sticky-header d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 mb-4 border-bottom pb-3"
+    <!-- Header: title with status badge, meta line, and the actions for this status -->
+    <a
+      routerLink="/activities/list"
+      class="d-inline-flex align-items-center text-decoration-none small mb-2"
+      style="gap: 4px"
     >
-      <!-- Title on the Left -->
-      <div class="text-start">
-        <div class="d-flex flex-wrap align-items-center gap-3">
-          <h2 class="mf-page-title">{{ act.activityTypeId | referenceName: 'activity' }}</h2>
-          <div class="d-flex flex-wrap gap-2 align-items-center">
-            <span class="badge bg-success"
-              >{{ act.season | referenceName: 'season' }}
-              {{ 'activityDetail.season' | translate }}</span
-            >
-            @if (act.cropId) {
-              <a
-                [routerLink]="['/crops', act.cropId]"
-                class="badge bg-success-light text-success-dark text-decoration-none"
-              >
-                <i class="bi bi-flower1 me-1"></i>{{ cropName() | referenceName: 'crop' }}
-              </a>
-            }
-            @if (act.fieldId) {
-              <span class="badge bg-info">
-                <i class="bi bi-geo-alt me-1"></i>{{ fieldName() }}
-              </span>
-            }
-          </div>
-        </div>
-        <div class="d-flex flex-wrap gap-3 mt-2 font-sans text-muted small">
-          <span>
-            <i class="bi bi-calendar-check me-1"></i>
-            {{ 'activityDetail.performedOn' | translate }}:
-            <strong class="text-soil">{{ act.date | localDate: 'dd MMM yyyy' }}</strong>
-          </span>
-          <span>
-            <i class="bi bi-clock me-1"></i> {{ 'activityDetail.recorded' | translate }}:
-            <strong class="text-soil">{{ act.createdAt | localDate: 'dd MMM yyyy HH:mm' }}</strong>
-          </span>
-          <span>
-            <i class="bi bi-arrow-repeat me-1"></i> {{ 'activityDetail.updated' | translate }}:
-            <strong class="text-soil">{{ act.updatedAt | localDate: 'dd MMM yyyy HH:mm' }}</strong>
-          </span>
-        </div>
+      <i class="bi bi-chevron-left" aria-hidden="true"></i>
+      {{ 'activityDetail.backToList' | translate }}
+    </a>
+    <header
+      class="d-flex flex-column flex-md-row justify-content-between align-items-md-start"
+      style="gap: 12px; padding-bottom: 12px"
+    >
+      <div class="min-w-0">
+        <h1 class="h4 mb-1 d-flex flex-wrap align-items-center" style="gap: 10px">
+          {{ act.activityTypeId | referenceName: 'activity' }}
+          <span class="badge text-bg-{{ statusTone() }}">{{ statusKey() | translate }}</span>
+        </h1>
+        <p class="text-body-secondary mb-0">
+          {{ act.date | localDate: 'dd MMM yyyy' }}
+          @if (act.fieldId) {
+            · {{ fieldName() }}
+          }
+          @if (act.cropId) {
+            ·
+            <a [routerLink]="['/crops', act.cropId]" class="text-decoration-none">{{
+              cropName() | referenceName: 'crop'
+            }}</a>
+          }
+          · {{ act.season | referenceName: 'season' }}
+        </p>
       </div>
-
-      <!-- Buttons on the Right -->
-      <div class="d-flex gap-2 text-end">
-        <button
-          type="button"
-          class="btn btn-outline-danger d-none d-md-inline-flex align-items-center gap-2 px-3 py-2 ms-auto"
-          style="white-space: nowrap"
-          (click)="deleteActivity()"
-        >
-          <i class="bi bi-trash-fill"></i> {{ 'activityList.deleteActivity' | translate }}
+      <div class="d-flex flex-wrap" style="gap: 8px">
+        @if (actions().markDone) {
+          <button type="button" class="btn btn-primary" (click)="updateStatus('Completed')">
+            {{ 'activityDetail.markDone' | translate }}
+          </button>
+        }
+        @if (actions().start) {
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            (click)="updateStatus('In Progress')"
+          >
+            {{ 'activityDetail.start' | translate }}
+          </button>
+        }
+        @if (actions().restore) {
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            (click)="updateStatus('Scheduled')"
+          >
+            {{ 'activityDetail.restore' | translate }}
+          </button>
+        }
+        <button type="button" class="btn btn-outline-secondary" (click)="editActivity()">
+          {{ 'activityDetail.edit' | translate }}
         </button>
-        <a
-          routerLink="/activities/list"
-          class="btn btn-secondary d-none d-md-inline-flex align-items-center gap-2 px-3 py-2 ms-auto"
-          style="white-space: nowrap"
-        >
-          <i class="bi bi-arrow-left"></i> {{ 'activityDetail.backToList' | translate }}
-        </a>
+        @if (actions().cancel) {
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            (click)="updateStatus('Cancelled')"
+          >
+            {{ 'activityDetail.cancelActivity' | translate }}
+          </button>
+        }
+        <button type="button" class="btn btn-outline-danger" (click)="deleteActivity()">
+          {{ 'activityList.deleteActivity' | translate }}
+        </button>
       </div>
     </header>
 
-    <!-- Summary Card -->
-    @if (summary(); as sum) {
-      <div class="card mb-4">
-        <div class="card-body py-2 py-md-4">
-          <div class="row text-center align-items-center">
-            <div class="col-12 col-md-4 summary-col">
-              <div class="mf-meta-label mb-1">{{ 'activityList.totalExpense' | translate }}</div>
-              <div class="total font-sans">₹{{ sum.totalExpense | localNumber }}</div>
-            </div>
-            <div class="col-12 col-md-4 summary-col">
-              <div class="mf-meta-label mb-1">{{ 'activityDetail.expenseItems' | translate }}</div>
-              <h3 class="m-0 font-sans fw-bold text-soil">{{ sum.expenseCount }}</h3>
-            </div>
-            <div
-              class="col-12 col-md-4 summary-col d-flex flex-column align-items-center justify-content-center"
+    <div class="row g-3">
+      <div class="col-12" [class.col-md-6]="act.notes">
+        <section class="card h-100">
+          <h2 class="fs-6 fw-bold d-flex justify-content-between align-items-center mb-2">
+            {{ 'activityDetail.expenseDetails' | translate }}
+            <button
+              type="button"
+              class="btn btn-sm btn-primary d-none d-md-inline-flex"
+              (click)="openExpenseModal()"
             >
-              <div class="mf-meta-label mb-1">{{ 'activityList.status' | translate }}</div>
-              <h5
-                class="m-0 font-sans fw-bold"
-                [class.text-success]="act.status === 'Completed'"
-                [class.text-warning]="act.status === 'In Progress'"
-                [class.text-secondary]="act.status === 'Draft'"
-              >
-                {{ act.status | referenceName: 'status' }}
-              </h5>
-
-              <div class="status-transitions d-flex gap-2 justify-content-center">
-                @if (act.status === 'Draft') {
-                  <button
-                    type="button"
-                    class="btn btn-outline-warning"
-                    (click)="updateStatus('In Progress')"
-                  >
-                    <i class="bi bi-play-fill"></i> {{ 'activityDetail.startProgress' | translate }}
-                  </button>
-                } @else if (act.status === 'In Progress') {
-                  <button type="button" class="btn btn-secondary" (click)="updateStatus('Draft')">
-                    <i class="bi bi-arrow-left-short"></i>
-                    {{ 'activityDetail.revertToDraft' | translate }}
-                  </button>
-                  <button type="button" class="btn btn-success" (click)="updateStatus('Completed')">
-                    <i class="bi bi-check-lg"></i> {{ 'activityDetail.complete' | translate }}
-                  </button>
-                } @else if (act.status === 'Completed') {
-                  <button
-                    type="button"
-                    class="btn btn-outline-warning"
-                    (click)="updateStatus('In Progress')"
-                  >
-                    <i class="bi bi-arrow-counterclockwise"></i>
-                    {{ 'activityDetail.reopen' | translate }}
-                  </button>
-                }
-              </div>
-            </div>
-          </div>
-        </div>
+              + {{ 'activityDetail.addExpense' | translate }}
+            </button>
+          </h2>
+          <app-expense-list [activityId]="act.id" (changed)="onExpenseChanged()"></app-expense-list>
+        </section>
       </div>
-    }
 
-    <!-- Notes the farmer wrote when recording the activity -->
-    @if (act.notes) {
-      <div class="card mb-4">
-        <div class="card-body">
-          <div class="mf-meta-label mb-1">{{ 'activityDetail.notes' | translate }}</div>
-          <p class="mb-0 text-break" style="white-space: pre-line">{{ act.notes }}</p>
+      @if (act.notes) {
+        <div class="col-12 col-md-6">
+          <section class="card h-100">
+            <h2 class="fs-6 fw-bold mb-2">{{ 'activityDetail.notes' | translate }}</h2>
+            <p class="mb-0 text-break" style="white-space: pre-line">{{ act.notes }}</p>
+          </section>
         </div>
-      </div>
-    }
+      }
 
-    <div class="row g-4">
-      <!-- Left Column: History -->
-      <div class="col-12 col-lg-4">
-        <div class="card card-glass p-4">
-          <h5 class="mb-4 font-sans fw-bold text-soil">
-            <i class="bi bi-clock-history text-success me-2"></i
-            >{{ 'activityDetail.activityHistory' | translate }}
-          </h5>
+      <div class="col-12">
+        <section class="card">
+          <h2 class="fs-6 fw-bold mb-3">{{ 'activityDetail.activityHistory' | translate }}</h2>
           <div class="timeline">
             @for (evt of history(); track evt.id) {
               <div class="timeline-item">
-                <h6 class="m-0 font-sans fw-bold text-soil">
-                  {{ evt.eventType | referenceName: 'historyEvent' }}
-                </h6>
-                <div class="text-secondary small mt-1 font-sans">
+                <h6 class="m-0 fw-bold">{{ evt.eventType | referenceName: 'historyEvent' }}</h6>
+                <div class="text-secondary small mt-1">
                   {{ evt.createdAt | localDate: 'dd MMM hh:mm a' }}
                 </div>
               </div>
@@ -171,27 +129,7 @@
               <p class="text-muted small mb-0">{{ 'activityDetail.noHistory' | translate }}</p>
             }
           </div>
-        </div>
-      </div>
-
-      <!-- Right Column: Expenses -->
-      <div class="col-12 col-lg-8 d-flex flex-column gap-4">
-        <div>
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="m-0 font-sans fw-bold text-soil">
-              {{ 'activityDetail.expenseDetails' | translate }}
-            </h5>
-            <button
-              type="button"
-              class="btn btn-primary btn-sm py-2 px-3 d-none d-md-inline-block"
-              (click)="openExpenseModal()"
-            >
-              <i class="bi bi-plus-circle me-1"></i> {{ 'activityDetail.addExpense' | translate }}
-            </button>
-          </div>
-
-          <app-expense-list [activityId]="act.id" (changed)="onExpenseChanged()"></app-expense-list>
-        </div>
+        </section>
       </div>
     </div>
 
@@ -239,16 +177,6 @@
       [title]="'activityDetail.addExpense' | translate"
     >
       <i class="bi bi-plus-lg"></i>
-    </button>
-
-    <!-- Delete Activity FAB - MOBILE ONLY -->
-    <button
-      type="button"
-      class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-danger fab-stack-3"
-      (click)="deleteActivity()"
-      [title]="'activityList.deleteActivity' | translate"
-    >
-      <i class="bi bi-trash"></i>
     </button>
 
     <!-- Confirm Delete Activity Dialog -->

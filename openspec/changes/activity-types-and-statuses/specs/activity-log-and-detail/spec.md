@@ -61,7 +61,7 @@ Delete SHALL ask for confirmation before removing the activity and its expenses,
 - **THEN** the activity remains
 
 ### Requirement: Expenses on the activity page
-The activity page SHALL show an Expenses card with the total, the number of expenses, a bar split by category, and a row per expense with its category, share, amount and Edit and Delete actions, plus a "+ Add expense" button. With none, it SHALL say no expenses are recorded. Notes SHALL show in a separate card when present.
+The activity page SHALL show an Expenses card with the total, the number of expenses, a bar split by category, and a row per expense with its category, share, amount and a Delete action, plus a "+ Add expense" button. With none, it SHALL say no expenses are recorded. Notes SHALL show in a separate card when present.
 
 #### Scenario: Split
 - **WHEN** an activity has Labour ₹600 and Fuel ₹400

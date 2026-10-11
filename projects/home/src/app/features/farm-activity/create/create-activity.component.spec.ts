@@ -168,25 +168,73 @@ describe('CreateActivityComponent', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/activities']);
   });
 
-  it('persists a newly typed activity type and patches the form to the canonical name', async () => {
+  it('shows the activity types as chips, Custom last, and selects one', async () => {
     setup();
     fixture.detectChanges();
     await fixture.whenStable();
+    component.referenceActivityTypes.set([
+      { id: 3, name: 'Custom' },
+      { id: 2, name: 'Irrigation' },
+      { id: 1, name: 'Sowing' },
+    ]);
+    fixture.detectChanges();
 
-    await component.onTypeAdded('mulching');
-
-    expect(createActivityTypeSpy).toHaveBeenCalledWith('mulching');
-    expect(component.referenceActivityTypes()).toEqual([{ id: 9, name: 'Mulching' }]);
-    expect(component.form.get('type')?.value).toBe('Mulching');
+    const el = fixture.nativeElement as HTMLElement;
+    const chips = Array.from(el.querySelectorAll<HTMLInputElement>('input[name="type"]'));
+    expect(chips.map((c) => c.id)).toEqual(['type-1', 'type-2', 'type-3']);
+    chips[1].click();
+    expect(component.form.get('type')?.value).toBe('Irrigation');
   });
 
-  it('shows an error toast when creating a new activity type fails', async () => {
-    createActivityTypeSpy.and.rejectWith(new Error('network down'));
+  it('saves a Custom activity under the typed name, creating that type', async () => {
     setup();
     fixture.detectChanges();
     await fixture.whenStable();
 
-    await expectAsync(component.onTypeAdded('mulching')).toBeResolved();
-    expect(component.referenceActivityTypes()).toEqual([]);
+    component.form.patchValue({ type: 'Custom', customName: 'Mulching' });
+    await component.onSubmit();
+
+    expect(createActivityTypeSpy).toHaveBeenCalledWith('Mulching');
+    expect(addActivitySpy).toHaveBeenCalled();
+  });
+
+  it('refuses a Custom activity without a name', async () => {
+    setup();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    component.form.patchValue({ type: 'Custom', customName: '  ' });
+    await component.onSubmit();
+
+    expect(addActivitySpy).not.toHaveBeenCalled();
+    expect(createActivityTypeSpy).not.toHaveBeenCalled();
+  });
+
+  it('offers all five statuses', async () => {
+    setup();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const el = fixture.nativeElement as HTMLElement;
+    const values = Array.from(el.querySelectorAll<HTMLInputElement>('input[name="status"]')).map(
+      (c) => c.id.replace('status-', ''),
+    );
+    expect(values).toEqual(['Draft', 'Scheduled', 'In Progress', 'Completed', 'Cancelled']);
+  });
+
+  it('sets the status from the date until the farmer picks one', async () => {
+    setup();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    component.form.patchValue({ date: '2999-01-01' });
+    expect(component.form.get('status')?.value).toBe('Scheduled');
+    component.form.patchValue({ date: '2001-01-01' });
+    expect(component.form.get('status')?.value).toBe('Completed');
+
+    component.form.patchValue({ status: 'In Progress' });
+    component.onStatusPicked();
+    component.form.patchValue({ date: '2999-01-01' });
+    expect(component.form.get('status')?.value).toBe('In Progress');
   });
 });
