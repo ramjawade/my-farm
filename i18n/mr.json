@@ -460,7 +460,11 @@
     "updatedToast": "काम अद्ययावत केले.",
     "saveError": "काम जतन करता आले नाही. कृपया पुन्हा प्रयत्न करा.",
     "loggedToast": "{{type}} नोंदवले.",
-    "thumbnailAlt": "अपलोड केलेले थंबनेल"
+    "thumbnailAlt": "अपलोड केलेले थंबनेल",
+    "customName": "कामाचे नाव",
+    "customNamePlaceholder": "उदा. आच्छादन",
+    "customNameRequired": "या कामाचे नाव लिहा.",
+    "statusFromDateHint": "तारखेनुसार ठरते: पुढील तारीख असल्यास नियोजित. हवे तर बदला."
   },
   "historyEvent": {
     "created": "काम तयार केले",
@@ -495,7 +499,12 @@
     "refreshError": "काम सारांश रिफ्रेश करता आला नाही.",
     "statusUpdateError": "स्थिती अद्ययावत करता आली नाही. कृपया पुन्हा प्रयत्न करा.",
     "deleteError": "काम हटवता आले नाही. कृपया पुन्हा प्रयत्न करा.",
-    "loadFailed": "हे काम लोड करता आले नाही. कृपया पुन्हा प्रयत्न करा."
+    "loadFailed": "हे काम लोड करता आले नाही. कृपया पुन्हा प्रयत्न करा.",
+    "markDone": "पूर्ण केले",
+    "start": "सुरू करा",
+    "restore": "पुन्हा चालू करा",
+    "edit": "बदला",
+    "cancelActivity": "काम रद्द करा"
   },
   "addExpense": {
     "category": "वर्ग",
@@ -527,7 +536,10 @@
     "removeEntryConfirm": "ही खर्च नोंद काढायची याची खात्री आहे का?",
     "remove": "काढा",
     "removedToast": "खर्च काढला.",
-    "removeError": "खर्च काढता आला नाही. कृपया पुन्हा प्रयत्न करा."
+    "removeError": "खर्च काढता आला नाही. कृपया पुन्हा प्रयत्न करा.",
+    "acrossOne": "{{count}} खर्चात",
+    "acrossMany": "{{count}} खर्चांत",
+    "splitLabel": "खर्चाची विभागणी"
   },
   "mapMyFarm": {
     "mapAriaLabel": "नकाशा",
