@@ -539,7 +539,8 @@
     "removeError": "Could not remove the expense. Please try again.",
     "acrossOne": "across {{count}} expense",
     "acrossMany": "across {{count}} expenses",
-    "splitLabel": "Expense split"
+    "splitLabel": "Expense split",
+    "editEntry": "Edit expense"
   },
   "mapMyFarm": {
     "mapAriaLabel": "Map",
@@ -708,7 +709,9 @@
       "activityDetail": "Activity detail",
       "reports": "Reports",
       "notFound": "Page not found",
-      "editCrop": "Edit crop"
+      "editCrop": "Edit crop",
+      "addExpense": "Add expense",
+      "editExpense": "Edit expense"
     }
   },
   "login": {
@@ -1089,6 +1092,24 @@
     "emptyTitle": "No activity yet",
     "emptyText": "Log what you do in the field and it shows up here.",
     "seasonExpenses": "Season expenses",
-    "noSeasonExpenses": "No expenses recorded this season."
+    "noSeasonExpenses": "No expenses recorded this season.",
+    "expense": "Expense"
+  },
+  "expenseForm": {
+    "addTitle": "Add expense",
+    "editTitle": "Edit expense",
+    "addSubtitle": "Record what an activity cost.",
+    "editSubtitle": "Update the category or amount of this expense.",
+    "activity": "Activity",
+    "selectActivity": "Select an activity",
+    "selectCategory": "Select a category",
+    "activityRequired": "Select the activity this expense belongs to.",
+    "categoryRequired": "Select a category.",
+    "amountRequired": "Enter an amount above zero.",
+    "add": "Add expense",
+    "save": "Save changes",
+    "addedToast": "Expense added.",
+    "updatedToast": "Expense updated.",
+    "loadError": "Could not load this expense."
   }
 }
