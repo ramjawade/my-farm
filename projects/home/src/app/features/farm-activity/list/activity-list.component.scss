@@ -3,67 +3,12 @@
 :host {
   display: block;
 
-  // This page stacks two floating action buttons (Back/Record New) on
-  // mobile, taller than the single-FAB clearance the shell already
-  // reserves — top up the gap so neither sits over real content.
+  // The page keeps one floating button on mobile; leave room under the last row.
   @media (max-width: 767.98px) {
     padding-bottom: 60px;
   }
 }
 
-// 1. Text clamp helper for activity notes preview
-.notes-preview {
-  font-family: var(--mf-font-body, sans-serif);
-  font-size: 0.82rem;
-  line-height: 1.6;
-  color: var(--mf-muted);
-
-  // Multi-line ellipsis clamp (max 3 lines)
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-// 2. Empty state (shared .empty-state pattern)
 .empty-state {
   max-width: 500px;
-}
-
-.cursor-pointer {
-  cursor: pointer;
-}
-
-// 3. Tabular List View custom premium overrides
-.activity-table-row {
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: rgba(var(--mf-leaf-rgb), 0.04) !important;
-
-    .bi-chevron-right {
-      transform: translateX(3px);
-      transition: transform 0.2s ease;
-    }
-  }
-}
-
-.activity-emoji-circle-sm {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(var(--mf-leaf-rgb), 0.08);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.95rem;
-  border: 1px solid rgba(var(--mf-leaf-rgb), 0.12);
-  flex-shrink: 0;
-}
-
-.status-draft {
-  background-color: var(--mf-surface2) !important;
-  color: var(--mf-fg) !important;
-  border: 1px solid var(--mf-line);
 }

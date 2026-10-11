@@ -1069,5 +1069,26 @@
       "mapLabel": "{{count}} जमीनों के साथ खेत का नक्शा",
       "noCropYet": "अभी कोई फसल नहीं"
     }
+  },
+  "activityLogScreen": {
+    "title": "सभी काम",
+    "subtitle": "खेत में किया गया सब कुछ, खर्च सहित।",
+    "log": "दर्ज करें",
+    "logActivity": "काम दर्ज करें",
+    "totalExpenses": "कुल खर्च",
+    "thisSeason": "इस मौसम में",
+    "activities": "काम",
+    "doneAndPlanned": "{{done}} हुए · {{planned}} निर्धारित",
+    "filters": "फ़िल्टर",
+    "filterLabel": "काम फ़िल्टर करें",
+    "removeFilter": "{{name}} फ़िल्टर हटाएँ",
+    "showing": "{{total}} में से {{shown}} दिख रहे हैं",
+    "clear": "साफ़ करें",
+    "listTitle": "काम",
+    "noMatch": "इन फ़िल्टर से कोई काम नहीं मिला।",
+    "emptyTitle": "अभी कोई काम नहीं",
+    "emptyText": "खेत में जो करते हैं वह दर्ज करें, यहाँ दिखेगा।",
+    "seasonExpenses": "मौसम का खर्च",
+    "noSeasonExpenses": "इस मौसम में कोई खर्च दर्ज नहीं।"
   }
 }

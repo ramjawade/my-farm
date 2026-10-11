@@ -1069,5 +1069,26 @@
       "mapLabel": "Farm map with {{count}} lands",
       "noCropYet": "No crop yet"
     }
+  },
+  "activityLogScreen": {
+    "title": "All activities",
+    "subtitle": "Everything done in the field, with what it cost.",
+    "log": "Log",
+    "logActivity": "Log activity",
+    "totalExpenses": "Total expenses",
+    "thisSeason": "this season",
+    "activities": "Activities",
+    "doneAndPlanned": "{{done}} done · {{planned}} planned",
+    "filters": "Filters",
+    "filterLabel": "Filter activities",
+    "removeFilter": "Remove {{name}} filter",
+    "showing": "Showing {{shown}} of {{total}}",
+    "clear": "Clear",
+    "listTitle": "Activities",
+    "noMatch": "No activities match these filters.",
+    "emptyTitle": "No activity yet",
+    "emptyText": "Log what you do in the field and it shows up here.",
+    "seasonExpenses": "Season expenses",
+    "noSeasonExpenses": "No expenses recorded this season."
   }
 }
