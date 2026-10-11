@@ -43,6 +43,14 @@
       </span>
       <span class="d-inline-flex align-items-center flex-shrink-0" style="gap: 4px">
         <strong>₹{{ exp.amount | localNumber }}</strong>
+        <a
+          [routerLink]="['/activities', activityId(), 'expenses', exp.id, 'edit']"
+          class="btn btn-link p-1"
+          [title]="'expenseList.editEntry' | translate"
+          [attr.aria-label]="'expenseList.editEntry' | translate"
+        >
+          <i class="bi bi-pencil" aria-hidden="true"></i>
+        </a>
         <button
           type="button"
           class="btn btn-link text-danger p-1"

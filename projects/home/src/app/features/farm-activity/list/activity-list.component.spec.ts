@@ -184,6 +184,18 @@ describe('ActivityListComponent', () => {
     expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith(['/activities', 1]);
   });
 
+  it('offers an Expense button that opens the form from the list', async () => {
+    setup();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const link = (fixture.nativeElement as HTMLElement).querySelector(
+      'a[href="/activities/expenses/new?from=list"]',
+    );
+    expect(link).not.toBeNull();
+  });
+
   it('shows the tiles and the season expenses card', async () => {
     setup();
     fixture.detectChanges();

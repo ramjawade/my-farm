@@ -1,0 +1,170 @@
+<div class="mf-page-container">
+  <header
+    class="d-flex justify-content-between align-items-center"
+    style="gap: 12px; padding-bottom: 12px"
+  >
+    <div class="min-w-0">
+      <h1 class="h4 mb-1">
+        {{ (isEdit() ? 'expenseForm.editTitle' : 'expenseForm.addTitle') | translate }}
+      </h1>
+      <p class="text-body-secondary mb-0">
+        {{ (isEdit() ? 'expenseForm.editSubtitle' : 'expenseForm.addSubtitle') | translate }}
+      </p>
+    </div>
+    <button type="button" class="btn btn-outline-secondary text-nowrap" (click)="cancel()">
+      {{ 'common.cancel' | translate }}
+    </button>
+  </header>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="card" style="max-width: 760px">
+    <div class="row g-3">
+      <div class="col-12 col-md-6">
+        <label class="form-label required-label" for="ef-activity">{{
+          'expenseForm.activity' | translate
+        }}</label>
+        <select
+          id="ef-activity"
+          class="form-select"
+          formControlName="activityId"
+          [class.is-invalid]="showError('activityId')"
+        >
+          <option [ngValue]="null">{{ 'expenseForm.selectActivity' | translate }}</option>
+          @for (opt of activityOptions(); track opt.id) {
+            <option [ngValue]="opt.id">{{ opt.label }}</option>
+          }
+        </select>
+        @if (showError('activityId')) {
+          <div class="invalid-feedback">{{ 'expenseForm.activityRequired' | translate }}</div>
+        }
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label required-label" for="ef-category">{{
+          'addExpense.category' | translate
+        }}</label>
+        <select
+          id="ef-category"
+          class="form-select"
+          formControlName="expenseCategoryId"
+          [class.is-invalid]="showError('expenseCategoryId')"
+        >
+          <option [ngValue]="null">{{ 'expenseForm.selectCategory' | translate }}</option>
+          @for (cat of categories(); track cat.id) {
+            <option [ngValue]="cat.id">{{ cat.name | referenceName: 'expense' }}</option>
+          }
+        </select>
+        @if (showError('expenseCategoryId')) {
+          <div class="invalid-feedback">{{ 'expenseForm.categoryRequired' | translate }}</div>
+        }
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="ef-item">{{
+          'addExpense.itemServiceName' | translate
+        }}</label>
+        <input
+          id="ef-item"
+          class="form-control"
+          formControlName="itemId"
+          autocomplete="off"
+          [placeholder]="'addExpense.itemPlaceholder' | translate"
+        />
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="ef-vendor">{{
+          'addExpense.vendorLaborer' | translate
+        }}</label>
+        <input
+          id="ef-vendor"
+          class="form-control"
+          formControlName="resourceId"
+          autocomplete="off"
+          [placeholder]="'addExpense.vendorPlaceholder' | translate"
+        />
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="ef-qty">{{ 'addExpense.qty' | translate }}</label>
+        <div class="input-group">
+          <input
+            id="ef-qty"
+            type="number"
+            min="0"
+            step="any"
+            class="form-control"
+            formControlName="quantity"
+            placeholder="1"
+          />
+          <input
+            class="form-control"
+            formControlName="unit"
+            list="ef-units"
+            autocomplete="off"
+            [placeholder]="'addExpense.unitPlaceholder' | translate"
+            [attr.aria-label]="'landEdit.unit' | translate"
+          />
+          <datalist id="ef-units">
+            @for (u of units; track u) {
+              <option [value]="u"></option>
+            }
+          </datalist>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="ef-rate">{{ 'addExpense.rate' | translate }}</label>
+        <input
+          id="ef-rate"
+          type="number"
+          min="0"
+          step="any"
+          class="form-control"
+          formControlName="rate"
+          placeholder="500"
+        />
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label required-label" for="ef-amount">{{
+          'addExpense.amount' | translate
+        }}</label>
+        <input
+          id="ef-amount"
+          type="number"
+          min="0"
+          step="any"
+          class="form-control"
+          formControlName="amount"
+          [placeholder]="'addExpense.amountPlaceholder' | translate"
+          [class.is-invalid]="showError('amount')"
+        />
+        @if (showError('amount')) {
+          <div class="invalid-feedback">{{ 'expenseForm.amountRequired' | translate }}</div>
+        }
+      </div>
+
+      <div class="col-12">
+        <label class="form-label" for="ef-remarks">{{
+          'addExpense.remarksNotes' | translate
+        }}</label>
+        <textarea
+          id="ef-remarks"
+          class="form-control"
+          rows="2"
+          formControlName="remarks"
+          [placeholder]="'addExpense.remarksPlaceholder' | translate"
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="d-flex mt-3" style="gap: 8px">
+      <button type="submit" class="btn btn-primary" [disabled]="saving()">
+        {{ (isEdit() ? 'expenseForm.save' : 'expenseForm.add') | translate }}
+      </button>
+      <button type="button" class="btn btn-outline-secondary" (click)="cancel()">
+        {{ 'common.cancel' | translate }}
+      </button>
+    </div>
+  </form>
+</div>

@@ -244,6 +244,15 @@ export class ActivityService {
     });
   }
 
+  /** Saves changes to an expense and waits for the server, so a failed save can be reported. */
+  async saveExpenseChanges(id: number, updates: Partial<ActivityExpense>): Promise<void> {
+    this.mutationGeneration++;
+    await this.storage.updateExpense(this.getCurrentUserId(), id, updates);
+    this.expensesSignal.update((exps) =>
+      exps.map((exp) => (exp.id === id ? { ...exp, ...updates } : exp)),
+    );
+  }
+
   deleteExpense(id: number): void {
     this.mutationGeneration++;
     this.expensesSignal.update((exps) => exps.filter((exp) => exp.id !== id));
