@@ -20,7 +20,7 @@ Each task is one child change: run `/opsx:propose`, get approval, apply it, merg
 - [x] 3.1 `home-redesign`: greeting with the avatar, KPI tiles, weather card, needs-attention list [prototype: home]
 - [ ] 3.2 `lands-redesign`: land cards with the map outline, water source, Fallow badge, "Nothing growing" empty state with Add crop [prototype: lands]
 - [ ] 3.3 `crops-redesign`: crop cards, crop detail, add crop with optional irrigation and farming method [prototype: crops, cropdetail, addcrop]
-- [ ] 3.4 `activity-types-and-statuses`: 12 types with icons, 5 statuses that follow the date, action buttons that depend on the status, edit and delete [prototype: addact, actdetail]
+- [x] 3.4 `activity-types-and-statuses`: 12 types with icons, 5 statuses that follow the date, action buttons that depend on the status, edit and delete [prototype: addact, actdetail]
 - [ ] 3.5 `activity-list-and-filters`: activity log after the KPIs, collapsible filter bar with a count badge, chips in the same row, Clear [prototype: log]
 - [ ] 3.6 `expenses-redesign`: add/edit expense flow and list styling [prototype: addexp]
 
