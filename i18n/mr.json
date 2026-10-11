@@ -1069,5 +1069,26 @@
       "mapLabel": "{{count}} जमिनींसह शेताचा नकाशा",
       "noCropYet": "अजून पीक नाही"
     }
+  },
+  "activityLogScreen": {
+    "title": "सर्व कामे",
+    "subtitle": "शेतात केलेले सर्व काही, खर्चासह.",
+    "log": "नोंद",
+    "logActivity": "काम नोंदवा",
+    "totalExpenses": "एकूण खर्च",
+    "thisSeason": "या हंगामात",
+    "activities": "कामे",
+    "doneAndPlanned": "{{done}} झाली · {{planned}} नियोजित",
+    "filters": "फिल्टर",
+    "filterLabel": "कामे फिल्टर करा",
+    "removeFilter": "{{name}} फिल्टर काढा",
+    "showing": "{{total}} पैकी {{shown}} दाखवत आहे",
+    "clear": "साफ करा",
+    "listTitle": "कामे",
+    "noMatch": "या फिल्टरशी जुळणारी कामे नाहीत.",
+    "emptyTitle": "अजून काम नाही",
+    "emptyText": "शेतात जे करता ते नोंदवा, ते येथे दिसेल.",
+    "seasonExpenses": "हंगामाचा खर्च",
+    "noSeasonExpenses": "या हंगामात खर्च नोंदवलेला नाही."
   }
 }
