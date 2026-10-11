@@ -34,13 +34,7 @@ import { resolveReferenceName } from '../../../core/i18n/reference-name';
 @Component({
   selector: 'app-create-activity',
   standalone: true,
-  imports: [
-    LocalDatePipe,
-    CommonModule,
-    ReactiveFormsModule,
-    TranslatePipe,
-    ReferenceNamePipe,
-  ],
+  imports: [LocalDatePipe, CommonModule, ReactiveFormsModule, TranslatePipe, ReferenceNamePipe],
   templateUrl: './create-activity.component.html',
   styleUrl: './create-activity.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

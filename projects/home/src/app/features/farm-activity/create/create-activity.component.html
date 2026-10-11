@@ -86,10 +86,14 @@
                 formControlName="customName"
                 autocomplete="off"
                 [placeholder]="'createActivity.customNamePlaceholder' | translate"
-                [class.is-invalid]="form.get('customName')?.touched && !form.get('customName')?.value?.trim()"
+                [class.is-invalid]="
+                  form.get('customName')?.touched && !form.get('customName')?.value?.trim()
+                "
               />
               @if (form.get('customName')?.touched && !form.get('customName')?.value?.trim()) {
-                <div class="invalid-feedback">{{ 'createActivity.customNameRequired' | translate }}</div>
+                <div class="invalid-feedback">
+                  {{ 'createActivity.customNameRequired' | translate }}
+                </div>
               }
             </div>
           }

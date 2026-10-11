@@ -216,8 +216,8 @@ describe('CreateActivityComponent', () => {
     await fixture.whenStable();
 
     const el = fixture.nativeElement as HTMLElement;
-    const values = Array.from(el.querySelectorAll<HTMLInputElement>('input[name="status"]')).map((c) =>
-      c.id.replace('status-', ''),
+    const values = Array.from(el.querySelectorAll<HTMLInputElement>('input[name="status"]')).map(
+      (c) => c.id.replace('status-', ''),
     );
     expect(values).toEqual(['Draft', 'Scheduled', 'In Progress', 'Completed', 'Cancelled']);
   });

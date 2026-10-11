@@ -53,12 +53,20 @@
           </button>
         }
         @if (actions().start) {
-          <button type="button" class="btn btn-outline-secondary" (click)="updateStatus('In Progress')">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            (click)="updateStatus('In Progress')"
+          >
             {{ 'activityDetail.start' | translate }}
           </button>
         }
         @if (actions().restore) {
-          <button type="button" class="btn btn-outline-secondary" (click)="updateStatus('Scheduled')">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            (click)="updateStatus('Scheduled')"
+          >
             {{ 'activityDetail.restore' | translate }}
           </button>
         }
@@ -66,7 +74,11 @@
           {{ 'activityDetail.edit' | translate }}
         </button>
         @if (actions().cancel) {
-          <button type="button" class="btn btn-outline-secondary" (click)="updateStatus('Cancelled')">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            (click)="updateStatus('Cancelled')"
+          >
             {{ 'activityDetail.cancelActivity' | translate }}
           </button>
         }
