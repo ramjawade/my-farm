@@ -141,19 +141,19 @@ test.describe('Golden path', () => {
       // Desktop and mobile each render their own "Add Expense" trigger, only
       // one visible at a time via Bootstrap's d-none/d-md-* utilities
       // (activity-detail.component.html) — the mobile one is an icon-only
-      // FAB among a stack of two (Back/Add Expense), so target it
+      // FAB link among a stack of two (Back/Add Expense), so target it
       // by its distinguishing "success" color class rather than accessible
-      // name, and not just `.fab-soft` (shared by all three, which would be
+      // name, and not just `.fab-soft` (shared by both, which would be
       // a strict-mode multi-match).
-      await page
-        .locator('button.fab-soft-success:visible, button:visible:has-text("Add Expense")')
-        .click();
+      await page.locator('a.fab-soft-success:visible, a:visible:has-text("Add Expense")').click();
+      await expect(page).toHaveURL(/\/activities\/expenses\/new\?activityId=\d+/);
 
-      const categorySelect = page.locator('select[formcontrolname="expenseCategoryId"]');
-      await expect(categorySelect).not.toHaveValue('');
+      // The activity is already chosen; pick the first real category (index 0 is the prompt).
+      await page.locator('select[formcontrolname="expenseCategoryId"]').selectOption({ index: 1 });
       await page.locator('input[formcontrolname="amount"]').fill('500');
 
-      await page.getByRole('button', { name: 'Add Expense Item' }).click();
+      await page.getByRole('button', { name: 'Add expense', exact: true }).click();
+      await expect(page).toHaveURL(/\/activities\/\d+$/);
       await expect(page.getByText('₹500').first()).toBeVisible();
     });
 

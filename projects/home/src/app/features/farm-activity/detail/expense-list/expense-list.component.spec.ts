@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { provideRouter } from '@angular/router';
 import { provideTranslateService } from '@ngx-translate/core';
 import { ExpenseListComponent } from './expense-list.component';
 import { ReferenceDataService } from '../../../../core/api/reference-data.service';
@@ -30,6 +31,7 @@ describe('ExpenseListComponent', () => {
       imports: [ExpenseListComponent],
       providers: [
         provideZonelessChangeDetection(),
+        provideRouter([]),
         provideTranslateService(),
         provideHttpClient(),
         {
@@ -50,6 +52,12 @@ describe('ExpenseListComponent', () => {
   it('loads expenses for the given activity on init', () => {
     expect(getExpensesSpy).toHaveBeenCalledWith(5);
     expect(component.expenses).toEqual([mockExpense]);
+  });
+
+  it('links each expense to its edit page', () => {
+    fixture.detectChanges();
+    const edit = fixture.nativeElement.querySelector('a[href="/activities/5/expenses/1/edit"]');
+    expect(edit).not.toBeNull();
   });
 
   it('resolves the category name from the expense category id', () => {

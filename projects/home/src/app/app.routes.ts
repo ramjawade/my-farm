@@ -147,6 +147,24 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'expenses/new',
+        title: 'shell.title.addExpense',
+        data: { parent: '/activities' },
+        loadComponent: () =>
+          import('./features/farm-activity/expense/expense-form.component').then(
+            (m) => m.ExpenseFormComponent,
+          ),
+      },
+      {
+        path: ':activityId/expenses/:expenseId/edit',
+        title: 'shell.title.editExpense',
+        data: { parent: '/activities' },
+        loadComponent: () =>
+          import('./features/farm-activity/expense/expense-form.component').then(
+            (m) => m.ExpenseFormComponent,
+          ),
+      },
+      {
         path: ':id',
         title: 'shell.title.activityDetail',
         data: { parent: '/activities' },

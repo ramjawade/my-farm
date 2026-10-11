@@ -539,7 +539,8 @@
     "removeError": "खर्च काढता आला नाही. कृपया पुन्हा प्रयत्न करा.",
     "acrossOne": "{{count}} खर्चात",
     "acrossMany": "{{count}} खर्चांत",
-    "splitLabel": "खर्चाची विभागणी"
+    "splitLabel": "खर्चाची विभागणी",
+    "editEntry": "खर्च बदला"
   },
   "mapMyFarm": {
     "mapAriaLabel": "नकाशा",
@@ -708,7 +709,9 @@
       "activityDetail": "कामाचा तपशील",
       "reports": "अहवाल",
       "notFound": "पृष्ठ सापडले नाही",
-      "editCrop": "पीक संपादित करा"
+      "editCrop": "पीक संपादित करा",
+      "addExpense": "खर्च जोडा",
+      "editExpense": "खर्च बदला"
     }
   },
   "login": {
@@ -1089,6 +1092,24 @@
     "emptyTitle": "अजून काम नाही",
     "emptyText": "शेतात जे करता ते नोंदवा, ते येथे दिसेल.",
     "seasonExpenses": "हंगामाचा खर्च",
-    "noSeasonExpenses": "या हंगामात खर्च नोंदवलेला नाही."
+    "noSeasonExpenses": "या हंगामात खर्च नोंदवलेला नाही.",
+    "expense": "खर्च"
+  },
+  "expenseForm": {
+    "addTitle": "खर्च जोडा",
+    "editTitle": "खर्च बदला",
+    "addSubtitle": "कामाला किती खर्च आला ते नोंदवा.",
+    "editSubtitle": "या खर्चाचा प्रकार किंवा रक्कम बदला.",
+    "activity": "काम",
+    "selectActivity": "काम निवडा",
+    "selectCategory": "प्रकार निवडा",
+    "activityRequired": "हा खर्च कोणत्या कामाचा आहे ते निवडा.",
+    "categoryRequired": "प्रकार निवडा.",
+    "amountRequired": "शून्यापेक्षा जास्त रक्कम लिहा.",
+    "add": "खर्च जोडा",
+    "save": "बदल जतन करा",
+    "addedToast": "खर्च जोडला.",
+    "updatedToast": "खर्च बदलला.",
+    "loadError": "हा खर्च उघडता आला नाही."
   }
 }

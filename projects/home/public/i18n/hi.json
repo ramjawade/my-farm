@@ -539,7 +539,8 @@
     "removeError": "खर्च हटाया नहीं जा सका। कृपया पुनः प्रयास करें।",
     "acrossOne": "{{count}} खर्च में",
     "acrossMany": "{{count}} खर्चों में",
-    "splitLabel": "खर्च का बंटवारा"
+    "splitLabel": "खर्च का बंटवारा",
+    "editEntry": "खर्च बदलें"
   },
   "mapMyFarm": {
     "mapAriaLabel": "नक्शा",
@@ -708,7 +709,9 @@
       "activityDetail": "गतिविधि का विवरण",
       "reports": "रिपोर्ट",
       "notFound": "पृष्ठ नहीं मिला",
-      "editCrop": "फसल संपादित करें"
+      "editCrop": "फसल संपादित करें",
+      "addExpense": "खर्च जोड़ें",
+      "editExpense": "खर्च बदलें"
     }
   },
   "login": {
@@ -1089,6 +1092,24 @@
     "emptyTitle": "अभी कोई काम नहीं",
     "emptyText": "खेत में जो करते हैं वह दर्ज करें, यहाँ दिखेगा।",
     "seasonExpenses": "मौसम का खर्च",
-    "noSeasonExpenses": "इस मौसम में कोई खर्च दर्ज नहीं।"
+    "noSeasonExpenses": "इस मौसम में कोई खर्च दर्ज नहीं।",
+    "expense": "खर्च"
+  },
+  "expenseForm": {
+    "addTitle": "खर्च जोड़ें",
+    "editTitle": "खर्च बदलें",
+    "addSubtitle": "काम पर कितना खर्च हुआ, दर्ज करें।",
+    "editSubtitle": "इस खर्च की श्रेणी या रकम बदलें।",
+    "activity": "काम",
+    "selectActivity": "काम चुनें",
+    "selectCategory": "श्रेणी चुनें",
+    "activityRequired": "चुनें कि यह खर्च किस काम का है।",
+    "categoryRequired": "श्रेणी चुनें।",
+    "amountRequired": "शून्य से अधिक रकम लिखें।",
+    "add": "खर्च जोड़ें",
+    "save": "बदलाव सहेजें",
+    "addedToast": "खर्च जोड़ा गया।",
+    "updatedToast": "खर्च बदला गया।",
+    "loadError": "यह खर्च नहीं खुल सका।"
   }
 }

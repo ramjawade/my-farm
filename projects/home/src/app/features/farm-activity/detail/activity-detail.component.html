@@ -93,13 +93,13 @@
         <section class="card h-100">
           <h2 class="fs-6 fw-bold d-flex justify-content-between align-items-center mb-2">
             {{ 'activityDetail.expenseDetails' | translate }}
-            <button
-              type="button"
+            <a
+              [routerLink]="['/activities/expenses/new']"
+              [queryParams]="{ activityId: act.id }"
               class="btn btn-sm btn-primary d-none d-md-inline-flex"
-              (click)="openExpenseModal()"
             >
               + {{ 'activityDetail.addExpense' | translate }}
-            </button>
+            </a>
           </h2>
           <app-expense-list [activityId]="act.id" (changed)="onExpenseChanged()"></app-expense-list>
         </section>
@@ -133,33 +133,6 @@
       </div>
     </div>
 
-    <!-- EXPENSE ENTRY DIALOG OVERLAY -->
-    @if (showExpenseModal()) {
-      <div
-        class="expense-modal-backdrop position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center px-3"
-        style="z-index: 2000"
-      >
-        <div
-          class="expense-modal-card card card-glass p-4 w-100 text-start"
-          style="max-width: 620px; max-height: 90vh"
-        >
-          <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-            <h3 class="mf-card-section-title m-0">
-              <i class="bi bi-plus-circle-fill text-success me-2"></i
-              >{{ 'activityDetail.addExpenseEntry' | translate }}
-            </h3>
-            <button type="button" class="btn-close" (click)="closeExpenseModal()"></button>
-          </div>
-
-          <app-add-expense
-            [activityId]="act.id"
-            (added)="onExpenseAdded()"
-            (cancelled)="closeExpenseModal()"
-          ></app-add-expense>
-        </div>
-      </div>
-    }
-
     <!-- Back to List FAB - MOBILE ONLY -->
     <a
       routerLink="/activities/list"
@@ -170,14 +143,14 @@
     </a>
 
     <!-- Add Expense FAB - MOBILE ONLY -->
-    <button
-      type="button"
+    <a
+      [routerLink]="['/activities/expenses/new']"
+      [queryParams]="{ activityId: act.id }"
       class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-success fab-stack-2"
-      (click)="openExpenseModal()"
       [title]="'activityDetail.addExpense' | translate"
     >
       <i class="bi bi-plus-lg"></i>
-    </button>
+    </a>
 
     <!-- Confirm Delete Activity Dialog -->
     <lib-confirm-dialog

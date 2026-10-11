@@ -18,9 +18,18 @@
       <h1 class="h4 mb-1">{{ 'activityLogScreen.title' | translate }}</h1>
       <p class="text-body-secondary mb-0">{{ 'activityLogScreen.subtitle' | translate }}</p>
     </div>
-    <a [routerLink]="createLink()" class="btn btn-primary text-nowrap d-none d-md-inline-flex">
-      + {{ 'activityLogScreen.log' | translate }}
-    </a>
+    <div class="d-none d-md-flex" style="gap: 8px">
+      <a
+        routerLink="/activities/expenses/new"
+        [queryParams]="{ from: 'list' }"
+        class="btn btn-outline-secondary text-nowrap"
+      >
+        + {{ 'activityLogScreen.expense' | translate }}
+      </a>
+      <a [routerLink]="createLink()" class="btn btn-primary text-nowrap">
+        + {{ 'activityLogScreen.log' | translate }}
+      </a>
+    </div>
   </header>
 
   <div class="d-flex flex-column" style="gap: 12px">

@@ -8,7 +8,7 @@ import {
   output,
   OnInit,
 } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { ConfirmDialogComponent, ToastService } from 'shared';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ActivityExpensesService } from '../activity-expenses.service';
@@ -22,7 +22,7 @@ const SPLIT_TONES = ['success', 'warning', 'info', 'danger', 'primary', 'seconda
 @Component({
   selector: 'app-expense-list',
   standalone: true,
-  imports: [LocalNumberPipe, ConfirmDialogComponent, TranslatePipe, ReferenceNamePipe],
+  imports: [LocalNumberPipe, ConfirmDialogComponent, RouterLink, TranslatePipe, ReferenceNamePipe],
   templateUrl: './expense-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -6,7 +6,6 @@ import {
   computed,
   ChangeDetectionStrategy,
   signal,
-  viewChild,
   OnInit,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -15,7 +14,6 @@ import { DecimalPipe } from '@angular/common';
 import { map } from 'rxjs/operators';
 import { ActivityDetailService } from './activity-detail.service';
 import { ExpenseListComponent } from './expense-list/expense-list.component';
-import { AddExpenseComponent } from './add-expense/add-expense.component';
 import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
 import { SavedFarm } from '../../../map/models/map.models';
@@ -44,7 +42,6 @@ import {
     RouterLink,
     ConfirmDialogComponent,
     ExpenseListComponent,
-    AddExpenseComponent,
     TranslatePipe,
     ReferenceNamePipe,
   ],
@@ -64,9 +61,6 @@ export class ActivityDetailComponent implements OnInit {
   private readonly farmDrawService = inject(FarmDrawService);
   private readonly authService = inject(AuthService);
 
-  private readonly expenseList = viewChild(ExpenseListComponent);
-
-  readonly showExpenseModal = signal(false);
   readonly showDeleteActivityConfirm = signal(false);
   readonly savedFarms = signal<SavedFarm[]>([]);
 
@@ -157,12 +151,6 @@ export class ActivityDetailComponent implements OnInit {
     void this.refreshSummary();
   }
 
-  onExpenseAdded(): void {
-    this.closeExpenseModal();
-    this.expenseList()?.reload();
-    void this.refreshSummary();
-  }
-
   async updateStatus(newStatus: ActivityStatus): Promise<void> {
     const id = this.activityId();
     if (!id) return;
@@ -189,13 +177,5 @@ export class ActivityDetailComponent implements OnInit {
     } catch {
       this.toast.error(this.translate.instant('activityDetail.deleteError'));
     }
-  }
-
-  openExpenseModal(): void {
-    this.showExpenseModal.set(true);
-  }
-
-  closeExpenseModal(): void {
-    this.showExpenseModal.set(false);
   }
 }
