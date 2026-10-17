@@ -20,10 +20,10 @@
 
 - [x] 3.1 Add i18n keys for mr, hi and en and pass `scripts/check-translations.mjs`
 - [x] 3.2 Add component specs for the three pages, covering the spec scenarios
-- [ ] 3.3 Check the phone tab bar at 360 px with Marathi labels and shorten the Prices label if it wraps
+- [x] 3.3 Check the phone tab bar at 360 px with Marathi labels and shorten the Prices label if it wraps
 
 ## 4. Finish
 
 - [x] 4.1 Run `npm run lint` and `npm run build`
 - [x] 4.2 Open the PR naming `market-prices`
-- [ ] 4.3 After the PR merges, archive this change (which syncs the `app-shell` delta and adds `market-prices-screens`) and tick task 4.2b in `prototype-adoption-roadmap/tasks.md`
+- [x] 4.3 Archive this change on the PR branch (which syncs the `app-shell` delta and adds `market-prices-screens`) and tick task 4.2b in `prototype-adoption-roadmap/tasks.md`
