@@ -12,6 +12,12 @@ import { LandsApiService } from '../../../core/api/lands-api.service';
 import { FakeLandsApiService } from '../../../testing/fake-lands-api.service';
 import { ReferenceDataService } from '../../../core/api/reference-data.service';
 
+const CATALOG = [
+  { id: 1, name: 'Onion', category: 'vegetable', custom: false },
+  { id: 2, name: 'Wheat', category: 'cereal', custom: false },
+  { id: 3, name: 'Dragon fruit', category: 'other', custom: true },
+];
+
 describe('AddCropComponent', () => {
   let component: AddCropComponent;
   let fixture: ComponentFixture<AddCropComponent>;
@@ -30,7 +36,10 @@ describe('AddCropComponent', () => {
         { provide: LandsApiService, useClass: FakeLandsApiService },
         {
           provide: ReferenceDataService,
-          useValue: { cropCatalogIdForName: () => Promise.resolve(42) },
+          useValue: {
+            cropCatalogIdForName: () => Promise.resolve(42),
+            listCrops: () => Promise.resolve(CATALOG),
+          },
         },
       ],
     }).compileComponents();
@@ -143,7 +152,10 @@ describe('AddCropComponent land preselection and edit', () => {
         },
         {
           provide: ReferenceDataService,
-          useValue: { cropCatalogIdForName: () => Promise.resolve(42) },
+          useValue: {
+            cropCatalogIdForName: () => Promise.resolve(42),
+            listCrops: () => Promise.resolve(CATALOG),
+          },
         },
       ],
     }).compileComponents();
@@ -155,6 +167,26 @@ describe('AddCropComponent land preselection and edit', () => {
     await fixture.componentInstance.ngOnInit();
     return fixture.componentInstance;
   }
+
+  it('offers the predefined crops in groups, with the farmers own first', async () => {
+    const component = await open({});
+    await Promise.resolve();
+    const groups = component.cropGroups().filter((g) => g.options.length);
+
+    expect(groups.map((g) => g.key)).toEqual(['custom', 'cereal', 'vegetable']);
+    expect(groups[0].options.map((o) => o.name)).toEqual(['Dragon fruit']);
+    expect(groups[2].options.map((o) => o.name)).toEqual(['Onion']);
+  });
+
+  it('puts a picked crop in the form and a typed one too', async () => {
+    const component = await open({});
+    component.onNamePicked('Onion');
+    expect(component.cropForm.controls.name.value).toBe('Onion');
+    expect(component.cropForm.controls.name.touched).toBeTrue();
+
+    component.onNameAdded('Jackfruit');
+    expect(component.cropForm.controls.name.value).toBe('Jackfruit');
+  });
 
   it('preselects the land named in ?landId=', async () => {
     const component = await open({ landId: '2' });

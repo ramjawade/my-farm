@@ -1,4 +1,4 @@
-import { test, expect, Locator } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import { registerThroughPad, signInThroughPad } from './login-pad';
 
 // The app defaults to Marathi; these tests find controls by their English labels.
@@ -27,13 +27,13 @@ function uniquePhone(projectName: string): string {
   return `9${projectDigit}${suffix}`;
 }
 
-/** Types into a `lib-combobox` and picks the first suggestion — whichever
- * fires: an existing seeded item, or the "+ Add" option that creates one. */
-async function fillCombobox(scope: Locator, text: string): Promise<void> {
-  const input = scope.locator('input[role="combobox"]');
+/** Types into the crop picker and picks the first match. The search also matches the
+ * English name, so this works whatever language the app is showing. */
+async function pickCrop(page: Page, text: string): Promise<void> {
+  const input = page.locator('#name');
   await input.click();
   await input.fill(text);
-  await scope.locator('.combobox-dropdown .combobox-item').first().click();
+  await page.locator('#name-list').getByRole('option').first().click();
 }
 
 test.describe('Golden path', () => {
@@ -117,7 +117,7 @@ test.describe('Golden path', () => {
     await test.step('plant a crop on the saved land', async () => {
       await page.goto('/crops/add');
 
-      await fillCombobox(page.locator('#name'), 'Vegetables');
+      await pickCrop(page, 'Onion');
       // Only one saved land exists, so the field auto-selects; wait for it.
       await expect(page.locator('#fieldId')).not.toHaveValue('');
       await page.locator('#sowingDate').fill(today);

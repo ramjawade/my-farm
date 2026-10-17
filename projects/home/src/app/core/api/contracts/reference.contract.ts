@@ -16,6 +16,10 @@
 export interface ReferenceItem {
   id: number;
   name: string;
+  /** Crops only: cereal, pulse, oilseed, cash, vegetable, fruit or other. */
+  category?: string | null;
+  /** Crops only: true for a crop the signed-in farmer added. */
+  custom?: boolean;
 }
 
 /**

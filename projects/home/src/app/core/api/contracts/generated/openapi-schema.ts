@@ -870,13 +870,17 @@ export interface paths {
     };
     /**
      * List Crop Catalog
-     * @description List all available crops from the catalog.
+     * @description The predefined crops, plus the signed-in farmer's own custom crops.
      */
     get: operations['list_crop_catalog_api_v1_reference_crops_get'];
     put?: never;
     /**
      * Create Or Get Crop
-     * @description Create a new crop or return the existing one (case-insensitive).
+     * @description Use a predefined crop, the farmer's own crop, or add a new private custom crop.
+     *
+     *     A name matching a predefined crop (any case) returns that crop; a name matching
+     *     the farmer's own custom crop returns it; anything else creates a custom crop
+     *     owned by the caller, so one farmer's typos never reach another farmer's list.
      */
     post: operations['create_or_get_crop_api_v1_reference_crops_post'];
     delete?: never;
@@ -1479,7 +1483,7 @@ export interface components {
     };
     /**
      * CropCatalogCreate
-     * @description Create a new crop catalog entry.
+     * @description Add a crop by name: a predefined crop, the farmer's own, or a new custom crop.
      */
     CropCatalogCreate: {
       /** Name */
@@ -1490,8 +1494,15 @@ export interface components {
      * @description Read a crop catalog record.
      */
     CropCatalogRead: {
+      /** Category */
+      category?: string | null;
       /** Common Names */
       common_names?: string | null;
+      /**
+       * Custom
+       * @default false
+       */
+      custom: boolean;
       /** Id */
       id: number;
       /** Name */
@@ -4183,7 +4194,9 @@ export interface operations {
   list_crop_catalog_api_v1_reference_crops_get: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        authorization?: string | null;
+      };
       path?: never;
       cookie?: never;
     };
@@ -4198,6 +4211,15 @@ export interface operations {
           'application/json': {
             [key: string]: unknown;
           };
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
         };
       };
     };

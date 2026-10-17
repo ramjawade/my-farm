@@ -1,0 +1,64 @@
+<input
+  [id]="inputId()"
+  type="text"
+  class="form-control"
+  role="combobox"
+  autocomplete="off"
+  aria-autocomplete="list"
+  [attr.aria-expanded]="open()"
+  [attr.aria-controls]="inputId() + '-list'"
+  [attr.aria-activedescendant]="activeId()"
+  [attr.aria-invalid]="invalid() ? 'true' : null"
+  [class.is-invalid]="invalid()"
+  [placeholder]="'cropPicker.placeholder' | translate"
+  [value]="text()"
+  (input)="onInput($event)"
+  (focus)="show()"
+  (click)="show()"
+  (keydown)="onKeydown($event)"
+/>
+
+@if (open()) {
+  <ul
+    [id]="inputId() + '-list'"
+    role="listbox"
+    class="list-group position-absolute start-0 end-0 shadow overflow-auto mt-1"
+    style="z-index: 1000; max-height: 18rem"
+  >
+    @for (group of shownGroups(); track group.key) {
+      <li role="presentation" class="list-group-item bg-body-tertiary small fw-semibold py-1">
+        {{ group.label }}
+      </li>
+      @for (option of group.options; track option.name) {
+        <li
+          role="option"
+          class="list-group-item list-group-item-action"
+          [id]="optionId(indexOf().get(option.name)!)"
+          [class.active]="active() === indexOf().get(option.name)"
+          [attr.aria-selected]="option.name === value()"
+          (mousedown)="$event.preventDefault()"
+          (click)="choose({ kind: 'crop', option })"
+        >
+          {{ option.label }}
+        </li>
+      }
+    }
+    @if (newName(); as name) {
+      <li
+        role="option"
+        class="list-group-item list-group-item-action text-success fw-semibold"
+        [id]="optionId(rows().length - 1)"
+        [class.active]="active() === rows().length - 1"
+        aria-selected="false"
+        (mousedown)="$event.preventDefault()"
+        (click)="choose({ kind: 'add', name })"
+      >
+        <i class="bi bi-plus-circle me-1" aria-hidden="true"></i>
+        {{ 'cropPicker.addNew' | translate: { name } }}
+      </li>
+    }
+  </ul>
+  <div class="visually-hidden" aria-live="polite">
+    {{ 'cropPicker.results' | translate: { count: cropCount() } }}
+  </div>
+}

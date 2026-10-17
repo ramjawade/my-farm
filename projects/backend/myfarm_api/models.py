@@ -91,12 +91,33 @@ class CropCatalog(Base):
     """Reference data: known crop species."""
 
     __tablename__ = "crop_catalog"
+    __table_args__ = (
+        Index(
+            "uq_crop_catalog_shared_name",
+            func.lower(text("name")),
+            unique=True,
+            postgresql_where=text("farmer_id IS NULL"),
+        ),
+        Index(
+            "uq_crop_catalog_farmer_name",
+            "farmer_id",
+            func.lower(text("name")),
+            unique=True,
+            postgresql_where=text("farmer_id IS NOT NULL"),
+        ),
+    )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
     common_names: Mapped[str | None] = mapped_column(Text, nullable=True)
     # The mandi feed's commodity name for this crop (exact spelling); null = no price.
     price_commodity: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    # cereal, pulse, oilseed, cash, vegetable, fruit or other.
+    category: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    # Null = predefined (or an earlier shared name); set = that farmer's own custom crop.
+    farmer_id: Mapped[int | None] = mapped_column(
+        BigInteger, ForeignKey("farmer.id"), nullable=True
+    )
 
     crops: Mapped[list["Crop"]] = relationship(
         "Crop", foreign_keys="Crop.crop_catalog_id"
