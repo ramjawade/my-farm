@@ -9,7 +9,7 @@ import httpx
 import pytest
 
 from myfarm_api.core.config import get_settings
-from myfarm_api.core.mandi_feed import FeedError, MandiFeed, parse_record
+from myfarm_api.core.mandi_feed import FeedError, MandiFeed, describe_failure, parse_record
 
 SAMPLE = json.loads((Path(__file__).parent / "fixtures" / "mandi_feed_sample.json").read_text())
 
@@ -74,6 +74,41 @@ async def test_fetch_failure_does_not_leak_the_key(monkeypatch: pytest.MonkeyPat
     with pytest.raises(FeedError) as err:
         await MandiFeed().fetch_commodity("Maize")
     assert "test-key" not in str(err.value)
+
+
+@pytest.mark.asyncio
+async def test_a_connection_failure_says_why_without_the_key(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ConnectError("[Errno 111] Connection refused")
+
+    _patch_client(monkeypatch, handler)
+    with pytest.raises(FeedError) as err:
+        await MandiFeed().fetch_commodity("Maize")
+    message = str(err.value)
+    assert "ConnectError" in message and "Connection refused" in message
+    assert "test-key" not in message
+
+
+@pytest.mark.asyncio
+async def test_a_status_failure_reports_the_status(monkeypatch: pytest.MonkeyPatch) -> None:
+    _patch_client(monkeypatch, lambda request: httpx.Response(403))
+    with pytest.raises(FeedError) as err:
+        await MandiFeed().fetch_commodity("Maize")
+    assert "HTTP 403" in str(err.value) and "test-key" not in str(err.value)
+
+
+def test_describe_failure_follows_the_cause_and_hides_the_secret() -> None:
+    try:
+        try:
+            raise OSError("getaddrinfo failed for host with key=SECRET123")
+        except OSError as inner:
+            raise httpx.ConnectError("") from inner
+    except httpx.ConnectError as outer:
+        text = describe_failure(outer, "SECRET123")
+    assert text.startswith("ConnectError <- OSError: getaddrinfo failed")
+    assert "SECRET123" not in text
 
 
 @pytest.mark.asyncio
