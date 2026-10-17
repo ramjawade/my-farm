@@ -18,7 +18,7 @@
 
 ## 3. Finish
 
-- [ ] 3.1 Run `ruff`, `mypy` and `pytest`, and `npm run lint` and `npm run build`
-- [ ] 3.2 Have the user review the Marathi and Hindi crop names, and take a Neon snapshot before the deploy
+- [x] 3.1 Run `ruff`, `mypy` and `pytest`, and `npm run lint` and `npm run build`
+- [x] 3.2 Have the user review the Marathi and Hindi crop names, and take a Neon snapshot before the deploy
 - [x] 3.3 Open the PR naming `crop-catalog`
-- [ ] 3.4 After the PR merges, archive this change (it adds `crop-catalog` and updates `crops-screen`)
+- [x] 3.4 Archive this change on the PR branch (it adds `crop-catalog` and updates `crops-screen`)

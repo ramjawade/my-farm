@@ -61,7 +61,7 @@ The detail page SHALL show a back link "All crops", a header with the crop name 
 - **THEN** the bar moves and the crop's stored stage advances to the next of the eight
 
 ### Requirement: Add or edit a crop
-The form SHALL ask for Season (Kharif, Rabi, Zaid), Crop name, Land (a saved land), Total surface area with a unit (hectares or acres), and Sowing date, all required, and optionally Irrigation type (Drip, Sprinkler, Flood, Manual) and Farming method (Organic, Conventional, Conservation Farming, Natural Farming). When opened with a land in the link, that land SHALL be preselected. Saving SHALL store all values, including the optional ones when chosen.
+The form SHALL ask for Season (Kharif, Rabi, Zaid), Crop name, Land (a saved land), Total surface area with a unit (hectares or acres), and Sowing date, all required, and optionally Irrigation type (Drip, Sprinkler, Flood, Manual) and Farming method (Organic, Conventional, Conservation Farming, Natural Farming). Crop name SHALL be chosen from the crop catalog list, grouped and searchable, with "Add new crop" offered when the typed name matches nothing. When opened with a land in the link, that land SHALL be preselected. Saving SHALL store all values, including the optional ones when chosen.
 
 #### Scenario: Create with optional fields
 - **WHEN** the farmer fills the required fields, chooses Drip and Organic, and saves
@@ -82,3 +82,11 @@ The form SHALL ask for Season (Kharif, Rabi, Zaid), Crop name, Land (a saved lan
 #### Scenario: No lands
 - **WHEN** the farmer has no saved lands
 - **THEN** the Land field is disabled and says to draw a land first
+
+#### Scenario: Pick from the list
+- **WHEN** a farmer with no crops opens Add crop and the Crop name list
+- **THEN** the predefined crops appear in their groups and choosing Onion fills the field
+
+#### Scenario: Add a missing crop
+- **WHEN** the farmer types "Dragon fruit", which is not in the list
+- **THEN** the list offers "Add new crop Dragon fruit" and choosing it fills the field with that name
