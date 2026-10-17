@@ -2,7 +2,7 @@
 
 ## 1. Verify the feed
 
-- [ ] 1.1 From an Indian IP with the real key, confirm the maximum `limit` and the feed's exact spelling of Maharashtra and of our crops' commodities (the fetcher's first run reports them). Render and GitHub's US runners are refused, so this runs on the self-hosted runner.
+- [x] 1.1 From an Indian IP with the real key, confirm the maximum `limit` and the feed's exact spelling of Maharashtra and of our crops' commodities. Done on the first runs: 100 per page works, `Maharashtra` matches, and 35 of 36 commodities return rows; Sunflower returned none on the first day (probably no arrivals that day, to be re-checked after a few daily runs).
 
 ## 2. Schema
 
@@ -39,5 +39,5 @@ Replaces the pull-based ingest of 3.2 and the workflow of 5.1, which cannot reac
 ## 7. Finish
 
 - [x] 7.1 Run `ruff`, `mypy` and `pytest`, and `npm run lint` and `npm run build`
-- [ ] 7.2 Register the runner on your PC, add the two secrets, run the workflow once and send the result so task 1.1 can be closed
-- [ ] 7.3 Archive this change on its PR branch once CI is green and the first run has stored prices, and tick task 4.2a in `prototype-adoption-roadmap/tasks.md`
+- [x] 7.2 Register the runner on your PC, add the two secrets, run the workflow once and send the result so task 1.1 can be closed
+- [x] 7.3 Archive this change on its PR branch once CI is green and the first run has stored prices, and tick task 4.2a in `prototype-adoption-roadmap/tasks.md`
