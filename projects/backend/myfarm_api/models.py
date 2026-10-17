@@ -371,6 +371,52 @@ class FarmerMandi(Base):
     position: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
+class Watchlist(Base):
+    """A named list of crop-at-market items that one farmer follows."""
+
+    __tablename__ = "watchlist"
+    __table_args__ = (
+        Index("idx_watchlist_farmer_id", "farmer_id"),
+        Index("uq_watchlist_farmer_name", "farmer_id", func.lower(text("name")), unique=True),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    farmer_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("farmer.id"), nullable=False)
+    name: Mapped[str] = mapped_column(String(30), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    items: Mapped[list["WatchlistItem"]] = relationship(
+        "WatchlistItem",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        order_by="WatchlistItem.id",
+    )
+
+
+class WatchlistItem(Base):
+    """One crop at one market in a watchlist. Tenancy flows through the list."""
+
+    __tablename__ = "watchlist_item"
+    __table_args__ = (
+        UniqueConstraint("watchlist_id", "crop_catalog_id", "mandi_id", name="uq_watchlist_item"),
+        Index("idx_watchlist_item_watchlist_id", "watchlist_id"),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    watchlist_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("watchlist.id", ondelete="CASCADE"), nullable=False
+    )
+    crop_catalog_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("crop_catalog.id"), nullable=False
+    )
+    mandi_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("mandi.id"), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
 class CropSale(Base):
     """A sale of produce from a crop. Tenancy flows through `crop_id`."""
 

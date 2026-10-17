@@ -104,6 +104,7 @@ export const CONTRACT_FILES = [
  *   PUT /api/v1/me/mandis                 -> MyMandisResponse
  *   GET /api/v1/prices/latest             -> LatestPricesResponse
  *   GET /api/v1/prices/history?mandi_id=&commodity=&days=7|30|365 -> PriceHistoryResponse
+ *   GET /api/v1/prices/crops/{crop_catalog_id}/markets?limit=&include= -> CropMarketsResponse
  *
  * Prices are rupees per quintal. \`suggested\` is true while the followed
  * mandis are the district defaults and the farmer has not chosen any.
@@ -117,6 +118,31 @@ export const CONTRACT_FILES = [
       { name: 'LatestPricesResponse', schema: 'LatestPrices' },
       { name: 'PricePointResponse', schema: 'PricePoint' },
       { name: 'PriceHistoryResponse', schema: 'PriceHistory' },
+      { name: 'CropMarketResponse', schema: 'CropMarket' },
+      { name: 'CropMarketsResponse', schema: 'CropMarkets' },
+    ],
+  },
+  {
+    file: 'watchlist.contract.ts',
+    header: `/**
+ * Watchlists — named lists of crop-at-market items, each with its latest price.
+ *
+ *   GET    /api/v1/watchlists                      -> WatchlistsResponse
+ *   POST   /api/v1/watchlists                      -> WatchlistResponse      (201)
+ *   DELETE /api/v1/watchlists/{id}                 -> 204
+ *   POST   /api/v1/watchlists/{id}/items           -> WatchlistItemResponse  (201)
+ *   DELETE /api/v1/watchlists/{id}/items/{item_id} -> 204
+ *
+ * Refusals use a short code in the problem title: \`name_taken\`, \`reserved_name\`,
+ * \`list_limit\` (10 lists), \`item_limit\` (20 items), \`duplicate_item\` (409), and
+ * \`crop_has_no_price\` (422).
+ */`,
+    exports: [
+      { name: 'WatchlistsResponse', schema: 'Watchlists' },
+      { name: 'WatchlistResponse', schema: 'WatchlistRead' },
+      { name: 'WatchlistItemResponse', schema: 'WatchlistItemRead' },
+      { name: 'WatchlistCreateRequest', schema: 'WatchlistCreate' },
+      { name: 'WatchlistItemCreateRequest', schema: 'WatchlistItemCreate' },
     ],
   },
   {

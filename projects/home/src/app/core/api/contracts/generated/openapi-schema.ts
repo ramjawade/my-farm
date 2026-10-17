@@ -800,6 +800,29 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/prices/crops/{crop_catalog_id}/markets': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Crop Markets
+     * @description The markets that have a price for a crop, best price first.
+     *
+     *     `include` names a market that must be in the answer when it has a price, even if it
+     *     falls outside the first `limit` (the market the farmer opened).
+     */
+    get: operations['crop_markets_api_v1_prices_crops__crop_catalog_id__markets_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/prices/history': {
     parameters: {
       query?: never;
@@ -947,6 +970,90 @@ export interface paths {
     put?: never;
     post?: never;
     delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/watchlists': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List Watchlists
+     * @description The farmer's lists, oldest first, with their items and latest prices.
+     */
+    get: operations['list_watchlists_api_v1_watchlists_get'];
+    put?: never;
+    /**
+     * Create Watchlist
+     * @description Create an empty list. 409 for a repeated or reserved name, or at the list limit.
+     */
+    post: operations['create_watchlist_api_v1_watchlists_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/watchlists/{list_id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Delete Watchlist
+     * @description Delete a list and its items.
+     */
+    delete: operations['delete_watchlist_api_v1_watchlists__list_id__delete'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/watchlists/{list_id}/items': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Add Watchlist Item
+     * @description Add a crop at a market. The crop must have a mandi price; no repeats; 20 per list.
+     */
+    post: operations['add_watchlist_item_api_v1_watchlists__list_id__items_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/watchlists/{list_id}/items/{item_id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Remove Watchlist Item
+     * @description Remove one item from a list.
+     */
+    delete: operations['remove_watchlist_item_api_v1_watchlists__list_id__items__item_id__delete'];
     options?: never;
     head?: never;
     patch?: never;
@@ -1526,6 +1633,11 @@ export interface components {
        * @default false
        */
       custom: boolean;
+      /**
+       * Has Price
+       * @default false
+       */
+      has_price: boolean;
       /** Id */
       id: number;
       /** Name */
@@ -1566,6 +1678,36 @@ export interface components {
        * @default active
        */
       status: string;
+    };
+    /**
+     * CropMarket
+     * @description A market that has a price for a crop, with that price.
+     */
+    CropMarket: {
+      /** Change Pct */
+      change_pct?: number | null;
+      mandi: components['schemas']['MandiRead'];
+      /** Previous Price */
+      previous_price?: number | null;
+      /** Price */
+      price: number;
+      /**
+       * Price Date
+       * Format: date
+       */
+      price_date: string;
+    };
+    /**
+     * CropMarkets
+     * @description The markets that have a price for one crop, best price first.
+     */
+    CropMarkets: {
+      /** Commodity */
+      commodity: string;
+      /** Crop Catalog Id */
+      crop_catalog_id: number;
+      /** Markets */
+      markets: components['schemas']['CropMarket'][];
     };
     /**
      * CropPrices
@@ -2228,6 +2370,59 @@ export interface components {
       msg: string;
       /** Error Type */
       type: string;
+    };
+    /**
+     * WatchlistCreate
+     * @description Create a watchlist.
+     */
+    WatchlistCreate: {
+      /** Name */
+      name: string;
+    };
+    /**
+     * WatchlistItemCreate
+     * @description Add a crop at a market to a watchlist.
+     */
+    WatchlistItemCreate: {
+      /** Crop Catalog Id */
+      crop_catalog_id: number;
+      /** Mandi Id */
+      mandi_id: number;
+    };
+    /**
+     * WatchlistItemRead
+     * @description One item with its latest price; the price is null when the market has none.
+     */
+    WatchlistItemRead: {
+      /** Change Pct */
+      change_pct?: number | null;
+      /** Commodity */
+      commodity: string;
+      /** Crop Catalog Id */
+      crop_catalog_id: number;
+      /** Id */
+      id: number;
+      mandi: components['schemas']['MandiRead'];
+      /** Previous Price */
+      previous_price?: number | null;
+      /** Price */
+      price?: number | null;
+      /** Price Date */
+      price_date?: string | null;
+    };
+    /** WatchlistRead */
+    WatchlistRead: {
+      /** Id */
+      id: number;
+      /** Items */
+      items: components['schemas']['WatchlistItemRead'][];
+      /** Name */
+      name: string;
+    };
+    /** Watchlists */
+    Watchlists: {
+      /** Lists */
+      lists: components['schemas']['WatchlistRead'][];
     };
     /**
      * WeatherResponse
@@ -4116,6 +4311,42 @@ export interface operations {
       };
     };
   };
+  crop_markets_api_v1_prices_crops__crop_catalog_id__markets_get: {
+    parameters: {
+      query?: {
+        limit?: number;
+        include?: number | null;
+      };
+      header?: {
+        authorization?: string | null;
+      };
+      path: {
+        crop_catalog_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['CropMarkets'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
   price_history_api_v1_prices_history_get: {
     parameters: {
       query: {
@@ -4369,6 +4600,172 @@ export interface operations {
           'application/json': {
             [key: string]: unknown;
           };
+        };
+      };
+    };
+  };
+  list_watchlists_api_v1_watchlists_get: {
+    parameters: {
+      query?: never;
+      header?: {
+        authorization?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Watchlists'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  create_watchlist_api_v1_watchlists_post: {
+    parameters: {
+      query?: never;
+      header?: {
+        authorization?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['WatchlistCreate'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['WatchlistRead'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  delete_watchlist_api_v1_watchlists__list_id__delete: {
+    parameters: {
+      query?: never;
+      header?: {
+        authorization?: string | null;
+      };
+      path: {
+        list_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  add_watchlist_item_api_v1_watchlists__list_id__items_post: {
+    parameters: {
+      query?: never;
+      header?: {
+        authorization?: string | null;
+      };
+      path: {
+        list_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['WatchlistItemCreate'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['WatchlistItemRead'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  remove_watchlist_item_api_v1_watchlists__list_id__items__item_id__delete: {
+    parameters: {
+      query?: never;
+      header?: {
+        authorization?: string | null;
+      };
+      path: {
+        list_id: number;
+        item_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
         };
       };
     };

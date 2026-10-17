@@ -1,7 +1,9 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
 import {
+  addItemResolver,
   myApmcsResolver,
+  newListResolver,
   priceDetailResolver,
   pricesResolver,
 } from './features/prices/prices-data';
@@ -227,6 +229,22 @@ export const routes: Routes = [
         resolve: { data: myApmcsResolver },
         loadComponent: () =>
           import('./features/prices/my-apmcs.component').then((m) => m.MyApmcsComponent),
+      },
+      {
+        path: 'lists/new',
+        title: 'shell.title.newList',
+        data: { parent: '/prices' },
+        resolve: { data: newListResolver },
+        loadComponent: () =>
+          import('./features/prices/new-list.component').then((m) => m.NewListComponent),
+      },
+      {
+        path: 'lists/:id/add',
+        title: 'shell.title.addItem',
+        data: { parent: '/prices?list=:id' },
+        resolve: { data: addItemResolver },
+        loadComponent: () =>
+          import('./features/prices/add-item.component').then((m) => m.AddItemComponent),
       },
       {
         path: ':crop',

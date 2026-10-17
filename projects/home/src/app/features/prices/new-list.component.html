@@ -1,0 +1,56 @@
+<div class="mf-page-container">
+  <a routerLink="/prices" class="btn btn-link px-0 mb-2 text-decoration-none">
+    <i class="bi bi-chevron-left" aria-hidden="true"></i> {{ 'prices.allPrices' | translate }}
+  </a>
+
+  <header class="mb-3">
+    <h1 class="h4 mb-1">{{ 'prices.newListTitle' | translate }}</h1>
+    <p class="text-body-secondary mb-0">{{ 'prices.newListSubtitle' | translate }}</p>
+  </header>
+
+  @if (data().status === 'error') {
+    <div class="card p-5 text-center">
+      <i class="bi bi-exclamation-triangle text-danger fs-1 d-block mb-3" aria-hidden="true"></i>
+      <h2 class="h5">{{ 'prices.errorTitle' | translate }}</h2>
+      <a routerLink="/prices" class="btn btn-outline-success mx-auto mt-2">{{
+        'prices.allPrices' | translate
+      }}</a>
+    </div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="card" style="max-width: 760px">
+      @if (full()) {
+        <div class="alert alert-warning" role="alert">
+          {{ 'prices.listLimit' | translate: { max: maxLists } }}
+        </div>
+      }
+      <div class="row g-3">
+        <div class="col-12 col-md-8">
+          <label class="form-label required-label" for="nl-name">{{
+            'prices.listName' | translate
+          }}</label>
+          <input
+            id="nl-name"
+            class="form-control"
+            formControlName="name"
+            autocomplete="off"
+            [attr.maxlength]="maxName"
+            [placeholder]="'prices.listNamePlaceholder' | translate"
+            [class.is-invalid]="nameMessage() !== null"
+            [attr.aria-invalid]="nameMessage() !== null ? 'true' : null"
+            [attr.aria-describedby]="nameMessage() !== null ? 'nl-name-error' : null"
+          />
+          @if (nameMessage(); as message) {
+            <div class="invalid-feedback" id="nl-name-error">{{ message | translate }}</div>
+          }
+        </div>
+      </div>
+
+      <div class="mf-action-row mt-3">
+        <a routerLink="/prices" class="btn btn-secondary">{{ 'common.cancel' | translate }}</a>
+        <button type="submit" class="btn btn-primary" [disabled]="saving() || full()">
+          {{ 'prices.createList' | translate }}
+        </button>
+      </div>
+    </form>
+  }
+</div>

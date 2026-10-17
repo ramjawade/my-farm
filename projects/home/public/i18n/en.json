@@ -742,7 +742,9 @@
       "editSale": "Edit sale",
       "prices": "Mandi prices",
       "myApmcs": "My APMCs",
-      "priceDetail": "Price detail"
+      "priceDetail": "Price detail",
+      "newList": "New watchlist",
+      "addItem": "Add item"
     }
   },
   "login": {
@@ -1278,6 +1280,44 @@
       "365": "1 year"
     },
     "editCrop": "Edit crop",
-    "editCrops": "Choose crops"
+    "editCrops": "Choose crops",
+    "tabs": "Watchlists",
+    "tabFarm": "My farm",
+    "newList": "New list",
+    "listCount": "Items: {{count}}",
+    "deleteList": "Delete list",
+    "addItem": "Add item",
+    "listEmptyTitle": "Nothing watched yet",
+    "listEmptyText": "Add a crop at any market to follow its price here.",
+    "removeItem": "Remove {{crop}} at {{mandi}}",
+    "watchHint": "Watchlists can include crops you do not grow.",
+    "deleteListTitle": "Delete list",
+    "deleteListConfirm": "Delete this list and everything in it?",
+    "listDeleted": "List deleted.",
+    "newListTitle": "New watchlist",
+    "newListSubtitle": "Group the crops and markets you want to follow.",
+    "listName": "List name",
+    "listNamePlaceholder": "e.g. Onion markets",
+    "listNameRequired": "Give the list a name.",
+    "listNameTaken": "You already have a list with this name.",
+    "listNameTooLong": "Use 30 characters or fewer.",
+    "listLimit": "You have {{max}} lists, the most allowed. Delete one to add another.",
+    "createList": "Create list",
+    "listCreated": "List created.",
+    "listNotFoundTitle": "This list was not found.",
+    "addItemTitle": "Add to {{list}}",
+    "addItemSubtitle": "Pick a crop and the market you want to follow.",
+    "itemLimit": "This list has the most items allowed. Remove one to add another.",
+    "crop": "Crop",
+    "selectCrop": "Select crop",
+    "selectMarket": "Select market",
+    "pickCropFirst": "Pick a crop first",
+    "pickCrop": "Pick a crop.",
+    "pickMarket": "Pick a market.",
+    "alreadyInList": "Already in this list.",
+    "noMarkets": "No market has a price for this crop yet.",
+    "bestFirst": "Best price first.",
+    "addToList": "Add to list",
+    "itemAdded": "Added to {{list}}."
   }
 }

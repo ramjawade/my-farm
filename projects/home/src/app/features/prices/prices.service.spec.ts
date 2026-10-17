@@ -34,6 +34,15 @@ describe('PricesService', () => {
     });
   });
 
+  it('asks for the markets of a crop, with the limit and the market to include', async () => {
+    await service.cropMarkets(5, { limit: 20, include: 12 });
+    expect(get).toHaveBeenCalledWith('/prices/crops/5/markets', { limit: '20', include: '12' });
+
+    get.calls.reset();
+    await service.cropMarkets(5);
+    expect(get).toHaveBeenCalledWith('/prices/crops/5/markets', {});
+  });
+
   it('saves the chosen mandis in order', async () => {
     await service.saveMandis([3, 1, 2]);
     expect(put).toHaveBeenCalledWith('/me/mandis', { mandi_ids: [3, 1, 2] });

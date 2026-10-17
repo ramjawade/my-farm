@@ -76,3 +76,21 @@ class PriceHistory(BaseModel):
     lowest: float | None = None
     average: float | None = None
     highest: float | None = None
+
+
+class CropMarket(BaseModel):
+    """A market that has a price for a crop, with that price."""
+
+    mandi: MandiRead
+    price: float
+    price_date: date
+    previous_price: float | None = None
+    change_pct: float | None = None
+
+
+class CropMarkets(BaseModel):
+    """The markets that have a price for one crop, best price first."""
+
+    crop_catalog_id: int
+    commodity: str
+    markets: list[CropMarket]
