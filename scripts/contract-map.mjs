@@ -94,6 +94,32 @@ export const CONTRACT_FILES = [
     ],
   },
   {
+    file: 'mandi-price.contract.ts',
+    header: `/**
+ * Mandi prices — mandis, the mandis a farmer follows, latest prices and history.
+ *
+ *   GET /api/v1/mandis/districts          -> { items: string[] }
+ *   GET /api/v1/mandis?district=&q=&commodity=&limit=  -> { items: MandiResponse[] }
+ *   GET /api/v1/me/mandis                 -> MyMandisResponse
+ *   PUT /api/v1/me/mandis                 -> MyMandisResponse
+ *   GET /api/v1/prices/latest             -> LatestPricesResponse
+ *   GET /api/v1/prices/history?mandi_id=&commodity=&days=7|30|365 -> PriceHistoryResponse
+ *
+ * Prices are rupees per quintal. \`suggested\` is true while the followed
+ * mandis are the district defaults and the farmer has not chosen any.
+ */`,
+    exports: [
+      { name: 'MandiResponse', schema: 'MandiRead' },
+      { name: 'MyMandisResponse', schema: 'MyMandisRead' },
+      { name: 'MyMandisUpdateRequest', schema: 'MyMandisUpdate' },
+      { name: 'MandiPriceResponse', schema: 'MandiPrice' },
+      { name: 'CropPricesResponse', schema: 'CropPrices' },
+      { name: 'LatestPricesResponse', schema: 'LatestPrices' },
+      { name: 'PricePointResponse', schema: 'PricePoint' },
+      { name: 'PriceHistoryResponse', schema: 'PriceHistory' },
+    ],
+  },
+  {
     file: 'land.contract.ts',
     header: `/**
  * Lands — a drawn plot of land (Angular calls this a \`SavedFarm\`).

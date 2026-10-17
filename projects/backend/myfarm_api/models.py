@@ -95,6 +95,8 @@ class CropCatalog(Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     common_names: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # The mandi feed's commodity name for this crop (exact spelling); null = no price.
+    price_commodity: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     crops: Mapped[list["Crop"]] = relationship(
         "Crop", foreign_keys="Crop.crop_catalog_id"
@@ -288,6 +290,64 @@ class Crop(TenantScopedBase):
     activities: Mapped[list["Activity"]] = relationship(
         "Activity", foreign_keys="Activity.crop_id", cascade="all, delete-orphan"
     )
+
+
+class Mandi(Base):
+    """A market (APMC) reported by the mandi price feed. Shared reference data."""
+
+    __tablename__ = "mandi"
+    __table_args__ = (
+        UniqueConstraint("state", "district", "name", name="uq_mandi_state_district_name"),
+        Index("idx_mandi_district", "district"),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    state: Mapped[str] = mapped_column(String(100), nullable=False)
+    district: Mapped[str] = mapped_column(String(150), nullable=False)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+
+
+class PriceReading(Base):
+    """One day's price of a commodity variety and grade at a mandi (rupees per quintal)."""
+
+    __tablename__ = "price_reading"
+    __table_args__ = (
+        UniqueConstraint(
+            "mandi_id",
+            "commodity",
+            "variety",
+            "grade",
+            "price_date",
+            name="uq_price_reading_key",
+        ),
+        Index("idx_price_reading_lookup", "mandi_id", "commodity", "price_date"),
+        Index("idx_price_reading_date", "price_date"),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    mandi_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("mandi.id"), nullable=False)
+    commodity: Mapped[str] = mapped_column(String(100), nullable=False)
+    variety: Mapped[str] = mapped_column(String(100), nullable=False)
+    grade: Mapped[str] = mapped_column(String(100), nullable=False)
+    price_date: Mapped[date] = mapped_column(Date, nullable=False)
+    min_price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    max_price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    modal_price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+
+
+class FarmerMandi(Base):
+    """A mandi a farmer follows, in the order they chose it."""
+
+    __tablename__ = "farmer_mandi"
+    __table_args__ = (
+        UniqueConstraint("farmer_id", "mandi_id", name="uq_farmer_mandi"),
+        Index("idx_farmer_mandi_farmer_id", "farmer_id"),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    farmer_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("farmer.id"), nullable=False)
+    mandi_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("mandi.id"), nullable=False)
+    position: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
 class CropSale(Base):
