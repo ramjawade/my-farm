@@ -107,6 +107,24 @@ export const routes: Routes = [
                 (m) => m.CreateActivityComponent,
               ),
           },
+          {
+            path: 'sales/new',
+            title: 'shell.title.recordSale',
+            data: { parent: '/crops/:cropId' },
+            loadComponent: () =>
+              import('./features/crop-timeline/crop-sales/sale-form.component').then(
+                (m) => m.SaleFormComponent,
+              ),
+          },
+          {
+            path: 'sales/:saleId/edit',
+            title: 'shell.title.editSale',
+            data: { parent: '/crops/:cropId' },
+            loadComponent: () =>
+              import('./features/crop-timeline/crop-sales/sale-form.component').then(
+                (m) => m.SaleFormComponent,
+              ),
+          },
         ],
       },
     ],

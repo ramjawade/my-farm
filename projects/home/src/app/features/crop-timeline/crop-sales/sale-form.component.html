@@ -1,0 +1,149 @@
+<div class="mf-page-container">
+  <header
+    class="d-flex justify-content-between align-items-center"
+    style="gap: 12px; padding-bottom: 12px"
+  >
+    <div class="min-w-0">
+      <h1 class="h4 mb-1">
+        {{ (isEdit() ? 'saleForm.editTitle' : 'saleForm.addTitle') | translate }}
+      </h1>
+      <p class="text-body-secondary mb-0">
+        {{ 'saleForm.subtitle' | translate: { crop: cropName() } }}
+      </p>
+    </div>
+    <button type="button" class="btn btn-outline-secondary text-nowrap" (click)="cancel()">
+      {{ 'common.cancel' | translate }}
+    </button>
+  </header>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="card" style="max-width: 760px">
+    <div class="row g-3">
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="sf-crop">{{ 'saleForm.crop' | translate }}</label>
+        <input id="sf-crop" class="form-control" [value]="cropName()" disabled />
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label required-label" for="sf-date">{{
+          'saleForm.dateSold' | translate
+        }}</label>
+        <input
+          id="sf-date"
+          type="date"
+          class="form-control"
+          formControlName="soldOn"
+          [class.is-invalid]="showError('soldOn')"
+        />
+        @if (showError('soldOn')) {
+          <div class="invalid-feedback">{{ 'saleForm.dateRequired' | translate }}</div>
+        }
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label required-label" for="sf-qty">{{
+          'saleForm.quantity' | translate
+        }}</label>
+        <div class="input-group has-validation">
+          <input
+            id="sf-qty"
+            type="number"
+            min="0"
+            step="any"
+            class="form-control"
+            formControlName="quantity"
+            [placeholder]="'saleForm.quantity' | translate"
+            [class.is-invalid]="showQuantityError()"
+          />
+          <input
+            class="form-control"
+            formControlName="unit"
+            list="sf-units"
+            autocomplete="off"
+            [placeholder]="'saleForm.unitPlaceholder' | translate"
+            [attr.aria-label]="'saleForm.unit' | translate"
+            [class.is-invalid]="showQuantityError()"
+          />
+          <datalist id="sf-units">
+            @for (u of units; track u) {
+              <option [value]="u"></option>
+            }
+          </datalist>
+          @if (showQuantityError()) {
+            <div class="invalid-feedback">{{ quantityMessage() | translate }}</div>
+          }
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label required-label" for="sf-rate">{{
+          'saleForm.rate' | translate
+        }}</label>
+        <input
+          id="sf-rate"
+          type="number"
+          min="0"
+          step="any"
+          class="form-control"
+          formControlName="rate"
+          [placeholder]="'saleForm.ratePlaceholder' | translate"
+          [class.is-invalid]="showError('rate')"
+        />
+        @if (showError('rate')) {
+          <div class="invalid-feedback">{{ 'saleForm.rateRequired' | translate }}</div>
+        }
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label required-label" for="sf-amount">{{
+          'saleForm.amount' | translate
+        }}</label>
+        <input
+          id="sf-amount"
+          type="number"
+          min="0"
+          step="any"
+          class="form-control"
+          formControlName="amount"
+          [placeholder]="'saleForm.amountPlaceholder' | translate"
+          [class.is-invalid]="showError('amount')"
+        />
+        @if (showError('amount')) {
+          <div class="invalid-feedback">{{ 'saleForm.amountRequired' | translate }}</div>
+        } @else {
+          <div class="form-text">{{ 'saleForm.amountHint' | translate }}</div>
+        }
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="sf-buyer">{{ 'saleForm.buyer' | translate }}</label>
+        <input
+          id="sf-buyer"
+          class="form-control"
+          formControlName="buyer"
+          autocomplete="off"
+          [placeholder]="'saleForm.buyerPlaceholder' | translate"
+        />
+      </div>
+
+      <div class="col-12">
+        <label class="form-label" for="sf-notes">{{ 'saleForm.notes' | translate }}</label>
+        <textarea
+          id="sf-notes"
+          class="form-control"
+          rows="2"
+          formControlName="notes"
+          [placeholder]="'saleForm.notesPlaceholder' | translate"
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="d-flex mt-3" style="gap: 8px">
+      <button type="submit" class="btn btn-primary" [disabled]="saving()">
+        {{ (isEdit() ? 'saleForm.saveChanges' : 'saleForm.save') | translate }}
+      </button>
+      <button type="button" class="btn btn-outline-secondary" (click)="cancel()">
+        {{ 'common.cancel' | translate }}
+      </button>
+    </div>
+  </form>
+</div>

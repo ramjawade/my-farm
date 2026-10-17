@@ -1,0 +1,92 @@
+<section class="card">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h2 class="h6 mb-0">{{ 'cropSales.title' | translate }}</h2>
+    @if (sales().length) {
+      <button type="button" class="btn btn-sm btn-primary" (click)="add.emit()">
+        + {{ 'cropSales.record' | translate }}
+      </button>
+    }
+  </div>
+
+  @if (!sales().length) {
+    <div class="text-center py-3">
+      <i class="bi bi-currency-rupee fs-3 text-body-secondary" aria-hidden="true"></i>
+      <p class="fw-semibold mb-1">{{ 'cropSales.emptyTitle' | translate }}</p>
+      <p class="text-body-secondary small mb-3">{{ 'cropSales.emptyBody' | translate }}</p>
+      <button type="button" class="btn btn-primary" (click)="add.emit()">
+        {{ 'cropSales.record' | translate }}
+      </button>
+    </div>
+  } @else {
+    <div class="row row-cols-3 g-2 mb-3 text-center">
+      <div class="col">
+        <strong class="d-block">₹{{ summary().total | localNumber: '1.0-0' }}</strong>
+        <small class="text-body-secondary">{{ 'cropSales.totalSales' | translate }}</small>
+      </div>
+      <div class="col">
+        <strong class="d-block" [class]="profitTone()">
+          {{ summary().profit < 0 ? '−' : '+' }}₹{{ abs(summary().profit) | localNumber: '1.0-0' }}
+        </strong>
+        <small class="text-body-secondary">{{ 'cropSales.profit' | translate }}</small>
+      </div>
+      <div class="col">
+        @if (summary().profitPerAcre !== null) {
+          <strong class="d-block" [class]="perAcreTone()">
+            {{ summary().profitPerAcre! < 0 ? '−' : '+' }}₹{{
+              abs(summary().profitPerAcre!) | localNumber: '1.0-0'
+            }}
+          </strong>
+        } @else {
+          <strong class="d-block">–</strong>
+        }
+        <small class="text-body-secondary">{{ 'cropSales.profitPerAcre' | translate }}</small>
+      </div>
+    </div>
+
+    <ul class="list-unstyled d-flex flex-column gap-2 mb-2">
+      @for (sale of sales(); track sale.id) {
+        <li class="d-flex justify-content-between align-items-center gap-2 border rounded-3 p-2">
+          <span class="min-w-0">
+            <strong class="d-block text-truncate">
+              {{
+                'cropSales.line'
+                  | translate
+                    : {
+                        qty: (sale.quantity | localNumber: '1.0-2'),
+                        unit: sale.unit,
+                        rate: (sale.rate | localNumber: '1.0-2'),
+                      }
+              }}
+            </strong>
+            <small class="text-body-secondary">
+              {{ sale.soldOn | localDate: 'mediumDate' }} ·
+              {{ sale.buyer || ('cropSales.noBuyer' | translate) }}
+            </small>
+          </span>
+          <span class="d-flex align-items-center gap-1 flex-shrink-0">
+            <strong>₹{{ sale.amount | localNumber: '1.0-0' }}</strong>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary"
+              [attr.aria-label]="'common.edit' | translate"
+              (click)="edit.emit(sale)"
+            >
+              <i class="bi bi-pencil" aria-hidden="true"></i>
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-danger"
+              [attr.aria-label]="'common.delete' | translate"
+              (click)="remove.emit(sale)"
+            >
+              <i class="bi bi-trash" aria-hidden="true"></i>
+            </button>
+          </span>
+        </li>
+      }
+    </ul>
+    <p class="small text-body-secondary mb-0">
+      {{ 'cropSales.footnote' | translate: { expenses: (expenses() | localNumber: '1.0-0') } }}
+    </p>
+  }
+</section>

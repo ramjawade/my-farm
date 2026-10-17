@@ -1,11 +1,12 @@
 """SQLAlchemy ORM models — source of truth for schema and Alembic."""
 
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
 
 from sqlalchemy import (
     BigInteger,
+    Date,
     DateTime,
     ForeignKey,
     Index,
@@ -287,6 +288,30 @@ class Crop(TenantScopedBase):
     activities: Mapped[list["Activity"]] = relationship(
         "Activity", foreign_keys="Activity.crop_id", cascade="all, delete-orphan"
     )
+
+
+class CropSale(Base):
+    """A sale of produce from a crop. Tenancy flows through `crop_id`."""
+
+    __tablename__ = "crop_sale"
+    __table_args__ = (Index("idx_crop_sale_crop_id", "crop_id"),)
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    crop_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("crop.id"), nullable=False)
+    sold_on: Mapped[date] = mapped_column(Date, nullable=False)
+    quantity: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    unit: Mapped[str] = mapped_column(String(50), nullable=False)
+    rate: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+    buyer: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
 class Activity(TenantScopedBase):

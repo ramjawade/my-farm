@@ -20,6 +20,10 @@ import { SavedFarm } from '../../../map/models/map.models';
 import { CropActivity } from '../crop-timeline.models';
 import { CropTimelineService } from '../crop-timeline.service';
 import { cropIconClass, daysAfterSowing, stageStep, STAGE_STEPS } from '../crop-timeline.utils';
+import { CropSale } from '../crop-sales/crop-sale.models';
+import { CropSalesCardComponent } from '../crop-sales/crop-sales-card.component';
+import { CropSalesService } from '../crop-sales/crop-sales.service';
+import { sortSales, summarizeSales } from '../crop-sales/sales-summary';
 import { StageBarComponent } from '../stage-bar/stage-bar.component';
 
 export type ActivityTab = 'all' | 'upcoming' | 'recent';
@@ -32,6 +36,7 @@ export type ActivityTab = 'all' | 'upcoming' | 'recent';
     RouterLink,
     RouterOutlet,
     ConfirmDialogComponent,
+    CropSalesCardComponent,
     StageBarComponent,
     TranslatePipe,
     ReferenceNamePipe,
@@ -48,6 +53,7 @@ export class CropActivityComponent implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly i18n = inject(I18n);
+  private readonly salesService = inject(CropSalesService);
 
   private readonly cropId = toSignal(
     this.route.paramMap.pipe(map((params) => parseId(params.get('cropId')))),
@@ -76,6 +82,20 @@ export class CropActivityComponent implements OnInit {
 
   readonly lands = signal<SavedFarm[]>([]);
   readonly land = computed(() => this.lands().find((l) => l.id === this.crop()?.fieldId) ?? null);
+
+  readonly sales = signal<CropSale[]>([]);
+  readonly sortedSales = computed(() => sortSales(this.sales()));
+  readonly salesSummary = computed(() => {
+    const crop = this.crop();
+    return summarizeSales(
+      this.sales(),
+      this.cropCost(),
+      crop?.area ?? 0,
+      crop?.areaUnit ?? 'acres',
+    );
+  });
+  readonly saleToDelete = signal<CropSale | null>(null);
+  readonly showDeleteSaleConfirm = signal(false);
 
   readonly showDeleteCropConfirm = signal(false);
   readonly tab = signal<ActivityTab>('all');
@@ -140,10 +160,48 @@ export class CropActivityComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     void this.timelineService.reload();
+    void this.loadSales();
     try {
       this.lands.set(await this.farmLookup.loadForCurrentUser());
     } catch {
       // The header simply omits the land link if lands cannot be loaded.
+    }
+  }
+
+  private async loadSales(): Promise<void> {
+    const id = this.cropId();
+    if (!id) return;
+    try {
+      this.sales.set(await this.salesService.list(id));
+    } catch {
+      this.toast.error(this.translate.instant('cropSales.loadError'));
+    }
+  }
+
+  onRecordSaleClicked(): void {
+    this.router.navigate(['sales', 'new'], { relativeTo: this.route });
+  }
+
+  onEditSaleClicked(sale: CropSale): void {
+    this.router.navigate(['sales', sale.id, 'edit'], { relativeTo: this.route });
+  }
+
+  onDeleteSaleClicked(sale: CropSale): void {
+    this.saleToDelete.set(sale);
+    this.showDeleteSaleConfirm.set(true);
+  }
+
+  async confirmDeleteSale(): Promise<void> {
+    const sale = this.saleToDelete();
+    const id = this.cropId();
+    this.showDeleteSaleConfirm.set(false);
+    if (!sale || !id) return;
+    try {
+      await this.salesService.remove(id, sale.id);
+      this.sales.update((list) => list.filter((s) => s.id !== sale.id));
+      this.toast.success(this.translate.instant('cropSales.deletedToast'));
+    } catch {
+      this.toast.error(this.translate.instant('cropSales.deleteError'));
     }
   }
 
