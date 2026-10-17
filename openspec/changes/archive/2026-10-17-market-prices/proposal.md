@@ -10,6 +10,7 @@ A farmer growing onion or tomato wants to know what their crop is fetching at th
 - **No distance:** the data has no coordinates, so the prototype's "km away" is replaced by the mandi's district.
 - **Days, not hours:** the prototype's intraday "Day" view is dropped; periods are 7 days, 30 days and 1 year.
 - **History grows over time:** a period shows only the days that have readings, with a short note when the history is shorter than the period.
+- **Easier to fix a crop with no price:** a "No price" row says to pick a specific crop (like Onion) and links to edit that crop. To make that quick, the crop picker also finds a crop by the other names farmers use for it ("kanda", "pyaz", "til"), in English letters or in Marathi or Hindi.
 - Alerts and watchlists are not part of this change; the detail's Alerts card and the list tabs arrive with `price-alerts-and-watchlist`.
 
 Prototype screens: `prices`, `pricedetail`, `apmcs` in `design/prototype/myfarm-prototype.html`.
@@ -20,6 +21,7 @@ Prototype screens: `prices`, `pricedetail`, `apmcs` in `design/prototype/myfarm-
 - `market-prices-screens`: the Prices page, the price detail and the My APMCs picker.
 
 ### Modified Capabilities
+- `crop-catalog`: the crop search also matches other common names.
 - `app-shell`: a Prices entry in the sidebar and bottom tabs, and route titles.
 
 ## Impact
@@ -34,6 +36,7 @@ Prototype screens: `prices`, `pricedetail`, `apmcs` in `design/prototype/myfarm-
 - Intraday charts, forecasts or buyer offers.
 - Selling flow or any link from a price to a recorded sale.
 - Offline use; like the rest of the app this is online-only.
+- A refresh or fetch button: prices are fetched by the self-hosted runner in India (`market-price-data`), and the pages only read what is stored.
 
 ## User journey
 

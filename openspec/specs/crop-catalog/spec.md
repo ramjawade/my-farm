@@ -28,7 +28,7 @@ The app SHALL offer a predefined list of common crops that is the same for every
 - **THEN** both see the same predefined crops
 
 ### Requirement: Names in the farmer's language
-Each predefined crop SHALL show its name in the app's current language (Marathi, Hindi or English). A custom crop SHALL show the name the farmer typed. Search SHALL match the name in the current language and the English name, ignoring case and extra spaces.
+Each predefined crop SHALL show its name in the app's current language (Marathi, Hindi or English). A custom crop SHALL show the name the farmer typed. Search SHALL match the name in the current language, the English name, and the other names farmers commonly use for the crop (such as "kanda" or "pyaz" for Onion, or "til" for Sesame, written in English letters or in Marathi or Hindi), ignoring case and extra spaces. Typing one of those other names exactly SHALL NOT offer to add a new crop.
 
 #### Scenario: Marathi names
 - **WHEN** the app language is Marathi
@@ -37,6 +37,10 @@ Each predefined crop SHALL show its name in the app's current language (Marathi,
 #### Scenario: Search in either language
 - **WHEN** the language is Marathi and the farmer searches "onion" or "कांदा"
 - **THEN** Onion is found in both cases
+
+#### Scenario: Search by another common name
+- **WHEN** the language is English and the farmer searches "kanda" or "til"
+- **THEN** Onion is found for "kanda" and Sesame for "til", and "Add new crop" is not offered
 
 ### Requirement: Add a custom crop
 A farmer SHALL be able to add a crop that is not in the list by typing its name. The name SHALL be trimmed, SHALL NOT be empty, and SHALL be at most 100 characters. Adding a name that matches a predefined crop, in any case, SHALL use that predefined crop and SHALL NOT create a copy. Adding a name that matches the farmer's own custom crop, in any case, SHALL use that one.

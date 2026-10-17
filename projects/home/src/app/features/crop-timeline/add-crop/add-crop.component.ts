@@ -28,6 +28,7 @@ import { ReferenceDataService } from '../../../core/api/reference-data.service';
 import { ReferenceItem } from '../../../core/api/contracts';
 import { I18n } from '../../../core/i18n/i18n.service';
 import { slugifyReferenceName } from '../../../core/i18n/reference-name';
+import { cropAliases } from './crop-aliases';
 import { CropGroup, CropOption, CropPickerComponent } from './crop-picker.component';
 
 /** Group order in the crop list; the farmer's own crops come first. */
@@ -100,7 +101,11 @@ export class AddCropComponent implements OnInit {
       return translated === key ? item.name : translated;
     };
     const byLabel = (a: CropOption, b: CropOption): number => a.label.localeCompare(b.label);
-    const option = (item: ReferenceItem): CropOption => ({ name: item.name, label: label(item) });
+    const option = (item: ReferenceItem): CropOption => ({
+      name: item.name,
+      label: label(item),
+      aliases: item.custom ? [] : cropAliases(item.name),
+    });
     const items = this.catalog();
 
     const groups: CropGroup[] = [

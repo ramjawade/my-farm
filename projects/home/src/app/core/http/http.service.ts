@@ -61,6 +61,14 @@ export class HttpService {
     );
   }
 
+  put<T>(path: string, body: unknown): Promise<T> {
+    return this.withLoader(
+      this.withErrorToast(
+        firstValueFrom(this.http.put<T>(this.url(path), body, { headers: this.headers() })),
+      ),
+    );
+  }
+
   patch<T>(path: string, body: unknown): Promise<T> {
     return this.withLoader(
       this.withErrorToast(

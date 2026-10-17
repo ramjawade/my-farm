@@ -24,6 +24,7 @@ const EN = {
       crops: 'Crops',
       activity: 'Activity',
       reports: 'Reports',
+      prices: 'Prices',
       weather: 'Weather',
     },
     title: { addCrop: 'Add crop', activity: 'Activity' },
@@ -69,7 +70,15 @@ describe('app shell navigation', () => {
       const nav = el.querySelector('nav');
       expect(nav?.getAttribute('aria-label')).toBe('Main navigation');
       const labels = Array.from(nav!.querySelectorAll('a')).map((a) => a.textContent?.trim());
-      expect(labels).toEqual(['Home', 'Lands', 'Crops', 'Activity', 'Reports', 'Weather']);
+      expect(labels).toEqual([
+        'Home',
+        'Lands',
+        'Crops',
+        'Activity',
+        'Reports',
+        'Prices',
+        'Weather',
+      ]);
     });
 
     it('marks only the current section', () => {
@@ -97,10 +106,10 @@ describe('app shell navigation', () => {
   });
 
   describe('TabBar', () => {
-    it('shows five tabs without Weather', () => {
+    it('shows six tabs without Weather', () => {
       const el = render(TabBar);
       const labels = Array.from(el.querySelectorAll('a')).map((a) => a.textContent?.trim());
-      expect(labels).toEqual(['Home', 'Lands', 'Crops', 'Activity', 'Reports']);
+      expect(labels).toEqual(['Home', 'Lands', 'Crops', 'Activity', 'Reports', 'Prices']);
       expect(el.querySelector('nav')?.getAttribute('aria-label')).toBe('Sections');
     });
 

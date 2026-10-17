@@ -13,6 +13,8 @@ import { TranslatePipe } from '@ngx-translate/core';
 export interface CropOption {
   name: string;
   label: string;
+  /** Other names the farmer may type for this crop ("kanda" for Onion). */
+  aliases?: readonly string[];
 }
 
 export interface CropGroup {
@@ -74,9 +76,7 @@ export class CropPickerComponent {
     return this.groups()
       .map((g) => ({
         ...g,
-        options: g.options.filter(
-          (o) => normalize(o.label).includes(query) || normalize(o.name).includes(query),
-        ),
+        options: g.options.filter((o) => this.matches(o, query)),
       }))
       .filter((g) => g.options.length);
   });
@@ -87,7 +87,7 @@ export class CropPickerComponent {
     const query = normalize(typed);
     if (!query) return '';
     const exact = this.groups().some((g) =>
-      g.options.some((o) => normalize(o.label) === query || normalize(o.name) === query),
+      g.options.some((o) => this.names(o).some((n) => n === query)),
     );
     return exact ? '' : typed;
   });
@@ -115,6 +115,15 @@ export class CropPickerComponent {
     const i = this.active();
     return this.open() && i >= 0 && i < this.rows().length ? `${this.inputId()}-opt-${i}` : null;
   });
+
+  /** Every normalized name the farmer might type for an option. */
+  private names(option: CropOption): string[] {
+    return [option.label, option.name, ...(option.aliases ?? [])].map(normalize);
+  }
+
+  private matches(option: CropOption, query: string): boolean {
+    return this.names(option).some((n) => n.includes(query));
+  }
 
   optionId(index: number): string {
     return `${this.inputId()}-opt-${index}`;
