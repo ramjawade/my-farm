@@ -711,7 +711,9 @@
       "notFound": "Page not found",
       "editCrop": "Edit crop",
       "addExpense": "Add expense",
-      "editExpense": "Edit expense"
+      "editExpense": "Edit expense",
+      "recordSale": "Record sale",
+      "editSale": "Edit sale"
     }
   },
   "login": {
@@ -1111,5 +1113,52 @@
     "addedToast": "Expense added.",
     "updatedToast": "Expense updated.",
     "loadError": "Could not load this expense."
+  },
+  "saleForm": {
+    "addTitle": "Record sale",
+    "editTitle": "Edit sale",
+    "subtitle": "Add what you sold from {{crop}}.",
+    "crop": "Crop",
+    "dateSold": "Date sold",
+    "quantity": "Quantity",
+    "unit": "Unit",
+    "unitPlaceholder": "Unit",
+    "rate": "Rate per unit (₹)",
+    "ratePlaceholder": "e.g. 1200",
+    "amount": "Amount (₹)",
+    "amountPlaceholder": "Total received",
+    "amountHint": "Worked out from quantity and rate. Change it if the buyer paid a different total.",
+    "buyer": "Buyer",
+    "buyerPlaceholder": "e.g. Nashik APMC",
+    "notes": "Notes",
+    "notesPlaceholder": "Optional",
+    "dateRequired": "Pick the date sold.",
+    "quantityRequired": "Enter a quantity above zero.",
+    "unitRequired": "Enter a unit, such as crates or kg.",
+    "rateRequired": "Enter a rate above zero.",
+    "amountRequired": "Enter an amount above zero.",
+    "save": "Save sale",
+    "saveChanges": "Save changes",
+    "addedToast": "Sale recorded.",
+    "updatedToast": "Sale updated.",
+    "saveError": "Could not save the sale. Try again.",
+    "loadError": "Could not load this sale."
+  },
+  "cropSales": {
+    "title": "Sales",
+    "record": "Record sale",
+    "emptyTitle": "No sales yet",
+    "emptyBody": "Record what you sell from this crop to see profit and profit per acre.",
+    "totalSales": "Total sales",
+    "profit": "Profit",
+    "profitPerAcre": "Profit / acre",
+    "line": "{{qty}} {{unit}} at ₹{{rate}}",
+    "noBuyer": "No buyer noted",
+    "footnote": "Profit is sales minus crop expenses (₹{{expenses}}), per acre over the crop area.",
+    "deleteTitle": "Delete sale",
+    "deleteConfirm": "Delete this sale? The totals will update.",
+    "deletedToast": "Sale deleted.",
+    "deleteError": "Could not delete the sale.",
+    "loadError": "Could not load the sales."
   }
 }
