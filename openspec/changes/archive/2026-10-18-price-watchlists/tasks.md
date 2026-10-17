@@ -24,5 +24,5 @@ Applying starts after `market-prices` (#385) is merged, because it extends those
 ## 3. Finish
 
 - [x] 3.1 Run `ruff`, `mypy`, `pytest`, `npm run lint` and `npm run build`
-- [ ] 3.2 Open the draft PR naming `price-watchlists` (done with the plan) and have the user look at lists on desktop and a phone
-- [ ] 3.3 Archive this change on the PR branch once CI is green (it adds the `price-watchlists` spec) and tick task 4.3a in `prototype-adoption-roadmap/tasks.md`
+- [x] 3.2 Open the draft PR naming `price-watchlists` (done with the plan) and have the user look at lists on desktop and a phone
+- [x] 3.3 Archive this change on the PR branch once CI is green (it adds the `price-watchlists` spec) and tick task 4.3a in `prototype-adoption-roadmap/tasks.md`
