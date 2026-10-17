@@ -19,5 +19,5 @@
 - [x] 3.1 mr, hi and en strings; keep the translation check green
 - [x] 3.2 Update the Playwright golden path to add the expense through the page
 - [x] 3.3 Run `npm run lint`, `npm run build` and `npm test`; fix findings
-- [ ] 3.4 Open the PR naming `expenses-redesign`
-- [ ] 3.5 After the PR merges, archive this change and tick task 3.6 in `prototype-adoption-roadmap/tasks.md`
+- [x] 3.4 Open the PR naming `expenses-redesign`
+- [x] 3.5 After the PR merges, archive this change and tick task 3.6 in `prototype-adoption-roadmap/tasks.md`
