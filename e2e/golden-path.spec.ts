@@ -33,7 +33,7 @@ async function pickCrop(page: Page, text: string): Promise<void> {
   const input = page.locator('#name');
   await input.click();
   await input.fill(text);
-  await page.getByRole('option').first().click();
+  await page.locator('#name-list').getByRole('option').first().click();
 }
 
 test.describe('Golden path', () => {
