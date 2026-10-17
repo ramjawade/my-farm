@@ -5,7 +5,7 @@ context: |
   Frontend: Angular (standalone components, signals), Bootstrap CSS, workspace projects `home` and `shared` under projects/.
   Backend: Python (FastAPI-style), checked with ruff, mypy, pytest; deployed on Render, Postgres on Neon.
   Conventions: Bootstrap utility classes before custom CSS; follow the angular-best-practices skill for frontend code.
-  Workflow: OpenSpec-first; the GitHub board is not used. Branch `claude/feature-<change-name>`; the PR names the change.
+  Workflow: OpenSpec-first; the GitHub board is not used. One change = one branch (`claude/feature-<change-name>`) = one PR that holds the plan, the code and the archive. Propose, open a draft PR, get approval, apply, archive on the branch once CI is green, then merge.
   UX source of truth: design/prototype/myfarm-prototype.html and design/prototype/myfarm-design-system.html.
 
 rules:
@@ -23,11 +23,13 @@ rules:
   tasks:
     - One PR-sized group of tasks per change; split large features into several changes.
     - Final tasks always include `npm run lint` and `npm run build` (backend - ruff, mypy, pytest).
+    - Final tasks open the draft PR, archive the change on the branch once CI is green (sync specs, tick the roadmap), and mark the PR ready. No task waits for the merge.
 
 operations:
   apply:
     guidance:
-      - Do not start code until the user has approved the change.
+      - Do not start code until the user has approved the change (in the draft PR or in chat).
+      - Work on the change's own branch; stage explicit paths and keep other changes' files out.
   archive:
     guidance:
-      - Archive after the PR merges.
+      - Archive on the change's PR branch once CI is green, before the merge, so the PR holds the plan, code and archive. Tick the roadmap in the same commit.
