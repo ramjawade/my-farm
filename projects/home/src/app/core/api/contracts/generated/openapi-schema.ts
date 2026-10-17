@@ -4040,7 +4040,7 @@ export interface operations {
       query: {
         mandi_id: number;
         commodity: string;
-        days?: 7 | 30 | 365;
+        days?: number;
       };
       header?: {
         authorization?: string | null;

@@ -7362,11 +7362,6 @@
             "required": false,
             "schema": {
               "default": 30,
-              "enum": [
-                7,
-                30,
-                365
-              ],
               "title": "Days",
               "type": "integer"
             }

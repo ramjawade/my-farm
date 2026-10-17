@@ -4,7 +4,6 @@ from collections import defaultdict
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from statistics import median
-from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
@@ -22,6 +21,8 @@ from myfarm_api.schemas.mandi import (
 )
 
 router = APIRouter(prefix="/api/v1/prices", tags=["prices"])
+
+HISTORY_PERIODS = (7, 30, 365)
 
 
 def _daily_prices(rows: list[tuple[date, Decimal]]) -> dict[date, float]:
@@ -101,10 +102,14 @@ async def latest_prices(
 async def price_history(
     mandi_id: int = Query(ge=1, le=2**63 - 1),
     commodity: str = Query(min_length=1, max_length=100),
-    days: Literal[7, 30, 365] = Query(30),
+    days: int = Query(30),
     _farmer: Farmer = Depends(get_current_farmer),
 ) -> PriceHistory:
     """Daily prices of a commodity at one mandi for the last `days` days, oldest first."""
+    # An int checked here, not a Literal: query strings arrive as text ("7") and a
+    # Literal[7, 30, 365] would reject them.
+    if days not in HISTORY_PERIODS:
+        raise HTTPException(status_code=422, detail="days must be 7, 30 or 365")
     since = datetime.now(UTC).date() - timedelta(days=days)
     async with get_session_factory()() as session:
         mandi = await session.get(Mandi, mandi_id)
