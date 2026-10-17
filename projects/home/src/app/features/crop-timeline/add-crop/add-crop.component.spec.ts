@@ -176,6 +176,9 @@ describe('AddCropComponent land preselection and edit', () => {
     expect(groups.map((g) => g.key)).toEqual(['custom', 'cereal', 'vegetable']);
     expect(groups[0].options.map((o) => o.name)).toEqual(['Dragon fruit']);
     expect(groups[2].options.map((o) => o.name)).toEqual(['Onion']);
+    // A predefined crop carries its other names; a custom crop has none.
+    expect(groups[2].options[0].aliases).toContain('kanda');
+    expect(groups[0].options[0].aliases).toEqual([]);
   });
 
   it('puts a picked crop in the form and a typed one too', async () => {

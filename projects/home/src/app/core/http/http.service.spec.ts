@@ -30,6 +30,17 @@ describe('HttpService', () => {
     httpMock.verify();
   });
 
+  it('sends a PUT with the body', () => {
+    const promise = service.put('/me/mandis', { mandi_ids: [1] });
+
+    const req = httpMock.expectOne('/api/v1/me/mandis');
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual({ mandi_ids: [1] });
+    req.flush({ items: [], suggested: false });
+
+    return promise;
+  });
+
   it('prefixes relative paths with the configured API base URL', () => {
     const promise = service.get('/lands');
 

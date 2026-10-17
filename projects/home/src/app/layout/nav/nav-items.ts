@@ -35,6 +35,13 @@ export const NAV_ITEMS: readonly NavItem[] = [
     phoneTab: true,
   },
   {
+    key: 'prices',
+    labelKey: 'shell.nav.prices',
+    icon: 'bi-currency-rupee',
+    link: '/prices',
+    phoneTab: true,
+  },
+  {
     key: 'weather',
     labelKey: 'shell.nav.weather',
     icon: 'bi-cloud-sun',

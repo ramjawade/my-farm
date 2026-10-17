@@ -28,7 +28,7 @@ Each task is one child change: run `/opsx:propose`, get approval, apply it, merg
 
 - [x] 4.1 `harvest-and-sale-tracking`: fill in the existing empty change; record harvests and sales against a crop, income roll-ups [prototype: addsale, cropdetail]
 - [x] 4.2a `market-price-data`: mandi list, daily price ingest (GitHub Actions trigger), price history, chosen mandis per farmer, read API
-- [ ] 4.2b `market-prices`: price list, price detail with charts, APMC picker [prototype: prices, pricedetail, apmcs]
+- [x] 4.2b `market-prices`: price list, price detail with charts, APMC picker [prototype: prices, pricedetail, apmcs]
 - [ ] 4.3a `price-watchlists`: named watchlists of crop-at-market items, tabs on the Prices page, New list and Add item [prototype: wlView, newwl, addwi]
 - [ ] 4.3b `price-alerts`: price alerts and their banners [prototype: alerts, addalert]
 - [ ] 4.4 `assistant-full-page`: assistant screen, greeting with brief bullets, suggested questions, review-and-save of logged entries [prototype: chat]

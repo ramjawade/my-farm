@@ -1,5 +1,10 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
+import {
+  myApmcsResolver,
+  priceDetailResolver,
+  pricesResolver,
+} from './features/prices/prices-data';
 
 /**
  * Every signed-in route declares `title` (a translation key) and
@@ -200,6 +205,38 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/reports/reports.component').then((m) => m.ReportsComponent),
     canActivate: [authGuard],
+  },
+  {
+    // No component: the children share this section and title, and the page data is
+    // resolved before each child opens.
+    path: 'prices',
+    title: 'shell.title.prices',
+    data: { section: 'prices' },
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        resolve: { data: pricesResolver },
+        loadComponent: () =>
+          import('./features/prices/prices-list.component').then((m) => m.PricesListComponent),
+      },
+      {
+        path: 'mandis',
+        title: 'shell.title.myApmcs',
+        data: { parent: '/prices' },
+        resolve: { data: myApmcsResolver },
+        loadComponent: () =>
+          import('./features/prices/my-apmcs.component').then((m) => m.MyApmcsComponent),
+      },
+      {
+        path: ':crop',
+        title: 'shell.title.priceDetail',
+        data: { parent: '/prices' },
+        resolve: { data: priceDetailResolver },
+        loadComponent: () =>
+          import('./features/prices/price-detail.component').then((m) => m.PriceDetailComponent),
+      },
+    ],
   },
   {
     path: '**',
