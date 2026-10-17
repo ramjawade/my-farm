@@ -135,6 +135,15 @@
           </div>
         </div>
 
+        <app-crop-sales-card
+          [sales]="sortedSales()"
+          [summary]="salesSummary()"
+          [expenses]="cropCost()"
+          (add)="onRecordSaleClicked()"
+          (edit)="onEditSaleClicked($event)"
+          (remove)="onDeleteSaleClicked($event)"
+        />
+
         <div class="row" style="--bs-gutter-x: 12px; --bs-gutter-y: 12px">
           <div class="col-12 col-lg-6">
             <section class="card h-100">
@@ -250,4 +259,14 @@
   [isDestructive]="true"
   [(isOpen)]="showDeleteCropConfirm"
   (confirm)="confirmDeleteCrop()"
+></lib-confirm-dialog>
+
+<lib-confirm-dialog
+  [title]="'cropSales.deleteTitle' | translate"
+  [message]="'cropSales.deleteConfirm' | translate"
+  [confirmText]="'common.delete' | translate"
+  [cancelText]="'common.cancel' | translate"
+  [isDestructive]="true"
+  [(isOpen)]="showDeleteSaleConfirm"
+  (confirm)="confirmDeleteSale()"
 ></lib-confirm-dialog>

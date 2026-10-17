@@ -711,7 +711,9 @@
       "notFound": "पृष्ठ सापडले नाही",
       "editCrop": "पीक संपादित करा",
       "addExpense": "खर्च जोडा",
-      "editExpense": "खर्च बदला"
+      "editExpense": "खर्च बदला",
+      "recordSale": "विक्री नोंदवा",
+      "editSale": "विक्री बदला"
     }
   },
   "login": {
@@ -1111,5 +1113,52 @@
     "addedToast": "खर्च जोडला.",
     "updatedToast": "खर्च बदलला.",
     "loadError": "हा खर्च उघडता आला नाही."
+  },
+  "saleForm": {
+    "addTitle": "विक्री नोंदवा",
+    "editTitle": "विक्री बदला",
+    "subtitle": "{{crop}} मधून जे विकले ते जोडा.",
+    "crop": "पीक",
+    "dateSold": "विक्री तारीख",
+    "quantity": "प्रमाण",
+    "unit": "एकक",
+    "unitPlaceholder": "एकक",
+    "rate": "प्रति एकक दर (₹)",
+    "ratePlaceholder": "उदा. 1200",
+    "amount": "रक्कम (₹)",
+    "amountPlaceholder": "एकूण मिळालेली रक्कम",
+    "amountHint": "प्रमाण आणि दरावरून काढलेली. खरेदीदाराने वेगळी रक्कम दिली असल्यास बदला.",
+    "buyer": "खरेदीदार",
+    "buyerPlaceholder": "उदा. नाशिक APMC",
+    "notes": "नोंदी",
+    "notesPlaceholder": "ऐच्छिक",
+    "dateRequired": "विक्री तारीख निवडा.",
+    "quantityRequired": "शून्यापेक्षा जास्त प्रमाण भरा.",
+    "unitRequired": "एकक भरा, उदा. क्रेट किंवा किलो.",
+    "rateRequired": "शून्यापेक्षा जास्त दर भरा.",
+    "amountRequired": "शून्यापेक्षा जास्त रक्कम भरा.",
+    "save": "विक्री जतन करा",
+    "saveChanges": "बदल जतन करा",
+    "addedToast": "विक्री नोंदवली.",
+    "updatedToast": "विक्री अद्यतनित केली.",
+    "saveError": "विक्री जतन करता आली नाही. पुन्हा प्रयत्न करा.",
+    "loadError": "ही विक्री लोड करता आली नाही."
+  },
+  "cropSales": {
+    "title": "विक्री",
+    "record": "विक्री नोंदवा",
+    "emptyTitle": "अजून विक्री नाही",
+    "emptyBody": "या पिकातून जे विकाल ते नोंदवा आणि नफा व प्रति एकर नफा पहा.",
+    "totalSales": "एकूण विक्री",
+    "profit": "नफा",
+    "profitPerAcre": "नफा / एकर",
+    "line": "{{qty}} {{unit}} ₹{{rate}} दराने",
+    "noBuyer": "खरेदीदार नोंदवलेला नाही",
+    "footnote": "नफा = विक्री − पिकाचा खर्च (₹{{expenses}}); प्रति एकर पिकाच्या क्षेत्रावर.",
+    "deleteTitle": "विक्री हटवा",
+    "deleteConfirm": "ही विक्री हटवायची? एकूण रक्कम बदलेल.",
+    "deletedToast": "विक्री हटवली.",
+    "deleteError": "विक्री हटवता आली नाही.",
+    "loadError": "विक्री लोड करता आल्या नाहीत."
   }
 }
