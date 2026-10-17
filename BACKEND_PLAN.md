@@ -450,7 +450,7 @@ day, so a day nobody fetched is a gap in history.
 time: first your own PC, later a small server. In GitHub: Settings, Actions, Runners,
 New self-hosted runner, choose the OS, run the commands it shows, and when asked for
 labels add `india`. On Windows run `config.cmd` and install it as a service so it starts
-with the PC; Node 20 or newer and Git (with Git Bash) must be installed. Whether a cloud
+with the PC; Node 20 or newer and Git must be installed (the workflow needs no Bash; it runs on the runner's default shell). Whether a cloud
 server in India is also accepted by the feed is untested, so try one before paying.
 
 **Safety.** A self-hosted runner executes this repository's workflow code on that

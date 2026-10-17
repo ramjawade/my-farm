@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   buildFeedUrl,
+  checkFeedReachable,
   chunk,
   fetchAllRecords,
   main,
@@ -129,6 +130,20 @@ test('a dry run posts nothing', async () => {
   const result = await main({ ...env, DRY_RUN: '1' }, fetchFn, () => {});
   assert.equal(result.fetched, 1);
   assert.equal(posts.length, 0);
+});
+
+test('the reachability check reports a reply or a refusal and never throws', async () => {
+  const logs = [];
+  await checkFeedReachable(async () => ({ status: 400 }), (l) => logs.push(l));
+  assert.match(logs[0], /reachable from this machine: HTTP 400/);
+
+  const refused = async () => {
+    const error = new Error('fetch failed');
+    error.cause = { code: 'ECONNREFUSED' };
+    throw error;
+  };
+  await checkFeedReachable(refused, (l) => logs.push(l));
+  assert.match(logs[1], /NOT reachable.*ECONNREFUSED/);
 });
 
 test('main refuses to start without its secrets', async () => {

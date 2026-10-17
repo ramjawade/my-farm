@@ -100,6 +100,18 @@ export async function fetchAllRecords({ fetchFn, apiKey, state, commodity, limit
   return records;
 }
 
+/** Says whether the feed answers from this machine. Never throws: it is only a diagnostic. */
+export async function checkFeedReachable(fetchFn, log) {
+  try {
+    const response = await fetchFn(`${FEED_URL}?format=json&limit=1`);
+    // A reply, even HTTP 400 "Authorization field missing", means the connection works.
+    log(`Feed reachable from this machine: HTTP ${response.status}`);
+  } catch (error) {
+    const code = error?.cause?.code ?? error?.message ?? 'unknown error';
+    log(`Feed NOT reachable from this machine (${code}). It only accepts Indian IPs.`);
+  }
+}
+
 async function backend({ fetchFn, base, token, path, method = 'GET', body, retry }) {
   return withRetry(async () => {
     let response;
@@ -132,6 +144,7 @@ export async function main(env = process.env, fetchFn = fetch, log = console.log
   const backendRetry = { tries: 5, delayMs: env.RETRY_DELAY_MS ? Number(env.RETRY_DELAY_MS) : 30_000 };
   const feedRetry = { tries: 3, delayMs: env.RETRY_DELAY_MS ? Number(env.RETRY_DELAY_MS) : 10_000 };
 
+  await checkFeedReachable(fetchFn, log);
   const { commodities } = await backend({
     fetchFn, base, token, path: '/api/v1/admin/prices/commodities', retry: backendRetry,
   });
