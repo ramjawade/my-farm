@@ -27,6 +27,8 @@ class CropCatalogRead(BaseModel):
     category: str | None = None
     # True for a crop the signed-in farmer added; false for the predefined list.
     custom: bool = False
+    # True when the crop has a mandi price, so it can be watched on the Prices page.
+    has_price: bool = False
 
     class Config:
         from_attributes = True

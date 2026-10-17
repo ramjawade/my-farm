@@ -7,6 +7,7 @@
  *   PUT /api/v1/me/mandis                 -> MyMandisResponse
  *   GET /api/v1/prices/latest             -> LatestPricesResponse
  *   GET /api/v1/prices/history?mandi_id=&commodity=&days=7|30|365 -> PriceHistoryResponse
+ *   GET /api/v1/prices/crops/{crop_catalog_id}/markets?limit=&include= -> CropMarketsResponse
  *
  * Prices are rupees per quintal. `suggested` is true while the followed
  * mandis are the district defaults and the farmer has not chosen any.
@@ -17,7 +18,7 @@
  *
  * Run `npm run generate:contracts` to update, after regenerating
  * `projects/backend/openapi.json` (see projects/backend/scripts/export_openapi.py).
- * Source schemas: MandiRead, MyMandisRead, MyMandisUpdate, MandiPrice, CropPrices, LatestPrices, PricePoint, PriceHistory.
+ * Source schemas: MandiRead, MyMandisRead, MyMandisUpdate, MandiPrice, CropPrices, LatestPrices, PricePoint, PriceHistory, CropMarket, CropMarkets.
  */
 
 import type { components } from './generated/openapi-schema';
@@ -30,3 +31,5 @@ export type CropPricesResponse = components['schemas']['CropPrices'];
 export type LatestPricesResponse = components['schemas']['LatestPrices'];
 export type PricePointResponse = components['schemas']['PricePoint'];
 export type PriceHistoryResponse = components['schemas']['PriceHistory'];
+export type CropMarketResponse = components['schemas']['CropMarket'];
+export type CropMarketsResponse = components['schemas']['CropMarkets'];

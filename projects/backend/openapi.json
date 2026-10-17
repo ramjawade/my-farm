@@ -1491,6 +1491,11 @@
             "title": "Custom",
             "type": "boolean"
           },
+          "has_price": {
+            "default": false,
+            "title": "Has Price",
+            "type": "boolean"
+          },
           "id": {
             "title": "Id",
             "type": "integer"
@@ -1634,6 +1639,57 @@
           "crop_catalog_id"
         ],
         "title": "CropCreate",
+        "type": "object"
+      },
+      "CropMarket": {
+        "description": "A market that has a price for a crop, with that price.",
+        "properties": {
+          "mandi": {
+            "$ref": "#/components/schemas/MandiRead"
+          },
+          "price": {
+            "title": "Price",
+            "type": "number"
+          },
+          "price_date": {
+            "format": "date",
+            "title": "Price Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "mandi",
+          "price",
+          "price_date"
+        ],
+        "title": "CropMarket",
+        "type": "object"
+      },
+      "CropMarkets": {
+        "description": "The markets that have a price for one crop, best price first.",
+        "properties": {
+          "commodity": {
+            "title": "Commodity",
+            "type": "string"
+          },
+          "crop_catalog_id": {
+            "title": "Crop Catalog Id",
+            "type": "integer"
+          },
+          "markets": {
+            "items": {
+              "$ref": "#/components/schemas/CropMarket"
+            },
+            "title": "Markets",
+            "type": "array"
+          }
+        },
+        "required": [
+          "crop_catalog_id",
+          "commodity",
+          "markets"
+        ],
+        "title": "CropMarkets",
         "type": "object"
       },
       "CropPrices": {
@@ -3843,6 +3899,160 @@
           "type"
         ],
         "title": "ValidationError",
+        "type": "object"
+      },
+      "WatchlistCreate": {
+        "description": "Create a watchlist.",
+        "properties": {
+          "name": {
+            "maxLength": 30,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "WatchlistCreate",
+        "type": "object"
+      },
+      "WatchlistItemCreate": {
+        "description": "Add a crop at a market to a watchlist.",
+        "properties": {
+          "crop_catalog_id": {
+            "maximum": 9.223372036854776e+18,
+            "minimum": 1.0,
+            "title": "Crop Catalog Id",
+            "type": "integer"
+          },
+          "mandi_id": {
+            "maximum": 9.223372036854776e+18,
+            "minimum": 1.0,
+            "title": "Mandi Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "crop_catalog_id",
+          "mandi_id"
+        ],
+        "title": "WatchlistItemCreate",
+        "type": "object"
+      },
+      "WatchlistItemRead": {
+        "description": "One item with its latest price; the price is null when the market has none.",
+        "properties": {
+          "change_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Pct"
+          },
+          "commodity": {
+            "title": "Commodity",
+            "type": "string"
+          },
+          "crop_catalog_id": {
+            "title": "Crop Catalog Id",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "mandi": {
+            "$ref": "#/components/schemas/MandiRead"
+          },
+          "previous_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Price"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          },
+          "price_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Date"
+          }
+        },
+        "required": [
+          "id",
+          "crop_catalog_id",
+          "commodity",
+          "mandi"
+        ],
+        "title": "WatchlistItemRead",
+        "type": "object"
+      },
+      "WatchlistRead": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/WatchlistItemRead"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "items"
+        ],
+        "title": "WatchlistRead",
+        "type": "object"
+      },
+      "Watchlists": {
+        "properties": {
+          "lists": {
+            "items": {
+              "$ref": "#/components/schemas/WatchlistRead"
+            },
+            "title": "Lists",
+            "type": "array"
+          }
+        },
+        "required": [
+          "lists"
+        ],
+        "title": "Watchlists",
         "type": "object"
       },
       "WeatherResponse": {
@@ -7434,6 +7644,97 @@
         ]
       }
     },
+    "/api/v1/prices/crops/{crop_catalog_id}/markets": {
+      "get": {
+        "description": "The markets that have a price for a crop, best price first.\n\n`include` names a market that must be in the answer when it has a price, even if it\nfalls outside the first `limit` (the market the farmer opened).",
+        "operationId": "crop_markets_api_v1_prices_crops__crop_catalog_id__markets_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "crop_catalog_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Crop Catalog Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 50,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "include",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 9223372036854775807,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Include"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CropMarkets"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Crop Markets",
+        "tags": [
+          "prices"
+        ]
+      }
+    },
     "/api/v1/prices/history": {
       "get": {
         "description": "Daily prices of a commodity at one mandi for the last `days` days, oldest first.",
@@ -7827,6 +8128,304 @@
         "summary": "List Seasons",
         "tags": [
           "reference"
+        ]
+      }
+    },
+    "/api/v1/watchlists": {
+      "get": {
+        "description": "The farmer's lists, oldest first, with their items and latest prices.",
+        "operationId": "list_watchlists_api_v1_watchlists_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Watchlists"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Watchlists",
+        "tags": [
+          "watchlists"
+        ]
+      },
+      "post": {
+        "description": "Create an empty list. 409 for a repeated or reserved name, or at the list limit.",
+        "operationId": "create_watchlist_api_v1_watchlists_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WatchlistCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WatchlistRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Watchlist",
+        "tags": [
+          "watchlists"
+        ]
+      }
+    },
+    "/api/v1/watchlists/{list_id}": {
+      "delete": {
+        "description": "Delete a list and its items.",
+        "operationId": "delete_watchlist_api_v1_watchlists__list_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "list_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "List Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Watchlist",
+        "tags": [
+          "watchlists"
+        ]
+      }
+    },
+    "/api/v1/watchlists/{list_id}/items": {
+      "post": {
+        "description": "Add a crop at a market. The crop must have a mandi price; no repeats; 20 per list.",
+        "operationId": "add_watchlist_item_api_v1_watchlists__list_id__items_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "list_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "List Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WatchlistItemCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WatchlistItemRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Watchlist Item",
+        "tags": [
+          "watchlists"
+        ]
+      }
+    },
+    "/api/v1/watchlists/{list_id}/items/{item_id}": {
+      "delete": {
+        "description": "Remove one item from a list.",
+        "operationId": "remove_watchlist_item_api_v1_watchlists__list_id__items__item_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "list_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "List Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Item Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remove Watchlist Item",
+        "tags": [
+          "watchlists"
         ]
       }
     },

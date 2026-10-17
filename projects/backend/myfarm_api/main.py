@@ -23,6 +23,7 @@ from myfarm_api.routers import (
     me,
     prices,
     reference,
+    watchlists,
     weather,
 )
 from myfarm_api.schemas.common import ProblemDetail
@@ -83,6 +84,7 @@ def create_app() -> FastAPI:
     app.include_router(crops.router)
     app.include_router(mandis.router)
     app.include_router(prices.router)
+    app.include_router(watchlists.router)
     app.include_router(activities.router)
     app.include_router(chat_entry.router)
     app.include_router(assistant.router)

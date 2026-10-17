@@ -20,6 +20,8 @@ export interface ReferenceItem {
   category?: string | null;
   /** Crops only: true for a crop the signed-in farmer added. */
   custom?: boolean;
+  /** Crops only: true when the crop has a mandi price, so it can be watched. */
+  has_price?: boolean;
 }
 
 /**

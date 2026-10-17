@@ -4,12 +4,12 @@ Applying starts after `market-prices` (#385) is merged, because it extends those
 
 ## 1. Backend
 
-- [ ] 1.1 Add the `Watchlist` and `WatchlistItem` models and migration `0011` (unique name per farmer ignoring case, unique crop and market per list, items deleted with their list)
-- [ ] 1.2 Move the latest-and-previous price logic into a shared helper and use it from `GET /prices/latest`, keeping its tests green
-- [ ] 1.3 Add the watchlists router: list, create (name rules, reserved "My farm", limit of 10), delete, add item (price commodity required, duplicate and limit of 20) and remove item, all tenant-scoped through the list
-- [ ] 1.4 Add `GET /prices/crops/{crop_catalog_id}/markets` (best first, limit, includes price and date) and `has_price` on the crop list
-- [ ] 1.5 Add pytest cases for the spec scenarios, including a cross-tenant 404 on every watchlist route
-- [ ] 1.6 Regenerate `openapi.json` and the TypeScript types
+- [x] 1.1 Add the `Watchlist` and `WatchlistItem` models and migration `0011` (unique name per farmer ignoring case, unique crop and market per list, items deleted with their list)
+- [x] 1.2 Move the latest-and-previous price logic into a shared helper and use it from `GET /prices/latest`, keeping its tests green
+- [x] 1.3 Add the watchlists router: list, create (name rules, reserved "My farm", limit of 10), delete, add item (price commodity required, duplicate and limit of 20) and remove item, all tenant-scoped through the list
+- [x] 1.4 Add `GET /prices/crops/{crop_catalog_id}/markets` (best first, limit, includes price and date) and `has_price` on the crop list
+- [x] 1.5 Add pytest cases for the spec scenarios, including a cross-tenant 404 on every watchlist route
+- [x] 1.6 Regenerate `openapi.json` and the TypeScript types
 
 ## 2. Frontend
 

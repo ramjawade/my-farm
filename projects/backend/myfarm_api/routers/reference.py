@@ -45,6 +45,7 @@ def _crop_read(crop: CropCatalog) -> CropCatalogRead:
         common_names=crop.common_names,
         category=crop.category,
         custom=crop.farmer_id is not None,
+        has_price=bool(crop.price_commodity),
     )
 
 
