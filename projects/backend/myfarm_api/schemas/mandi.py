@@ -1,10 +1,17 @@
 """Pydantic schemas for mandi and price endpoints."""
 
 from datetime import date
+from typing import Any
 
 from pydantic import BaseModel, Field
 
 from myfarm_api.schemas.common import BodyId
+
+
+class PriceRowsIn(BaseModel):
+    """A batch of raw mandi feed records; bad rows are skipped, not fatal."""
+
+    rows: list[dict[str, Any]] = Field(max_length=5000)
 
 
 class MandiRead(BaseModel):

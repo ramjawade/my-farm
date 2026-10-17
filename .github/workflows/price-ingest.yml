@@ -1,43 +1,60 @@
 name: Daily mandi price ingest
 
-# Calls the backend's admin ingest once a day. Render's free instance sleeps, so
-# the first request wakes it (about a minute); curl retries with a long timeout.
-# A failed run shows as a red workflow run, which is the alert.
+# Fetches mandi prices from data.gov.in and posts them to the backend.
+#
+# The feed refuses connections from outside India (Render and GitHub's US runners are
+# both refused), so this job runs on a SELF-HOSTED runner in India, labelled "india".
+# A self-hosted runner executes this repository's workflow code on that machine, so it
+# is triggered only by the schedule or by hand, never by pull requests. Keep the
+# repository setting "Require approval for all outside collaborators" on.
+#
+# Safe to run more than once a day: the backend stores the same rows again as a no-op.
 
 on:
   schedule:
     - cron: '30 14 * * *' # 20:00 IST, after most mandis have posted the day's prices
+    - cron: '30 17 * * *' # 23:00 IST, a second chance if the machine was off earlier
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Fetch from the feed and report, but post nothing to the backend'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
+concurrency:
+  group: price-fetch
+  cancel-in-progress: false
+
 jobs:
-  ingest:
-    name: Ingest prices
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+  fetch:
+    name: Fetch and post prices
+    runs-on: [self-hosted, india]
+    timeout-minutes: 30
     steps:
-      - name: Check the price feed is reachable from GitHub (no key sent)
-        # Diagnostic only. HTTP 400 "Authorization field missing" means the feed answered,
-        # so a failure of the next step is on the backend's side of the network.
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Check Node
+        shell: bash
+        run: node --version
+
+      - name: Check the price feed is reachable from this runner (no key sent)
+        # Diagnostic only. HTTP 400 "Authorization field missing" means the feed answered.
         continue-on-error: true
+        shell: bash
         run: |
           curl --silent --show-error --max-time 30 \
             --write-out '\nhttp=%{http_code} connect=%{time_connect}s remote=%{remote_ip}\n' \
             "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?format=json&limit=1" \
             || echo "curl exit code $?"
 
-      - name: Call the ingest endpoint
+      - name: Fetch prices and post them to the backend
+        shell: bash
         env:
           ADMIN_TOKEN: ${{ secrets.PRICE_INGEST_ADMIN_TOKEN }}
-        run: |
-          if [ -z "$ADMIN_TOKEN" ]; then
-            echo "PRICE_INGEST_ADMIN_TOKEN is not set" >&2
-            exit 1
-          fi
-          curl --fail-with-body --silent --show-error \
-            --max-time 300 --retry 3 --retry-delay 30 --retry-all-errors \
-            -X POST \
-            -H "X-Admin-Token: ${ADMIN_TOKEN}" \
-            "https://myfarm-api.onrender.com/api/v1/admin/prices/ingest"
+          MANDI_API_KEY: ${{ secrets.MANDI_API_KEY }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
+        run: node scripts/fetch-mandi-prices.mjs

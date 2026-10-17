@@ -288,7 +288,27 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/api/v1/admin/prices/ingest': {
+  '/api/v1/admin/prices/commodities': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Price Commodities
+     * @description The feed commodity names MyFarm crops map to: what the fetcher should ask for.
+     */
+    get: operations['price_commodities_api_v1_admin_prices_commodities_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/admin/prices/rows': {
     parameters: {
       query?: never;
       header?: never;
@@ -298,10 +318,13 @@ export interface paths {
     get?: never;
     put?: never;
     /**
-     * Ingest Prices
-     * @description Fetch today's mandi prices and store them. Safe to run more than once a day.
+     * Intake Price Rows
+     * @description Store a batch of mandi price rows fetched from the feed. Safe to send twice.
+     *
+     *     The backend cannot call the feed itself (it refuses connections from outside
+     *     India), so a fetcher running in India posts the raw records here.
      */
-    post: operations['ingest_prices_api_v1_admin_prices_ingest_post'];
+    post: operations['intake_price_rows_api_v1_admin_prices_rows_post'];
     delete?: never;
     options?: never;
     head?: never;
@@ -2094,6 +2117,16 @@ export interface components {
       price: number;
     };
     /**
+     * PriceRowsIn
+     * @description A batch of raw mandi feed records; bad rows are skipped, not fatal.
+     */
+    PriceRowsIn: {
+      /** Rows */
+      rows: {
+        [key: string]: unknown;
+      }[];
+    };
+    /**
      * RegisterRequest
      * @description Create a PIN account.
      */
@@ -2864,7 +2897,7 @@ export interface operations {
       };
     };
   };
-  ingest_prices_api_v1_admin_prices_ingest_post: {
+  price_commodities_api_v1_admin_prices_commodities_get: {
     parameters: {
       query?: never;
       header?: {
@@ -2882,7 +2915,44 @@ export interface operations {
         };
         content: {
           'application/json': {
-            [key: string]: unknown;
+            [key: string]: string[];
+          };
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  intake_price_rows_api_v1_admin_prices_rows_post: {
+    parameters: {
+      query?: never;
+      header?: {
+        'x-admin-token'?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PriceRowsIn'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            [key: string]: number;
           };
         };
       };

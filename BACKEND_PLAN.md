@@ -420,19 +420,46 @@ base URL. The API allowlists the GitHub Pages origin for CORS.
 
 ### 9.1 Daily mandi price ingest
 
-`.github/workflows/price-ingest.yml` runs once a day (and on demand) and
-POSTs `/api/v1/admin/prices/ingest` with the admin token. Waking Render's
-sleeping free instance takes about a minute, so the call retries with a long
-timeout; a failed run shows as a red workflow run. The endpoint fetches
-Maharashtra prices from the data.gov.in mandi feed for the commodities that
-`crop_catalog.price_commodity` maps to, stores one reading per mandi,
-commodity, variety, grade and day, and prunes readings older than 400 days.
+**The price feed (data.gov.in, Agmarknet) refuses connections from outside India.**
+Render (Singapore) gets `ConnectionRefusedError` and GitHub's US runners are refused
+too; an Indian IP works. So the backend never calls the feed. A small script,
+`scripts/fetch-mandi-prices.mjs`, runs on an Indian IP, fetches the Maharashtra rows for
+the commodities in `crop_catalog.price_commodity`, and posts them to the backend:
+
+```
+self-hosted runner (India) -> GET  /api/v1/admin/prices/commodities   (what to fetch)
+                           -> feed (api.data.gov.in, key)             (the rows)
+                           -> POST /api/v1/admin/prices/rows          (store, batches of 1,000)
+```
+
+The backend stores one reading per mandi, commodity, variety, grade and day (sending the
+same rows again changes nothing), adds new mandis, ignores other states and unmapped
+commodities, and prunes readings older than 400 days. The feed returns only the current
+day, so a day nobody fetched is a gap in history.
+
+`.github/workflows/price-ingest.yml` runs the script at 20:00 and 23:00 IST and on demand
+(`workflow_dispatch`, with a dry-run option that posts nothing).
 
 | Where | Name | What |
 |---|---|---|
-| Render env | `MANDI_API_KEY` | free data.gov.in API key; blank makes the ingest answer 503 |
-| Render env | `ADMIN_TOKEN` | already set; the same value as the GitHub secret below |
-| GitHub secret | `PRICE_INGEST_ADMIN_TOKEN` | sent as `X-Admin-Token` by the workflow |
+| Render env | `ADMIN_TOKEN` | the shared admin secret (X-Admin-Token); admin endpoints answer 403 while it is blank |
+| GitHub secret | `PRICE_INGEST_ADMIN_TOKEN` | the same value, used by the fetcher |
+| GitHub secret | `MANDI_API_KEY` | the free data.gov.in key (no longer set on Render) |
+
+**Self-hosted runner (label `india`).** A machine in India that is on at the scheduled
+time: first your own PC, later a small server. In GitHub: Settings, Actions, Runners,
+New self-hosted runner, choose the OS, run the commands it shows, and when asked for
+labels add `india`. On Windows run `config.cmd` and install it as a service so it starts
+with the PC; Node 20 or newer and Git (with Git Bash) must be installed. Whether a cloud
+server in India is also accepted by the feed is untested, so try one before paying.
+
+**Safety.** A self-hosted runner executes this repository's workflow code on that
+machine. Therefore:
+
+- the workflow triggers only on `schedule` and `workflow_dispatch`, never `pull_request`;
+- keep Settings, Actions, General, "Fork pull request workflows" on "Require approval
+  for all outside collaborators";
+- the job gets `contents: read` only, and secrets are passed to the one step that needs them.
 
 ---
 

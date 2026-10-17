@@ -45,14 +45,9 @@ class Settings(BaseSettings):
     # disables the admin endpoints entirely.
     admin_token: str = ""
 
-    # Government mandi price feed (data.gov.in, Agmarknet). The key is a free
-    # account key, sent as the `api-key` query parameter. Blank disables the
-    # daily ingest (the endpoint then answers 503), never the rest of the API.
-    mandi_api_key: str = ""
-    mandi_api_url: str = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070"
+    # Mandi prices: a fetcher in India posts rows (the feed refuses foreign IPs, so the
+    # backend never calls it). Only this state's rows are stored.
     mandi_state: str = "Maharashtra"
-    mandi_page_size: int = 100
-    mandi_timeout_seconds: float = 30.0
     price_retention_days: int = 400
 
     # Comma-separated allowlist. The GitHub Pages origin in production;
@@ -73,10 +68,6 @@ class Settings(BaseSettings):
     gemini_api_key: str = ""
     gemini_model: str = "gemini-3.1-flash-lite"
     gemini_timeout_seconds: float = 20.0
-
-    @property
-    def mandi_configured(self) -> bool:
-        return bool(self.mandi_api_key)
 
     @property
     def cors_origin_list(self) -> list[str]:

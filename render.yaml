@@ -31,8 +31,6 @@ services:
         sync: false # HS256 signing key for PIN session tokens (issue #45)
       - key: ADMIN_TOKEN
         sync: false # shared secret for /api/v1/admin/* (X-Admin-Token); blank disables them
-      - key: MANDI_API_KEY
-        sync: false # data.gov.in key for the daily mandi price ingest; blank disables it
       - key: FIREBASE_PROJECT_ID
         sync: false # may be "" — the session JWT path does not need it
       - key: CORS_ORIGINS

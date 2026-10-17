@@ -1,15 +1,13 @@
-"""The mandi feed client: record parsing and paging, with no network."""
+"""Parsing of mandi feed records (the backend does not call the feed)."""
 
 import json
 from datetime import date
 from pathlib import Path
 from typing import Any
 
-import httpx
 import pytest
 
-from myfarm_api.core.config import get_settings
-from myfarm_api.core.mandi_feed import FeedError, MandiFeed, describe_failure, parse_record
+from myfarm_api.core.mandi_feed import parse_record
 
 SAMPLE = json.loads((Path(__file__).parent / "fixtures" / "mandi_feed_sample.json").read_text())
 
@@ -24,7 +22,15 @@ def test_parse_record_reads_the_feeds_shape() -> None:
 
 @pytest.mark.parametrize(
     "change",
-    [{"arrival_date": "not a date"}, {"modal_price": -1}, {"market": ""}, {"min_price": "abc"}],
+    [
+        {"arrival_date": "not a date"},
+        {"modal_price": -1},
+        {"market": ""},
+        {"min_price": "abc"},
+        {"max_price": "NaN"},
+        {"max_price": "Infinity"},
+        {"modal_price": 10**8},
+    ],
 )
 def test_parse_record_rejects_unusable_rows(change: dict[str, Any]) -> None:
     assert parse_record({**SAMPLE["records"][0], **change}) is None
@@ -36,83 +42,11 @@ def test_parse_record_rejects_missing_fields() -> None:
     assert parse_record(record) is None
 
 
-def _patch_client(monkeypatch: pytest.MonkeyPatch, handler: Any) -> None:
-    real = httpx.AsyncClient
-
-    def factory(**kwargs: Any) -> httpx.AsyncClient:
-        return real(transport=httpx.MockTransport(handler), **kwargs)
-
-    monkeypatch.setattr("myfarm_api.core.mandi_feed.httpx.AsyncClient", factory)
-    monkeypatch.setattr(get_settings(), "mandi_api_key", "test-key")
-    monkeypatch.setattr(get_settings(), "mandi_page_size", 2)
+def test_the_sample_has_one_bad_row() -> None:
+    parsed = [parse_record(r) for r in SAMPLE["records"]]
+    assert [p is None for p in parsed] == [False, False, False, True]
 
 
-@pytest.mark.asyncio
-async def test_fetch_pages_and_counts_unusable_rows(monkeypatch: pytest.MonkeyPatch) -> None:
-    seen: list[dict[str, str]] = []
-
-    def handler(request: httpx.Request) -> httpx.Response:
-        params = dict(request.url.params)
-        seen.append(params)
-        offset = int(params["offset"])
-        records = SAMPLE["records"][offset : offset + 2]
-        return httpx.Response(200, json={**SAMPLE, "records": records, "count": len(records)})
-
-    _patch_client(monkeypatch, handler)
-    rows, skipped = await MandiFeed().fetch_commodity("Maize")
-
-    assert len(rows) == 3 and skipped == 1
-    assert [p["offset"] for p in seen] == ["0", "2"]
-    assert seen[0]["api-key"] == "test-key"
-    assert seen[0]["filters[state.keyword]"] == get_settings().mandi_state
-    assert seen[0]["filters[commodity]"] == "Maize"
-
-
-@pytest.mark.asyncio
-async def test_fetch_failure_does_not_leak_the_key(monkeypatch: pytest.MonkeyPatch) -> None:
-    _patch_client(monkeypatch, lambda request: httpx.Response(500))
-    with pytest.raises(FeedError) as err:
-        await MandiFeed().fetch_commodity("Maize")
-    assert "test-key" not in str(err.value)
-
-
-@pytest.mark.asyncio
-async def test_a_connection_failure_says_why_without_the_key(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    def handler(request: httpx.Request) -> httpx.Response:
-        raise httpx.ConnectError("[Errno 111] Connection refused")
-
-    _patch_client(monkeypatch, handler)
-    with pytest.raises(FeedError) as err:
-        await MandiFeed().fetch_commodity("Maize")
-    message = str(err.value)
-    assert "ConnectError" in message and "Connection refused" in message
-    assert "test-key" not in message
-
-
-@pytest.mark.asyncio
-async def test_a_status_failure_reports_the_status(monkeypatch: pytest.MonkeyPatch) -> None:
-    _patch_client(monkeypatch, lambda request: httpx.Response(403))
-    with pytest.raises(FeedError) as err:
-        await MandiFeed().fetch_commodity("Maize")
-    assert "HTTP 403" in str(err.value) and "test-key" not in str(err.value)
-
-
-def test_describe_failure_follows_the_cause_and_hides_the_secret() -> None:
-    try:
-        try:
-            raise OSError("getaddrinfo failed for host with key=SECRET123")
-        except OSError as inner:
-            raise httpx.ConnectError("") from inner
-    except httpx.ConnectError as outer:
-        text = describe_failure(outer, "SECRET123")
-    assert text.startswith("ConnectError <- OSError: getaddrinfo failed")
-    assert "SECRET123" not in text
-
-
-@pytest.mark.asyncio
-async def test_fetch_without_a_key_is_an_error(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(get_settings(), "mandi_api_key", "")
-    with pytest.raises(FeedError):
-        await MandiFeed().fetch_commodity("Maize")
+def test_prices_may_arrive_as_text() -> None:
+    row = parse_record({**SAMPLE["records"][0], "modal_price": "2100.50", "min_price": "2000"})
+    assert row is not None and float(row.modal_price) == 2100.5
