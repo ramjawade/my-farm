@@ -288,6 +288,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/admin/prices/ingest': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Ingest Prices
+     * @description Fetch today's mandi prices and store them. Safe to run more than once a day.
+     */
+    post: operations['ingest_prices_api_v1_admin_prices_ingest_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/admin/seed-reference-data': {
     parameters: {
       query?: never;
@@ -660,6 +680,46 @@ export interface paths {
     patch: operations['update_land_api_v1_lands__land_id__patch'];
     trace?: never;
   };
+  '/api/v1/mandis': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Find Mandis
+     * @description Mandis narrowed by district, by partial name or district text, and by commodity.
+     */
+    get: operations['find_mandis_api_v1_mandis_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/mandis/districts': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List Districts
+     * @description Districts that have at least one mandi, in name order.
+     */
+    get: operations['list_districts_api_v1_mandis_districts_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/me': {
     parameters: {
       query?: never;
@@ -691,6 +751,70 @@ export interface paths {
      *     authenticated entry point does).
      */
     patch: operations['update_current_farmer_api_v1_me_patch'];
+    trace?: never;
+  };
+  '/api/v1/me/mandis': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get My Mandis
+     * @description The mandis the farmer follows, or the suggested defaults for their district.
+     */
+    get: operations['get_my_mandis_api_v1_me_mandis_get'];
+    /**
+     * Put My Mandis
+     * @description Replace the followed mandis (one to five, in the order given).
+     */
+    put: operations['put_my_mandis_api_v1_me_mandis_put'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/prices/history': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Price History
+     * @description Daily prices of a commodity at one mandi for the last `days` days, oldest first.
+     */
+    get: operations['price_history_api_v1_prices_history_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/prices/latest': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Latest Prices
+     * @description Each of the farmer's crops with its latest price at every followed mandi.
+     */
+    get: operations['latest_prices_api_v1_prices_latest_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
     trace?: never;
   };
   '/api/v1/reference/activity-types': {
@@ -1410,6 +1534,20 @@ export interface components {
       status: string;
     };
     /**
+     * CropPrices
+     * @description The prices of one crop at each followed mandi.
+     */
+    CropPrices: {
+      /** Commodity */
+      commodity?: string | null;
+      /** Crop Catalog Id */
+      crop_catalog_id: number;
+      /** Crop Id */
+      crop_id: number;
+      /** Mandis */
+      mandis: components['schemas']['MandiPrice'][];
+    };
+    /**
      * CropRead
      * @description Read a crop record.
      */
@@ -1864,6 +2002,85 @@ export interface components {
       points?: components['schemas']['LandPointInput'][] | null;
       /** Water Source */
       water_source?: string | null;
+    };
+    /** LatestPrices */
+    LatestPrices: {
+      /** Crops */
+      crops: components['schemas']['CropPrices'][];
+    };
+    /**
+     * MandiPrice
+     * @description A commodity's price at one mandi on its latest reading, per quintal.
+     */
+    MandiPrice: {
+      /** Change Pct */
+      change_pct?: number | null;
+      mandi: components['schemas']['MandiRead'];
+      /** Previous Price */
+      previous_price?: number | null;
+      /** Price */
+      price?: number | null;
+      /** Price Date */
+      price_date?: string | null;
+    };
+    /**
+     * MandiRead
+     * @description A market as farmers see it: name and district.
+     */
+    MandiRead: {
+      /** District */
+      district: string;
+      /** Id */
+      id: number;
+      /** Name */
+      name: string;
+    };
+    /**
+     * MyMandisRead
+     * @description The farmer's followed mandis; `suggested` is true while they are the defaults.
+     */
+    MyMandisRead: {
+      /** Items */
+      items: components['schemas']['MandiRead'][];
+      /** Suggested */
+      suggested: boolean;
+    };
+    /**
+     * MyMandisUpdate
+     * @description Replace the followed mandis: one to five distinct ids, in the order chosen.
+     */
+    MyMandisUpdate: {
+      /** Mandi Ids */
+      mandi_ids: number[];
+    };
+    /**
+     * PriceHistory
+     * @description A commodity's daily modal price at one mandi, oldest first, with the period's extremes.
+     */
+    PriceHistory: {
+      /** Average */
+      average?: number | null;
+      /** Commodity */
+      commodity: string;
+      /** Days */
+      days: number;
+      /** Highest */
+      highest?: number | null;
+      /** Lowest */
+      lowest?: number | null;
+      mandi: components['schemas']['MandiRead'];
+      /** Points */
+      points: components['schemas']['PricePoint'][];
+    };
+    /** PricePoint */
+    PricePoint: {
+      /**
+       * Date
+       * Format: date
+       */
+      date: string;
+      /** Price */
+      price: number;
     };
     /**
      * RegisterRequest
@@ -2623,6 +2840,39 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['ActivityDetailSummaryRead'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  ingest_prices_api_v1_admin_prices_ingest_post: {
+    parameters: {
+      query?: never;
+      header?: {
+        'x-admin-token'?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            [key: string]: unknown;
+          };
         };
       };
       /** @description Validation Error */
@@ -3582,6 +3832,77 @@ export interface operations {
       };
     };
   };
+  find_mandis_api_v1_mandis_get: {
+    parameters: {
+      query?: {
+        district?: string | null;
+        q?: string | null;
+        commodity?: string | null;
+        limit?: number;
+      };
+      header?: {
+        authorization?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            [key: string]: unknown;
+          };
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  list_districts_api_v1_mandis_districts_get: {
+    parameters: {
+      query?: never;
+      header?: {
+        authorization?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            [key: string]: unknown;
+          };
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
   get_current_farmer_api_v1_me_get: {
     parameters: {
       query?: never;
@@ -3635,6 +3956,138 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['FarmerRead'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  get_my_mandis_api_v1_me_mandis_get: {
+    parameters: {
+      query?: never;
+      header?: {
+        authorization?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['MyMandisRead'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  put_my_mandis_api_v1_me_mandis_put: {
+    parameters: {
+      query?: never;
+      header?: {
+        authorization?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['MyMandisUpdate'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['MyMandisRead'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  price_history_api_v1_prices_history_get: {
+    parameters: {
+      query: {
+        mandi_id: number;
+        commodity: string;
+        days?: 7 | 30 | 365;
+      };
+      header?: {
+        authorization?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PriceHistory'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  latest_prices_api_v1_prices_latest_get: {
+    parameters: {
+      query?: never;
+      header?: {
+        authorization?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['LatestPrices'];
         };
       };
       /** @description Validation Error */
