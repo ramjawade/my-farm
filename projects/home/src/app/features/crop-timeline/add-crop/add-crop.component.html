@@ -27,11 +27,13 @@
           <label for="name" class="field-label required-label">{{
             'addCrop.cropName' | translate
           }}</label>
-          <lib-combobox
-            id="name"
-            formControlName="name"
-            [options]="cropNames()"
-            (itemAdded)="onNameAdded($event)"
+          <app-crop-picker
+            inputId="name"
+            [groups]="cropGroups()"
+            [value]="cropForm.controls.name.value"
+            [invalid]="!!(cropForm.get('name')?.touched && cropForm.get('name')?.invalid)"
+            (picked)="onNamePicked($event)"
+            (addNew)="onNameAdded($event)"
           />
           @if (cropForm.get('name')?.touched && cropForm.get('name')?.invalid) {
             <div class="text-danger small mt-1">{{ 'addCrop.nameInvalid' | translate }}</div>

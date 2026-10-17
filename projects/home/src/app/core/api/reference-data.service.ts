@@ -19,6 +19,8 @@ export class ReferenceDataService {
 
   private cropsByName = new Map<string, number>();
   private cropsById = new Map<number, string>();
+  /** The farmer's crop list (predefined plus their own), as last loaded. */
+  private cropItems: ReferenceItem[] = [];
   private expensesByName = new Map<string, number>();
   private expensesById = new Map<number, string>();
   private activityTypesByName = new Map<string, number>();
@@ -105,6 +107,7 @@ export class ReferenceDataService {
     this.stagesPromise = null;
     this.cropsByName.clear();
     this.cropsById.clear();
+    this.cropItems = [];
     this.expensesByName.clear();
     this.expensesById.clear();
     this.activityTypesByName.clear();
@@ -169,6 +172,7 @@ export class ReferenceDataService {
       }
     };
     apply(crops, this.cropsByName, this.cropsById);
+    this.cropItems = [...crops];
     apply(expenses, this.expensesByName, this.expensesById);
     apply(activityTypes, this.activityTypesByName, this.activityTypesById);
     apply(seasons, this.seasonsByName, this.seasonsById);
@@ -183,15 +187,22 @@ export class ReferenceDataService {
     return resp.items;
   }
 
+  /** The crops this farmer can pick: the predefined list plus their own custom crops. */
+  async listCrops(): Promise<ReferenceItem[]> {
+    await this.ensureLoaded();
+    return [...this.cropItems];
+  }
+
   async cropCatalogIdForName(name: string): Promise<number> {
     await this.ensureLoaded();
-    const id = this.cropsByName.get(name);
-    if (id !== undefined) {
-      return id;
+    const wanted = name.trim().toLowerCase();
+    const known = this.cropItems.find((c) => c.name.toLowerCase() === wanted);
+    if (known) {
+      return known.id;
     }
-    // Not a seeded catalog name — the backend's POST /reference/crops is a
-    // create-or-get, so any farmer-typed crop name becomes a real catalog
-    // entry instead of failing.
+    // Not in the farmer's list — the backend's POST /reference/crops is a
+    // create-or-get, so a new name becomes the farmer's own custom crop
+    // instead of failing.
     return this.createCrop(name);
   }
 
@@ -233,6 +244,8 @@ export class ReferenceDataService {
     });
     this.cropsByName.set(resp.name, resp.id);
     this.cropsById.set(resp.id, resp.name);
+    this.cropItems = [...this.cropItems.filter((c) => c.id !== resp.id), resp];
+    this.versionSignal.update((v) => v + 1);
     return resp.id;
   }
 

@@ -1,12 +1,21 @@
 """Pydantic schemas for reference data endpoints."""
 
-from pydantic import BaseModel, Field
+from typing import Annotated
+
+from pydantic import BaseModel, Field, StringConstraints
+
+from myfarm_api.core.crop_seed import MAX_CROP_NAME_LENGTH
+
+CropName = Annotated[
+    str,
+    StringConstraints(strip_whitespace=True, min_length=1, max_length=MAX_CROP_NAME_LENGTH),
+]
 
 
 class CropCatalogCreate(BaseModel):
-    """Create a new crop catalog entry."""
+    """Add a crop by name: a predefined crop, the farmer's own, or a new custom crop."""
 
-    name: str = Field(..., min_length=1)
+    name: CropName
 
 
 class CropCatalogRead(BaseModel):
@@ -15,6 +24,9 @@ class CropCatalogRead(BaseModel):
     id: int
     name: str
     common_names: str | None = None
+    category: str | None = None
+    # True for a crop the signed-in farmer added; false for the predefined list.
+    custom: bool = False
 
     class Config:
         from_attributes = True

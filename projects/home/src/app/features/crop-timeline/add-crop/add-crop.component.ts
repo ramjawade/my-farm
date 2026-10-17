@@ -19,17 +19,30 @@ import { FarmLookupService } from '../../../core/farms/farm-lookup.service';
 import { SavedFarm } from '../../../map/models/map.models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { WorkflowStateService } from '../../../core/workflow/workflow-state.service';
-import { ToastService, ComboboxComponent } from 'shared';
+import { ToastService } from 'shared';
 import { SEASONS, seasonForDate } from '../../../core/models/season';
 import { convertArea, AreaUnit } from '../../../core/pipes/area.pipe';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ReferenceNamePipe } from '../../../core/i18n/reference-name.pipe';
 import { ReferenceDataService } from '../../../core/api/reference-data.service';
+import { ReferenceItem } from '../../../core/api/contracts';
+import { I18n } from '../../../core/i18n/i18n.service';
+import { slugifyReferenceName } from '../../../core/i18n/reference-name';
+import { CropGroup, CropOption, CropPickerComponent } from './crop-picker.component';
+
+/** Group order in the crop list; the farmer's own crops come first. */
+const CROP_GROUP_ORDER = ['cereal', 'pulse', 'oilseed', 'cash', 'vegetable', 'fruit', 'other'];
 
 @Component({
   standalone: true,
   selector: 'app-add-crop',
-  imports: [CommonModule, ReactiveFormsModule, ComboboxComponent, TranslatePipe, ReferenceNamePipe],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    CropPickerComponent,
+    TranslatePipe,
+    ReferenceNamePipe,
+  ],
   templateUrl: './add-crop.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -45,6 +58,7 @@ export class AddCropComponent implements OnInit {
   private readonly workflowService = inject(WorkflowStateService);
   private readonly referenceData = inject(ReferenceDataService);
   private readonly timeline = inject(CropTimelineService);
+  private readonly i18n = inject(I18n);
 
   /** Set when editing an existing crop (`/crops/:cropId/edit`). */
   readonly editId = parseId(this.route.snapshot.paramMap.get('cropId'));
@@ -74,9 +88,42 @@ export class AddCropComponent implements OnInit {
   private readonly loaded = signal(false);
 
   readonly seasons = SEASONS;
-  readonly cropNames = computed(() => {
-    const names = this.crops().map((c) => c.name);
-    return [...new Set(names)].sort();
+  /** The crop catalog for this farmer: the predefined list plus their own custom crops. */
+  readonly catalog = signal<ReferenceItem[]>([]);
+
+  /** The catalog as the picker shows it: the farmer's own crops first, then the groups. */
+  readonly cropGroups = computed<CropGroup[]>(() => {
+    const label = (item: ReferenceItem): string => {
+      if (item.custom) return item.name;
+      const key = `crop.${slugifyReferenceName(item.name)}`;
+      const translated = this.i18n.t(key);
+      return translated === key ? item.name : translated;
+    };
+    const byLabel = (a: CropOption, b: CropOption): number => a.label.localeCompare(b.label);
+    const option = (item: ReferenceItem): CropOption => ({ name: item.name, label: label(item) });
+    const items = this.catalog();
+
+    const groups: CropGroup[] = [
+      {
+        key: 'custom',
+        label: this.i18n.t('cropGroup.custom'),
+        options: items
+          .filter((i) => i.custom)
+          .map(option)
+          .sort(byLabel),
+      },
+    ];
+    for (const key of CROP_GROUP_ORDER) {
+      groups.push({
+        key,
+        label: this.i18n.t(`cropGroup.${key}`),
+        options: items
+          .filter((i) => !i.custom && (i.category ?? 'other') === key)
+          .map(option)
+          .sort(byLabel),
+      });
+    }
+    return groups;
   });
 
   constructor() {
@@ -131,6 +178,7 @@ export class AddCropComponent implements OnInit {
       ]);
       this.savedFarms.set(farms);
       this.crops.set(crops);
+      void this.referenceData.listCrops().then((list) => this.catalog.set(list));
       this.loaded.set(true);
       if (this.isEdit) {
         this.prefill(crops.find((c) => c.id === this.editId));
@@ -172,6 +220,11 @@ export class AddCropComponent implements OnInit {
 
   onCancel(): void {
     this.router.navigate(this.isEdit ? ['/crops', this.editId] : ['/crops']);
+  }
+
+  onNamePicked(name: string): void {
+    this.cropForm.patchValue({ name });
+    this.cropForm.controls.name.markAsTouched();
   }
 
   onNameAdded(newName: string): void {

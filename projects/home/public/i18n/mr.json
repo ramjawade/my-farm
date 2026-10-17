@@ -241,7 +241,32 @@
     "cabbage": "कोबी",
     "pomegranate": "डाळिंब",
     "maize": "मका",
-    "soybean": "सोयाबीन"
+    "soybean": "सोयाबीन",
+    "jowar": "ज्वारी",
+    "bajra": "बाजरी",
+    "tur": "तूर",
+    "gram": "हरभरा",
+    "moong": "मूग",
+    "urad": "उडीद",
+    "groundnut": "भुईमूग",
+    "sunflower": "सूर्यफूल",
+    "sesame": "तीळ",
+    "turmeric": "हळद",
+    "potato": "बटाटा",
+    "brinjal": "वांगी",
+    "cauliflower": "फुलकोबी",
+    "okra": "भेंडी",
+    "green_chilli": "हिरवी मिरची",
+    "garlic": "लसूण",
+    "ginger": "आले",
+    "capsicum": "ढोबळी मिरची",
+    "banana": "केळी",
+    "mango": "आंबा",
+    "orange": "संत्री",
+    "sweet_lime": "मोसंबी",
+    "papaya": "पपई",
+    "guava": "पेरू",
+    "watermelon": "कलिंगड"
   },
   "activity": {
     "sowing": "पेरणी",
@@ -1160,5 +1185,20 @@
     "deletedToast": "विक्री हटवली.",
     "deleteError": "विक्री हटवता आली नाही.",
     "loadError": "विक्री लोड करता आल्या नाहीत."
+  },
+  "cropGroup": {
+    "custom": "तुमची पिके",
+    "cereal": "तृणधान्ये",
+    "pulse": "कडधान्ये",
+    "oilseed": "तेलबिया",
+    "cash": "नगदी पिके",
+    "vegetable": "भाजीपाला",
+    "fruit": "फळे",
+    "other": "इतर पिके"
+  },
+  "cropPicker": {
+    "placeholder": "पीक शोधा किंवा निवडा",
+    "addNew": "नवीन पीक जोडा “{{name}}”",
+    "results": "{{count}} पिके सापडली"
   }
 }

@@ -2,12 +2,15 @@
 
 from typing import Any
 
-from fastapi import APIRouter, Depends, Response
-from sqlalchemy import func, select
+from fastapi import APIRouter, Depends, Header, Response
+from sqlalchemy import func, or_, select
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from myfarm_api.core.db import get_session_factory
 from myfarm_api.core.security import FirebaseIdentity, get_firebase_identity
 from myfarm_api.models import ActivityType, CropCatalog, CropStage, ExpenseCategory, Season
+from myfarm_api.repositories.farmer import FarmerRepository
 from myfarm_api.schemas.reference import (
     ActivityTypeCreate,
     ActivityTypeRead,
@@ -26,41 +29,88 @@ router = APIRouter(prefix="/api/v1/reference", tags=["reference"])
 _STATIC_CACHE = "public, max-age=3600"
 
 
+async def optional_identity(
+    authorization: str | None = Header(default=None),
+) -> FirebaseIdentity | None:
+    """The signed-in identity, or None when no Authorization header is sent."""
+    if not authorization:
+        return None
+    return await get_firebase_identity(authorization)
+
+
+def _crop_read(crop: CropCatalog) -> CropCatalogRead:
+    return CropCatalogRead(
+        id=crop.id,
+        name=crop.name,
+        common_names=crop.common_names,
+        category=crop.category,
+        custom=crop.farmer_id is not None,
+    )
+
+
 @router.get("/crops", response_model=dict)
-async def list_crop_catalog() -> dict[str, Any]:
-    """List all available crops from the catalog."""
+async def list_crop_catalog(
+    identity: FirebaseIdentity | None = Depends(optional_identity),
+) -> dict[str, Any]:
+    """The predefined crops, plus the signed-in farmer's own custom crops."""
+    farmer_id = (await FarmerRepository.get_or_create(identity.uid)).id if identity else None
     session_factory = get_session_factory()
     async with session_factory() as session:
         stmt = select(CropCatalog).order_by(CropCatalog.name)
-        result = await session.execute(stmt)
-        crops = result.scalars().all()
-        return {
-            "items": [CropCatalogRead.model_validate(c) for c in crops],
-        }
+        if farmer_id is None:
+            stmt = stmt.where(CropCatalog.farmer_id.is_(None))
+        else:
+            stmt = stmt.where(
+                or_(CropCatalog.farmer_id.is_(None), CropCatalog.farmer_id == farmer_id)
+            )
+        crops = (await session.execute(stmt)).scalars().all()
+        return {"items": [_crop_read(c) for c in crops]}
 
 
 @router.post("/crops", response_model=CropCatalogRead)
 async def create_or_get_crop(
     payload: CropCatalogCreate,
     identity: FirebaseIdentity = Depends(get_firebase_identity),
-) -> CropCatalog:
-    """Create a new crop or return the existing one (case-insensitive)."""
-    crop_name = payload.name.strip()
+) -> CropCatalogRead:
+    """Use a predefined crop, the farmer's own crop, or add a new private custom crop.
+
+    A name matching a predefined crop (any case) returns that crop; a name matching
+    the farmer's own custom crop returns it; anything else creates a custom crop
+    owned by the caller, so one farmer's typos never reach another farmer's list.
+    """
+    crop_name = payload.name
+    farmer = await FarmerRepository.get_or_create(identity.uid)
+
+    async def find(session: AsyncSession) -> CropCatalog | None:
+        stmt = (
+            select(CropCatalog)
+            .where(
+                func.lower(CropCatalog.name) == crop_name.lower(),
+                or_(CropCatalog.farmer_id.is_(None), CropCatalog.farmer_id == farmer.id),
+            )
+            .order_by(CropCatalog.farmer_id.is_(None).desc(), CropCatalog.id)
+        )
+        found: CropCatalog | None = (await session.execute(stmt)).scalars().first()
+        return found
 
     session_factory = get_session_factory()
     async with session_factory() as session:
-        stmt = select(CropCatalog).where(func.lower(CropCatalog.name) == crop_name.lower())
-        result = await session.execute(stmt)
-        existing_crop = result.scalar_one_or_none()
-
-        if existing_crop:
-            return existing_crop
-
-        new_crop = CropCatalog(name=crop_name)
-        session.add(new_crop)
-        await session.commit()
-        await session.refresh(new_crop)
-        return new_crop
+        existing = await find(session)
+        if existing is None:
+            new_crop = CropCatalog(name=crop_name, category="other", farmer_id=farmer.id)
+            session.add(new_crop)
+            try:
+                await session.commit()
+            except IntegrityError:
+                # A concurrent request added the same name first; use that one.
+                await session.rollback()
+                existing = await find(session)
+                if existing is None:
+                    raise
+                return _crop_read(existing)
+            await session.refresh(new_crop)
+            return _crop_read(new_crop)
+        return _crop_read(existing)
 
 
 @router.get("/expense-categories", response_model=dict)

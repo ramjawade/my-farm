@@ -1446,9 +1446,10 @@
         "type": "object"
       },
       "CropCatalogCreate": {
-        "description": "Create a new crop catalog entry.",
+        "description": "Add a crop by name: a predefined crop, the farmer's own, or a new custom crop.",
         "properties": {
           "name": {
+            "maxLength": 100,
             "minLength": 1,
             "title": "Name",
             "type": "string"
@@ -1463,6 +1464,17 @@
       "CropCatalogRead": {
         "description": "Read a crop catalog record.",
         "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
           "common_names": {
             "anyOf": [
               {
@@ -1473,6 +1485,11 @@
               }
             ],
             "title": "Common Names"
+          },
+          "custom": {
+            "default": false,
+            "title": "Custom",
+            "type": "boolean"
           },
           "id": {
             "title": "Id",
@@ -7569,8 +7586,26 @@
     },
     "/api/v1/reference/crops": {
       "get": {
-        "description": "List all available crops from the catalog.",
+        "description": "The predefined crops, plus the signed-in farmer's own custom crops.",
         "operationId": "list_crop_catalog_api_v1_reference_crops_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -7583,6 +7618,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
           }
         },
         "summary": "List Crop Catalog",
@@ -7591,7 +7636,7 @@
         ]
       },
       "post": {
-        "description": "Create a new crop or return the existing one (case-insensitive).",
+        "description": "Use a predefined crop, the farmer's own crop, or add a new private custom crop.\n\nA name matching a predefined crop (any case) returns that crop; a name matching\nthe farmer's own custom crop returns it; anything else creates a custom crop\nowned by the caller, so one farmer's typos never reach another farmer's list.",
         "operationId": "create_or_get_crop_api_v1_reference_crops_post",
         "parameters": [
           {

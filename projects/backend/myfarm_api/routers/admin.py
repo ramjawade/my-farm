@@ -4,9 +4,10 @@ import hmac
 from typing import Any
 
 from fastapi import APIRouter, Depends, Header, HTTPException
-from sqlalchemy import Select, select
+from sqlalchemy import Select, func, select
 
 from myfarm_api.core.config import get_settings
+from myfarm_api.core.crop_seed import PREDEFINED_CROPS
 from myfarm_api.core.db import get_session_factory
 from myfarm_api.core.mandi_feed import FeedError, get_mandi_feed
 from myfarm_api.core.price_ingest import run_ingest
@@ -30,38 +31,12 @@ router = APIRouter(
     prefix="/api/v1/admin", tags=["admin"], dependencies=[Depends(require_admin_token)]
 )
 
-# These three lists are load-bearing, not illustrative: the frontend maps a
-# fixed free-text enum to one of these rows by exact name match (see
-# ReferenceDataService) because Activity.type / CropEntity.cropType /
-# ActivityExpense.category are plain string unions on the client, not FK
-# ids. Every value below must match its frontend source verbatim —
-# crop-timeline.component.ts's `cropNameOptions`, activity.constants.ts's
-# `ACTIVITY_TYPE_LABELS` keys, and its `EXPENSE_CATEGORIES` — or that
-# activity/crop/expense fails to sync with "unknown crop/activity
-# type/expense category".
-SEED_CROPS = [
-    "Soybeans",
-    "Wheat",
-    "Rice",
-    "Corn",
-    "Cotton",
-    "Sugarcane",
-    "Mustard",
-    "Vegetables",
-    "Fruits",
-]
-
-# The mandi price feed's exact commodity name for each crop that has one.
-# Crops absent here (Sugarcane, Vegetables, Fruits) show "No price".
-CROP_PRICE_COMMODITIES = {
-    "Soybeans": "Soyabean",
-    "Wheat": "Wheat",
-    "Rice": "Paddy(Common)",
-    "Corn": "Maize",
-    "Cotton": "Cotton",
-    "Mustard": "Mustard",
-}
-
+# The expense-category and activity-type lists are load-bearing, not illustrative:
+# the frontend maps a fixed free-text enum to one of these rows by exact name match
+# (see ReferenceDataService) because Activity.type / ActivityExpense.category are
+# plain string unions on the client, not FK ids. Every value must match its frontend
+# source verbatim (activity.constants.ts's `ACTIVITY_TYPE_LABELS` keys and its
+# `EXPENSE_CATEGORIES`). The crop list lives in core/crop_seed.py.
 SEED_EXPENSE_CATEGORIES = [
     "Machine Rent",
     "Labour",
@@ -100,18 +75,25 @@ async def seed_reference_data() -> dict[str, Any]:
     session_factory = get_session_factory()
 
     async with session_factory() as session:
-        # Seed crops
+        # Seed crops: the predefined list (shared, no owner). Existing rows keep their id.
         crops_created = 0
-        for crop_name in SEED_CROPS:
-            stmt: Select[Any] = select(CropCatalog).where(CropCatalog.name == crop_name)
-            result = await session.execute(stmt)
-            existing = result.scalar_one_or_none()
-            commodity = CROP_PRICE_COMMODITIES.get(crop_name)
-            if not existing:
-                session.add(CropCatalog(name=crop_name, price_commodity=commodity))
+        for seed in PREDEFINED_CROPS:
+            stmt: Select[Any] = select(CropCatalog).where(
+                func.lower(CropCatalog.name) == seed.name.lower(),
+                CropCatalog.farmer_id.is_(None),
+            )
+            existing = (await session.execute(stmt)).scalars().first()
+            if existing is None:
+                session.add(
+                    CropCatalog(
+                        name=seed.name, category=seed.category, price_commodity=seed.commodity
+                    )
+                )
                 crops_created += 1
-            elif existing.price_commodity != commodity and commodity is not None:
-                existing.price_commodity = commodity
+            else:
+                existing.category = seed.category
+                if seed.commodity is not None:
+                    existing.price_commodity = seed.commodity
 
         # Seed expense categories
         expenses_created = 0
