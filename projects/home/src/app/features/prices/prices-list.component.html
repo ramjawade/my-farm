@@ -1,0 +1,200 @@
+<div class="mf-page-container">
+  <header
+    class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3"
+  >
+    <div>
+      <h1 class="h4 mb-1">{{ 'prices.title' | translate }}</h1>
+      <p class="text-body-secondary mb-0">{{ 'prices.subtitle' | translate }}</p>
+    </div>
+    <a routerLink="/prices/mandis" class="btn btn-outline-secondary text-nowrap">
+      <i class="bi bi-geo-alt me-1" aria-hidden="true"></i
+      >{{ 'prices.myApmcs' | translate: { count: mandiCount() } }}
+    </a>
+  </header>
+
+  @if (reloading()) {
+    <div class="d-flex justify-content-center py-5" role="status">
+      <div class="spinner-border text-success">
+        <span class="visually-hidden">{{ 'prices.loading' | translate }}</span>
+      </div>
+    </div>
+  } @else if (view().status === 'error') {
+    <div class="card p-5 text-center">
+      <i class="bi bi-exclamation-triangle text-danger fs-1 d-block mb-3" aria-hidden="true"></i>
+      <h2 class="h5">{{ 'prices.errorTitle' | translate }}</h2>
+      <button type="button" class="btn btn-outline-success mx-auto mt-2" (click)="retry()">
+        <i class="bi bi-arrow-clockwise me-2" aria-hidden="true"></i
+        >{{ 'prices.retry' | translate }}
+      </button>
+    </div>
+  } @else if (items().length === 0) {
+    <div class="card">
+      <div class="empty-state">
+        <span class="empty-state__icon" aria-hidden="true"><i class="bi bi-flower1"></i></span>
+        <div>
+          <h2 class="empty-state__title">{{ 'prices.noCropsTitle' | translate }}</h2>
+          <p class="empty-state__text">{{ 'prices.noCropsText' | translate }}</p>
+          <a routerLink="/crops/add" class="btn btn-primary mt-2">{{
+            'prices.addCrop' | translate
+          }}</a>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <p class="small text-body-secondary mb-2">{{ 'prices.perQuintal' | translate }}</p>
+
+    <ul class="list-unstyled card p-0 overflow-hidden mb-3">
+      @for (item of items(); track item.row.catalogId) {
+        <li class="border-bottom">
+          <div class="d-flex align-items-center gap-2 p-3">
+            <span
+              class="d-inline-flex align-items-center justify-content-center rounded-3 bg-success-subtle text-success flex-shrink-0"
+              style="width: 36px; height: 36px"
+              aria-hidden="true"
+            >
+              <i class="bi {{ item.icon }}"></i>
+            </span>
+
+            @switch (item.summary.kind) {
+              @case ('noPrice') {
+                <div class="min-w-0 flex-grow-1">
+                  <strong class="d-block text-truncate">{{
+                    item.name | referenceName: 'crop'
+                  }}</strong>
+                  <small class="text-body-secondary">{{ 'prices.noPriceHint' | translate }}</small>
+                </div>
+                <span class="badge text-bg-secondary">{{ 'prices.noPrice' | translate }}</span>
+              }
+              @case ('notTraded') {
+                <div class="min-w-0 flex-grow-1">
+                  <strong class="d-block text-truncate">{{
+                    item.name | referenceName: 'crop'
+                  }}</strong>
+                  <small class="text-body-secondary">{{ 'prices.notTraded' | translate }}</small>
+                </div>
+                <a
+                  routerLink="/prices/mandis"
+                  class="btn btn-sm btn-outline-secondary text-nowrap"
+                  >{{ 'prices.changeApmcs' | translate }}</a
+                >
+              }
+              @default {
+                <button
+                  type="button"
+                  class="btn btn-link text-reset text-decoration-none text-start d-flex align-items-center gap-2 flex-grow-1 min-w-0 p-0"
+                  [attr.aria-expanded]="expanded().has(item.row.catalogId)"
+                  [attr.aria-controls]="'mandis-' + item.row.catalogId"
+                  (click)="toggle(item.row.catalogId)"
+                >
+                  <span class="min-w-0 flex-grow-1">
+                    <strong class="d-block text-truncate">{{
+                      item.name | referenceName: 'crop'
+                    }}</strong>
+                    <small class="text-body-secondary d-block text-truncate">
+                      {{ 'prices.bestAt' | translate: { mandi: item.summary.best!.mandi.name } }}
+                      @if (item.stale) {
+                        ·
+                        {{
+                          'prices.updated'
+                            | translate
+                              : { date: (item.summary.best!.price_date | localDate: 'd MMM') }
+                        }}
+                      }
+                    </small>
+                  </span>
+                  <span class="text-end flex-shrink-0">
+                    <strong class="d-block fs-5"
+                      >₹{{ item.summary.best!.price | localNumber: '1.0-0' }}</strong
+                    >
+                    @switch (item.direction) {
+                      @case ('up') {
+                        <small class="text-success fw-semibold"
+                          ><i class="bi bi-caret-up-fill" aria-hidden="true"></i> +{{
+                            item.summary.best!.change_pct | localNumber: '1.1-1'
+                          }}%</small
+                        >
+                      }
+                      @case ('down') {
+                        <small class="text-danger fw-semibold"
+                          ><i class="bi bi-caret-down-fill" aria-hidden="true"></i> −{{
+                            abs(item.summary.best!.change_pct!) | localNumber: '1.1-1'
+                          }}%</small
+                        >
+                      }
+                      @case ('flat') {
+                        <small class="text-body-secondary fw-semibold">{{
+                          'prices.noChange' | translate
+                        }}</small>
+                      }
+                    }
+                  </span>
+                  <i
+                    class="bi flex-shrink-0 text-body-secondary"
+                    [class.bi-chevron-down]="!expanded().has(item.row.catalogId)"
+                    [class.bi-chevron-up]="expanded().has(item.row.catalogId)"
+                    aria-hidden="true"
+                  ></i>
+                </button>
+              }
+            }
+          </div>
+
+          @if (item.summary.kind === 'priced' && expanded().has(item.row.catalogId)) {
+            <ul
+              class="list-unstyled bg-body-tertiary py-1 mb-0"
+              [id]="'mandis-' + item.row.catalogId"
+            >
+              @for (entry of item.summary.ranked; track entry.mandi.id; let first = $first) {
+                <li>
+                  @if (entry.price !== null && entry.price !== undefined) {
+                    <a
+                      class="d-flex align-items-center gap-2 pe-3 ps-5 py-2 text-reset text-decoration-none"
+                      [routerLink]="['/prices', item.row.catalogId]"
+                      [queryParams]="{ mandi: entry.mandi.id }"
+                    >
+                      <span class="min-w-0 flex-grow-1">
+                        <strong class="d-block text-truncate">
+                          {{ entry.mandi.name }}
+                          @if (first) {
+                            <span class="badge text-bg-success ms-1">{{
+                              'prices.best' | translate
+                            }}</span>
+                          }
+                        </strong>
+                        <small class="text-body-secondary">{{ entry.mandi.district }}</small>
+                      </span>
+                      <span class="text-end flex-shrink-0">
+                        <strong class="d-block">₹{{ entry.price | localNumber: '1.0-0' }}</strong>
+                        <small class="text-body-secondary">
+                          @if (first) {
+                            {{ 'prices.highest' | translate }}
+                          } @else {
+                            −₹{{
+                              gapFromBest(entry.price, item.summary.best!.price)
+                                | localNumber: '1.0-0'
+                            }}
+                          }
+                        </small>
+                      </span>
+                      <i class="bi bi-chevron-right text-body-secondary" aria-hidden="true"></i>
+                    </a>
+                  } @else {
+                    <div class="d-flex align-items-center gap-2 pe-3 ps-5 py-2 text-body-secondary">
+                      <span class="min-w-0 flex-grow-1">
+                        <strong class="d-block text-truncate">{{ entry.mandi.name }}</strong>
+                        <small>{{ entry.mandi.district }}</small>
+                      </span>
+                      <small>{{ 'prices.notTradedHere' | translate }}</small>
+                    </div>
+                  }
+                </li>
+              }
+            </ul>
+          }
+        </li>
+      }
+    </ul>
+
+    <p class="small text-body-secondary">{{ 'prices.source' | translate }}</p>
+  }
+</div>

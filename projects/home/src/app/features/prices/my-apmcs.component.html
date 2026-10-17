@@ -1,0 +1,172 @@
+<div class="mf-page-container">
+  <header class="mb-3">
+    <h1 class="h4 mb-1">{{ 'prices.apmcsTitle' | translate }}</h1>
+    <p class="text-body-secondary mb-0">
+      {{ 'prices.apmcsSubtitle' | translate: { max: max } }}
+    </p>
+  </header>
+
+  @if (retrying()) {
+    <div class="d-flex justify-content-center py-5" role="status">
+      <div class="spinner-border text-success">
+        <span class="visually-hidden">{{ 'prices.loading' | translate }}</span>
+      </div>
+    </div>
+  } @else if (view().status === 'error') {
+    <div class="card p-5 text-center">
+      <i class="bi bi-exclamation-triangle text-danger fs-1 d-block mb-3" aria-hidden="true"></i>
+      <h2 class="h5">{{ 'prices.errorTitle' | translate }}</h2>
+      <button type="button" class="btn btn-outline-success mx-auto mt-2" (click)="retry()">
+        <i class="bi bi-arrow-clockwise me-2" aria-hidden="true"></i
+        >{{ 'prices.retry' | translate }}
+      </button>
+    </div>
+  } @else {
+    @if (pick() === '1' && chosen().length === 0) {
+      <div class="alert alert-warning" role="alert">{{ 'prices.pickNeeded' | translate }}</div>
+    }
+
+    <section class="card mb-3">
+      <h2 class="h6">
+        {{ 'prices.yourMarkets' | translate }}
+        <span class="text-body-secondary fw-normal">
+          · {{ 'prices.countOfMax' | translate: { count: chosen().length, max: max } }}
+        </span>
+      </h2>
+      @if (suggested() && chosen().length > 0) {
+        <p class="small text-body-secondary">{{ 'prices.suggestedNote' | translate }}</p>
+      }
+      @if (chosen().length === 0) {
+        <p class="text-body-secondary mb-0">{{ 'prices.noneChosen' | translate }}</p>
+      } @else {
+        <ul class="list-unstyled mb-0">
+          @for (mandi of chosen(); track mandi.id) {
+            <li class="d-flex align-items-center gap-2 py-2 border-top">
+              <span class="min-w-0 flex-grow-1">
+                <strong class="d-block text-truncate">{{ mandi.name }}</strong>
+                <small class="text-body-secondary">{{ mandi.district }}</small>
+              </span>
+              @if (suggested()) {
+                <span class="badge text-bg-secondary">{{ 'prices.suggested' | translate }}</span>
+              }
+              @if (onlyOne()) {
+                <span class="badge text-bg-secondary">{{ 'prices.keepOne' | translate }}</span>
+              } @else {
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-danger"
+                  [attr.aria-label]="'prices.removeNamed' | translate: { name: mandi.name }"
+                  (click)="remove(mandi.id)"
+                >
+                  <i class="bi bi-x-lg" aria-hidden="true"></i>
+                </button>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <section class="card mb-3">
+      <h2 class="h6">{{ 'prices.findMarket' | translate }}</h2>
+      <div class="row g-2 mb-2">
+        <div class="col-12 col-md-5">
+          <label class="form-label small mb-1" for="apmc-district">{{
+            'prices.district' | translate
+          }}</label>
+          <select
+            id="apmc-district"
+            class="form-select"
+            [value]="district()"
+            (change)="setDistrict($any($event.target).value)"
+          >
+            <option value="">{{ 'prices.allDistricts' | translate }}</option>
+            @for (name of districts(); track name) {
+              <option [value]="name">{{ name }}</option>
+            }
+          </select>
+        </div>
+        <div class="col-12 col-md-7">
+          <label class="form-label small mb-1" for="apmc-search">{{
+            'prices.searchName' | translate
+          }}</label>
+          <input
+            id="apmc-search"
+            type="search"
+            class="form-control"
+            autocomplete="off"
+            [placeholder]="'prices.searchPlaceholder' | translate"
+            [value]="query()"
+            (input)="setQuery($any($event.target).value)"
+          />
+        </div>
+      </div>
+      <div class="form-check form-switch mb-3">
+        <input
+          id="apmc-mine"
+          type="checkbox"
+          class="form-check-input"
+          role="switch"
+          [checked]="onlyMine()"
+          (change)="setOnlyMine($any($event.target).checked)"
+        />
+        <label class="form-check-label" for="apmc-mine">{{
+          'prices.onlyMyCrops' | translate
+        }}</label>
+      </div>
+
+      @if (full()) {
+        <p class="small text-body-secondary">
+          {{ 'prices.limitReached' | translate: { max: max } }}
+        </p>
+      }
+
+      @if (searching()) {
+        <div class="text-center py-3" role="status">
+          <div class="spinner-border spinner-border-sm text-success">
+            <span class="visually-hidden">{{ 'prices.loading' | translate }}</span>
+          </div>
+        </div>
+      } @else if (results().length === 0) {
+        <p class="text-body-secondary mb-0">{{ 'prices.noMatches' | translate }}</p>
+      } @else {
+        <ul class="list-unstyled mb-0" aria-live="polite">
+          @for (mandi of results(); track mandi.id) {
+            <li class="d-flex align-items-center gap-2 py-2 border-top">
+              <span class="min-w-0 flex-grow-1">
+                <strong class="d-block text-truncate">{{ mandi.name }}</strong>
+                <small class="text-body-secondary">{{ mandi.district }}</small>
+              </span>
+              @if (isChosen(mandi.id)) {
+                <span class="badge text-bg-success">{{ 'prices.added' | translate }}</span>
+              } @else {
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-success"
+                  [disabled]="full()"
+                  [attr.aria-label]="'prices.addNamed' | translate: { name: mandi.name }"
+                  (click)="add(mandi)"
+                >
+                  <i class="bi bi-plus-lg me-1" aria-hidden="true"></i
+                  >{{ 'prices.add' | translate }}
+                </button>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <div class="mf-action-row">
+      <a routerLink="/prices" class="btn btn-secondary">{{ 'common.cancel' | translate }}</a>
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="chosen().length === 0 || saving()"
+        (click)="save()"
+      >
+        {{ 'prices.save' | translate }}
+      </button>
+    </div>
+  }
+</div>

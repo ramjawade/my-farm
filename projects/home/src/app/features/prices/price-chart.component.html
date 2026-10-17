@@ -1,0 +1,29 @@
+<div class="ratio ratio-16x9">
+  <canvas #chartCanvas role="img" [attr.aria-label]="label()"></canvas>
+</div>
+
+<table class="visually-hidden">
+  <caption>
+    {{
+      'prices.chartTable' | translate
+    }}
+  </caption>
+  <thead>
+    <tr>
+      <th scope="col">{{ 'prices.date' | translate }}</th>
+      @for (line of lines(); track line.name) {
+        <th scope="col">{{ line.name }}</th>
+      }
+    </tr>
+  </thead>
+  <tbody>
+    @for (date of dates(); track date) {
+      <tr>
+        <th scope="row">{{ date }}</th>
+        @for (line of lines(); track line.name) {
+          <td>{{ priceOn(line, date) ?? '' }}</td>
+        }
+      </tr>
+    }
+  </tbody>
+</table>

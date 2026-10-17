@@ -1,0 +1,242 @@
+<div class="mf-page-container">
+  <a routerLink="/prices" class="btn btn-link px-0 mb-2 text-decoration-none">
+    <i class="bi bi-chevron-left" aria-hidden="true"></i> {{ 'prices.allPrices' | translate }}
+  </a>
+
+  @if (retrying()) {
+    <div class="d-flex justify-content-center py-5" role="status">
+      <div class="spinner-border text-success">
+        <span class="visually-hidden">{{ 'prices.loading' | translate }}</span>
+      </div>
+    </div>
+  } @else if (view().status === 'error') {
+    <div class="card p-5 text-center">
+      <i class="bi bi-exclamation-triangle text-danger fs-1 d-block mb-3" aria-hidden="true"></i>
+      <h1 class="h5">{{ 'prices.errorTitle' | translate }}</h1>
+      <button type="button" class="btn btn-outline-success mx-auto mt-2" (click)="retry()">
+        <i class="bi bi-arrow-clockwise me-2" aria-hidden="true"></i
+        >{{ 'prices.retry' | translate }}
+      </button>
+    </div>
+  } @else if (view().status === 'notFound') {
+    <div class="card">
+      <div class="empty-state">
+        <span class="empty-state__icon" aria-hidden="true"
+          ><i class="bi bi-currency-rupee"></i
+        ></span>
+        <div>
+          <h1 class="empty-state__title">{{ 'prices.notFoundTitle' | translate }}</h1>
+          <p class="empty-state__text">{{ 'prices.notFoundText' | translate }}</p>
+          <a routerLink="/prices/mandis" class="btn btn-primary mt-2">{{
+            'prices.changeApmcs' | translate
+          }}</a>
+        </div>
+      </div>
+    </div>
+  } @else if (selected(); as current) {
+    <header class="d-flex align-items-center gap-3 mb-3">
+      <span
+        class="d-inline-flex align-items-center justify-content-center rounded-3 bg-success-subtle text-success flex-shrink-0"
+        style="width: 44px; height: 44px"
+        aria-hidden="true"
+      >
+        <i class="bi {{ icon() }} fs-5"></i>
+      </span>
+      <div class="min-w-0">
+        <h1 class="h4 mb-0 text-truncate">{{ cropName() | referenceName: 'crop' }}</h1>
+        <p class="text-body-secondary mb-0 text-truncate">
+          {{ current.mandi.name }} · {{ current.mandi.district }}
+        </p>
+      </div>
+    </header>
+
+    @if (ok()!.priced.length > 1) {
+      <div
+        class="d-flex flex-wrap gap-2 mb-3"
+        role="group"
+        [attr.aria-label]="'prices.market' | translate"
+      >
+        @for (entry of ok()!.priced; track entry.mandi.id) {
+          <button
+            type="button"
+            class="btn btn-sm rounded-pill"
+            [class.btn-success]="entry.mandi.id === mandiId()"
+            [class.btn-outline-secondary]="entry.mandi.id !== mandiId()"
+            [attr.aria-pressed]="entry.mandi.id === mandiId()"
+            (click)="selectMandi(entry.mandi.id)"
+          >
+            {{ entry.mandi.name }} · ₹{{ entry.price | localNumber: '1.0-0' }}
+          </button>
+        }
+      </div>
+    }
+
+    <section class="card mb-3">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div>
+          <small class="text-body-secondary d-block">
+            {{
+              'prices.updated' | translate: { date: (current.price_date | localDate: 'd MMM yyyy') }
+            }}
+          </small>
+          <div class="d-flex align-items-baseline gap-2">
+            <strong class="fs-2">₹{{ current.price | localNumber: '1.0-0' }}</strong>
+            <small class="text-body-secondary">{{ 'prices.perQuintalShort' | translate }}</small>
+          </div>
+          @switch (direction()) {
+            @case ('up') {
+              <small class="text-success fw-semibold"
+                ><i class="bi bi-caret-up-fill" aria-hidden="true"></i> +{{
+                  current.change_pct | localNumber: '1.1-1'
+                }}% {{ 'prices.sinceLast' | translate }}</small
+              >
+            }
+            @case ('down') {
+              <small class="text-danger fw-semibold"
+                ><i class="bi bi-caret-down-fill" aria-hidden="true"></i> −{{
+                  abs(current.change_pct!) | localNumber: '1.1-1'
+                }}% {{ 'prices.sinceLast' | translate }}</small
+              >
+            }
+            @case ('flat') {
+              <small class="text-body-secondary fw-semibold">{{
+                'prices.noChange' | translate
+              }}</small>
+            }
+          }
+        </div>
+        @if (badge(); as b) {
+          <span
+            class="badge"
+            [class.text-bg-warning]="b === 'below'"
+            [class.text-bg-success]="b === 'above'"
+            [class.text-bg-secondary]="b === 'near'"
+            >{{ 'prices.badge.' + b | translate }}</span
+          >
+        }
+      </div>
+
+      @if (stale()) {
+        <p class="small text-body-secondary mt-3 mb-0">
+          {{ 'prices.noNewToday' | translate: { date: (current.price_date | localDate: 'd MMM') } }}
+        </p>
+      }
+
+      <div class="btn-group my-3" role="group" [attr.aria-label]="'prices.chartPeriod' | translate">
+        @for (period of periods; track period) {
+          <button
+            type="button"
+            class="btn btn-sm"
+            [class.btn-success]="days() === period"
+            [class.btn-outline-secondary]="days() !== period"
+            [attr.aria-pressed]="days() === period"
+            (click)="setDays(period)"
+          >
+            {{ periodKey(period) | translate }}
+          </button>
+        }
+      </div>
+
+      @if (loadingLine()) {
+        <div class="text-center py-4" role="status">
+          <div class="spinner-border spinner-border-sm text-success">
+            <span class="visually-hidden">{{ 'prices.loading' | translate }}</span>
+          </div>
+        </div>
+      }
+      @if (pointCount() > 0) {
+        <app-price-chart [lines]="lines()" [label]="chartLabel()" />
+
+        <div class="row row-cols-3 g-2 mt-2 text-center">
+          <div class="col">
+            <strong class="d-block">₹{{ history()?.lowest | localNumber: '1.0-0' }}</strong>
+            <small class="text-body-secondary">{{ 'prices.lowest' | translate }}</small>
+          </div>
+          <div class="col">
+            <strong class="d-block">₹{{ history()?.average | localNumber: '1.0-0' }}</strong>
+            <small class="text-body-secondary">{{ 'prices.average' | translate }}</small>
+          </div>
+          <div class="col">
+            <strong class="d-block">₹{{ history()?.highest | localNumber: '1.0-0' }}</strong>
+            <small class="text-body-secondary">{{ 'prices.highest' | translate }}</small>
+          </div>
+        </div>
+      } @else if (!loadingLine()) {
+        <p class="text-body-secondary mb-0">{{ 'prices.noHistory' | translate }}</p>
+      }
+
+      @if (shortHistory()) {
+        <p class="small text-body-secondary mt-3 mb-0">
+          {{ 'prices.shortHistory' | translate: { count: pointCount() } }}
+        </p>
+      }
+    </section>
+
+    @if (others().length > 0) {
+      <section class="card">
+        <h2 class="h6">{{ 'prices.compareTitle' | translate }}</h2>
+        <p class="small text-body-secondary">
+          {{ 'prices.compareHint' | translate: { mandi: current.mandi.name, max: maxCompare } }}
+        </p>
+        <div
+          class="d-flex flex-wrap gap-2"
+          role="group"
+          [attr.aria-label]="'prices.compareTitle' | translate"
+        >
+          @for (entry of others(); track entry.mandi.id) {
+            <button
+              type="button"
+              class="btn btn-sm rounded-pill"
+              [class.btn-outline-secondary]="compareIndex(entry.mandi.id) < 0"
+              [class.btn-outline-dark]="compareIndex(entry.mandi.id) >= 0"
+              [attr.aria-pressed]="compareIndex(entry.mandi.id) >= 0"
+              [disabled]="compareIndex(entry.mandi.id) < 0 && compare().length >= maxCompare"
+              (click)="toggleCompare(entry.mandi.id)"
+            >
+              @if (compareIndex(entry.mandi.id) >= 0) {
+                <span
+                  class="d-inline-block rounded-circle me-1"
+                  style="width: 8px; height: 8px"
+                  [style.background-color]="'var(' + compareToken(entry.mandi.id) + ')'"
+                  aria-hidden="true"
+                ></span>
+              }
+              {{ entry.mandi.name }} · ₹{{ entry.price | localNumber: '1.0-0' }}
+            </button>
+          }
+        </div>
+
+        @if (compare().length > 0) {
+          <ul class="list-unstyled mt-3 mb-0">
+            @for (item of legend(); track item.name) {
+              <li class="d-flex align-items-center gap-2 py-1 border-top">
+                <span
+                  class="d-inline-block flex-shrink-0"
+                  style="width: 18px; height: 0; border-top-width: 3px"
+                  [style.border-top-style]="item.dashed ? 'dashed' : 'solid'"
+                  [style.border-top-color]="'var(' + item.token + ')'"
+                  aria-hidden="true"
+                ></span>
+                <span class="flex-grow-1 text-truncate">{{ item.name }}</span>
+                @if (item.price !== null) {
+                  <strong>₹{{ item.price | localNumber: '1.0-0' }}</strong>
+                }
+                @if (item.change !== null) {
+                  <small
+                    class="text-end"
+                    style="min-width: 3.5rem"
+                    [class.text-success]="item.change > 0"
+                    [class.text-danger]="item.change < 0"
+                    [class.text-body-secondary]="item.change === 0"
+                    >{{ item.change > 0 ? '+' : item.change < 0 ? '−' : ''
+                    }}{{ abs(item.change) | localNumber: '1.1-1' }}%</small
+                  >
+                }
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    }
+  }
+</div>
