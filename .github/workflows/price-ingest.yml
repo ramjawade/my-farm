@@ -9,6 +9,9 @@ name: Daily mandi price ingest
 # repository setting "Require approval for all outside collaborators" on.
 #
 # Safe to run more than once a day: the backend stores the same rows again as a no-op.
+#
+# The steps name no shell and call only `node`, so they run on the runner's default shell
+# (PowerShell on Windows). The script reports whether the feed is reachable itself.
 
 on:
   schedule:
@@ -38,21 +41,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Check Node
-        shell: bash
         run: node --version
 
-      - name: Check the price feed is reachable from this runner (no key sent)
-        # Diagnostic only. HTTP 400 "Authorization field missing" means the feed answered.
-        continue-on-error: true
-        shell: bash
-        run: |
-          curl --silent --show-error --max-time 30 \
-            --write-out '\nhttp=%{http_code} connect=%{time_connect}s remote=%{remote_ip}\n' \
-            "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?format=json&limit=1" \
-            || echo "curl exit code $?"
-
       - name: Fetch prices and post them to the backend
-        shell: bash
         env:
           ADMIN_TOKEN: ${{ secrets.PRICE_INGEST_ADMIN_TOKEN }}
           MANDI_API_KEY: ${{ secrets.MANDI_API_KEY }}
