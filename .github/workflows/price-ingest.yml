@@ -18,6 +18,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
+      - name: Check the price feed is reachable from GitHub (no key sent)
+        # Diagnostic only. HTTP 400 "Authorization field missing" means the feed answered,
+        # so a failure of the next step is on the backend's side of the network.
+        continue-on-error: true
+        run: |
+          curl --silent --show-error --max-time 30 \
+            --write-out '\nhttp=%{http_code} connect=%{time_connect}s remote=%{remote_ip}\n' \
+            "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?format=json&limit=1" \
+            || echo "curl exit code $?"
+
       - name: Call the ingest endpoint
         env:
           ADMIN_TOKEN: ${{ secrets.PRICE_INGEST_ADMIN_TOKEN }}

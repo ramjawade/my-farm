@@ -23,6 +23,27 @@ class FeedError(Exception):
     """The feed could not be read or returned something unusable."""
 
 
+def describe_failure(exc: BaseException, secret: str = "") -> str:
+    """A short, key-free reason for a failed feed call.
+
+    A connection failure carries no message of its own; the useful part (DNS failure,
+    refused, timed out, reset) is on the chained cause. A status error says only the
+    status, because its text would include the request URL and so the API key.
+    """
+    if isinstance(exc, httpx.HTTPStatusError):
+        return f"HTTP {exc.response.status_code}"
+    parts: list[str] = []
+    seen: set[int] = set()
+    current: BaseException | None = exc
+    while current is not None and id(current) not in seen and len(parts) < 4:
+        seen.add(id(current))
+        text = str(current).strip()
+        parts.append(f"{type(current).__name__}: {text}" if text else type(current).__name__)
+        current = current.__cause__ or current.__context__
+    reason = " <- ".join(parts)[:300]
+    return reason.replace(secret, "***") if secret else reason
+
+
 @dataclass(frozen=True)
 class FeedRow:
     state: str
@@ -89,8 +110,8 @@ class MandiFeed:
                     body = resp.json()
                 except (httpx.HTTPError, ValueError) as exc:
                     # Never echo the request URL: it carries the API key.
-                    detail = f"feed request failed for {commodity}: {type(exc).__name__}"
-                    raise FeedError(detail) from exc
+                    reason = describe_failure(exc, settings.mandi_api_key)
+                    raise FeedError(f"feed request failed for {commodity}: {reason}") from exc
 
                 records = body.get("records")
                 if not isinstance(records, list):
