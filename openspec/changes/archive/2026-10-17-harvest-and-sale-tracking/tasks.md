@@ -21,6 +21,6 @@
 
 ## 4. Finish
 
-- [ ] 4.1 Run `npm run lint` and `npm run build`; backend `ruff`, `mypy`, `pytest`
+- [x] 4.1 Run `npm run lint` and `npm run build`; backend `ruff`, `mypy`, `pytest`
 - [x] 4.2 Open the PR naming `harvest-and-sale-tracking`
-- [ ] 4.3 After the PR merges, archive this change and tick task 4.1 in `prototype-adoption-roadmap/tasks.md`
+- [x] 4.3 After the PR merges, archive this change and tick task 4.1 in `prototype-adoption-roadmap/tasks.md`
