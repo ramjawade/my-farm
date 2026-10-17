@@ -65,6 +65,7 @@ describe('PricesListComponent', () => {
       ok([
         {
           catalogId: 5,
+          cropIds: [5],
           commodity: 'Onion',
           mandis: [mandi(1, 2040), mandi(2, 2150, { change_pct: 6.4, previous_price: 2020 })],
         },
@@ -79,8 +80,18 @@ describe('PricesListComponent', () => {
   it('shows "No change" for a zero change and a fall in the danger colour', () => {
     open(
       ok([
-        { catalogId: 5, commodity: 'Onion', mandis: [mandi(1, 2150, { change_pct: 0 })] },
-        { catalogId: 6, commodity: 'Wheat', mandis: [mandi(1, 2400, { change_pct: -1.5 })] },
+        {
+          catalogId: 5,
+          cropIds: [5],
+          commodity: 'Onion',
+          mandis: [mandi(1, 2150, { change_pct: 0 })],
+        },
+        {
+          catalogId: 6,
+          cropIds: [6],
+          commodity: 'Wheat',
+          mandis: [mandi(1, 2400, { change_pct: -1.5 })],
+        },
       ]),
     );
     expect(text()).toContain('prices.noChange');
@@ -92,6 +103,7 @@ describe('PricesListComponent', () => {
       ok([
         {
           catalogId: 5,
+          cropIds: [5],
           commodity: 'Onion',
           mandis: [mandi(1, 2150, { price_date: '2020-01-01' })],
         },
@@ -101,7 +113,7 @@ describe('PricesListComponent', () => {
   });
 
   it('does not say "updated" for a price from today', () => {
-    open(ok([{ catalogId: 5, commodity: 'Onion', mandis: [mandi(1, 2150)] }]));
+    open(ok([{ catalogId: 5, cropIds: [5], commodity: 'Onion', mandis: [mandi(1, 2150)] }]));
     expect(text()).not.toContain('prices.updated');
   });
 
@@ -111,6 +123,7 @@ describe('PricesListComponent', () => {
         [
           {
             catalogId: 5,
+            cropIds: [5],
             commodity: 'Onion',
             mandis: [mandi(1, 2040), mandi(2, 2150), mandi(3, null)],
           },
@@ -132,12 +145,27 @@ describe('PricesListComponent', () => {
   });
 
   it('shows "No price" for a crop with no price commodity', () => {
-    open(ok([{ catalogId: 7, commodity: null, mandis: [mandi(1, null)] }]));
+    open(ok([{ catalogId: 7, cropIds: [7], commodity: null, mandis: [mandi(1, null)] }]));
     expect(text()).toContain('prices.noPrice');
   });
 
+  it('tells the farmer to pick a specific crop and links to edit the one crop', () => {
+    open(ok([{ catalogId: 7, cropIds: [41], commodity: null, mandis: [mandi(1, null)] }]));
+    expect(text()).toContain('prices.noPriceHint');
+    expect(el().querySelector('a[href="/crops/41/edit"]')).not.toBeNull();
+  });
+
+  it('links to the crops list when there are several plantings of a crop with no price', () => {
+    open(ok([{ catalogId: 7, cropIds: [41, 42, 43], commodity: null, mandis: [mandi(1, null)] }]));
+    expect(el().querySelector('a[href="/crops/41/edit"]')).toBeNull();
+    const link = Array.from(el().querySelectorAll('a')).find(
+      (a) => a.getAttribute('href') === '/crops',
+    );
+    expect(link?.textContent).toContain('prices.editCrops');
+  });
+
   it('shows "Not traded" with a Change APMCs link when no followed mandi has a price', () => {
-    open(ok([{ catalogId: 5, commodity: 'Onion', mandis: [mandi(1, null)] }]));
+    open(ok([{ catalogId: 5, cropIds: [5], commodity: 'Onion', mandis: [mandi(1, null)] }]));
     expect(text()).toContain('prices.notTraded');
     expect(el().querySelector('a[href="/prices/mandis"].btn-sm')).not.toBeNull();
   });

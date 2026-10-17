@@ -61,7 +61,16 @@
                   <strong class="d-block text-truncate">{{
                     item.name | referenceName: 'crop'
                   }}</strong>
-                  <small class="text-body-secondary">{{ 'prices.noPriceHint' | translate }}</small>
+                  <small class="text-body-secondary d-block">
+                    {{ 'prices.noPriceHint' | translate }}
+                    @if (item.row.cropIds.length === 1) {
+                      <a class="ms-1" [routerLink]="['/crops', item.row.cropIds[0], 'edit']">{{
+                        'prices.editCrop' | translate
+                      }}</a>
+                    } @else {
+                      <a class="ms-1" routerLink="/crops">{{ 'prices.editCrops' | translate }}</a>
+                    }
+                  </small>
                 </div>
                 <span class="badge text-bg-secondary">{{ 'prices.noPrice' | translate }}</span>
               }

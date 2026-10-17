@@ -1218,7 +1218,7 @@
     "perQuintal": "Per quintal · from the mandis you chose",
     "perQuintalShort": "per quintal",
     "noPrice": "No price",
-    "noPriceHint": "No mandi price for this crop yet",
+    "noPriceHint": "Pick a specific crop, like Onion, to see its price.",
     "notTraded": "Not traded at your APMCs",
     "changeApmcs": "Change APMCs",
     "bestAt": "Best at {{mandi}}",
@@ -1276,6 +1276,8 @@
       "7": "7 days",
       "30": "30 days",
       "365": "1 year"
-    }
+    },
+    "editCrop": "Edit crop",
+    "editCrops": "Choose crops"
   }
 }

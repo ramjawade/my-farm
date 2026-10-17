@@ -33,7 +33,7 @@ function okData(
   const priced = [entry(2, 2150, { change_pct: 6.4 }), entry(1, 2040), entry(3, 1900)];
   return {
     status: 'ok',
-    row: { catalogId: 5, commodity: 'Onion', mandis: priced },
+    row: { catalogId: 5, cropIds: [5], commodity: 'Onion', mandis: priced },
     priced,
     mandiId: 2,
     days: 30,
@@ -177,7 +177,7 @@ describe('PriceDetailComponent', () => {
     await open(
       okData({
         priced: priced as never,
-        row: { catalogId: 5, commodity: 'Onion', mandis: priced as never },
+        row: { catalogId: 5, cropIds: [5], commodity: 'Onion', mandis: priced as never },
         mandiId: 1,
       }),
     );
@@ -211,7 +211,7 @@ describe('PriceDetailComponent', () => {
     await open(
       okData({
         priced: [old] as never,
-        row: { catalogId: 5, commodity: 'Onion', mandis: [old] as never },
+        row: { catalogId: 5, cropIds: [5], commodity: 'Onion', mandis: [old] as never },
       }),
     );
     expect(text()).toContain('prices.noNewToday');

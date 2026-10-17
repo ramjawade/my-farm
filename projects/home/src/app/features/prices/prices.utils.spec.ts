@@ -35,11 +35,15 @@ describe('groupByCropType', () => {
     ]);
     expect(rows.map((r) => r.catalogId)).toEqual([5, 7]);
     expect(rows[0].commodity).toBe('Onion');
+    expect(rows[0].cropIds).toEqual([10, 12]);
+    expect(rows[1].cropIds).toEqual([11]);
   });
 
   it('keeps a crop with no price commodity as a row with a null commodity', () => {
     const rows = groupByCropType([crop(1, 9, null, [mandi(1, null)])]);
-    expect(rows).toEqual([{ catalogId: 9, commodity: null, mandis: [mandi(1, null)] }]);
+    expect(rows).toEqual([
+      { catalogId: 9, cropIds: [1], commodity: null, mandis: [mandi(1, null)] },
+    ]);
   });
 });
 
@@ -54,6 +58,7 @@ describe('summarizeRow', () => {
   it('names the best mandi for a priced crop', () => {
     const s = summarizeRow({
       catalogId: 1,
+      cropIds: [1],
       commodity: 'Onion',
       mandis: [mandi(1, 2040), mandi(2, 2150)],
     });
@@ -62,15 +67,16 @@ describe('summarizeRow', () => {
   });
 
   it('is "not traded" when no chosen mandi has a price', () => {
-    expect(summarizeRow({ catalogId: 1, commodity: 'Onion', mandis: [mandi(1, null)] }).kind).toBe(
-      'notTraded',
-    );
+    expect(
+      summarizeRow({ catalogId: 1, cropIds: [1], commodity: 'Onion', mandis: [mandi(1, null)] })
+        .kind,
+    ).toBe('notTraded');
   });
 
   it('is "no price" when the crop has no price commodity', () => {
-    expect(summarizeRow({ catalogId: 1, commodity: null, mandis: [mandi(1, null)] }).kind).toBe(
-      'noPrice',
-    );
+    expect(
+      summarizeRow({ catalogId: 1, cropIds: [1], commodity: null, mandis: [mandi(1, null)] }).kind,
+    ).toBe('noPrice');
   });
 });
 

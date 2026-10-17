@@ -16,7 +16,10 @@ const GROUPS: CropGroup[] = [
   {
     key: 'vegetable',
     label: 'Vegetables',
-    options: [{ name: 'Onion', label: 'कांदा' }],
+    options: [
+      { name: 'Onion', label: 'कांदा', aliases: ['kanda', 'pyaz', 'प्याज'] },
+      { name: 'Sesame', label: 'तीळ', aliases: ['til', 'teel'] },
+    ],
   },
 ];
 
@@ -58,7 +61,7 @@ describe('CropPickerComponent', () => {
     input().dispatchEvent(new Event('focus'));
     fixture.detectChanges();
 
-    expect(options().map((o) => o.textContent?.trim())).toEqual(['गहू', 'मका', 'कांदा']);
+    expect(options().map((o) => o.textContent?.trim())).toEqual(['गहू', 'मका', 'कांदा', 'तीळ']);
     expect(el().textContent).toContain('Cereals');
     expect(el().textContent).toContain('Vegetables');
     expect(el().textContent).not.toContain('Your crops');
@@ -70,6 +73,27 @@ describe('CropPickerComponent', () => {
 
     type('  WHEAT ');
     expect(options().map((o) => o.textContent?.trim())).toEqual(['गहू']);
+  });
+
+  it('finds a crop by another name farmers use, in English letters or in Hindi', () => {
+    type('kanda');
+    expect(options().map((o) => o.textContent?.trim())).toEqual(['कांदा']);
+
+    type('प्याज');
+    expect(options().map((o) => o.textContent?.trim())).toEqual(['कांदा']);
+
+    type('  TIL ');
+    expect(options().map((o) => o.textContent?.trim())).toEqual(['तीळ']);
+  });
+
+  it('does not offer to add a crop when the typed text is exactly another name for one', () => {
+    type('til');
+    expect(options().length).toBe(1);
+    expect(options()[0].textContent).not.toContain('cropPicker.addNew');
+
+    type('til bhaji');
+    expect(options().length).toBe(1);
+    expect(options()[0].textContent).toContain('cropPicker.addNew');
   });
 
   it('picks a crop with a click and reports its stored name', () => {

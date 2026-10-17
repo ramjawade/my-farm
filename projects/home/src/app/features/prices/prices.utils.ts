@@ -6,6 +6,8 @@ export interface CropTypeRow {
   /** The mandi feed's commodity name; null when the crop has no price commodity. */
   commodity: string | null;
   mandis: MandiPriceResponse[];
+  /** Every planting of this crop type, so a row can link to the crop to edit. */
+  cropIds: number[];
 }
 
 /**
@@ -15,11 +17,15 @@ export interface CropTypeRow {
 export function groupByCropType(crops: readonly CropPricesResponse[]): CropTypeRow[] {
   const rows = new Map<number, CropTypeRow>();
   for (const crop of crops) {
-    if (!rows.has(crop.crop_catalog_id)) {
+    const row = rows.get(crop.crop_catalog_id);
+    if (row) {
+      row.cropIds.push(crop.crop_id);
+    } else {
       rows.set(crop.crop_catalog_id, {
         catalogId: crop.crop_catalog_id,
         commodity: crop.commodity ?? null,
         mandis: crop.mandis,
+        cropIds: [crop.crop_id],
       });
     }
   }
