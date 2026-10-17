@@ -418,6 +418,22 @@ Secrets: GitHub Actions and Render both hold the Neon URL,
 keys as env vars. The existing `environment.prod.ts` stamping gains the API
 base URL. The API allowlists the GitHub Pages origin for CORS.
 
+### 9.1 Daily mandi price ingest
+
+`.github/workflows/price-ingest.yml` runs once a day (and on demand) and
+POSTs `/api/v1/admin/prices/ingest` with the admin token. Waking Render's
+sleeping free instance takes about a minute, so the call retries with a long
+timeout; a failed run shows as a red workflow run. The endpoint fetches
+Maharashtra prices from the data.gov.in mandi feed for the commodities that
+`crop_catalog.price_commodity` maps to, stores one reading per mandi,
+commodity, variety, grade and day, and prunes readings older than 400 days.
+
+| Where | Name | What |
+|---|---|---|
+| Render env | `MANDI_API_KEY` | free data.gov.in API key; blank makes the ingest answer 503 |
+| Render env | `ADMIN_TOKEN` | already set; the same value as the GitHub secret below |
+| GitHub secret | `PRICE_INGEST_ADMIN_TOKEN` | sent as `X-Admin-Token` by the workflow |
+
 ---
 
 ## 10. Delivery stages

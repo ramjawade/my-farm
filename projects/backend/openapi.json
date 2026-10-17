@@ -1619,6 +1619,44 @@
         "title": "CropCreate",
         "type": "object"
       },
+      "CropPrices": {
+        "description": "The prices of one crop at each followed mandi.",
+        "properties": {
+          "commodity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commodity"
+          },
+          "crop_catalog_id": {
+            "title": "Crop Catalog Id",
+            "type": "integer"
+          },
+          "crop_id": {
+            "title": "Crop Id",
+            "type": "integer"
+          },
+          "mandis": {
+            "items": {
+              "$ref": "#/components/schemas/MandiPrice"
+            },
+            "title": "Mandis",
+            "type": "array"
+          }
+        },
+        "required": [
+          "crop_id",
+          "crop_catalog_id",
+          "mandis"
+        ],
+        "title": "CropPrices",
+        "type": "object"
+      },
       "CropRead": {
         "description": "Read a crop record.",
         "properties": {
@@ -3241,6 +3279,230 @@
           }
         },
         "title": "LandUpdate",
+        "type": "object"
+      },
+      "LatestPrices": {
+        "properties": {
+          "crops": {
+            "items": {
+              "$ref": "#/components/schemas/CropPrices"
+            },
+            "title": "Crops",
+            "type": "array"
+          }
+        },
+        "required": [
+          "crops"
+        ],
+        "title": "LatestPrices",
+        "type": "object"
+      },
+      "MandiPrice": {
+        "description": "A commodity's price at one mandi on its latest reading, per quintal.",
+        "properties": {
+          "change_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Pct"
+          },
+          "mandi": {
+            "$ref": "#/components/schemas/MandiRead"
+          },
+          "previous_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Price"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          },
+          "price_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Date"
+          }
+        },
+        "required": [
+          "mandi"
+        ],
+        "title": "MandiPrice",
+        "type": "object"
+      },
+      "MandiRead": {
+        "description": "A market as farmers see it: name and district.",
+        "properties": {
+          "district": {
+            "title": "District",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "district"
+        ],
+        "title": "MandiRead",
+        "type": "object"
+      },
+      "MyMandisRead": {
+        "description": "The farmer's followed mandis; `suggested` is true while they are the defaults.",
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MandiRead"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "suggested": {
+            "title": "Suggested",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "suggested"
+        ],
+        "title": "MyMandisRead",
+        "type": "object"
+      },
+      "MyMandisUpdate": {
+        "description": "Replace the followed mandis: one to five distinct ids, in the order chosen.",
+        "properties": {
+          "mandi_ids": {
+            "items": {
+              "maximum": 9.223372036854776e+18,
+              "minimum": 1.0,
+              "type": "integer"
+            },
+            "maxItems": 5,
+            "minItems": 1,
+            "title": "Mandi Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "mandi_ids"
+        ],
+        "title": "MyMandisUpdate",
+        "type": "object"
+      },
+      "PriceHistory": {
+        "description": "A commodity's daily modal price at one mandi, oldest first, with the period's extremes.",
+        "properties": {
+          "average": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average"
+          },
+          "commodity": {
+            "title": "Commodity",
+            "type": "string"
+          },
+          "days": {
+            "title": "Days",
+            "type": "integer"
+          },
+          "highest": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Highest"
+          },
+          "lowest": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lowest"
+          },
+          "mandi": {
+            "$ref": "#/components/schemas/MandiRead"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/PricePoint"
+            },
+            "title": "Points",
+            "type": "array"
+          }
+        },
+        "required": [
+          "mandi",
+          "commodity",
+          "days",
+          "points"
+        ],
+        "title": "PriceHistory",
+        "type": "object"
+      },
+      "PricePoint": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "price": {
+            "title": "Price",
+            "type": "number"
+          }
+        },
+        "required": [
+          "date",
+          "price"
+        ],
+        "title": "PricePoint",
         "type": "object"
       },
       "RegisterRequest": {
@@ -4989,6 +5251,58 @@
         ]
       }
     },
+    "/api/v1/admin/prices/ingest": {
+      "post": {
+        "description": "Fetch today's mandi prices and store them. Safe to run more than once a day.",
+        "operationId": "ingest_prices_api_v1_admin_prices_ingest_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-admin-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Admin-Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Ingest Prices Api V1 Admin Prices Ingest Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ingest Prices",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/v1/admin/seed-reference-data": {
       "post": {
         "description": "Seed reference tables with initial data.\n\nIdempotent: skips records that already exist (by name).",
@@ -6632,6 +6946,173 @@
         ]
       }
     },
+    "/api/v1/mandis": {
+      "get": {
+        "description": "Mandis narrowed by district, by partial name or district text, and by commodity.",
+        "operationId": "find_mandis_api_v1_mandis_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "district",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 150,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "District"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 100,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "commodity",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 100,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Commodity"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Find Mandis Api V1 Mandis Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Find Mandis",
+        "tags": [
+          "mandis"
+        ]
+      }
+    },
+    "/api/v1/mandis/districts": {
+      "get": {
+        "description": "Districts that have at least one mandi, in name order.",
+        "operationId": "list_districts_api_v1_mandis_districts_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Districts Api V1 Mandis Districts Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Districts",
+        "tags": [
+          "mandis"
+        ]
+      }
+    },
     "/api/v1/me": {
       "get": {
         "description": "Get the current authenticated farmer, provisioning on first call.\n\nJIT-creates a farmer row on first successful token verification, then\nreturns it. Subsequent calls fetch the existing row.\n\nAccepts either a Firebase ID token or a backend-issued session JWT.",
@@ -6737,6 +7218,246 @@
         "summary": "Update Current Farmer",
         "tags": [
           "farmer"
+        ]
+      }
+    },
+    "/api/v1/me/mandis": {
+      "get": {
+        "description": "The mandis the farmer follows, or the suggested defaults for their district.",
+        "operationId": "get_my_mandis_api_v1_me_mandis_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyMandisRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get My Mandis",
+        "tags": [
+          "mandis"
+        ]
+      },
+      "put": {
+        "description": "Replace the followed mandis (one to five, in the order given).",
+        "operationId": "put_my_mandis_api_v1_me_mandis_put",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MyMandisUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyMandisRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Put My Mandis",
+        "tags": [
+          "mandis"
+        ]
+      }
+    },
+    "/api/v1/prices/history": {
+      "get": {
+        "description": "Daily prices of a commodity at one mandi for the last `days` days, oldest first.",
+        "operationId": "price_history_api_v1_prices_history_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "mandi_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Mandi Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "commodity",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "minLength": 1,
+              "title": "Commodity",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "days",
+            "required": false,
+            "schema": {
+              "default": 30,
+              "title": "Days",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceHistory"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Price History",
+        "tags": [
+          "prices"
+        ]
+      }
+    },
+    "/api/v1/prices/latest": {
+      "get": {
+        "description": "Each of the farmer's crops with its latest price at every followed mandi.",
+        "operationId": "latest_prices_api_v1_prices_latest_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LatestPrices"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Latest Prices",
+        "tags": [
+          "prices"
         ]
       }
     },

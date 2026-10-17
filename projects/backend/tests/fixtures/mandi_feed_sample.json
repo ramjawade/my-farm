@@ -1,0 +1,61 @@
+{
+  "created_date": "2021-08-02T21:19:28Z",
+  "updated_date": "2026-10-17T12:00:59Z",
+  "title": "Current Daily Price of Various Commodities from Various Markets (Mandi)",
+  "version": "2.2.0",
+  "status": "ok",
+  "total": 4,
+  "count": 4,
+  "limit": "100",
+  "offset": "0",
+  "records": [
+    {
+      "state": "Maharashtra",
+      "district": "Nashik",
+      "market": "Lasalgaon APMC",
+      "commodity": "Maize",
+      "variety": "Local",
+      "grade": "FAQ",
+      "arrival_date": "17/10/2026",
+      "min_price": 2000,
+      "max_price": 2250,
+      "modal_price": 2100
+    },
+    {
+      "state": "Maharashtra",
+      "district": "Nashik",
+      "market": "Lasalgaon APMC",
+      "commodity": "Maize",
+      "variety": "Hybrid",
+      "grade": "Non-FAQ",
+      "arrival_date": "17/10/2026",
+      "min_price": 1900,
+      "max_price": 2100,
+      "modal_price": 2000
+    },
+    {
+      "state": "Maharashtra",
+      "district": "Pune",
+      "market": "Pune APMC",
+      "commodity": "Maize",
+      "variety": "Local",
+      "grade": "FAQ",
+      "arrival_date": "17/10/2026",
+      "min_price": 2100,
+      "max_price": 2300,
+      "modal_price": 2200
+    },
+    {
+      "state": "Maharashtra",
+      "district": "Pune",
+      "market": "Bad Row APMC",
+      "commodity": "Maize",
+      "variety": "Local",
+      "grade": "FAQ",
+      "arrival_date": "not a date",
+      "min_price": 1,
+      "max_price": 2,
+      "modal_price": 1
+    }
+  ]
+}

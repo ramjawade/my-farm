@@ -8,6 +8,8 @@ from sqlalchemy import Select, select
 
 from myfarm_api.core.config import get_settings
 from myfarm_api.core.db import get_session_factory
+from myfarm_api.core.mandi_feed import FeedError, get_mandi_feed
+from myfarm_api.core.price_ingest import run_ingest
 from myfarm_api.models import ActivityType, CropCatalog, ExpenseCategory
 
 
@@ -48,6 +50,17 @@ SEED_CROPS = [
     "Vegetables",
     "Fruits",
 ]
+
+# The mandi price feed's exact commodity name for each crop that has one.
+# Crops absent here (Sugarcane, Vegetables, Fruits) show "No price".
+CROP_PRICE_COMMODITIES = {
+    "Soybeans": "Soyabean",
+    "Wheat": "Wheat",
+    "Rice": "Paddy(Common)",
+    "Corn": "Maize",
+    "Cotton": "Cotton",
+    "Mustard": "Mustard",
+}
 
 SEED_EXPENSE_CATEGORIES = [
     "Machine Rent",
@@ -92,10 +105,13 @@ async def seed_reference_data() -> dict[str, Any]:
         for crop_name in SEED_CROPS:
             stmt: Select[Any] = select(CropCatalog).where(CropCatalog.name == crop_name)
             result = await session.execute(stmt)
-            if not result.scalar_one_or_none():
-                crop = CropCatalog(name=crop_name)
-                session.add(crop)
+            existing = result.scalar_one_or_none()
+            commodity = CROP_PRICE_COMMODITIES.get(crop_name)
+            if not existing:
+                session.add(CropCatalog(name=crop_name, price_commodity=commodity))
                 crops_created += 1
+            elif existing.price_commodity != commodity and commodity is not None:
+                existing.price_commodity = commodity
 
         # Seed expense categories
         expenses_created = 0
@@ -128,3 +144,14 @@ async def seed_reference_data() -> dict[str, Any]:
         "total_created": crops_created + expenses_created + activities_created,
         "message": "Reference data seeding complete",
     }
+
+
+@router.post("/prices/ingest")
+async def ingest_prices() -> dict[str, Any]:
+    """Fetch today's mandi prices and store them. Safe to run more than once a day."""
+    if not get_settings().mandi_configured:
+        raise HTTPException(status_code=503, detail="Mandi price feed is not configured")
+    try:
+        return await run_ingest(get_mandi_feed())
+    except FeedError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc

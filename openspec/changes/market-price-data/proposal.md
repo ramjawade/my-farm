@@ -26,7 +26,7 @@ Prototype screens this feeds: `prices`, `pricedetail`, `apmcs` in `design/protot
 ## Impact
 
 - Backend: models and migration `0009`, a seed of commodity names on `crop_catalog`, repositories, an ingest service, an admin endpoint, farmer endpoints, tests, `openapi.json`.
-- CI: a scheduled workflow `.github/workflows/price-ingest.yml` and two repository secrets (admin token, API base URL).
+- CI: a scheduled workflow `.github/workflows/price-ingest.yml` and one repository secret (the admin token); the public API address is written in the workflow.
 - Config: the data-feed API key as a Render environment variable.
 - Frontend: only the regenerated API types.
 - Cost: inside the free tiers. About a thousand rows a day is roughly 40 to 80 MB a year with indexes in Neon (0.5 GB free), capped by the 400-day retention.
