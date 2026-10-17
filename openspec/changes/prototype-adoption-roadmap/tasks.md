@@ -27,7 +27,8 @@ Each task is one child change: run `/opsx:propose`, get approval, apply it, merg
 ## 4. Phase 3: New features
 
 - [ ] 4.1 `harvest-and-sale-tracking`: fill in the existing empty change; record harvests and sales against a crop, income roll-ups [prototype: addsale, cropdetail]
-- [ ] 4.2 `market-prices`: explore the data source first; price list, price detail, APMC picker [prototype: prices, pricedetail, apmcs]
+- [ ] 4.2a `market-price-data`: mandi list, daily price ingest (GitHub Actions trigger), price history, chosen mandis per farmer, read API
+- [ ] 4.2b `market-prices`: price list, price detail with charts, APMC picker [prototype: prices, pricedetail, apmcs]
 - [ ] 4.3 `price-alerts-and-watchlist`: watchlists, add watch item, price alerts [prototype: alerts, addalert, newwl, addwi]
 - [ ] 4.4 `assistant-full-page`: assistant screen, greeting with brief bullets, suggested questions, review-and-save of logged entries [prototype: chat]
 - [ ] 4.5 `weather-redesign`: today card, forecast, farming advisories in the new style [prototype: weather]
