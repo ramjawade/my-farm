@@ -742,7 +742,9 @@
       "editSale": "विक्री बदला",
       "prices": "मंडी भाव",
       "myApmcs": "माझ्या मंडया",
-      "priceDetail": "भावाचा तपशील"
+      "priceDetail": "भावाचा तपशील",
+      "newList": "नवी निरीक्षण यादी",
+      "addItem": "नोंद जोडा"
     }
   },
   "login": {
@@ -1278,6 +1280,44 @@
       "365": "1 वर्ष"
     },
     "editCrop": "पीक बदला",
-    "editCrops": "पिके निवडा"
+    "editCrops": "पिके निवडा",
+    "tabs": "निरीक्षण याद्या",
+    "tabFarm": "माझे शेत",
+    "newList": "नवी यादी",
+    "listCount": "नोंदी: {{count}}",
+    "deleteList": "यादी हटवा",
+    "addItem": "नोंद जोडा",
+    "listEmptyTitle": "अजून काही जोडलेले नाही",
+    "listEmptyText": "कोणत्याही मंडीतील पीक जोडा, त्याचा भाव इथे दिसेल.",
+    "removeItem": "{{mandi}} मधील {{crop}} काढा",
+    "watchHint": "यादीत तुम्ही न पिकवलेली पिकेही असू शकतात.",
+    "deleteListTitle": "यादी हटवा",
+    "deleteListConfirm": "ही यादी आणि तिच्यातील सर्व काही हटवायचे?",
+    "listDeleted": "यादी हटवली.",
+    "newListTitle": "नवी निरीक्षण यादी",
+    "newListSubtitle": "ज्या पिकांचे आणि मंडयांचे भाव पाहायचे ते एका यादीत ठेवा.",
+    "listName": "यादीचे नाव",
+    "listNamePlaceholder": "उदा. कांदा मंडया",
+    "listNameRequired": "यादीला नाव द्या.",
+    "listNameTaken": "या नावाची यादी तुमच्याकडे आधीच आहे.",
+    "listNameTooLong": "30 अक्षरांपर्यंत लिहा.",
+    "listLimit": "तुमच्याकडे {{max}} याद्या आहेत, हीच कमाल मर्यादा आहे. दुसरी जोडण्यासाठी एक हटवा.",
+    "createList": "यादी तयार करा",
+    "listCreated": "यादी तयार झाली.",
+    "listNotFoundTitle": "ही यादी सापडली नाही.",
+    "addItemTitle": "{{list}} मध्ये जोडा",
+    "addItemSubtitle": "पीक आणि पाहायची मंडी निवडा.",
+    "itemLimit": "या यादीत कमाल नोंदी आहेत. दुसरी जोडण्यासाठी एक काढा.",
+    "crop": "पीक",
+    "selectCrop": "पीक निवडा",
+    "selectMarket": "मंडी निवडा",
+    "pickCropFirst": "आधी पीक निवडा",
+    "pickCrop": "पीक निवडा.",
+    "pickMarket": "मंडी निवडा.",
+    "alreadyInList": "हे आधीच यादीत आहे.",
+    "noMarkets": "अजून कोणत्याही मंडीत या पिकाचा भाव नाही.",
+    "bestFirst": "सर्वोत्तम भाव आधी.",
+    "addToList": "यादीत जोडा",
+    "itemAdded": "{{list}} मध्ये जोडले."
   }
 }

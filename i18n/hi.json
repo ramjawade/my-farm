@@ -742,7 +742,9 @@
       "editSale": "बिक्री बदलें",
       "prices": "मंडी भाव",
       "myApmcs": "मेरी मंडियाँ",
-      "priceDetail": "भाव का विवरण"
+      "priceDetail": "भाव का विवरण",
+      "newList": "नई निगरानी सूची",
+      "addItem": "आइटम जोड़ें"
     }
   },
   "login": {
@@ -1278,6 +1280,44 @@
       "365": "1 साल"
     },
     "editCrop": "फसल बदलें",
-    "editCrops": "फसलें चुनें"
+    "editCrops": "फसलें चुनें",
+    "tabs": "निगरानी सूचियाँ",
+    "tabFarm": "मेरा खेत",
+    "newList": "नई सूची",
+    "listCount": "आइटम: {{count}}",
+    "deleteList": "सूची हटाएँ",
+    "addItem": "आइटम जोड़ें",
+    "listEmptyTitle": "अभी कुछ जोड़ा नहीं गया",
+    "listEmptyText": "किसी भी मंडी में कोई फसल जोड़ें, उसका भाव यहाँ दिखेगा।",
+    "removeItem": "{{mandi}} में {{crop}} हटाएँ",
+    "watchHint": "सूची में वे फसलें भी हो सकती हैं जो आप नहीं उगाते।",
+    "deleteListTitle": "सूची हटाएँ",
+    "deleteListConfirm": "यह सूची और इसमें सब कुछ हटाएँ?",
+    "listDeleted": "सूची हटाई गई।",
+    "newListTitle": "नई निगरानी सूची",
+    "newListSubtitle": "जिन फसलों और मंडियों को देखना है उन्हें एक सूची में रखें।",
+    "listName": "सूची का नाम",
+    "listNamePlaceholder": "जैसे प्याज़ की मंडियाँ",
+    "listNameRequired": "सूची को नाम दें।",
+    "listNameTaken": "इस नाम की सूची आपके पास पहले से है।",
+    "listNameTooLong": "30 अक्षरों या कम में लिखें।",
+    "listLimit": "आपके पास {{max}} सूचियाँ हैं, यही अधिकतम है। दूसरी जोड़ने के लिए एक हटाएँ।",
+    "createList": "सूची बनाएँ",
+    "listCreated": "सूची बनाई गई।",
+    "listNotFoundTitle": "यह सूची नहीं मिली।",
+    "addItemTitle": "{{list}} में जोड़ें",
+    "addItemSubtitle": "फसल और वह मंडी चुनें जिसे देखना है।",
+    "itemLimit": "इस सूची में अधिकतम आइटम हैं। दूसरा जोड़ने के लिए एक हटाएँ।",
+    "crop": "फसल",
+    "selectCrop": "फसल चुनें",
+    "selectMarket": "मंडी चुनें",
+    "pickCropFirst": "पहले फसल चुनें",
+    "pickCrop": "फसल चुनें।",
+    "pickMarket": "मंडी चुनें।",
+    "alreadyInList": "यह पहले से सूची में है।",
+    "noMarkets": "अभी किसी मंडी में इस फसल का भाव नहीं है।",
+    "bestFirst": "सबसे अच्छा भाव पहले।",
+    "addToList": "सूची में जोड़ें",
+    "itemAdded": "{{list}} में जोड़ा गया।"
   }
 }
