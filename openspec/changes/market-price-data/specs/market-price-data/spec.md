@@ -5,24 +5,35 @@ MyFarm keeps a daily record of mandi prices for the crops farmers grow, so a sig
 
 ## ADDED Requirements
 
-### Requirement: Daily price ingest
-An admin-only operation SHALL fetch the day's mandi prices for Maharashtra and the commodities that MyFarm crops map to, and store one reading per mandi, commodity, variety, grade and day with its minimum, maximum and modal price per quintal. A mandi the feed reports for the first time SHALL be added. Running the operation again for the same day SHALL leave the stored readings unchanged. A failed fetch SHALL change nothing and report the failure. Readings older than 400 days SHALL be removed after a successful run. Without a valid admin token the operation SHALL be refused.
+### Requirement: Price intake
+An admin-only operation SHALL accept a batch of mandi price rows, each with state, district, market, commodity, variety, grade, date, and minimum, maximum and modal price per quintal, and store one reading per mandi, commodity, variety, grade and day. Only rows for Maharashtra and for commodities that MyFarm crops map to SHALL be stored; other rows SHALL be ignored and counted. A row with a missing name, a bad date or a negative price SHALL be skipped and counted without failing the batch. A mandi seen for the first time SHALL be added. Sending the same rows again SHALL leave the stored readings unchanged. A batch of more than 5,000 rows, or a malformed body, SHALL be refused and nothing stored. Readings older than 400 days SHALL be removed after a successful batch. Without a valid admin token the operation SHALL be refused.
 
-#### Scenario: First run of the day
-- **WHEN** the operation runs and the feed returns 3 new rows
-- **THEN** 3 readings are stored for today and any new mandis are added
+#### Scenario: First batch of the day
+- **WHEN** a batch of 3 valid Maharashtra rows for a mapped commodity arrives
+- **THEN** 3 readings are stored for their dates, any new mandis are added, and the reply counts 3 stored
 
-#### Scenario: Run twice
-- **WHEN** the operation runs a second time on the same day with the same rows
-- **THEN** the stored readings are the same as after the first run
+#### Scenario: Same batch twice
+- **WHEN** the same batch is sent a second time
+- **THEN** the stored readings are the same as after the first batch
 
-#### Scenario: Feed down
-- **WHEN** the feed cannot be reached
-- **THEN** earlier readings stay as they are and the failure is reported
+#### Scenario: Rows that do not belong
+- **WHEN** a batch holds a Kerala row, a row for an unmapped commodity and a row with a bad date
+- **THEN** none of them is stored and the reply counts each as ignored or skipped
+
+#### Scenario: Too many rows
+- **WHEN** a batch of 5,001 rows is sent
+- **THEN** it is refused and nothing is stored
 
 #### Scenario: No admin token
 - **WHEN** the operation is called without the admin token
-- **THEN** it is refused and nothing is fetched
+- **THEN** it is refused and nothing is stored
+
+### Requirement: Commodities to fetch
+An admin-only operation SHALL return the distinct commodity names that MyFarm crops map to, so the fetcher asks the feed for exactly those. Without a valid admin token it SHALL be refused.
+
+#### Scenario: List
+- **WHEN** crops map to Onion, Wheat and Maize
+- **THEN** the operation returns those three names
 
 ### Requirement: Find mandis
 A signed-in farmer SHALL be able to list the Maharashtra districts that have mandis, and list mandis narrowed by district, by a partial, case-insensitive name search, and by whether the mandi has a price for a given commodity. Each mandi in the list SHALL show its name and district. The list SHALL be limited and ordered by name, and an empty search with no filters SHALL return the first mandis in that order. Mandis outside Maharashtra SHALL NOT be offered.
