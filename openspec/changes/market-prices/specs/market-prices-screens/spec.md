@@ -17,11 +17,15 @@ flowchart TD
 ## ADDED Requirements
 
 ### Requirement: Prices page
-The Prices page SHALL show one row for each crop on the farm. A row SHALL show the crop's icon and name, the best price among the farmer's chosen mandis in rupees per quintal, the percentage change from the previous reading, and the best mandi's name. A change of zero SHALL read "No change". A price from an earlier day than today SHALL add "Updated <date>" to the row. A crop with no price commodity SHALL show "No price". A crop that none of the chosen mandis has a price for SHALL show "Not traded at your APMCs" and a "Change APMCs" button. With no crops the page SHALL show "No crops yet" and an Add crop button. A line under the heading SHALL say prices are per quintal and come from the mandis the farmer chose.
+The Prices page SHALL show one row for each crop type the farmer grows; two plantings of the same crop are one row. A row SHALL show the crop's icon and name, the best price among the farmer's chosen mandis in rupees per quintal, the percentage change since the previous reading (which may be from an earlier day than yesterday), and the best mandi's name. A change of zero SHALL read "No change". A price from an earlier day than today SHALL add "Updated <date>" to the row. A crop with no price commodity SHALL show "No price". A crop that none of the chosen mandis has a price for SHALL show "Not traded at your APMCs" and a "Change APMCs" button. With no crops the page SHALL show "No crops yet" and an Add crop button. A line under the heading SHALL say prices are per quintal and come from the mandis the farmer chose.
 
 #### Scenario: Best of the chosen mandis
 - **WHEN** onion is 2150 at Lasalgaon and 2040 at Nashik, both chosen, and Lasalgaon was 2020 on the previous reading
 - **THEN** the onion row shows ₹2,150, +6.4% and Lasalgaon as the best mandi
+
+#### Scenario: Two plantings of one crop
+- **WHEN** the farmer has two onion plantings
+- **THEN** the page shows one onion row
 
 #### Scenario: Stale price
 - **WHEN** the latest onion reading is from three days ago

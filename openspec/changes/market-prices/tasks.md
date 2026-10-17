@@ -1,11 +1,11 @@
 # Tasks
 
-Start only after `market-price-data` is merged and its first ingest has run.
+`market-price-data` is merged and prices are being stored daily, so this can be built and checked against real data.
 
 ## 1. Data and shell
 
 - [ ] 1.1 Add `PricesService` over the generated contracts (`latest`, `history`, `chosenMandis`, `saveMandis`, `districts`, `findMandis`) with a spec
-- [ ] 1.2 Add `prices.utils.ts` (best price, percentage change, average badge, period figures) with specs
+- [ ] 1.2 Add `prices.utils.ts` (one row per crop type, best price, percentage change, average badge, period figures) with specs
 - [ ] 1.3 Add the Prices entry to `NAV_ITEMS` (sidebar after Reports, phone tab), the `prices` routes with `section`, `parent` and title keys, and update the nav and shell specs
 
 ## 2. Screens

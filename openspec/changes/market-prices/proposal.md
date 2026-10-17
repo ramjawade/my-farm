@@ -34,6 +34,7 @@ Prototype screens: `prices`, `pricedetail`, `apmcs` in `design/prototype/myfarm-
 - Intraday charts, forecasts or buyer offers.
 - Selling flow or any link from a price to a recorded sale.
 - Offline use; like the rest of the app this is online-only.
+- A refresh or fetch button: prices are fetched by the self-hosted runner in India (`market-price-data`), and the pages only read what is stored.
 
 ## User journey
 
