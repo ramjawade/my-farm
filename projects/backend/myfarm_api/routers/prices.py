@@ -128,18 +128,21 @@ async def crop_markets(
     chosen = ranked[:limit]
     if include is not None and include in priced and include not in chosen:
         chosen = [*chosen[: limit - 1], include] if limit > 1 else [include]
-    return CropMarkets(
-        crop_catalog_id=crop_catalog_id,
-        commodity=commodity,
-        markets=[
+    async with get_session_factory()() as session:
+        snapshots = await latest_snapshots(session, [(mid, commodity) for mid in chosen])
+    markets: list[CropMarket] = []
+    for mid in chosen:
+        snap = snapshots.get((mid, commodity))
+        markets.append(
             CropMarket(
                 mandi=MandiRead.model_validate(mandis[mid]),
                 price=priced[mid][1],
                 price_date=priced[mid][0],
+                previous_price=snap.previous_price if snap else None,
+                change_pct=snap.change_pct if snap else None,
             )
-            for mid in chosen
-        ],
-    )
+        )
+    return CropMarkets(crop_catalog_id=crop_catalog_id, commodity=commodity, markets=markets)
 
 
 @router.get("/history", response_model=PriceHistory)

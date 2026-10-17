@@ -33,7 +33,7 @@ function okData(
   const priced = [entry(2, 2150, { change_pct: 6.4 }), entry(1, 2040), entry(3, 1900)];
   return {
     status: 'ok',
-    row: { catalogId: 5, cropIds: [5], commodity: 'Onion', mandis: priced },
+    row: { catalogId: 5, commodity: 'Onion' },
     priced,
     mandiId: 2,
     days: 30,
@@ -66,11 +66,7 @@ describe('PriceDetailComponent', () => {
   }
 
   beforeEach(() => {
-    prices = jasmine.createSpyObj<PricesService>('PricesService', [
-      'history',
-      'latest',
-      'myMandis',
-    ]);
+    prices = jasmine.createSpyObj<PricesService>('PricesService', ['history', 'cropMarkets']);
     prices.history.and.callFake(async (id, _c, days) =>
       history(days, [1000 + id * 100, 1100 + id * 100]),
     );
@@ -177,7 +173,7 @@ describe('PriceDetailComponent', () => {
     await open(
       okData({
         priced: priced as never,
-        row: { catalogId: 5, cropIds: [5], commodity: 'Onion', mandis: priced as never },
+        row: { catalogId: 5, commodity: 'Onion' },
         mandiId: 1,
       }),
     );
@@ -211,7 +207,7 @@ describe('PriceDetailComponent', () => {
     await open(
       okData({
         priced: [old] as never,
-        row: { catalogId: 5, cropIds: [5], commodity: 'Onion', mandis: [old] as never },
+        row: { catalogId: 5, commodity: 'Onion' },
       }),
     );
     expect(text()).toContain('prices.noNewToday');
@@ -236,12 +232,13 @@ describe('PriceDetailComponent', () => {
     await open({ status: 'error' });
     expect(text()).toContain('prices.errorTitle');
 
-    const priced = [entry(2, 2150)];
-    prices.latest.and.resolveTo({
-      crops: [{ crop_id: 1, crop_catalog_id: 0, commodity: 'Onion', mandis: priced }],
+    prices.cropMarkets.and.resolveTo({
+      crop_catalog_id: 5,
+      commodity: 'Onion',
+      markets: [{ ...entry(2, 2150) }],
     } as never);
-    prices.myMandis.and.resolveTo({ items: [], suggested: false } as never);
     await click(button('prices.retry'));
-    expect(prices.latest).toHaveBeenCalled();
+    expect(prices.cropMarkets).toHaveBeenCalled();
+    expect(text()).toContain('₹2,150');
   });
 });

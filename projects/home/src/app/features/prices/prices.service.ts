@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import {
+  CropMarketsResponse,
   LatestPricesResponse,
   MandiResponse,
   MyMandisResponse,
@@ -33,6 +34,20 @@ export class PricesService {
       commodity,
       days: String(days),
     });
+  }
+
+  /**
+   * The markets that have a price for a crop, best first. `include` names a market that must
+   * be in the answer even if it falls outside the first `limit`.
+   */
+  cropMarkets(
+    cropCatalogId: number,
+    options: { limit?: number; include?: number } = {},
+  ): Promise<CropMarketsResponse> {
+    const params: Record<string, string> = {};
+    if (options.limit) params['limit'] = String(options.limit);
+    if (options.include) params['include'] = String(options.include);
+    return this.http.get<CropMarketsResponse>(`/prices/crops/${cropCatalogId}/markets`, params);
   }
 
   /** The mandis the farmer follows, or the suggested defaults for their district. */

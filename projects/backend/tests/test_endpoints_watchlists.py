@@ -35,7 +35,12 @@ def _today() -> date:
 
 
 def _raw(
-    market: str, commodity: str, modal: int, day: date | None = None, district: str = "Nashik"
+    market: str,
+    commodity: str,
+    modal: int,
+    day: date | None = None,
+    district: str = "Nashik",
+    grade: str = "FAQ",
 ) -> dict[str, Any]:
     return {
         "state": "Maharashtra",
@@ -43,7 +48,7 @@ def _raw(
         "market": market,
         "commodity": commodity,
         "variety": "Local",
-        "grade": "FAQ",
+        "grade": grade,
         "arrival_date": (day or _today()).strftime("%d/%m/%Y"),
         "min_price": modal - 100,
         "max_price": modal + 100,
@@ -371,7 +376,9 @@ async def test_markets_for_a_crop_are_best_first_with_district_and_date(
             _raw(f"Low-{tag}", commodity, 1000, district="Pune"),
             _raw(f"High-{tag}", commodity, 2000, district="Nashik"),
             _raw(f"Mid-{tag}", commodity, 1500),
-            _raw(f"Mid-{tag}", commodity, 1700),  # second grade row, median of the day: 1600
+            _raw(
+                f"Mid-{tag}", commodity, 1700, grade="B"
+            ),  # second grade row, median of the day: 1600
         ],
     )
     with _as(f"farmer_{uuid4()}"):
@@ -385,6 +392,9 @@ async def test_markets_for_a_crop_are_best_first_with_district_and_date(
             (f"Low-{tag}", 1000),
         ]
         assert body["markets"][0]["mandi"]["district"] == "Nashik"
+        # no earlier day for these markets, so no previous price or change
+        assert body["markets"][0]["previous_price"] is None
+        assert body["markets"][0]["change_pct"] is None
         assert body["markets"][0]["price_date"] == _today().isoformat()
 
 
@@ -412,6 +422,9 @@ async def test_markets_use_each_markets_newest_day_and_respect_the_limit(
         ).json()
         assert [m["mandi"]["name"] for m in body["markets"]] == [f"Stale-{tag}", f"Changed-{tag}"]
         assert body["markets"][1]["price"] == 1800
+        # the market with two days: previous is the older day, change is worked out from it
+        assert body["markets"][1]["previous_price"] == 100
+        assert body["markets"][1]["change_pct"] == 1700.0
 
 
 @pytest.mark.asyncio

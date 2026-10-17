@@ -84,6 +84,8 @@ class CropMarket(BaseModel):
     mandi: MandiRead
     price: float
     price_date: date
+    previous_price: float | None = None
+    change_pct: float | None = None
 
 
 class CropMarkets(BaseModel):

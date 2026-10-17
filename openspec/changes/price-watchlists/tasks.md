@@ -13,16 +13,16 @@ Applying starts after `market-prices` (#385) is merged, because it extends those
 
 ## 2. Frontend
 
-- [ ] 2.1 Add `WatchlistsService` and extend the Prices page resolver to load the watchlists, with specs
-- [ ] 2.2 Add the tab row to the Prices page ("My farm", one tab per list with its count, "+ New list") with the chosen list in the link
-- [ ] 2.3 Extract the price row (price, change, "Updated", "Not traded") into a small shared component and show a list's items with it, with remove and the delete-list confirmation
-- [ ] 2.4 Build the New list page and the Add item page (crop, then market best first) with the spec's validation messages and limits
-- [ ] 2.5 Make the price detail work for a crop the farmer does not grow, using the markets endpoint, and update its tests
-- [ ] 2.6 Add i18n keys for mr, hi and en and pass `scripts/check-translations.mjs`
-- [ ] 2.7 Add component specs for the scenarios in the spec
+- [x] 2.1 Add `WatchlistsService` and extend the Prices page resolver to load the watchlists, with specs
+- [x] 2.2 Add the tab row to the Prices page ("My farm", one tab per list with its count, "+ New list") with the chosen list in the link
+- [x] 2.3 Extract the price row (price, change, "Updated", "Not traded") into a small shared component and show a list's items with it, with remove and the delete-list confirmation
+- [x] 2.4 Build the New list page and the Add item page (crop, then market best first) with the spec's validation messages and limits
+- [x] 2.5 Make the price detail work for a crop the farmer does not grow, using the markets endpoint, and update its tests
+- [x] 2.6 Add i18n keys for mr, hi and en and pass `scripts/check-translations.mjs`
+- [x] 2.7 Add component specs for the scenarios in the spec
 
 ## 3. Finish
 
-- [ ] 3.1 Run `ruff`, `mypy`, `pytest`, `npm run lint` and `npm run build`
+- [x] 3.1 Run `ruff`, `mypy`, `pytest`, `npm run lint` and `npm run build`
 - [ ] 3.2 Open the draft PR naming `price-watchlists` (done with the plan) and have the user look at lists on desktop and a phone
 - [ ] 3.3 Archive this change on the PR branch once CI is green (it adds the `price-watchlists` spec) and tick task 4.3a in `prototype-adoption-roadmap/tasks.md`

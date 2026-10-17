@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from myfarm_api.core.db import get_session_factory
 from myfarm_api.core.price_lookup import latest_snapshots
@@ -33,6 +34,21 @@ async def _owned_list(session: AsyncSession, farmer: Farmer, list_id: int) -> Wa
     if found is None:
         raise HTTPException(status_code=404, detail="Watchlist not found")
     return found
+
+
+async def _load_lists(
+    session: AsyncSession, farmer_id: int, list_id: int | None = None
+) -> list[Watchlist]:
+    """The farmer's lists, oldest first, with items loaded (async sessions cannot lazy-load)."""
+    stmt = (
+        select(Watchlist)
+        .options(selectinload(Watchlist.items))
+        .where(Watchlist.farmer_id == farmer_id)
+        .order_by(Watchlist.created_at, Watchlist.id)
+    )
+    if list_id is not None:
+        stmt = stmt.where(Watchlist.id == list_id)
+    return list((await session.execute(stmt)).scalars().all())
 
 
 async def _read_lists(session: AsyncSession, lists: list[Watchlist]) -> list[WatchlistRead]:
@@ -78,12 +94,7 @@ async def _read_lists(session: AsyncSession, lists: list[Watchlist]) -> list[Wat
 async def list_watchlists(farmer: Farmer = Depends(get_current_farmer)) -> Watchlists:
     """The farmer's lists, oldest first, with their items and latest prices."""
     async with get_session_factory()() as session:
-        stmt = (
-            select(Watchlist)
-            .where(Watchlist.farmer_id == farmer.id)
-            .order_by(Watchlist.created_at, Watchlist.id)
-        )
-        lists = list((await session.execute(stmt)).scalars().all())
+        lists = await _load_lists(session, farmer.id)
         return Watchlists(lists=await _read_lists(session, lists))
 
 
@@ -114,7 +125,7 @@ async def create_watchlist(
         except IntegrityError:
             await session.rollback()
             raise HTTPException(status_code=409, detail="name_taken") from None
-        await session.refresh(wl, ["items"])
+        await session.refresh(wl)
         return WatchlistRead(id=wl.id, name=wl.name, items=[])
 
 
@@ -168,8 +179,8 @@ async def add_watchlist_item(
         except IntegrityError:
             await session.rollback()
             raise HTTPException(status_code=409, detail="duplicate_item") from None
-        await session.refresh(wl, ["items"])
-        read = (await _read_lists(session, [wl]))[0]
+        fresh = await _load_lists(session, farmer.id, list_id)
+        read = (await _read_lists(session, fresh))[0]
         return next(i for i in read.items if i.id == item.id)
 
 

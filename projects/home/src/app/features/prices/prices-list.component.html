@@ -27,183 +27,303 @@
         >{{ 'prices.retry' | translate }}
       </button>
     </div>
-  } @else if (items().length === 0) {
-    <div class="card">
-      <div class="empty-state">
-        <span class="empty-state__icon" aria-hidden="true"><i class="bi bi-flower1"></i></span>
-        <div>
-          <h2 class="empty-state__title">{{ 'prices.noCropsTitle' | translate }}</h2>
-          <p class="empty-state__text">{{ 'prices.noCropsText' | translate }}</p>
-          <a routerLink="/crops/add" class="btn btn-primary mt-2">{{
-            'prices.addCrop' | translate
-          }}</a>
+  } @else {
+    <div
+      class="d-flex flex-wrap gap-2 mb-3"
+      role="group"
+      [attr.aria-label]="'prices.tabs' | translate"
+    >
+      <button
+        type="button"
+        class="btn btn-sm rounded-pill"
+        [class.btn-success]="!active()"
+        [class.btn-outline-secondary]="!!active()"
+        [attr.aria-pressed]="!active()"
+        (click)="selectTab(null)"
+      >
+        {{ 'prices.tabFarm' | translate }}
+      </button>
+      @for (tab of lists(); track tab.id) {
+        <button
+          type="button"
+          class="btn btn-sm rounded-pill"
+          [class.btn-success]="active()?.id === tab.id"
+          [class.btn-outline-secondary]="active()?.id !== tab.id"
+          [attr.aria-pressed]="active()?.id === tab.id"
+          (click)="selectTab(tab.id)"
+        >
+          {{ tab.name }} · {{ tab.items.length }}
+        </button>
+      }
+      <a routerLink="/prices/lists/new" class="btn btn-sm rounded-pill btn-outline-secondary">
+        + {{ 'prices.newList' | translate }}
+      </a>
+    </div>
+
+    @if (active(); as list) {
+      <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-2">
+        <p class="small text-body-secondary mb-0">
+          {{ 'prices.listCount' | translate: { count: list.items.length } }}
+        </p>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-sm btn-outline-danger" (click)="askDelete()">
+            <i class="bi bi-trash me-1" aria-hidden="true"></i>{{ 'prices.deleteList' | translate }}
+          </button>
+          <a [routerLink]="['/prices', 'lists', list.id, 'add']" class="btn btn-sm btn-primary">
+            + {{ 'prices.addItem' | translate }}
+          </a>
         </div>
       </div>
-    </div>
-  } @else {
-    <p class="small text-body-secondary mb-2">{{ 'prices.perQuintal' | translate }}</p>
 
-    <ul class="list-unstyled card p-0 overflow-hidden mb-3">
-      @for (item of items(); track item.row.catalogId) {
-        <li class="border-bottom">
-          <div class="d-flex align-items-center gap-2 p-3">
-            <span
-              class="d-inline-flex align-items-center justify-content-center rounded-3 bg-success-subtle text-success flex-shrink-0"
-              style="width: 36px; height: 36px"
-              aria-hidden="true"
-            >
-              <i class="bi {{ item.icon }}"></i>
-            </span>
-
-            @switch (item.summary.kind) {
-              @case ('noPrice') {
-                <div class="min-w-0 flex-grow-1">
-                  <strong class="d-block text-truncate">{{
-                    item.name | referenceName: 'crop'
-                  }}</strong>
-                  <small class="text-body-secondary d-block">
-                    {{ 'prices.noPriceHint' | translate }}
-                    @if (item.row.cropIds.length === 1) {
-                      <a class="ms-1" [routerLink]="['/crops', item.row.cropIds[0], 'edit']">{{
-                        'prices.editCrop' | translate
-                      }}</a>
-                    } @else {
-                      <a class="ms-1" routerLink="/crops">{{ 'prices.editCrops' | translate }}</a>
-                    }
-                  </small>
-                </div>
-                <span class="badge text-bg-secondary">{{ 'prices.noPrice' | translate }}</span>
-              }
-              @case ('notTraded') {
-                <div class="min-w-0 flex-grow-1">
-                  <strong class="d-block text-truncate">{{
-                    item.name | referenceName: 'crop'
-                  }}</strong>
-                  <small class="text-body-secondary">{{ 'prices.notTraded' | translate }}</small>
-                </div>
+      @if (watched().length === 0) {
+        <div class="card">
+          <div class="empty-state">
+            <span class="empty-state__icon" aria-hidden="true"
+              ><i class="bi bi-currency-rupee"></i
+            ></span>
+            <div>
+              <h2 class="empty-state__title">{{ 'prices.listEmptyTitle' | translate }}</h2>
+              <p class="empty-state__text">{{ 'prices.listEmptyText' | translate }}</p>
+              <a [routerLink]="['/prices', 'lists', list.id, 'add']" class="btn btn-primary mt-2">{{
+                'prices.addItem' | translate
+              }}</a>
+            </div>
+          </div>
+        </div>
+      } @else {
+        <ul class="list-unstyled card p-0 overflow-hidden mb-3">
+          @for (entry of watched(); track entry.item.id) {
+            <li class="d-flex align-items-center gap-2 p-3 border-bottom">
+              <span
+                class="d-inline-flex align-items-center justify-content-center rounded-3 bg-success-subtle text-success flex-shrink-0"
+                style="width: 36px; height: 36px"
+                aria-hidden="true"
+              >
+                <i class="bi {{ entry.icon }}"></i>
+              </span>
+              @if (entry.priced) {
                 <a
-                  routerLink="/prices/mandis"
-                  class="btn btn-sm btn-outline-secondary text-nowrap"
-                  >{{ 'prices.changeApmcs' | translate }}</a
-                >
-              }
-              @default {
-                <button
-                  type="button"
-                  class="btn btn-link text-reset text-decoration-none text-start d-flex align-items-center gap-2 flex-grow-1 min-w-0 p-0"
-                  [attr.aria-expanded]="expanded().has(item.row.catalogId)"
-                  [attr.aria-controls]="'mandis-' + item.row.catalogId"
-                  (click)="toggle(item.row.catalogId)"
+                  class="d-flex align-items-center gap-2 flex-grow-1 min-w-0 text-reset text-decoration-none"
+                  [routerLink]="['/prices', entry.item.crop_catalog_id]"
+                  [queryParams]="{ mandi: entry.item.mandi.id }"
                 >
                   <span class="min-w-0 flex-grow-1">
                     <strong class="d-block text-truncate">{{
-                      item.name | referenceName: 'crop'
+                      entry.name | referenceName: 'crop'
                     }}</strong>
                     <small class="text-body-secondary d-block text-truncate">
-                      {{ 'prices.bestAt' | translate: { mandi: item.summary.best!.mandi.name } }}
-                      @if (item.stale) {
+                      {{ entry.item.mandi.name }} · {{ entry.item.mandi.district }}
+                      @if (entry.stale) {
                         ·
                         {{
                           'prices.updated'
-                            | translate
-                              : { date: (item.summary.best!.price_date | localDate: 'd MMM') }
+                            | translate: { date: (entry.item.price_date | localDate: 'd MMM') }
                         }}
                       }
                     </small>
                   </span>
-                  <span class="text-end flex-shrink-0">
-                    <strong class="d-block fs-5"
-                      >₹{{ item.summary.best!.price | localNumber: '1.0-0' }}</strong
-                    >
-                    @switch (item.direction) {
-                      @case ('up') {
-                        <small class="text-success fw-semibold"
-                          ><i class="bi bi-caret-up-fill" aria-hidden="true"></i> +{{
-                            item.summary.best!.change_pct | localNumber: '1.1-1'
-                          }}%</small
-                        >
-                      }
-                      @case ('down') {
-                        <small class="text-danger fw-semibold"
-                          ><i class="bi bi-caret-down-fill" aria-hidden="true"></i> −{{
-                            abs(item.summary.best!.change_pct!) | localNumber: '1.1-1'
-                          }}%</small
-                        >
-                      }
-                      @case ('flat') {
-                        <small class="text-body-secondary fw-semibold">{{
-                          'prices.noChange' | translate
-                        }}</small>
-                      }
-                    }
-                  </span>
-                  <i
-                    class="bi flex-shrink-0 text-body-secondary"
-                    [class.bi-chevron-down]="!expanded().has(item.row.catalogId)"
-                    [class.bi-chevron-up]="expanded().has(item.row.catalogId)"
-                    aria-hidden="true"
-                  ></i>
-                </button>
+                  <app-price-figure [price]="entry.item.price!" [change]="entry.item.change_pct" />
+                  <i class="bi bi-chevron-right text-body-secondary" aria-hidden="true"></i>
+                </a>
+              } @else {
+                <div class="flex-grow-1 min-w-0">
+                  <strong class="d-block text-truncate">{{
+                    entry.name | referenceName: 'crop'
+                  }}</strong>
+                  <small class="text-body-secondary d-block text-truncate">
+                    {{ entry.item.mandi.name }} · {{ entry.item.mandi.district }}
+                  </small>
+                </div>
+                <small class="text-body-secondary">{{ 'prices.notTradedHere' | translate }}</small>
               }
-            }
-          </div>
-
-          @if (item.summary.kind === 'priced' && expanded().has(item.row.catalogId)) {
-            <ul
-              class="list-unstyled bg-body-tertiary py-1 mb-0"
-              [id]="'mandis-' + item.row.catalogId"
-            >
-              @for (entry of item.summary.ranked; track entry.mandi.id; let first = $first) {
-                <li>
-                  @if (entry.price !== null && entry.price !== undefined) {
-                    <a
-                      class="d-flex align-items-center gap-2 pe-3 ps-5 py-2 text-reset text-decoration-none"
-                      [routerLink]="['/prices', item.row.catalogId]"
-                      [queryParams]="{ mandi: entry.mandi.id }"
-                    >
-                      <span class="min-w-0 flex-grow-1">
-                        <strong class="d-block text-truncate">
-                          {{ entry.mandi.name }}
-                          @if (first) {
-                            <span class="badge text-bg-success ms-1">{{
-                              'prices.best' | translate
-                            }}</span>
-                          }
-                        </strong>
-                        <small class="text-body-secondary">{{ entry.mandi.district }}</small>
-                      </span>
-                      <span class="text-end flex-shrink-0">
-                        <strong class="d-block">₹{{ entry.price | localNumber: '1.0-0' }}</strong>
-                        <small class="text-body-secondary">
-                          @if (first) {
-                            {{ 'prices.highest' | translate }}
-                          } @else {
-                            −₹{{
-                              gapFromBest(entry.price, item.summary.best!.price)
-                                | localNumber: '1.0-0'
-                            }}
-                          }
-                        </small>
-                      </span>
-                      <i class="bi bi-chevron-right text-body-secondary" aria-hidden="true"></i>
-                    </a>
-                  } @else {
-                    <div class="d-flex align-items-center gap-2 pe-3 ps-5 py-2 text-body-secondary">
-                      <span class="min-w-0 flex-grow-1">
-                        <strong class="d-block text-truncate">{{ entry.mandi.name }}</strong>
-                        <small>{{ entry.mandi.district }}</small>
-                      </span>
-                      <small>{{ 'prices.notTradedHere' | translate }}</small>
-                    </div>
-                  }
-                </li>
-              }
-            </ul>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-secondary flex-shrink-0"
+                [attr.aria-label]="
+                  'prices.removeItem'
+                    | translate
+                      : {
+                          crop: (entry.name | referenceName: 'crop'),
+                          mandi: entry.item.mandi.name,
+                        }
+                "
+                (click)="removeItem(list, entry.item)"
+              >
+                <i class="bi bi-trash" aria-hidden="true"></i>
+              </button>
+            </li>
           }
-        </li>
+        </ul>
       }
-    </ul>
+      <p class="small text-body-secondary">{{ 'prices.watchHint' | translate }}</p>
+    } @else if (items().length === 0) {
+      <div class="card">
+        <div class="empty-state">
+          <span class="empty-state__icon" aria-hidden="true"><i class="bi bi-flower1"></i></span>
+          <div>
+            <h2 class="empty-state__title">{{ 'prices.noCropsTitle' | translate }}</h2>
+            <p class="empty-state__text">{{ 'prices.noCropsText' | translate }}</p>
+            <a routerLink="/crops/add" class="btn btn-primary mt-2">{{
+              'prices.addCrop' | translate
+            }}</a>
+          </div>
+        </div>
+      </div>
+    } @else {
+      <p class="small text-body-secondary mb-2">{{ 'prices.perQuintal' | translate }}</p>
 
-    <p class="small text-body-secondary">{{ 'prices.source' | translate }}</p>
+      <ul class="list-unstyled card p-0 overflow-hidden mb-3">
+        @for (item of items(); track item.row.catalogId) {
+          <li class="border-bottom">
+            <div class="d-flex align-items-center gap-2 p-3">
+              <span
+                class="d-inline-flex align-items-center justify-content-center rounded-3 bg-success-subtle text-success flex-shrink-0"
+                style="width: 36px; height: 36px"
+                aria-hidden="true"
+              >
+                <i class="bi {{ item.icon }}"></i>
+              </span>
+
+              @switch (item.summary.kind) {
+                @case ('noPrice') {
+                  <div class="min-w-0 flex-grow-1">
+                    <strong class="d-block text-truncate">{{
+                      item.name | referenceName: 'crop'
+                    }}</strong>
+                    <small class="text-body-secondary d-block">
+                      {{ 'prices.noPriceHint' | translate }}
+                      @if (item.row.cropIds.length === 1) {
+                        <a class="ms-1" [routerLink]="['/crops', item.row.cropIds[0], 'edit']">{{
+                          'prices.editCrop' | translate
+                        }}</a>
+                      } @else {
+                        <a class="ms-1" routerLink="/crops">{{ 'prices.editCrops' | translate }}</a>
+                      }
+                    </small>
+                  </div>
+                  <span class="badge text-bg-secondary">{{ 'prices.noPrice' | translate }}</span>
+                }
+                @case ('notTraded') {
+                  <div class="min-w-0 flex-grow-1">
+                    <strong class="d-block text-truncate">{{
+                      item.name | referenceName: 'crop'
+                    }}</strong>
+                    <small class="text-body-secondary">{{ 'prices.notTraded' | translate }}</small>
+                  </div>
+                  <a
+                    routerLink="/prices/mandis"
+                    class="btn btn-sm btn-outline-secondary text-nowrap"
+                    >{{ 'prices.changeApmcs' | translate }}</a
+                  >
+                }
+                @default {
+                  <button
+                    type="button"
+                    class="btn btn-link text-reset text-decoration-none text-start d-flex align-items-center gap-2 flex-grow-1 min-w-0 p-0"
+                    [attr.aria-expanded]="expanded().has(item.row.catalogId)"
+                    [attr.aria-controls]="'mandis-' + item.row.catalogId"
+                    (click)="toggle(item.row.catalogId)"
+                  >
+                    <span class="min-w-0 flex-grow-1">
+                      <strong class="d-block text-truncate">{{
+                        item.name | referenceName: 'crop'
+                      }}</strong>
+                      <small class="text-body-secondary d-block text-truncate">
+                        {{ 'prices.bestAt' | translate: { mandi: item.summary.best!.mandi.name } }}
+                        @if (item.stale) {
+                          ·
+                          {{
+                            'prices.updated'
+                              | translate
+                                : { date: (item.summary.best!.price_date | localDate: 'd MMM') }
+                          }}
+                        }
+                      </small>
+                    </span>
+                    <app-price-figure
+                      [price]="item.summary.best!.price"
+                      [change]="item.summary.best!.change_pct"
+                    />
+                    <i
+                      class="bi flex-shrink-0 text-body-secondary"
+                      [class.bi-chevron-down]="!expanded().has(item.row.catalogId)"
+                      [class.bi-chevron-up]="expanded().has(item.row.catalogId)"
+                      aria-hidden="true"
+                    ></i>
+                  </button>
+                }
+              }
+            </div>
+
+            @if (item.summary.kind === 'priced' && expanded().has(item.row.catalogId)) {
+              <ul
+                class="list-unstyled bg-body-tertiary py-1 mb-0"
+                [id]="'mandis-' + item.row.catalogId"
+              >
+                @for (entry of item.summary.ranked; track entry.mandi.id; let first = $first) {
+                  <li>
+                    @if (entry.price !== null && entry.price !== undefined) {
+                      <a
+                        class="d-flex align-items-center gap-2 pe-3 ps-5 py-2 text-reset text-decoration-none"
+                        [routerLink]="['/prices', item.row.catalogId]"
+                        [queryParams]="{ mandi: entry.mandi.id }"
+                      >
+                        <span class="min-w-0 flex-grow-1">
+                          <strong class="d-block text-truncate">
+                            {{ entry.mandi.name }}
+                            @if (first) {
+                              <span class="badge text-bg-success ms-1">{{
+                                'prices.best' | translate
+                              }}</span>
+                            }
+                          </strong>
+                          <small class="text-body-secondary">{{ entry.mandi.district }}</small>
+                        </span>
+                        <span class="text-end flex-shrink-0">
+                          <strong class="d-block">₹{{ entry.price | localNumber: '1.0-0' }}</strong>
+                          <small class="text-body-secondary">
+                            @if (first) {
+                              {{ 'prices.highest' | translate }}
+                            } @else {
+                              −₹{{
+                                gapFromBest(entry.price, item.summary.best!.price)
+                                  | localNumber: '1.0-0'
+                              }}
+                            }
+                          </small>
+                        </span>
+                        <i class="bi bi-chevron-right text-body-secondary" aria-hidden="true"></i>
+                      </a>
+                    } @else {
+                      <div
+                        class="d-flex align-items-center gap-2 pe-3 ps-5 py-2 text-body-secondary"
+                      >
+                        <span class="min-w-0 flex-grow-1">
+                          <strong class="d-block text-truncate">{{ entry.mandi.name }}</strong>
+                          <small>{{ entry.mandi.district }}</small>
+                        </span>
+                        <small>{{ 'prices.notTradedHere' | translate }}</small>
+                      </div>
+                    }
+                  </li>
+                }
+              </ul>
+            }
+          </li>
+        }
+      </ul>
+
+      <p class="small text-body-secondary">{{ 'prices.source' | translate }}</p>
+    }
   }
 </div>
+
+<lib-confirm-dialog
+  [title]="'prices.deleteListTitle' | translate"
+  [message]="'prices.deleteListConfirm' | translate"
+  [confirmText]="'common.delete' | translate"
+  [cancelText]="'common.cancel' | translate"
+  [isDestructive]="true"
+  [(isOpen)]="confirmDelete"
+  (confirm)="deleteList()"
+></lib-confirm-dialog>

@@ -1,0 +1,128 @@
+<div class="mf-page-container">
+  <a routerLink="/prices" class="btn btn-link px-0 mb-2 text-decoration-none">
+    <i class="bi bi-chevron-left" aria-hidden="true"></i> {{ 'prices.allPrices' | translate }}
+  </a>
+
+  @switch (data().status) {
+    @case ('error') {
+      <div class="card p-5 text-center">
+        <i class="bi bi-exclamation-triangle text-danger fs-1 d-block mb-3" aria-hidden="true"></i>
+        <h1 class="h5">{{ 'prices.errorTitle' | translate }}</h1>
+        <a routerLink="/prices" class="btn btn-outline-success mx-auto mt-2">{{
+          'prices.allPrices' | translate
+        }}</a>
+      </div>
+    }
+    @case ('notFound') {
+      <div class="card">
+        <div class="empty-state">
+          <span class="empty-state__icon" aria-hidden="true"
+            ><i class="bi bi-currency-rupee"></i
+          ></span>
+          <div>
+            <h1 class="empty-state__title">{{ 'prices.listNotFoundTitle' | translate }}</h1>
+            <a routerLink="/prices" class="btn btn-primary mt-2">{{
+              'prices.allPrices' | translate
+            }}</a>
+          </div>
+        </div>
+      </div>
+    }
+    @default {
+      <header class="mb-3">
+        <h1 class="h4 mb-1">{{ 'prices.addItemTitle' | translate: { list: listName() } }}</h1>
+        <p class="text-body-secondary mb-0">{{ 'prices.addItemSubtitle' | translate }}</p>
+      </header>
+
+      <form
+        [formGroup]="form"
+        (ngSubmit)="submit()"
+        novalidate
+        class="card"
+        style="max-width: 760px"
+      >
+        @if (full()) {
+          <div class="alert alert-warning" role="alert">
+            {{ 'prices.itemLimit' | translate: { max: maxItems } }}
+          </div>
+        }
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label required-label" for="ai-crop">{{
+              'prices.crop' | translate
+            }}</label>
+            <select
+              id="ai-crop"
+              class="form-select"
+              formControlName="cropId"
+              [class.is-invalid]="cropMessage() !== null"
+              [attr.aria-invalid]="cropMessage() !== null ? 'true' : null"
+            >
+              <option [ngValue]="null">{{ 'prices.selectCrop' | translate }}</option>
+              @for (crop of crops(); track crop.id) {
+                <option [ngValue]="crop.id">{{ crop.label }}</option>
+              }
+            </select>
+            @if (cropMessage(); as message) {
+              <div class="invalid-feedback">{{ message | translate }}</div>
+            }
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label required-label" for="ai-market">{{
+              'prices.market' | translate
+            }}</label>
+            <select
+              id="ai-market"
+              class="form-select"
+              formControlName="mandiId"
+              [class.is-invalid]="marketMessage() !== null"
+              [attr.aria-invalid]="marketMessage() !== null ? 'true' : null"
+            >
+              <option [ngValue]="null">
+                {{
+                  (form.controls.cropId.value === null
+                    ? 'prices.pickCropFirst'
+                    : loadingMarkets()
+                      ? 'prices.loading'
+                      : 'prices.selectMarket'
+                  ) | translate
+                }}
+              </option>
+              @for (entry of markets(); track entry.mandi.id) {
+                <option [ngValue]="entry.mandi.id">
+                  {{ entry.mandi.name }} · {{ entry.mandi.district }} · ₹{{
+                    entry.price | localNumber: '1.0-0'
+                  }}
+                </option>
+              }
+            </select>
+            @if (marketMessage(); as message) {
+              <div class="invalid-feedback">{{ message | translate }}</div>
+            } @else if (form.controls.cropId.value !== null && !loadingMarkets()) {
+              @if (marketsFailed()) {
+                <div class="form-text text-danger">{{ 'prices.errorTitle' | translate }}</div>
+              } @else if (markets().length === 0) {
+                <div class="form-text">{{ 'prices.noMarkets' | translate }}</div>
+              } @else {
+                <div class="form-text">{{ 'prices.bestFirst' | translate }}</div>
+              }
+            }
+          </div>
+        </div>
+
+        <div class="mf-action-row mt-3">
+          <a
+            [routerLink]="['/prices']"
+            [queryParams]="{ list: ok()?.list?.id }"
+            class="btn btn-secondary"
+            >{{ 'common.cancel' | translate }}</a
+          >
+          <button type="submit" class="btn btn-primary" [disabled]="saving() || full()">
+            {{ 'prices.addToList' | translate }}
+          </button>
+        </div>
+      </form>
+    }
+  }
+</div>

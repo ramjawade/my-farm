@@ -1,13 +1,15 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { provideTranslateService } from '@ngx-translate/core';
+import { ToastService } from 'shared';
 import { ReferenceDataService } from '../../core/api/reference-data.service';
 import { PricesPageData } from './prices-data';
 import { PricesListComponent } from './prices-list.component';
 import { PricesService } from './prices.service';
 import { CropTypeRow } from './prices.utils';
+import { WatchlistsService } from './watchlists.service';
 
 const mandi = (id: number, price: number | null, extra: object = {}) => ({
   mandi: { id, name: `Market ${id}`, district: 'Nashik' },
@@ -16,9 +18,10 @@ const mandi = (id: number, price: number | null, extra: object = {}) => ({
   ...extra,
 });
 
-const ok = (rows: CropTypeRow[], mine = 2): PricesPageData => ({
+const ok = (rows: CropTypeRow[], mine = 2, lists: object[] = []): PricesPageData => ({
   status: 'ok',
   rows,
+  lists: lists as never,
   mine: Array.from({ length: mine }, (_, i) => ({
     id: i + 1,
     name: `Market ${i + 1}`,
@@ -30,16 +33,27 @@ const ok = (rows: CropTypeRow[], mine = 2): PricesPageData => ({
 describe('PricesListComponent', () => {
   let fixture: ComponentFixture<PricesListComponent>;
   let prices: jasmine.SpyObj<PricesService>;
+  let watchlists: jasmine.SpyObj<WatchlistsService>;
+  let navigate: jasmine.Spy;
   const el = () => fixture.nativeElement as HTMLElement;
   const text = () => el().textContent ?? '';
 
-  function open(data: PricesPageData): void {
+  function open(data: PricesPageData, list?: string): void {
     fixture.componentRef.setInput('data', data);
+    if (list !== undefined) fixture.componentRef.setInput('list', list);
     fixture.detectChanges();
   }
 
   beforeEach(() => {
     prices = jasmine.createSpyObj<PricesService>('PricesService', ['latest', 'myMandis']);
+    watchlists = jasmine.createSpyObj<WatchlistsService>('WatchlistsService', [
+      'list',
+      'remove',
+      'removeItem',
+    ]);
+    watchlists.list.and.resolveTo([]);
+    watchlists.remove.and.resolveTo();
+    watchlists.removeItem.and.resolveTo();
     TestBed.configureTestingModule({
       imports: [PricesListComponent],
       providers: [
@@ -48,6 +62,8 @@ describe('PricesListComponent', () => {
         provideHttpClient(),
         provideTranslateService(),
         { provide: PricesService, useValue: prices },
+        { provide: WatchlistsService, useValue: watchlists },
+        { provide: ToastService, useValue: { success: () => undefined, error: () => undefined } },
         {
           provide: ReferenceDataService,
           useValue: {
@@ -57,6 +73,7 @@ describe('PricesListComponent', () => {
         },
       ],
     });
+    navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
     fixture = TestBed.createComponent(PricesListComponent);
   });
 
@@ -182,6 +199,7 @@ describe('PricesListComponent', () => {
 
     prices.latest.and.resolveTo({ crops: [] } as never);
     prices.myMandis.and.resolveTo({ items: [], suggested: false } as never);
+    watchlists.list.and.resolveTo([]);
     el().querySelector<HTMLButtonElement>('button.btn-outline-success')?.click();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -193,5 +211,166 @@ describe('PricesListComponent', () => {
   it('shows how many markets are followed', () => {
     open(ok([], 3));
     expect(text()).toContain('prices.myApmcs');
+  });
+
+  describe('watchlists', () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const item = (
+      id: number,
+      cropId: number,
+      market: number,
+      price: number | null,
+      extra: object = {},
+    ) => ({
+      id,
+      crop_catalog_id: cropId,
+      commodity: 'x',
+      mandi: { id: market, name: `Market ${market}`, district: 'Pune' },
+      price,
+      price_date: price === null ? null : today,
+      change_pct: null,
+      ...extra,
+    });
+    const onionMarkets = (items: object[] = []) => ({ id: 7, name: 'Onion markets', items });
+    const settle = async () => {
+      await fixture.whenStable();
+      await new Promise<void>((resolve) => setTimeout(resolve));
+      fixture.detectChanges();
+    };
+    const deleteButton = () =>
+      Array.from(el().querySelectorAll<HTMLButtonElement>('button')).find((b) =>
+        b.textContent?.includes('prices.deleteList'),
+      );
+
+    it('shows My farm first, a tab per list with its count, and + New list', () => {
+      open(
+        ok([], 2, [
+          onionMarkets([item(1, 5, 1, 2150), item(2, 5, 2, 2040)]),
+          { id: 8, name: 'Empty', items: [] },
+        ]),
+      );
+      const tabs = Array.from(el().querySelectorAll('[role="group"] button, [role="group"] a')).map(
+        (t) => t.textContent?.replace(/\s+/g, ' ').trim(),
+      );
+      expect(tabs).toEqual([
+        'prices.tabFarm',
+        'Onion markets · 2',
+        'Empty · 0',
+        '+ prices.newList',
+      ]);
+      expect(el().querySelector('a[href="/prices/lists/new"]')).not.toBeNull();
+      expect(el().querySelector('button[aria-pressed="true"]')?.textContent).toContain(
+        'prices.tabFarm',
+      );
+    });
+
+    it('selecting a tab puts the list in the link, and My farm clears it', () => {
+      open(ok([], 2, [onionMarkets()]));
+      const [farm, list] = Array.from(
+        el().querySelectorAll<HTMLButtonElement>('[role="group"] button'),
+      );
+      list.click();
+      expect(navigate).toHaveBeenCalledWith(
+        [],
+        jasmine.objectContaining({ queryParams: { list: 7 }, queryParamsHandling: 'merge' }),
+      );
+      farm.click();
+      expect(navigate).toHaveBeenCalledWith(
+        [],
+        jasmine.objectContaining({ queryParams: { list: null } }),
+      );
+    });
+
+    it('opens the list named in the link and shows its items', () => {
+      open(
+        ok([], 2, [onionMarkets([item(1, 5, 1, 2150, { change_pct: 6.4 }), item(2, 6, 2, 2400)])]),
+        '7',
+      );
+      expect(el().querySelector('button[aria-pressed="true"]')?.textContent).toContain(
+        'Onion markets',
+      );
+      expect(text()).toContain('Market 1 · Pune');
+      expect(text()).toContain('₹2,150');
+      expect(text()).toContain('6.4%');
+      expect(text()).toContain('₹2,400');
+      expect(text()).toContain('prices.watchHint');
+    });
+
+    it('opens the price detail of the crop at that market', () => {
+      open(ok([], 2, [onionMarkets([item(1, 5, 3, 2150)])]), '7');
+      const link = el().querySelector<HTMLAnchorElement>('li a[href*="/prices/5"]');
+      expect(link?.getAttribute('href')).toBe('/prices/5?mandi=3');
+    });
+
+    it('says when a price is from an earlier day', () => {
+      open(ok([], 2, [onionMarkets([item(1, 5, 1, 2150, { price_date: '2020-01-01' })])]), '7');
+      expect(text()).toContain('prices.updated');
+    });
+
+    it('shows "Not traded" without a link to a chart when the market has no price', () => {
+      open(ok([], 2, [onionMarkets([item(1, 5, 1, null)])]), '7');
+      expect(text()).toContain('prices.notTradedHere');
+      expect(el().querySelector('li a[href*="/prices/5"]')).toBeNull();
+    });
+
+    it('shows an empty list with an Add item link', () => {
+      open(ok([], 2, [onionMarkets()]), '7');
+      expect(text()).toContain('prices.listEmptyTitle');
+      expect(el().querySelectorAll('a[href="/prices/lists/7/add"]').length).toBeGreaterThan(0);
+    });
+
+    it('removes an item without asking and updates the tab count', async () => {
+      open(ok([], 2, [onionMarkets([item(1, 5, 1, 2150), item(2, 6, 2, 2400)])]), '7');
+      el().querySelector<HTMLButtonElement>('li button[aria-label]')?.click();
+      await settle();
+
+      expect(watchlists.removeItem).toHaveBeenCalledWith(7, 1);
+      expect(el().querySelectorAll('li').length).toBe(1);
+      expect(text()).toContain('Onion markets · 1');
+    });
+
+    it('keeps the item when removing it fails', async () => {
+      watchlists.removeItem.and.rejectWith(new Error('down'));
+      open(ok([], 2, [onionMarkets([item(1, 5, 1, 2150)])]), '7');
+      el().querySelector<HTMLButtonElement>('li button[aria-label]')?.click();
+      await settle();
+      expect(el().querySelectorAll('li').length).toBe(1);
+    });
+
+    it('asks before deleting a list, then deletes it and shows My farm', async () => {
+      open(ok([], 2, [onionMarkets([item(1, 5, 1, 2150)])]), '7');
+      deleteButton()?.click();
+      fixture.detectChanges();
+      expect(el().querySelector('[role="alertdialog"]')).not.toBeNull();
+      expect(watchlists.remove).not.toHaveBeenCalled();
+
+      el().querySelector<HTMLButtonElement>('.confirm-dialog .btn-danger')?.click();
+      await settle();
+
+      expect(watchlists.remove).toHaveBeenCalledWith(7);
+      expect(text()).not.toContain('Onion markets');
+      expect(navigate).toHaveBeenCalledWith(
+        [],
+        jasmine.objectContaining({ queryParams: { list: null } }),
+      );
+    });
+
+    it('does not delete when the farmer cancels', async () => {
+      open(ok([], 2, [onionMarkets()]), '7');
+      deleteButton()?.click();
+      fixture.detectChanges();
+      el().querySelector<HTMLButtonElement>('.confirm-dialog .btn-secondary')?.click();
+      await settle();
+      expect(watchlists.remove).not.toHaveBeenCalled();
+      expect(text()).toContain('Onion markets');
+    });
+
+    it('falls back to My farm for a link naming a list that no longer exists', () => {
+      open(ok([], 2, [onionMarkets()]), '999');
+      expect(el().querySelector('button[aria-pressed="true"]')?.textContent).toContain(
+        'prices.tabFarm',
+      );
+      expect(text()).toContain('prices.noCropsTitle');
+    });
   });
 });

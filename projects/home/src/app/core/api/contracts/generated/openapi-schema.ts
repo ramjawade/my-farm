@@ -1684,7 +1684,11 @@ export interface components {
      * @description A market that has a price for a crop, with that price.
      */
     CropMarket: {
+      /** Change Pct */
+      change_pct?: number | null;
       mandi: components['schemas']['MandiRead'];
+      /** Previous Price */
+      previous_price?: number | null;
       /** Price */
       price: number;
       /**

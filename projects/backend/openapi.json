@@ -1644,8 +1644,30 @@
       "CropMarket": {
         "description": "A market that has a price for a crop, with that price.",
         "properties": {
+          "change_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Pct"
+          },
           "mandi": {
             "$ref": "#/components/schemas/MandiRead"
+          },
+          "previous_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Price"
           },
           "price": {
             "title": "Price",

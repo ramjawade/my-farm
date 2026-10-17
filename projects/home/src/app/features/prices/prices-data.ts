@@ -1,24 +1,42 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { RedirectCommand, ResolveFn, Router } from '@angular/router';
-import { MandiResponse, PriceHistoryResponse } from '../../core/api/contracts';
+import {
+  CropMarketResponse,
+  MandiPriceResponse,
+  MandiResponse,
+  PriceHistoryResponse,
+  ReferenceItem,
+  WatchlistResponse,
+} from '../../core/api/contracts';
 import { ReferenceDataService } from '../../core/api/reference-data.service';
 import { HistoryDays, PricesService } from './prices.service';
-import { CropTypeRow, groupByCropType, hasPrice, rankMandis } from './prices.utils';
+import { CropTypeRow, groupByCropType } from './prices.utils';
+import { WatchlistsService } from './watchlists.service';
+
+/** The crops a farmer grows, with their prices at the followed markets. */
+interface FarmPrices {
+  rows: CropTypeRow[];
+  mine: MandiResponse[];
+  suggested: boolean;
+}
+
+async function loadFarmPrices(prices: PricesService): Promise<FarmPrices> {
+  const [latest, mine] = await Promise.all([prices.latest(), prices.myMandis()]);
+  return { rows: groupByCropType(latest.crops), mine: mine.items, suggested: mine.suggested };
+}
 
 export type PricesPageData =
-  | { status: 'ok'; rows: CropTypeRow[]; mine: MandiResponse[]; suggested: boolean }
-  | { status: 'error' };
+  ({ status: 'ok'; lists: WatchlistResponse[] } & FarmPrices) | { status: 'error' };
 
 /** Loads what the Prices page shows. Never throws: a failure becomes `{ status: 'error' }`. */
-export async function loadPricesPage(prices: PricesService): Promise<PricesPageData> {
+export async function loadPricesPage(
+  prices: PricesService,
+  watchlists: WatchlistsService,
+): Promise<PricesPageData> {
   try {
-    const [latest, mine] = await Promise.all([prices.latest(), prices.myMandis()]);
-    return {
-      status: 'ok',
-      rows: groupByCropType(latest.crops),
-      mine: mine.items,
-      suggested: mine.suggested,
-    };
+    const [farm, lists] = await Promise.all([loadFarmPrices(prices), watchlists.list()]);
+    return { status: 'ok', lists, ...farm };
   } catch {
     return { status: 'error' };
   }
@@ -30,11 +48,12 @@ export async function loadPricesPage(prices: PricesService): Promise<PricesPageD
  */
 export const pricesResolver: ResolveFn<PricesPageData | RedirectCommand> = async () => {
   const prices = inject(PricesService);
+  const watchlists = inject(WatchlistsService);
   const router = inject(Router);
   await inject(ReferenceDataService)
     .ready()
     .catch(() => undefined);
-  const data = await loadPricesPage(prices);
+  const data = await loadPricesPage(prices, watchlists);
   if (data.status === 'ok' && data.rows.length > 0 && data.mine.length === 0) {
     return new RedirectCommand(
       router.createUrlTree(['/prices/mandis'], { queryParams: { pick: '1' } }),
@@ -46,9 +65,10 @@ export const pricesResolver: ResolveFn<PricesPageData | RedirectCommand> = async
 export type PriceDetailData =
   | {
       status: 'ok';
-      row: CropTypeRow;
-      /** Mandis that have a price for the crop, best first. */
-      priced: ReturnType<typeof rankMandis>;
+      /** The crop type being shown; any crop with a price, not only ones the farmer grows. */
+      row: { catalogId: number; commodity: string };
+      /** Markets that have a price for the crop, best first (the opened one is always in). */
+      priced: MandiPriceResponse[];
       mandiId: number;
       days: HistoryDays;
       /** The last 30 days, always loaded: the average badge compares with it. */
@@ -63,29 +83,57 @@ export function parsePeriod(text: string | null): HistoryDays {
   return text === '7' ? 7 : text === '365' ? 365 : 30;
 }
 
-/** Loads one crop type's price detail: its row, the selected mandi's history and the 30-day figures. */
+/** A market from the markets endpoint, in the shape the detail page already works with. */
+export function marketToEntry(market: CropMarketResponse): MandiPriceResponse {
+  return {
+    mandi: market.mandi,
+    price: market.price,
+    price_date: market.price_date,
+    previous_price: market.previous_price,
+    change_pct: market.change_pct,
+  };
+}
+
+/** How many markets the detail page offers to switch to and to compare. */
+export const DETAIL_MARKET_LIMIT = 20;
+
+/**
+ * Loads one crop type's price detail: the markets that price it, the chosen market's history
+ * and its 30-day figures. Works for any crop with a price, whether or not the farmer grows it.
+ */
 export async function loadPriceDetail(
   prices: PricesService,
   catalogId: number,
   requestedMandi: number,
   days: HistoryDays,
 ): Promise<PriceDetailData> {
-  const page = await loadPricesPage(prices);
-  if (page.status === 'error') return { status: 'error' };
-
-  const row = page.rows.find((r) => r.catalogId === catalogId);
-  const priced = row ? rankMandis(row.mandis).filter(hasPrice) : [];
-  if (!row || row.commodity === null || priced.length === 0) return { status: 'notFound' };
-
-  const mandiId = priced.some((m) => m.mandi.id === requestedMandi)
-    ? requestedMandi
-    : priced[0].mandi.id;
   try {
-    const history30 = await prices.history(mandiId, row.commodity, 30);
-    const history = days === 30 ? history30 : await prices.history(mandiId, row.commodity, days);
-    return { status: 'ok', row, priced, mandiId, days, history30, history };
-  } catch {
-    return { status: 'error' };
+    const markets = await prices.cropMarkets(catalogId, {
+      limit: DETAIL_MARKET_LIMIT,
+      include: requestedMandi > 0 ? requestedMandi : undefined,
+    });
+    const priced = markets.markets.map(marketToEntry);
+    if (priced.length === 0) return { status: 'notFound' };
+
+    const mandiId = priced.some((m) => m.mandi.id === requestedMandi)
+      ? requestedMandi
+      : priced[0].mandi.id;
+    const history30 = await prices.history(mandiId, markets.commodity, 30);
+    const history =
+      days === 30 ? history30 : await prices.history(mandiId, markets.commodity, days);
+    return {
+      status: 'ok',
+      row: { catalogId, commodity: markets.commodity },
+      priced,
+      mandiId,
+      days,
+      history30,
+      history,
+    };
+  } catch (error) {
+    return error instanceof HttpErrorResponse && error.status === 404
+      ? { status: 'notFound' }
+      : { status: 'error' };
   }
 }
 
@@ -115,15 +163,72 @@ export type MyApmcsData =
 
 export async function loadMyApmcs(prices: PricesService): Promise<MyApmcsData> {
   try {
-    const [page, districts] = await Promise.all([loadPricesPage(prices), prices.districts()]);
-    if (page.status === 'error') return { status: 'error' };
+    const [farm, districts] = await Promise.all([loadFarmPrices(prices), prices.districts()]);
     const commodities = [
-      ...new Set(page.rows.map((r) => r.commodity).filter((c): c is string => c !== null)),
+      ...new Set(farm.rows.map((r) => r.commodity).filter((c): c is string => c !== null)),
     ];
-    return { status: 'ok', mine: page.mine, suggested: page.suggested, districts, commodities };
+    return { status: 'ok', mine: farm.mine, suggested: farm.suggested, districts, commodities };
   } catch {
     return { status: 'error' };
   }
 }
 
 export const myApmcsResolver: ResolveFn<MyApmcsData> = () => loadMyApmcs(inject(PricesService));
+
+export type NewListData =
+  | {
+      status: 'ok';
+      /** The farmer's list names, to refuse a repeat before asking the server. */
+      names: string[];
+    }
+  | { status: 'error' };
+
+export async function loadNewList(watchlists: WatchlistsService): Promise<NewListData> {
+  try {
+    const lists = await watchlists.list();
+    return { status: 'ok', names: lists.map((l) => l.name) };
+  } catch {
+    return { status: 'error' };
+  }
+}
+
+export const newListResolver: ResolveFn<NewListData> = () => loadNewList(inject(WatchlistsService));
+
+export type AddItemData =
+  | {
+      status: 'ok';
+      list: { id: number; name: string; count: number };
+      /** `cropId:mandiId` of items already in the list, to refuse a repeat. */
+      existing: string[];
+      /** Crops that have a mandi price, whether or not the farmer grows them. */
+      crops: ReferenceItem[];
+    }
+  | { status: 'notFound' }
+  | { status: 'error' };
+
+export async function loadAddItem(
+  watchlists: WatchlistsService,
+  references: ReferenceDataService,
+  listId: number,
+): Promise<AddItemData> {
+  try {
+    const [lists, crops] = await Promise.all([watchlists.list(), references.listCrops()]);
+    const list = lists.find((l) => l.id === listId);
+    if (!list) return { status: 'notFound' };
+    return {
+      status: 'ok',
+      list: { id: list.id, name: list.name, count: list.items.length },
+      existing: list.items.map((i) => `${i.crop_catalog_id}:${i.mandi.id}`),
+      crops: crops.filter((c) => c.has_price),
+    };
+  } catch {
+    return { status: 'error' };
+  }
+}
+
+export const addItemResolver: ResolveFn<AddItemData> = (route) =>
+  loadAddItem(
+    inject(WatchlistsService),
+    inject(ReferenceDataService),
+    Number(route.paramMap.get('id')),
+  );
