@@ -9,9 +9,9 @@ from sqlalchemy import Select, func, select
 from myfarm_api.core.config import get_settings
 from myfarm_api.core.crop_seed import PREDEFINED_CROPS
 from myfarm_api.core.db import get_session_factory
-from myfarm_api.core.mandi_feed import FeedError, get_mandi_feed
-from myfarm_api.core.price_ingest import run_ingest
+from myfarm_api.core.price_ingest import mapped_commodities, store_rows
 from myfarm_api.models import ActivityType, CropCatalog, ExpenseCategory
+from myfarm_api.schemas.mandi import PriceRowsIn
 
 
 async def require_admin_token(x_admin_token: str | None = Header(default=None)) -> None:
@@ -128,12 +128,17 @@ async def seed_reference_data() -> dict[str, Any]:
     }
 
 
-@router.post("/prices/ingest")
-async def ingest_prices() -> dict[str, Any]:
-    """Fetch today's mandi prices and store them. Safe to run more than once a day."""
-    if not get_settings().mandi_configured:
-        raise HTTPException(status_code=503, detail="Mandi price feed is not configured")
-    try:
-        return await run_ingest(get_mandi_feed())
-    except FeedError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
+@router.get("/prices/commodities")
+async def price_commodities() -> dict[str, list[str]]:
+    """The feed commodity names MyFarm crops map to: what the fetcher should ask for."""
+    return {"commodities": await mapped_commodities()}
+
+
+@router.post("/prices/rows")
+async def intake_price_rows(data: PriceRowsIn) -> dict[str, int]:
+    """Store a batch of mandi price rows fetched from the feed. Safe to send twice.
+
+    The backend cannot call the feed itself (it refuses connections from outside
+    India), so a fetcher running in India posts the raw records here.
+    """
+    return await store_rows(data.rows)

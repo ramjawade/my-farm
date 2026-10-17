@@ -1,24 +1,18 @@
-"""Daily mandi price ingest: fetch the mapped commodities, store readings, prune old ones."""
+"""Mandi price intake: store the rows a fetcher posts, add new mandis, prune old readings."""
 
-import logging
 from datetime import UTC, datetime, timedelta
-from typing import Any, Protocol
+from typing import Any
 
 from sqlalchemy import delete, select
 from sqlalchemy.dialects.postgresql import insert
 
 from myfarm_api.core.config import get_settings
 from myfarm_api.core.db import get_session_factory
-from myfarm_api.core.mandi_feed import FeedRow
+from myfarm_api.core.mandi_feed import FeedRow, parse_record
 from myfarm_api.models import CropCatalog, Mandi, PriceReading
 
-logger = logging.getLogger(__name__)
-
 CHUNK = 1000
-
-
-class Feed(Protocol):
-    async def fetch_commodity(self, commodity: str) -> tuple[list[FeedRow], int]: ...
+MAX_ROWS_PER_BATCH = 5000
 
 
 async def mapped_commodities() -> list[str]:
@@ -29,34 +23,33 @@ async def mapped_commodities() -> list[str]:
     return sorted({n for n in names if n})
 
 
-async def run_ingest(feed: Feed) -> dict[str, Any]:
-    """Fetch every mapped commodity, then store the lot in one transaction.
+async def store_rows(records: list[dict[str, Any]]) -> dict[str, int]:
+    """Store a batch of raw feed records in one transaction.
 
-    Everything is fetched before anything is written, so a feed failure (which
-    raises) leaves earlier readings untouched. Rerunning for the same day
-    rewrites the same rows.
+    Rows for another state or for an unmapped commodity are ignored; unparsable rows
+    are skipped; both are counted and neither fails the batch. Sending the same rows
+    again rewrites the same readings. Old readings are pruned at the end.
     """
     settings = get_settings()
-    commodities = await mapped_commodities()
+    wanted = set(await mapped_commodities())
+    state = settings.mandi_state.strip().lower()
 
     rows: list[FeedRow] = []
-    per_commodity: dict[str, int] = {}
-    skipped = 0
-    for commodity in commodities:
-        fetched, bad = await feed.fetch_commodity(commodity)
-        rows.extend(fetched)
-        skipped += bad
-        per_commodity[commodity] = len(fetched)
-
-    unmatched = sorted(name for name, count in per_commodity.items() if count == 0)
-    if unmatched:
-        logger.warning("mandi feed returned no rows for commodities: %s", unmatched)
+    skipped = ignored = 0
+    for record in records:
+        row = parse_record(record)
+        if row is None:
+            skipped += 1
+        elif row.state.lower() != state or row.commodity not in wanted:
+            ignored += 1
+        else:
+            rows.append(row)
 
     mandis_added = 0
     async with get_session_factory()() as session:
         if rows:
             keys = {(r.state, r.district, r.market) for r in rows}
-            existing_before = await _count_mandis(session)
+            existing_before = len((await session.execute(select(Mandi.id))).scalars().all())
             mandi_values = [{"state": s, "district": d, "name": n} for s, d, n in keys]
             for start in range(0, len(mandi_values), CHUNK):
                 await session.execute(
@@ -106,14 +99,10 @@ async def run_ingest(feed: Feed) -> dict[str, Any]:
         await session.commit()
 
     return {
-        "commodities": per_commodity,
-        "unmatched_commodities": unmatched,
-        "rows_fetched": len(rows),
-        "rows_skipped": skipped,
+        "received": len(records),
+        "stored": len(rows),
+        "ignored": ignored,
+        "skipped": skipped,
         "mandis_added": mandis_added,
         "readings_pruned": pruned,
     }
-
-
-async def _count_mandis(session: Any) -> int:
-    return len((await session.execute(select(Mandi.id))).scalars().all())

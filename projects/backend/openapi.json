@@ -3522,6 +3522,25 @@
         "title": "PricePoint",
         "type": "object"
       },
+      "PriceRowsIn": {
+        "description": "A batch of raw mandi feed records; bad rows are skipped, not fatal.",
+        "properties": {
+          "rows": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "maxItems": 5000,
+            "title": "Rows",
+            "type": "array"
+          }
+        },
+        "required": [
+          "rows"
+        ],
+        "title": "PriceRowsIn",
+        "type": "object"
+      },
       "RegisterRequest": {
         "description": "Create a PIN account.",
         "properties": {
@@ -5268,10 +5287,10 @@
         ]
       }
     },
-    "/api/v1/admin/prices/ingest": {
-      "post": {
-        "description": "Fetch today's mandi prices and store them. Safe to run more than once a day.",
-        "operationId": "ingest_prices_api_v1_admin_prices_ingest_post",
+    "/api/v1/admin/prices/commodities": {
+      "get": {
+        "description": "The feed commodity names MyFarm crops map to: what the fetcher should ask for.",
+        "operationId": "price_commodities_api_v1_admin_prices_commodities_get",
         "parameters": [
           {
             "in": "header",
@@ -5295,8 +5314,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Ingest Prices Api V1 Admin Prices Ingest Post",
+                  "additionalProperties": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "title": "Response Price Commodities Api V1 Admin Prices Commodities Get",
                   "type": "object"
                 }
               }
@@ -5314,7 +5338,71 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Ingest Prices",
+        "summary": "Price Commodities",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/prices/rows": {
+      "post": {
+        "description": "Store a batch of mandi price rows fetched from the feed. Safe to send twice.\n\nThe backend cannot call the feed itself (it refuses connections from outside\nIndia), so a fetcher running in India posts the raw records here.",
+        "operationId": "intake_price_rows_api_v1_admin_prices_rows_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-admin-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Admin-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PriceRowsIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "integer"
+                  },
+                  "title": "Response Intake Price Rows Api V1 Admin Prices Rows Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Intake Price Rows",
         "tags": [
           "admin"
         ]

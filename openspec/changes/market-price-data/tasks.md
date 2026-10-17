@@ -2,7 +2,7 @@
 
 ## 1. Verify the feed
 
-- [ ] 1.1 With a real key, confirm the maximum `limit`, the feed's exact spelling of Maharashtra and of our crops' commodities, and that a call works from Render. Trim the 17 Oct 2026 sample response into a test fixture. If the API is unavailable, stop and ask the user before building anything else
+- [ ] 1.1 From an Indian IP with the real key, confirm the maximum `limit` and the feed's exact spelling of Maharashtra and of our crops' commodities (the fetcher's first run reports them). Render and GitHub's US runners are refused, so this runs on the self-hosted runner.
 
 ## 2. Schema
 
@@ -25,8 +25,19 @@
 - [x] 5.1 Add the scheduled `price-ingest` GitHub Actions workflow with retry and a manual run, and document the repository secrets and the Render feed-key variable in `BACKEND_PLAN.md`
 - [x] 5.2 Regenerate `openapi.json` and the TypeScript types (`npm run generate:contracts`)
 
-## 6. Finish
+## 6. Fetch from India, push rows
 
-- [ ] 6.1 Run `ruff`, `mypy` and `pytest`, and `npm run lint` and `npm run build`
-- [ ] 6.2 Open the PR naming `market-price-data`
-- [ ] 6.3 After the PR merges and the first ingest has run, archive this change and tick task 4.2a in `prototype-adoption-roadmap/tasks.md`
+Replaces the pull-based ingest of 3.2 and the workflow of 5.1, which cannot reach the feed.
+
+- [x] 6.1 Split storage from fetching: add `POST /api/v1/admin/prices/rows` (validates, at most 5,000 rows, ignores other states and unmapped commodities, skips bad rows, returns counts, prunes) and `GET /api/v1/admin/prices/commodities`; remove the pull endpoint, the `MandiFeed` client and the Render feed settings
+- [x] 6.2 Add pytest cases for the intake scenarios: first batch, same batch twice, rows that do not belong, too many rows, no admin token, and the commodity list
+- [x] 6.3 Add `scripts/fetch-mandi-prices.mjs` (Node, no dependencies): read the commodity names, page through the feed with `offset` and `limit`, post batches, print clear errors that never include the key, with `node --test` cases for row mapping and paging
+- [x] 6.4 Rework `price-ingest.yml` to run on a self-hosted runner labelled `india` for `schedule` (twice a day) and `workflow_dispatch` only, using the secrets `PRICE_INGEST_ADMIN_TOKEN` and `MANDI_API_KEY`
+- [x] 6.5 Document in `BACKEND_PLAN.md` §9.1 how to register the runner, the secrets, the pull-request safety rule and the repository approval setting
+- [x] 6.6 Regenerate `openapi.json` and the TypeScript types
+
+## 7. Finish
+
+- [x] 7.1 Run `ruff`, `mypy` and `pytest`, and `npm run lint` and `npm run build`
+- [ ] 7.2 Register the runner on your PC, add the two secrets, run the workflow once and send the result so task 1.1 can be closed
+- [ ] 7.3 Archive this change on its PR branch once CI is green and the first run has stored prices, and tick task 4.2a in `prototype-adoption-roadmap/tasks.md`

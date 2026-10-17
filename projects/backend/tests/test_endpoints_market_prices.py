@@ -1,4 +1,4 @@
-"""Mandi price ingest, mandi finder, followed mandis, latest prices and history."""
+"""Mandi price intake, mandi finder, followed mandis, latest prices and history."""
 
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
@@ -13,7 +13,6 @@ from sqlalchemy import select
 
 from myfarm_api.core.config import get_settings
 from myfarm_api.core.db import get_session_factory
-from myfarm_api.core.mandi_feed import FeedError, FeedRow
 from myfarm_api.models import CropCatalog, Mandi, PriceReading
 
 HEADERS = {"Authorization": "Bearer test"}
@@ -33,38 +32,26 @@ def _row(
     day: date | None = None,
     variety: str = "Local",
     grade: str = "FAQ",
-) -> FeedRow:
-    return FeedRow(
-        state=STATE,
-        district=district,
-        market=market,
-        commodity=commodity,
-        variety=variety,
-        grade=grade,
-        price_date=day or _today(),
-        min_price=Decimal(modal - 100),
-        max_price=Decimal(modal + 100),
-        modal_price=Decimal(modal),
-    )
-
-
-class FakeFeed:
-    """Answers each commodity from a fixed list of rows; raises if told to fail."""
-
-    def __init__(self, rows: list[FeedRow], fail: bool = False) -> None:
-        self.rows = rows
-        self.fail = fail
-
-    async def fetch_commodity(self, commodity: str) -> tuple[list[FeedRow], int]:
-        if self.fail:
-            raise FeedError("feed down")
-        return [r for r in self.rows if r.commodity == commodity], 0
+    state: str = STATE,
+) -> dict[str, Any]:
+    """A raw feed record, as the fetcher posts it (dd/mm/yyyy dates)."""
+    return {
+        "state": state,
+        "district": district,
+        "market": market,
+        "commodity": commodity,
+        "variety": variety,
+        "grade": grade,
+        "arrival_date": (day or _today()).strftime("%d/%m/%Y"),
+        "min_price": modal - 100,
+        "max_price": modal + 100,
+        "modal_price": modal,
+    }
 
 
 @pytest.fixture(autouse=True)
-def _feed_settings(monkeypatch: pytest.MonkeyPatch) -> None:
+def _admin_token(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(get_settings(), "admin_token", "s3cret")
-    monkeypatch.setattr(get_settings(), "mandi_api_key", "test-key")
 
 
 def _as(uid: str) -> Any:
@@ -83,9 +70,8 @@ async def _seed_crop_type() -> tuple[int, str]:
         return crop.id, commodity
 
 
-async def _ingest(client: AsyncClient, rows: list[FeedRow], fail: bool = False) -> Any:
-    with patch("myfarm_api.routers.admin.get_mandi_feed", return_value=FakeFeed(rows, fail)):
-        return await client.post("/api/v1/admin/prices/ingest", headers=ADMIN)
+async def _ingest(client: AsyncClient, rows: list[dict[str, Any]]) -> Any:
+    return await client.post("/api/v1/admin/prices/rows", headers=ADMIN, json={"rows": rows})
 
 
 async def _count(commodity: str) -> int:
@@ -99,28 +85,33 @@ async def _mandi_id(name: str) -> int:
         return (await session.execute(select(Mandi.id).where(Mandi.name == name))).scalar_one()
 
 
-# ---- ingest ----
+# ---- intake ----
 
 
 @pytest.mark.asyncio
-async def test_ingest_needs_the_admin_token(client: AsyncClient) -> None:
-    resp = await client.post("/api/v1/admin/prices/ingest")
-    assert resp.status_code in (401, 403)
-    resp = await client.post("/api/v1/admin/prices/ingest", headers={"X-Admin-Token": "wrong"})
-    assert resp.status_code == 401
+async def test_intake_needs_the_admin_token(client: AsyncClient) -> None:
+    for call in (
+        client.post("/api/v1/admin/prices/rows", json={"rows": []}),
+        client.get("/api/v1/admin/prices/commodities"),
+    ):
+        assert (await call).status_code in (401, 403)
+    wrong = {"X-Admin-Token": "wrong"}
+    posted = await client.post("/api/v1/admin/prices/rows", headers=wrong, json={"rows": []})
+    assert posted.status_code == 401
 
 
 @pytest.mark.asyncio
-async def test_ingest_without_a_key_is_unavailable(
-    client: AsyncClient, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    monkeypatch.setattr(get_settings(), "mandi_api_key", "")
-    resp = await client.post("/api/v1/admin/prices/ingest", headers=ADMIN)
-    assert resp.status_code == 503
+async def test_commodities_to_fetch_lists_the_mapped_names(client: AsyncClient) -> None:
+    _, commodity = await _seed_crop_type()
+    resp = await client.get("/api/v1/admin/prices/commodities", headers=ADMIN)
+    assert resp.status_code == 200
+    names = resp.json()["commodities"]
+    assert commodity in names
+    assert names == sorted(set(names))
 
 
 @pytest.mark.asyncio
-async def test_ingest_stores_rows_and_is_safe_to_rerun(client: AsyncClient) -> None:
+async def test_intake_stores_rows_and_is_safe_to_send_twice(client: AsyncClient) -> None:
     _, commodity = await _seed_crop_type()
     district, market = f"District-{uuid4()}", f"Market-{uuid4()}"
     rows = [
@@ -130,8 +121,9 @@ async def test_ingest_stores_rows_and_is_safe_to_rerun(client: AsyncClient) -> N
 
     first = await _ingest(client, rows)
     assert first.status_code == 200
-    assert first.json()["commodities"][commodity] == 2
-    assert first.json()["mandis_added"] >= 1
+    body = first.json()
+    assert (body["received"], body["stored"], body["ignored"], body["skipped"]) == (2, 2, 0, 0)
+    assert body["mandis_added"] == 1
     assert await _count(commodity) == 2
 
     second = await _ingest(client, rows)
@@ -141,26 +133,46 @@ async def test_ingest_stores_rows_and_is_safe_to_rerun(client: AsyncClient) -> N
 
 
 @pytest.mark.asyncio
-async def test_ingest_reports_commodities_with_no_rows(client: AsyncClient) -> None:
-    _, commodity = await _seed_crop_type()
-    resp = await _ingest(client, [])
-    assert commodity in resp.json()["unmatched_commodities"]
-
-
-@pytest.mark.asyncio
-async def test_feed_failure_changes_nothing(client: AsyncClient) -> None:
+async def test_rows_that_do_not_belong_are_counted_not_stored(client: AsyncClient) -> None:
     _, commodity = await _seed_crop_type()
     market = f"Market-{uuid4()}"
-    await _ingest(client, [_row("D", market, commodity, 2100)])
-    assert await _count(commodity) == 1
-
-    resp = await _ingest(client, [_row("D", market, commodity, 9999)], fail=True)
-    assert resp.status_code == 502
+    bad_date = {**_row("D", market, commodity, 2100), "arrival_date": "not a date"}
+    rows = [
+        _row("D", market, commodity, 2100),  # good
+        _row("D", market, commodity, 2100, state="Kerala"),  # other state
+        _row("D", market, f"Unmapped-{uuid4()}", 2100),  # no crop maps to it
+        bad_date,  # unusable
+    ]
+    resp = await _ingest(client, rows)
+    assert resp.status_code == 200
+    body = resp.json()
+    assert (body["received"], body["stored"], body["ignored"], body["skipped"]) == (4, 1, 2, 1)
     assert await _count(commodity) == 1
 
 
 @pytest.mark.asyncio
-async def test_ingest_prunes_old_readings(client: AsyncClient) -> None:
+async def test_a_batch_over_5000_rows_is_refused(client: AsyncClient) -> None:
+    resp = await _ingest(client, [{} for _ in range(5001)])
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_a_malformed_body_is_refused(client: AsyncClient) -> None:
+    resp = await client.post("/api/v1/admin/prices/rows", headers=ADMIN, json={"rows": "no"})
+    assert resp.status_code == 422
+    resp = await client.post("/api/v1/admin/prices/rows", headers=ADMIN, json={})
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_an_empty_batch_is_fine(client: AsyncClient) -> None:
+    resp = await _ingest(client, [])
+    assert resp.status_code == 200
+    assert resp.json()["received"] == 0
+
+
+@pytest.mark.asyncio
+async def test_intake_prunes_old_readings(client: AsyncClient) -> None:
     _, commodity = await _seed_crop_type()
     market = f"Market-{uuid4()}"
     await _ingest(client, [_row("D", market, commodity, 2100)])
