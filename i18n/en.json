@@ -241,7 +241,32 @@
     "cabbage": "Cabbage",
     "pomegranate": "Pomegranate",
     "maize": "Maize",
-    "soybean": "Soybean"
+    "soybean": "Soybean",
+    "jowar": "Jowar",
+    "bajra": "Bajra",
+    "tur": "Tur",
+    "gram": "Gram",
+    "moong": "Moong",
+    "urad": "Urad",
+    "groundnut": "Groundnut",
+    "sunflower": "Sunflower",
+    "sesame": "Sesame",
+    "turmeric": "Turmeric",
+    "potato": "Potato",
+    "brinjal": "Brinjal",
+    "cauliflower": "Cauliflower",
+    "okra": "Okra",
+    "green_chilli": "Green chilli",
+    "garlic": "Garlic",
+    "ginger": "Ginger",
+    "capsicum": "Capsicum",
+    "banana": "Banana",
+    "mango": "Mango",
+    "orange": "Orange",
+    "sweet_lime": "Sweet lime",
+    "papaya": "Papaya",
+    "guava": "Guava",
+    "watermelon": "Watermelon"
   },
   "activity": {
     "sowing": "Sowing",
@@ -1160,5 +1185,20 @@
     "deletedToast": "Sale deleted.",
     "deleteError": "Could not delete the sale.",
     "loadError": "Could not load the sales."
+  },
+  "cropGroup": {
+    "custom": "Your crops",
+    "cereal": "Cereals",
+    "pulse": "Pulses",
+    "oilseed": "Oilseeds",
+    "cash": "Cash crops",
+    "vegetable": "Vegetables",
+    "fruit": "Fruits",
+    "other": "Other crops"
+  },
+  "cropPicker": {
+    "placeholder": "Search or pick a crop",
+    "addNew": "Add new crop “{{name}}”",
+    "results": "{{count}} crops found"
   }
 }

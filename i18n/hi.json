@@ -241,7 +241,32 @@
     "cabbage": "पत्ता गोभी",
     "pomegranate": "अनार",
     "maize": "मक्का",
-    "soybean": "सोयाबीन"
+    "soybean": "सोयाबीन",
+    "jowar": "ज्वार",
+    "bajra": "बाजरा",
+    "tur": "अरहर",
+    "gram": "चना",
+    "moong": "मूंग",
+    "urad": "उड़द",
+    "groundnut": "मूंगफली",
+    "sunflower": "सूरजमुखी",
+    "sesame": "तिल",
+    "turmeric": "हल्दी",
+    "potato": "आलू",
+    "brinjal": "बैंगन",
+    "cauliflower": "फूलगोभी",
+    "okra": "भिंडी",
+    "green_chilli": "हरी मिर्च",
+    "garlic": "लहसुन",
+    "ginger": "अदरक",
+    "capsicum": "शिमला मिर्च",
+    "banana": "केला",
+    "mango": "आम",
+    "orange": "संतरा",
+    "sweet_lime": "मौसंबी",
+    "papaya": "पपीता",
+    "guava": "अमरूद",
+    "watermelon": "तरबूज"
   },
   "activity": {
     "sowing": "बुवाई",
@@ -1160,5 +1185,20 @@
     "deletedToast": "बिक्री हटाई गई।",
     "deleteError": "बिक्री हटाई नहीं जा सकी।",
     "loadError": "बिक्री लोड नहीं हो सकी।"
+  },
+  "cropGroup": {
+    "custom": "आपकी फसलें",
+    "cereal": "अनाज",
+    "pulse": "दालें",
+    "oilseed": "तिलहन",
+    "cash": "नकदी फसलें",
+    "vegetable": "सब्जियां",
+    "fruit": "फल",
+    "other": "अन्य फसलें"
+  },
+  "cropPicker": {
+    "placeholder": "फसल खोजें या चुनें",
+    "addNew": "नई फसल जोड़ें “{{name}}”",
+    "results": "{{count}} फसलें मिलीं"
   }
 }
