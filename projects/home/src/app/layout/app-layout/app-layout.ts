@@ -7,6 +7,7 @@ import { MobileHeader } from '../mobile-header/mobile-header';
 import { Sidebar } from '../sidebar/sidebar';
 import { TabBar } from '../tab-bar/tab-bar';
 import { AuthService } from '../../core/auth/auth.service';
+import { ChatOrchestratorService } from '../../features/chat-bot/chat-orchestrator.service';
 import { ChatBotContainerComponent } from '../../features/chat-bot/chat-bot-container/chat-bot-container.component';
 import { LoaderOutletComponent, ToastOutletComponent } from 'shared';
 
@@ -24,6 +25,8 @@ import { LoaderOutletComponent, ToastOutletComponent } from 'shared';
     LoaderOutletComponent,
     ChatBotContainerComponent,
   ],
+  // One conversation for the overlay and the /chat page; it ends with the signed-in layout.
+  providers: [ChatOrchestratorService],
   templateUrl: './app-layout.html',
   styleUrl: './app-layout.scss',
 })

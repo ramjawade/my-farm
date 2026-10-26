@@ -104,7 +104,7 @@ describe('ChatOrchestratorService', () => {
 
     const promise = service.sendText('100 rs fertilizer on north plot');
     expect(service.messages()).toEqual([
-      { role: 'farmer', text: '100 rs fertilizer on north plot' },
+      { role: 'farmer', text: '100 rs fertilizer on north plot', createdAt: jasmine.any(String) },
     ]);
     expect(service.busy()).toBeTrue();
 
@@ -232,8 +232,14 @@ describe('ChatOrchestratorService', () => {
 
       expect(chatEntry.parse).not.toHaveBeenCalled();
       expect(service.messages()).toEqual([
-        { role: 'farmer', text: 'how much did I spend?' },
-        { role: 'bot', text: 'You spent ₹250.', chips: undefined, showReviewAction: undefined },
+        { role: 'farmer', text: 'how much did I spend?', createdAt: jasmine.any(String) },
+        {
+          role: 'bot',
+          text: 'You spent ₹250.',
+          createdAt: jasmine.any(String),
+          chips: undefined,
+          showReviewAction: undefined,
+        },
       ]);
       expect(service.originalInput()).toBe('');
       expect(service.busy()).toBeFalse();
@@ -685,5 +691,26 @@ describe('ChatOrchestratorService', () => {
 
       expect(chatEntry.parse.calls.mostRecent().args[0]).toBe('200 rs seeds');
     });
+  });
+
+  it('opens and closes the review popup flag, and closes it when the entry ends', () => {
+    expect(service.reviewOpen()).toBeFalse();
+
+    service.requestReview();
+    expect(service.reviewOpen()).toBeTrue();
+
+    service.closeReview();
+    expect(service.reviewOpen()).toBeFalse();
+
+    service.requestReview();
+    service.endEntry();
+    expect(service.reviewOpen()).toBeFalse();
+  });
+
+  it('offers the example questions as suggestion chips', () => {
+    const chips = service.suggestions();
+
+    expect(chips.length).toBe(3);
+    expect(chips.every((c) => c.kind === 'suggestion' && c.label === c.value)).toBeTrue();
   });
 });

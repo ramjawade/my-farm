@@ -1,13 +1,9 @@
 <section class="chat-panel d-flex flex-column position-relative">
-  <header
-    class="chat-panel__header d-flex justify-content-between align-items-start gap-2 p-3 border-bottom"
-  >
-    <div>
-      <h2 class="h6 mb-1">
-        <i class="bi bi-chat-dots me-1" aria-hidden="true"></i>
-        {{ 'chatBot.title' | translate }}
-      </h2>
-      <p class="small text-muted mb-0">{{ 'chatBot.subtitle' | translate }}</p>
+  <header class="chat-panel__header d-flex align-items-center gap-2 p-3 border-bottom">
+    <span class="chat-panel__avatar" aria-hidden="true"><i class="bi bi-flower1"></i></span>
+    <div class="flex-grow-1 min-w-0">
+      <h2 class="h6 mb-0">{{ 'chatBot.title' | translate }}</h2>
+      <p class="small text-muted mb-0">{{ 'chatBot.subtitlePage' | translate }}</p>
     </div>
     <div class="d-flex align-items-center gap-2">
       @if (messages().length) {
@@ -21,12 +17,23 @@
           <i class="bi bi-trash" aria-hidden="true"></i>
         </button>
       }
-      <button
-        type="button"
-        class="btn-close"
-        [attr.aria-label]="'chatBot.close' | translate"
-        (click)="onClose()"
-      ></button>
+      @if (layout() === 'overlay') {
+        <button
+          type="button"
+          class="btn btn-sm btn-link text-muted p-0 chat-panel__expand"
+          [attr.aria-label]="'chatBot.expand' | translate"
+          [attr.title]="'chatBot.expand' | translate"
+          (click)="onExpand()"
+        >
+          <i class="bi bi-arrows-angle-expand" aria-hidden="true"></i>
+        </button>
+        <button
+          type="button"
+          class="btn-close"
+          [attr.aria-label]="'chatBot.close' | translate"
+          (click)="onClose()"
+        ></button>
+      }
     </div>
   </header>
 
@@ -58,46 +65,87 @@
       <div
         class="chat-panel__message d-flex mb-2"
         [class.justify-content-end]="message.role === 'farmer'"
-        [class.chat-panel__message--past]="!isRecent($index)"
+        [class.chat-panel__message--past]="layout() === 'overlay' && !isRecent($index)"
       >
-        <div
-          class="chat-panel__bubble p-2 px-3 rounded-3"
-          [class.chat-panel__bubble--bot]="message.role === 'bot'"
-          [class.chat-panel__bubble--farmer]="message.role === 'farmer'"
-        >
-          @for (line of lines(message.text); track $index) {
-            <div>{{ line }}</div>
-          }
+        @if (message.role === 'bot') {
+          <span class="chat-panel__avatar chat-panel__avatar--sm me-2" aria-hidden="true"
+            ><i class="bi bi-flower1"></i
+          ></span>
+        }
+        <div class="chat-panel__col">
+          <div
+            class="chat-panel__bubble p-2 px-3 rounded-3"
+            [class.chat-panel__bubble--bot]="message.role === 'bot'"
+            [class.chat-panel__bubble--farmer]="message.role === 'farmer'"
+          >
+            @for (line of lines(message.text); track $index) {
+              <div>{{ line }}</div>
+            }
 
-          @if (message.showReviewAction) {
-            <div class="mt-2">
-              <button
-                type="button"
-                class="btn btn-sm btn-primary rounded-pill"
-                (click)="onReviewClick()"
-              >
-                {{ 'chatBot.reviewAndSave' | translate }}
-              </button>
-            </div>
-          }
-
-          @if (message.chips?.length) {
-            <div class="d-flex flex-wrap gap-2 mt-2">
-              @for (chip of message.chips; track chip.value) {
+            @if (message.showReviewAction) {
+              <div class="mt-2">
                 <button
                   type="button"
-                  class="btn btn-sm btn-outline-primary rounded-pill"
-                  (click)="onChipClick(chip)"
+                  class="btn btn-sm btn-primary rounded-pill"
+                  (click)="onReviewClick()"
                 >
-                  {{ chip.label }}
+                  {{ 'chatBot.reviewAndSave' | translate }}
                 </button>
-              }
-            </div>
-          }
+              </div>
+            }
+
+            @if (message.chips?.length) {
+              <div class="d-flex flex-wrap gap-2 mt-2">
+                @for (chip of message.chips; track chip.value) {
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary rounded-pill"
+                    (click)="onChipClick(chip)"
+                  >
+                    {{ chip.label }}
+                  </button>
+                }
+              </div>
+            }
+          </div>
+          <div class="chat-panel__time text-muted" [class.text-end]="message.role === 'farmer'">
+            {{ timeOf(message) }}
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (busy()) {
+      <div class="chat-panel__message d-flex mb-2" role="status">
+        <span class="chat-panel__avatar chat-panel__avatar--sm me-2" aria-hidden="true"
+          ><i class="bi bi-flower1"></i
+        ></span>
+        <div class="chat-panel__bubble chat-panel__bubble--bot p-2 px-3 rounded-3">
+          <span class="chat-panel__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="visually-hidden">{{ 'chatBot.thinking' | translate }}</span>
         </div>
       </div>
     }
   </div>
+
+  @if (suggestions().length) {
+    <div
+      class="chat-panel__suggestions d-flex gap-2 px-3 py-2 border-top"
+      role="group"
+      [attr.aria-label]="'chatBot.suggestionsLabel' | translate"
+    >
+      @for (chip of suggestions(); track chip.value) {
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-primary rounded-pill text-nowrap"
+          [disabled]="busy()"
+          (click)="onChipClick(chip)"
+        >
+          {{ chip.label }}
+        </button>
+      }
+    </div>
+  }
 
   <form
     [formGroup]="form"
@@ -115,8 +163,13 @@
       [placeholder]="'chatBot.placeholder' | translate"
       [disabled]="busy()"
     />
-    <button type="submit" class="btn btn-primary" [disabled]="form.invalid || busy()">
-      {{ 'chatBot.send' | translate }}
+    <button
+      type="submit"
+      class="btn btn-primary"
+      [attr.aria-label]="'chatBot.send' | translate"
+      [disabled]="form.invalid || busy()"
+    >
+      <i class="bi bi-send-fill" aria-hidden="true"></i>
     </button>
   </form>
 

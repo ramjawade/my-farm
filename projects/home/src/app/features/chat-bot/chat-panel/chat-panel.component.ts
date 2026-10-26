@@ -47,10 +47,15 @@ export class ChatPanelComponent {
   readonly busy = input(false);
   /** Whether older saved messages can be loaded. */
   readonly hasMoreHistory = input(false);
+  /** `overlay` has close and expand controls; `page` fills the content area and has neither. */
+  readonly layout = input<'overlay' | 'page'>('overlay');
+  /** Example questions shown as a standing row above the composer. */
+  readonly suggestions = input<ChatQuickReply[]>([]);
 
   readonly send = output<string>();
   readonly chipSelected = output<ChatQuickReply>();
   readonly close = output<void>();
+  readonly expand = output<void>();
   readonly reviewRequested = output<void>();
   readonly loadOlder = output<void>();
   /** The farmer confirmed "Clear chat". */
@@ -140,6 +145,16 @@ export class ChatPanelComponent {
   onChipClick(chip: ChatQuickReply): void {
     this.pendingEcho.set({ role: 'farmer', text: chip.label });
     this.chipSelected.emit(chip);
+  }
+
+  onExpand(): void {
+    this.expand.emit();
+  }
+
+  /** The time under a message; messages without one are "now". */
+  timeOf(message: ChatMessage): string {
+    const date = message.createdAt ? new Date(message.createdAt) : new Date();
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
   onClose(): void {

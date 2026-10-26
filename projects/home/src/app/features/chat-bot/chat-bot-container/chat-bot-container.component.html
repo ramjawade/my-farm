@@ -1,12 +1,14 @@
 @if (!open()) {
-  <button
-    type="button"
-    class="chat-fab"
-    [attr.aria-label]="'chatBot.open' | translate"
-    (click)="openChat()"
-  >
-    <i class="bi bi-chat-dots-fill" aria-hidden="true"></i>
-  </button>
+  @if (!onChatPage()) {
+    <button
+      type="button"
+      class="chat-fab"
+      [attr.aria-label]="'chatBot.open' | translate"
+      (click)="openChat()"
+    >
+      <i class="bi bi-chat-dots-fill" aria-hidden="true"></i>
+    </button>
+  }
 } @else {
   <div class="chat-bot-overlay">
     <app-chat-panel
@@ -14,11 +16,13 @@
       [messages]="orchestrator.messages()"
       [busy]="orchestrator.busy()"
       [hasMoreHistory]="orchestrator.hasMoreHistory()"
+      [suggestions]="orchestrator.suggestions()"
       (send)="orchestrator.sendText($event)"
       (chipSelected)="orchestrator.selectChip($event)"
       (loadOlder)="orchestrator.loadOlder()"
       (clearConfirmed)="orchestrator.clearHistory()"
       (close)="closeChat()"
+      (expand)="expandChat()"
       (reviewRequested)="onReviewRequested()"
     />
   </div>

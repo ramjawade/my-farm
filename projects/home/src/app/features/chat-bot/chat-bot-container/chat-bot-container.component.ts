@@ -1,3 +1,4 @@
+import { toSignal } from '@angular/core/rxjs-interop';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -6,7 +7,8 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter, map } from 'rxjs';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { Activity } from '../../activity/activity.models';
@@ -21,16 +23,14 @@ import { ReviewPopupComponent } from '../review-popup/review-popup.component';
  * creation. Only ever instantiated inside `AppLayout`'s authenticated
  * branch, so it never needs its own login check.
  *
- * `ChatOrchestratorService` is provided here, at the container's level, not
- * `providedIn: 'root'` — its conversation state should live and die with
- * this container (which itself lives for the whole authenticated session,
- * same as the toolbar/sidebar), not be a bare app-wide singleton created by
- * whichever consumer asks for it first.
+ * `ChatOrchestratorService` is provided by `AppLayout`, not `providedIn: 'root'`:
+ * the overlay and the `/chat` page share one conversation, and it lives and
+ * dies with the signed-in layout instead of being a bare app-wide singleton.
+ * The review popup is mounted here on every page, so the page needs none.
  */
 @Component({
   selector: 'app-chat-bot-container',
   imports: [ChatPanelComponent, ReviewPopupComponent, TranslatePipe],
-  providers: [ChatOrchestratorService],
   templateUrl: './chat-bot-container.component.html',
   styleUrl: './chat-bot-container.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -41,11 +41,27 @@ export class ChatBotContainerComponent {
   readonly orchestrator = inject(ChatOrchestratorService);
 
   readonly open = signal(false);
-  private readonly reviewOpen = signal(false);
 
-  readonly reviewEntry = computed(() => (this.reviewOpen() ? this.orchestrator.draft() : null));
+  /** Where the farmer is now; the floating button is not shown on the assistant page. */
+  private readonly url = toSignal(
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map((e) => e.urlAfterRedirects),
+    ),
+    { initialValue: this.router.url },
+  );
+  readonly onChatPage = computed(() => this.url().split(/[?#]/)[0] === '/chat');
+
+  readonly reviewEntry = computed(() =>
+    this.orchestrator.reviewOpen() ? this.orchestrator.draft() : null,
+  );
 
   constructor() {
+    // Arriving on the page (sidebar, expand) leaves nothing floating above it.
+    effect(() => {
+      if (this.onChatPage()) this.open.set(false);
+    });
+
     // The manual-form escape hatch is a one-way exit: navigate away, then end
     // the entry so a farmer who comes back doesn't resume one the bot already
     // gave up on. The thread stays: it is saved history.
@@ -64,7 +80,6 @@ export class ChatBotContainerComponent {
         },
       });
       this.open.set(false);
-      this.reviewOpen.set(false);
       this.orchestrator.endEntry();
     });
   }
@@ -81,12 +96,17 @@ export class ChatBotContainerComponent {
     this.open.set(false);
   }
 
+  /** Open the assistant page; it shows the same conversation. */
+  expandChat(): void {
+    this.open.set(false);
+    void this.router.navigate(['/chat']);
+  }
+
   onReviewRequested(): void {
-    this.reviewOpen.set(true);
+    this.orchestrator.requestReview();
   }
 
   onReviewSaved(_activity: Activity): void {
-    this.reviewOpen.set(false);
     this.open.set(false);
     this.orchestrator.endEntry();
   }
@@ -94,7 +114,6 @@ export class ChatBotContainerComponent {
   onReviewCancelled(): void {
     // Discarded — nothing was ever created. Matches #256's design: Cancel
     // clears local state entirely, same as the manual form was never opened.
-    this.reviewOpen.set(false);
     this.orchestrator.endEntry();
   }
 }
