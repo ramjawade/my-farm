@@ -23,4 +23,4 @@ One frontend PR (no backend change). Applying starts after the user approves iss
 
 - [x] 4.1 Add an e2e check: sidebar to `/chat`, no floating button there, the overlay's expand opens the page. Verify: `npm run e2e` locally against a backend, and CI.
 - [x] 4.2 Run `npm run lint`, `npm run build`, `npm test` and the Prettier check.
-- [ ] 4.3 Open the PR with `Fixes #387 #301`; once CI is green, archive this change (adds the `assistant-full-page` spec), tick task 4.4 in `prototype-adoption-roadmap/tasks.md`.
+- [x] 4.3 Open the PR with `Fixes #387 #301`; once CI is green, archive this change (adds the `assistant-full-page` spec), tick task 4.4 in `prototype-adoption-roadmap/tasks.md`.
