@@ -48,6 +48,13 @@ export const NAV_ITEMS: readonly NavItem[] = [
     link: '/weather',
     phoneTab: false,
   },
+  {
+    key: 'assistant',
+    labelKey: 'shell.nav.assistant',
+    icon: 'bi-chat-dots',
+    link: '/chat',
+    phoneTab: false,
+  },
 ];
 
 /** Up to two initials from a name, drawn locally (no third-party avatar request). */

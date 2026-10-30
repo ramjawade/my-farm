@@ -26,6 +26,7 @@ const EN = {
       reports: 'Reports',
       prices: 'Prices',
       weather: 'Weather',
+      assistant: 'Assistant',
     },
     title: { addCrop: 'Add crop', activity: 'Activity' },
   },
@@ -78,6 +79,7 @@ describe('app shell navigation', () => {
         'Reports',
         'Prices',
         'Weather',
+        'Assistant',
       ]);
     });
 

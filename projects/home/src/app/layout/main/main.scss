@@ -31,6 +31,19 @@
   }
 }
 
+.app-main:has(app-chat-page) {
+  overflow: hidden;
+
+  .app-main__scroll-wrapper {
+    height: 100%;
+    padding-bottom: 0;
+  }
+
+  app-footer {
+    display: none;
+  }
+}
+
 .app-main__content {
   flex-grow: 1;
   position: relative; // Serves as the stable absolute anchor for full-height screens (like maps)

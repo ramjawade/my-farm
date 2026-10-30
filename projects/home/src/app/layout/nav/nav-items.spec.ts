@@ -1,7 +1,7 @@
 import { NAV_ITEMS, userInitials } from './nav-items';
 
 describe('NAV_ITEMS', () => {
-  it('lists the sections in order, with Weather outside the phone tabs and Prices as the sixth tab', () => {
+  it('lists the sections in order, with Weather and Assistant outside the phone tabs and Prices as the sixth tab', () => {
     expect(NAV_ITEMS.map((i) => i.key)).toEqual([
       'home',
       'lands',
@@ -10,6 +10,7 @@ describe('NAV_ITEMS', () => {
       'reports',
       'prices',
       'weather',
+      'assistant',
     ]);
     expect(NAV_ITEMS.filter((i) => i.phoneTab).map((i) => i.key)).toEqual([
       'home',

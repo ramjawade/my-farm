@@ -73,6 +73,9 @@ export class ChatOrchestratorService {
   readonly escapeHatch = this.escapeHatchSignal.asReadonly();
   readonly model = this.modelSignal.asReadonly();
   readonly originalInput = this.originalInputSignal.asReadonly();
+  private readonly reviewOpenSignal = signal(false);
+  /** Whether the Review & Save popup is open (the popup lives in the chat container). */
+  readonly reviewOpen = this.reviewOpenSignal.asReadonly();
   readonly ready = computed(() => this.draftSignal() !== null);
   /** Whether older saved messages can still be loaded. */
   readonly hasMoreHistory = this.hasMoreHistorySignal.asReadonly();
@@ -150,6 +153,7 @@ export class ChatOrchestratorService {
    * escape hatch) but keep the thread: it is the farmer's history now.
    */
   endEntry(): void {
+    this.reviewOpenSignal.set(false);
     this.busySignal.set(false);
     this.draftSignal.set(null);
     this.escapeHatchSignal.set(null);
@@ -159,6 +163,21 @@ export class ChatOrchestratorService {
     this.roundCounts = {};
     this.currentField = null;
     this.pendingQuestion = null;
+  }
+
+  /** Ask for the Review & Save popup; it opens only while an entry is ready. */
+  requestReview(): void {
+    this.reviewOpenSignal.set(true);
+  }
+
+  /** Close the popup but keep the entry, for a farmer who may come back to it. */
+  closeReview(): void {
+    this.reviewOpenSignal.set(false);
+  }
+
+  /** Example questions to offer as chips, in the farmer's language. */
+  suggestions(): ChatQuickReply[] {
+    return this.suggestionChips();
   }
 
   /** Empty the thread as well as the entry state. Saved history is untouched, see `clearHistory`. */
@@ -313,7 +332,10 @@ export class ChatOrchestratorService {
   }
 
   private appendFarmerMessage(text: string): void {
-    this.messagesSignal.update((m) => [...m, { role: 'farmer', text }]);
+    this.messagesSignal.update((m) => [
+      ...m,
+      { role: 'farmer', text, createdAt: new Date().toISOString() },
+    ]);
     this.unsaved.push({ role: 'farmer', kind: 'text', text });
   }
 
@@ -327,6 +349,7 @@ export class ChatOrchestratorService {
     const message: ChatMessage = {
       role: 'bot',
       text,
+      createdAt: new Date().toISOString(),
       chips,
       showReviewAction,
       ...(kind === 'brief' ? { kind } : {}),

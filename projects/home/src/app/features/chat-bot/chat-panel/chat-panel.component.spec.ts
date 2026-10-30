@@ -243,4 +243,91 @@ describe('ChatPanelComponent', () => {
       expect(document.activeElement?.textContent).toContain('chatBot.clearConfirm.cancel');
     });
   });
+
+  describe('page layout and the standing suggestions', () => {
+    const suggestions = [
+      {
+        label: 'Will it rain this week?',
+        value: 'Will it rain this week?',
+        kind: 'suggestion' as const,
+      },
+      {
+        label: 'What should I do today?',
+        value: 'What should I do today?',
+        kind: 'suggestion' as const,
+      },
+    ];
+
+    it('shows close and expand in the overlay, and neither on the page', () => {
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.btn-close')).toBeTruthy();
+      expect(fixture.nativeElement.querySelector('.chat-panel__expand')).toBeTruthy();
+
+      fixture.componentRef.setInput('layout', 'page');
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.btn-close')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.chat-panel__expand')).toBeNull();
+    });
+
+    it('emits expand from the overlay header', () => {
+      fixture.detectChanges();
+      const expanded = jasmine.createSpy('expand');
+      component.expand.subscribe(expanded);
+
+      fixture.nativeElement.querySelector('.chat-panel__expand').click();
+
+      expect(expanded).toHaveBeenCalled();
+    });
+
+    it('does not fade older messages on the page', () => {
+      fixture.componentRef.setInput('layout', 'page');
+      setMessages([
+        { role: 'bot', text: 'one' },
+        { role: 'farmer', text: 'two' },
+        { role: 'bot', text: 'three' },
+        { role: 'farmer', text: 'four' },
+      ]);
+
+      expect(fixture.nativeElement.querySelectorAll('.chat-panel__message--past').length).toBe(0);
+    });
+
+    it('sends a tapped suggestion as a message and disables them while waiting', () => {
+      fixture.componentRef.setInput('suggestions', suggestions);
+      fixture.detectChanges();
+      const selected = jasmine.createSpy('chipSelected');
+      component.chipSelected.subscribe(selected);
+
+      const chips: NodeListOf<HTMLButtonElement> = fixture.nativeElement.querySelectorAll(
+        '.chat-panel__suggestions button',
+      );
+      expect(chips.length).toBe(2);
+      chips[0].click();
+      expect(selected).toHaveBeenCalledWith(suggestions[0]);
+
+      fixture.componentRef.setInput('busy', true);
+      fixture.detectChanges();
+      expect(
+        Array.from<HTMLButtonElement>(
+          fixture.nativeElement.querySelectorAll('.chat-panel__suggestions button'),
+        ).every((b) => b.disabled),
+      ).toBeTrue();
+    });
+
+    it('shows a thinking indicator while waiting', () => {
+      fixture.componentRef.setInput('busy', true);
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('.chat-panel__dots')).toBeTruthy();
+    });
+
+    it('shows the time under each message and an avatar on the assistant side', () => {
+      setMessages([
+        { role: 'bot', text: 'Hello', createdAt: '2026-10-26T08:12:00' },
+        { role: 'farmer', text: 'Hi' },
+      ]);
+
+      expect(fixture.nativeElement.querySelectorAll('.chat-panel__time').length).toBe(2);
+      expect(fixture.nativeElement.querySelectorAll('.chat-panel__avatar--sm').length).toBe(1);
+    });
+  });
 });

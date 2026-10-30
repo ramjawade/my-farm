@@ -703,7 +703,11 @@
       "cancel": "Cancel",
       "save": "Save entry",
       "saveFailed": "Couldn't save that entry. Please try again."
-    }
+    },
+    "expand": "Open the assistant page",
+    "suggestionsLabel": "Suggested questions",
+    "thinking": "The assistant is typing",
+    "subtitlePage": "Knows your lands, crops and expenses"
   },
   "shell": {
     "skip": "Skip to content",
@@ -718,7 +722,8 @@
       "activity": "Activity",
       "reports": "Reports",
       "weather": "Weather",
-      "prices": "Prices"
+      "prices": "Prices",
+      "assistant": "Assistant"
     },
     "title": {
       "home": "Home",
@@ -744,7 +749,8 @@
       "myApmcs": "My APMCs",
       "priceDetail": "Price detail",
       "newList": "New watchlist",
-      "addItem": "Add item"
+      "addItem": "Add item",
+      "assistant": "Assistant"
     }
   },
   "login": {

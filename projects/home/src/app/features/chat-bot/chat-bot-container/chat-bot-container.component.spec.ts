@@ -48,6 +48,9 @@ describe('ChatBotContainerComponent', () => {
     loadOlder: jasmine.Spy;
     clearHistory: jasmine.Spy;
     hasMoreHistory: ReturnType<typeof signal>;
+    reviewOpen: ReturnType<typeof signal>;
+    requestReview: jasmine.Spy;
+    suggestions: jasmine.Spy;
     sendText: jasmine.Spy;
     selectChip: jasmine.Spy;
   };
@@ -60,7 +63,14 @@ describe('ChatBotContainerComponent', () => {
       escapeHatch: signal(null),
       model: signal<string | null>(null),
       originalInput: signal(''),
-      endEntry: jasmine.createSpy('endEntry'),
+      reviewOpen: signal(false),
+      requestReview: jasmine.createSpy('requestReview').and.callFake(() => {
+        fakeOrchestrator.reviewOpen.set(true);
+      }),
+      suggestions: jasmine.createSpy('suggestions').and.returnValue([]),
+      endEntry: jasmine.createSpy('endEntry').and.callFake(() => {
+        fakeOrchestrator.reviewOpen.set(false);
+      }),
       onOpen: jasmine.createSpy('onOpen').and.resolveTo(),
       loadOlder: jasmine.createSpy('loadOlder'),
       clearHistory: jasmine.createSpy('clearHistory'),
@@ -73,7 +83,7 @@ describe('ChatBotContainerComponent', () => {
       imports: [ChatBotContainerComponent],
       providers: [
         provideZonelessChangeDetection(),
-        provideRouter([]),
+        provideRouter([{ path: 'chat', children: [] }]),
         provideTranslateService(),
         // ReviewPopupComponent is always instantiated (its own template gates
         // visibility internally), so its dependencies need real DI targets
@@ -198,5 +208,26 @@ describe('ChatBotContainerComponent', () => {
     });
     expect(component.open()).toBeFalse();
     expect(fakeOrchestrator.endEntry).toHaveBeenCalled();
+  });
+
+  it('hides the floating button on the assistant page and closes the overlay there', async () => {
+    component.openChat();
+    fixture.detectChanges();
+
+    await router.navigateByUrl('/chat');
+    fixture.detectChanges();
+
+    expect(component.open()).toBeFalse();
+    expect(fixture.nativeElement.querySelector('.chat-fab')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.chat-bot-overlay')).toBeNull();
+  });
+
+  it('opens the assistant page from the overlay and closes the overlay', () => {
+    component.openChat();
+
+    component.expandChat();
+
+    expect(component.open()).toBeFalse();
+    expect(router.navigate).toHaveBeenCalledWith(['/chat']);
   });
 });
