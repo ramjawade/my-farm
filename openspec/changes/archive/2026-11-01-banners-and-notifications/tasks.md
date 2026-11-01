@@ -22,4 +22,4 @@ One PR on `claude/feature-banners-and-notifications`. Frontend only. UX source: 
 
 - [x] 4.1 Run `npm run lint`, `npm run build` and `npm test`; update the Playwright golden path only if it reads changed text. Verify: all green.
 - [x] 4.2 Open the draft PR (it holds the prototype, design system and plan). Verify: the PR links this change and CI runs.
-- [ ] 4.3 Once CI is green, archive the change on this branch (sync the new `banners` spec, tick roadmap 5.1, note in 5.2's text that its offline banner now uses the shared banner) and mark the PR ready. Verify: `openspec/specs/banners/spec.md` exists and the change sits under `archive/`.
+- [x] 4.3 Once CI is green, archive the change on this branch (sync the new `banners` spec, tick roadmap 5.1, note in 5.2's text that its offline banner now uses the shared banner) and mark the PR ready. Verify: `openspec/specs/banners/spec.md` exists and the change sits under `archive/`.
