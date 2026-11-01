@@ -2,11 +2,21 @@ import { weatherIconClass } from '../../core/weather/weather-icon';
 import { I18n } from '../../core/i18n/i18n.service';
 import { LocaleService } from '../../core/i18n/locale.service';
 import { TranslatePipe } from '@ngx-translate/core';
-import { Component, computed, signal, HostListener, inject, effect, OnInit } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  computed,
+  signal,
+  HostListener,
+  inject,
+  effect,
+  OnInit,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { SunPathComponent } from './sun-path/sun-path.component';
 import { HistoryTrendComponent } from './history-trend/history-trend.component';
 import { AuthService } from '../../core/auth/auth.service';
+import { BannerService } from '../../core/banners/banner.service';
 import { IWeatherService } from '../../core/weather/weather.interface';
 import { ProfileEditDialogComponent } from '../profile/components/profile-edit-dialog.component';
 import { FarmDrawService } from '../../map/farm-draw/farm-draw.service';
@@ -169,7 +179,7 @@ export class WeatherComponent implements OnInit {
     return source === 'live' ? 'bg-success' : source === 'cache' ? 'bg-warning' : 'bg-secondary';
   });
 
-  // A small badge alone is easy to miss — surface an unmissable banner
+  // A small badge alone is easy to miss — surface a banner (shown by the banner host)
   // whenever what's on screen is mock data, not a real forecast.
   readonly isDemoData = computed(() => this.weatherService.source() === 'demo');
 
@@ -328,6 +338,19 @@ export class WeatherComponent implements OnInit {
   readonly activeHistoryTab = signal<'weekly' | 'monthly' | 'yearly'>('weekly');
 
   constructor() {
+    const removeBanner = inject(BannerService).addSource(() =>
+      this.isDemoData()
+        ? {
+            id: 'weather-sample',
+            kind: 'update',
+            titleKey: 'banners.weatherSample.title',
+            textKey: 'banners.weatherSample.text',
+            screens: ['weather'],
+          }
+        : null,
+    );
+    inject(DestroyRef).onDestroy(removeBanner);
+
     effect(() => {
       const user = this.authService.currentUser();
       this.farms();

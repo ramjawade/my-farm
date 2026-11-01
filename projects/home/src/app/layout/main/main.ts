@@ -2,12 +2,12 @@ import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
 import { Footer } from '../footer/footer';
-import { OfflineBanner } from '../offline-banner/offline-banner';
+import { BannerHost } from '../banner-host/banner-host';
 
 @Component({
   standalone: true,
   selector: 'app-main',
-  imports: [RouterOutlet, Footer, OfflineBanner],
+  imports: [RouterOutlet, Footer, BannerHost],
   templateUrl: './main.html',
   styleUrl: './main.scss',
 })

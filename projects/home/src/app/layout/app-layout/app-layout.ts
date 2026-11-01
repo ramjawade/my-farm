@@ -3,11 +3,12 @@ import { RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { Main } from '../main/main';
-import { OfflineBanner } from '../offline-banner/offline-banner';
+import { BannerHost } from '../banner-host/banner-host';
 import { MobileHeader } from '../mobile-header/mobile-header';
 import { Sidebar } from '../sidebar/sidebar';
 import { TabBar } from '../tab-bar/tab-bar';
 import { AuthService } from '../../core/auth/auth.service';
+import { AppBanners } from '../../core/banners/app-banners';
 import { ChatOrchestratorService } from '../../features/chat-bot/chat-orchestrator.service';
 import { ChatBotContainerComponent } from '../../features/chat-bot/chat-bot-container/chat-bot-container.component';
 import { LoaderOutletComponent, ToastOutletComponent } from 'shared';
@@ -19,7 +20,7 @@ import { LoaderOutletComponent, ToastOutletComponent } from 'shared';
     Sidebar,
     MobileHeader,
     Main,
-    OfflineBanner,
+    BannerHost,
     TabBar,
     RouterOutlet,
     TranslatePipe,
@@ -34,6 +35,11 @@ import { LoaderOutletComponent, ToastOutletComponent } from 'shared';
 })
 export class AppLayout {
   readonly authService = inject(AuthService);
+
+  constructor() {
+    // The notices every screen can show (offline, new version) register themselves once.
+    inject(AppBanners);
+  }
 
   /** A plain `#id` link would navigate under `<base href>`, so move focus here. */
   skipToContent(event: Event): void {

@@ -180,6 +180,8 @@ button.badge.mute{border:1px solid var(--line)}
 .bn-t b{display:block}
 .bn-k{display:block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--c);margin-bottom:1px}
 .bn-m{display:block;font-size:13px;color:var(--muted)}
+.bn .lnk{margin:6px 0 0;padding:0;font-size:13px;text-decoration:none}
+.bn-more{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px dashed var(--line);border-radius:12px;padding:8px 12px;color:var(--muted)}
 .pf-av{width:56px;height:56px;border-radius:50%;background:var(--sun-soft);color:var(--sun);display:grid;place-items:center;font:700 22px var(--display);flex:none}
 .pgh{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:16px 4px 6px}
 .pgrp{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
@@ -694,6 +696,7 @@ var IC={
  fruit:'<path d="M8 4.4c3.4 0 5.6 2.1 5.6 4.9S11.4 14.7 8 14.7 2.4 12.1 2.4 9.3 4.6 4.4 8 4.4"/><path d="M7.5 1.6h1V4.6h-1z"/><path d="M9 1.9c1.2-.4 2.4 0 3.1.9-1.3.5-2.4.3-3.1-.4z"/>',
  more:'<path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/>',
  send:'<path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>',
+ star:'<path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z"/>',
  bell:'<path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4 4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5 5 0 0 1 13 6c0 .88.32 4.2 1.22 6"/>',
  chart:'<rect x="2" y="9" width="3" height="5" rx=".6"/><rect x="6.5" y="5" width="3" height="9" rx=".6"/><rect x="11" y="2" width="3" height="12" rx=".6"/>',
  rupee:'<path d="M4 3.06h2.726c1.22 0 2.12.575 2.325 1.724H4v1.051h5.051C8.855 7.001 8 7.558 6.788 7.558H4v1.317L8.437 14h2.11L6.095 8.884h.855c2.316-.018 3.465-1.476 3.688-3.049H12V4.784h-1.345c-.08-.778-.357-1.335-.793-1.732H12V2H4z"/>',
@@ -771,7 +774,7 @@ var ALERTS=[
  {id:'a4',crop:'Pomegranate',type:'below',val:9000,on:false},
  {id:'a5',crop:'Grapes',type:'above',val:6500,on:true}
 ],AID=5;
-var PADIS={};
+var BDIS={},BNF={sample:true,update:true,news:true};
 var HIST={
  Tomato:[{s:'Kharif 2025',ac:1.0,exp:17200,sales:31500},{s:'Rabi 2024-25',ac:0.8,exp:12400,sales:20800}],
  Onion:[{s:'Rabi 2025-26',ac:2.0,exp:30100,sales:52600}],
@@ -981,7 +984,7 @@ function mk(el,mode){
   }
   function homeA(){
     var left=todayCard();
-    return '<div class="stack">'+pBanners()+kpis()+(mode==='d'?'<div class="grid g2"><div class="stack">'+farmCard()+left+'</div><div class="stack">'+wxToday()+attnCard()+'</div></div>':wxToday()+attnCard()+left+farmCard())+'</div>'
+    return '<div class="stack">'+kpis()+(mode==='d'?'<div class="grid g2"><div class="stack">'+farmCard()+left+'</div><div class="stack">'+wxToday()+attnCard()+'</div></div>':wxToday()+attnCard()+left+farmCard())+'</div>'
   }
 
   function briefCard(){
@@ -1214,13 +1217,11 @@ function mk(el,mode){
   }
   function now(){return new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}
   /* System states: what the farmer sees when a page is missing, fails to load, is loading, or the phone is offline. */
-  function offlineBanner(){
-    return '<div class="bn k-critical" role="alert" style="margin-bottom:var(--s-3)"><span class="bn-i">'+ic('warn',18)+'</span><div class="bn-t"><span class="bn-k">Offline</span><b>You are offline</b><span class="bn-m">Saved screens still open, but changes need a connection.</span></div></div>'
-  }
   function states(){
     var card=function(icon,title,text,btn){return '<div class="card">'+emptyHtml(icon,title,text,btn)+'</div>'};
     var loading='<div class="card"><div class="empty" role="status" aria-live="polite"><span class="spin" aria-hidden="true"></span><h3>Loading…</h3><p>Getting your farm ready.</p></div></div>';
-    var off='<div class="card"><h3>Offline</h3><p class="hint">Turn this on to see the banner at the top of every screen. It cannot be dismissed and goes away by itself when the connection returns.</p><button type="button" class="btn'+(OFFLINE?' p':'')+'" data-offline aria-pressed="'+OFFLINE+'">'+(OFFLINE?'Back online':'Simulate offline')+'</button></div>';
+    var tg=function(k,on,l){return '<button type="button" class="btn'+(on?' p':'')+'" data-bnf="'+k+'" aria-pressed="'+on+'">'+l+'</button>'};
+    var off='<div class="card"><h3>Banners</h3><p class="hint">Turn each one on to see it at the top of its screen. Offline cannot be dismissed and goes away by itself when the connection returns. With three or more active on Home, the third folds into "N more notifications".</p><div class="chips">'+tg('offline',OFFLINE,OFFLINE?'Back online':'Simulate offline')+tg('sample',BNF.sample,'Weather sample data')+tg('update',BNF.update,'App update')+tg('news',BNF.news,'New feature')+'</div></div>';
     var g=function(a,b){return mode==='d'?'<div class="grid g2">'+a+b+'</div>':a+b};
     return head('System states','What the farmer sees when a page is missing, fails to load, is loading, or the phone is offline.')+
       '<div class="stack">'+
@@ -1415,12 +1416,33 @@ function mk(el,mode){
   function alMet(a){if(!a.on)return null;var c=CROPS.filter(function(k){return k.crop===a.crop})[0],m=c&&MANDI[a.crop];if(!m)return null;var ch=pChange(m),ok=a.type==='above'?m.price>=a.val:a.type==='below'?m.price<=a.val:Math.abs(ch.p)>=a.val;return ok?{c:c,m:m,ch:ch}:null}
   function alRule(a){return a.type==='above'?'rises to '+inr(a.val):a.type==='below'?'falls to '+inr(a.val):'moves '+a.val+'% in a day'}
   function swHtml(key,on,label,dis){return '<button type="button" class="sw" role="switch" data-pswitch="'+key+'" aria-checked="'+on+'" aria-label="'+label+'"'+(dis?' disabled':'')+'></button>'}
-  function pBanners(){
-    return ALERTS.map(function(a){var r=alMet(a);if(!r||PADIS[a.id])return '';var m=r.m,ch=r.ch,pc=Math.abs(ch.p).toFixed(1),drop=a.type==='below'||(a.type==='change'&&!ch.up),title,sub;
+  /* Banners: one shared card for everything the app tells the farmer. Problem first, then warning, update, news; two shown, the rest behind "N more". A dismissed banner stays gone until its content changes. */
+  var BN_ORDER={critical:0,warning:1,info:2,new:3},BN_ICON={critical:'warn',warning:'bell',info:'info',new:'star'},BN_LABEL={critical:'Problem',warning:'Warning',info:'Update',new:'New'};
+  function bnReset(pre){Object.keys(BDIS).forEach(function(q){if(q.indexOf(pre+'|')===0)delete BDIS[q]})}
+  function alertNotices(){
+    return ALERTS.map(function(a){var r=alMet(a);if(!r)return null;var m=r.m,ch=r.ch,pc=Math.abs(ch.p).toFixed(1),drop=a.type==='below'||(a.type==='change'&&!ch.up),title,sub;
       if(a.type==='above'){title=a.crop+' reached your '+inr(a.val)+' alert';sub='Now '+inr(m.price)+' per quintal at '+m.mkt+'.'}
       else if(a.type==='below'){title=a.crop+' fell to your '+inr(a.val)+' alert';sub='Now '+inr(m.price)+' per quintal at '+m.mkt+'.'}
       else{title=a.crop+' '+(ch.up?'rose ':'fell ')+pc+'% today';sub=inr(m.price)+' per quintal, '+(ch.up?'up ':'down ')+inr(Math.abs(ch.d))+' from yesterday. Your alert is '+a.val+'% or more.'}
-      return '<div class="bn k-warning'+(drop?' drop':'')+'" role="status"><span class="bn-i">'+ic('bell',18)+'</span><div class="bn-t"><span class="bn-k">Price alert</span><b>'+title+'</b><span class="bn-m">'+sub+'</span><button type="button" class="lnk" data-go="pricedetail" data-crop="'+r.c.id+'" style="margin:6px 0 0;padding:0;font-size:13px;text-decoration:none">View price history '+ic('chev',12)+'</button></div><button type="button" class="ibtn2" data-pdismiss="'+a.id+'" aria-label="Dismiss '+a.crop+' alert" style="width:28px;height:28px">'+ic('x',14)+'</button></div>'}).join('')
+      return {id:'alert-'+a.id,kind:'warning',label:'Price alert',drop:drop,title:title,sub:sub,go:'pricedetail',crop:r.c.id,act:'View price history',on:['home','prices','alerts'],aid:a.id}}).filter(Boolean)
+  }
+  function notices(){
+    var n=[];
+    if(OFFLINE)n.push({id:'offline',kind:'critical',label:'Offline',title:'You are offline',sub:'Saved screens still open, but changes need a connection.',on:['*']});
+    n=n.concat(alertNotices());
+    if(BNF.sample)n.push({id:'wx-sample',kind:'info',label:'Update',title:'Weather shows sample data',sub:'The live forecast is unavailable, so these figures are examples.',on:['weather']});
+    if(BNF.update)n.push({id:'app-update',kind:'info',title:'New version available',sub:'Version 2.4 adds sale tracking and mandi prices.',act:'Update now',bact:'update',on:['home']});
+    if(BNF.news)n.push({id:'news-sales',kind:'new',title:'New: record your sales',sub:'See profit per acre for every crop.',go:'reports',act:'Take a look',on:['home']});
+    return n.filter(function(x){return (x.on.indexOf('*')>-1||x.on.indexOf(S.screen)>-1)&&(x.kind==='critical'||!BDIS[x.id+'|'+x.title+'|'+x.sub])})
+      .sort(function(a,b){return BN_ORDER[a.kind]-BN_ORDER[b.kind]})
+  }
+  function bnHtml(x){
+    var go=x.go?' data-go="'+x.go+'"'+(x.crop?' data-crop="'+x.crop+'"':''):x.bact?' data-bact="'+x.bact+'"':'';
+    return '<div class="bn k-'+x.kind+(x.drop?' drop':'')+'" role="'+(x.kind==='critical'?'alert':'status')+'"><span class="bn-i">'+ic(BN_ICON[x.kind],18)+'</span><div class="bn-t"><span class="bn-k">'+(x.label||BN_LABEL[x.kind])+'</span><b>'+x.title+'</b><span class="bn-m">'+x.sub+'</span>'+(x.act?'<button type="button" class="lnk"'+go+'>'+x.act+' '+ic('chev',12)+'</button>':'')+'</div>'+(x.kind==='critical'?'':'<button type="button" class="ibtn2" data-bdismiss="'+x.id+'" aria-label="Dismiss: '+x.title+'" style="width:28px;height:28px">'+ic('x',14)+'</button>')+'</div>'
+  }
+  function bannerHost(){
+    var all=notices(),shown=S.bnAll?all:all.slice(0,2),rest=all.length-shown.length;if(!all.length)return '';
+    return '<div class="stack" style="margin-bottom:var(--s-3)">'+shown.map(bnHtml).join('')+(rest>0?'<div class="bn-more"><span>'+rest+' more notification'+(rest>1?'s':'')+'</span><button type="button" class="lnk" data-bnall="1" aria-expanded="false" style="margin:0;padding:0;text-decoration:none">View all '+ic('chev',12)+'</button></div>':'')+(S.bnAll&&all.length>2?'<div class="bn-more"><span>Showing all '+all.length+'</span><button type="button" class="lnk" data-bnall="0" aria-expanded="true" style="margin:0;padding:0;text-decoration:none">Show less</button></div>':'')+'</div>'
   }
   function alertRow(a,short){
     var r=alMet(a),m=MANDI[a.crop],mk='A'+a.id,mo=S.menu===mk;
@@ -1435,7 +1457,7 @@ function mk(el,mode){
     var list=f==='triggered'?tr:f==='active'?act:f==='off'?off:ALERTS,
       chips='<div class="chips" role="group" aria-label="Filter alerts">'+[['all','All',ALERTS.length],['triggered','Triggered',tr.length],['active','Active',act.length],['off','Off',off.length]].map(function(x){return '<button type="button" class="chip" data-afilter="'+x[0]+'" aria-pressed="'+(f===x[0])+'">'+x[1]+' \u00b7 '+x[2]+'</button>'}).join('')+'</div>',
       body=list.length?list.map(function(a){return alertRow(a)}).join(''):(ALERTS.length?'<p class="hint" style="margin:0">No '+f+' alerts.</p>':emptyHtml('bell','No alerts yet','Set a price you care about and get a banner when it is reached.','<button class="btn p" data-go="addalert">New alert</button>'));
-    return '<button class="lnk" data-go="prices" style="margin:0 0 var(--s-2);text-decoration:none"><span style="display:inline-flex;transform:rotate(180deg)">'+ic('chev',14)+'</span> All prices</button>'+head('Alerts','Get a banner when a crop price reaches your number.','<button class="btn p" data-go="addalert">+ New alert</button>')+(pBanners()?'<div class="stack" style="margin-bottom:var(--s-3)">'+pBanners()+'</div>':'')+
+    return '<button class="lnk" data-go="prices" style="margin:0 0 var(--s-2);text-decoration:none"><span style="display:inline-flex;transform:rotate(180deg)">'+ic('chev',14)+'</span> All prices</button>'+head('Alerts','Get a banner when a crop price reaches your number.','<button class="btn p" data-go="addalert">+ New alert</button>')+
       '<div class="card"><h3>My alerts</h3>'+(ALERTS.length?chips:'')+body+'</div>'
   }
   function newAlf(crop,from){var cs=CROPS.filter(function(c){return MANDI[c.crop]});return {crop:crop||(cs[0]&&cs[0].crop)||'',type:'above',val:'',tried:false,from:from||'prices'}}
@@ -1467,8 +1489,7 @@ function mk(el,mode){
         more='<div style="background:var(--surface2);padding:4px 0">'+list.map(function(x,k){var dif=x.p-top.p;return '<button type="button" class="row" data-go="pricedetail" data-crop="'+c.id+'" data-apmc="'+x.n+'" style="'+ROWSTY+';border-top:0;padding:8px 12px 8px '+pad+'px"><div class="grow"><b>'+x.n+' APMC'+(k===0?' <span class="badge" style="vertical-align:middle">Best</span>':'')+'</b><small>'+x.km+' km away</small></div><div style="flex:none;text-align:right"><b style="display:block;font-variant-numeric:tabular-nums">'+inr(x.p)+'</b><small style="font-variant-numeric:tabular-nums">'+(k===0?'Highest':'-'+inr(-dif))+'</small></div>'+CHV+'</button>'}).join('')+
           MYAPMC.filter(function(n){return apmcPrice(m,n)==null}).map(function(n){return '<div class="row" style="border-top:0;padding:8px 12px 8px '+pad+'px;opacity:.7"><div class="grow"><b>'+n+' APMC</b><small>'+apmcKm(n)+' km away</small></div><small>Not traded</small></div>'}).join('')+'</div>'}
       return main+more}).join('');
-    var bn=pBanners();
-    return head0+(bn?'<div class="stack" style="margin-bottom:var(--s-3)">'+bn+'</div>':'')+'<div style="display:flex;justify-content:space-between;align-items:center;gap:var(--s-2);margin:0 2px 8px"><p class="hint" style="margin:0">'+(mode==='m'?'Per quintal · best of your APMCs':'Per quintal · best of your APMCs · Updated today, 9:30 am')+'</p><button type="button" class="btn" data-go="apmcs" style="font-size:14px;font-family:inherit;flex:none">My APMCs · '+MYAPMC.length+'</button></div><div class="card" style="padding:0;overflow:hidden">'+cards+'</div>'+'<p class="hint" style="margin:12px 0 0">Prices come from the mandis you chose and can differ from what a buyer offers you.</p>'
+    return head0+'<div style="display:flex;justify-content:space-between;align-items:center;gap:var(--s-2);margin:0 2px 8px"><p class="hint" style="margin:0">'+(mode==='m'?'Per quintal · best of your APMCs':'Per quintal · best of your APMCs · Updated today, 9:30 am')+'</p><button type="button" class="btn" data-go="apmcs" style="font-size:14px;font-family:inherit;flex:none">My APMCs · '+MYAPMC.length+'</button></div><div class="card" style="padding:0;overflow:hidden">'+cards+'</div>'+'<p class="hint" style="margin:12px 0 0">Prices come from the mandis you chose and can differ from what a buyer offers you.</p>'
   }
   function wltabs(){
     var cur=(S.wl&&WL.filter(function(x){return x.id===S.wl})[0])?S.wl:'farm';
@@ -1651,7 +1672,7 @@ function mk(el,mode){
     var keep=el.querySelector('.main'),top=keep?keep.scrollTop:0;
     if(!S.chat.length)S.chat.push(greet);
     if(S.screen==='chat'&&!BRIEF_SEEN){BRIEF_SEEN=true;setTimeout(redraw,0)}
-    var pl=S.pulse,enter=S.lastScr!==S.screen;if(enter)S.menu=null;S.lastScr=S.screen;el.innerHTML=nav()+'<main class="main'+(enter?' enter':'')+(S.screen==='chat'?' chatpage':'')+'" style="'+(mode==='m'?'flex:1;min-height:0':'')+'">'+(OFFLINE?offlineBanner():'')+body()+'</main>'+(mode==='m'?tabs():'')+modalHtml()+(S.toast?'<div class="toast'+(S.toast.kind==='warn'?' warn':'')+'" role="status">'+S.toast.msg+(S.toast.undo?'<button class="tundo" data-undo>Undo</button>':'')+'</div>':'');
+    var pl=S.pulse,enter=S.lastScr!==S.screen;if(enter){S.menu=null;S.bnAll=false}S.lastScr=S.screen;el.innerHTML=nav()+'<main class="main'+(enter?' enter':'')+(S.screen==='chat'?' chatpage':'')+'" style="'+(mode==='m'?'flex:1;min-height:0':'')+'">'+bannerHost()+body()+'</main>'+(mode==='m'?tabs():'')+modalHtml()+(S.toast?'<div class="toast'+(S.toast.kind==='warn'?' warn':'')+'" role="status">'+S.toast.msg+(S.toast.undo?'<button class="tundo" data-undo>Undo</button>':'')+'</div>':'');
     S.pulse=null;
     trPass(el);
     if(S.focusConf){S.focusConf=false;var cb=el.querySelector('.modal [data-confcancel]');if(cb)cb.focus()}
@@ -1717,7 +1738,7 @@ function mk(el,mode){
       else if(a==='cancel'){D.on=false;D.pts=[]}
       else if(a==='finish'&&D.pts.length>2){S.draft={name:'New land '+(DRAWN.length+1),notes:'',pts:D.pts.slice(),acre:areaAc(D.pts)};D.on=false;D.pts=[];fitPts(S.draft.pts)}
       render();return}
-    var psw=e.target.closest('[data-pswitch]');if(psw){var pa=ALERTS.filter(function(x){return x.id===psw.dataset.pswitch})[0];if(pa){pa.on=!pa.on;delete PADIS[pa.id];redraw();toast(pa.crop+' alert '+(pa.on?'on.':'off.'),'ok')}return}
+    var psw=e.target.closest('[data-pswitch]');if(psw){var pa=ALERTS.filter(function(x){return x.id===psw.dataset.pswitch})[0];if(pa){pa.on=!pa.on;bnReset('alert-'+pa.id);redraw();toast(pa.crop+' alert '+(pa.on?'on.':'off.'),'ok')}return}
     var asl=e.target.closest('[data-apmcsel]');if(asl){var an2=asl.dataset.apmcsel,ix=MYAPMC.indexOf(an2);if(ix>=0){if(MYAPMC.length>1)MYAPMC.splice(ix,1)}else if(MYAPMC.length<APMCMAX)MYAPMC.push(an2);redraw();return}
     var wlb=e.target.closest('[data-wl]');if(wlb){S.wl=wlb.dataset.wl;S.wlc=null;render();return}
     var wrm=e.target.closest('[data-wrm]');if(wrm){var wp=wrm.dataset.wrm.split('|'),wl0=WL.filter(function(x){return x.id===wp[0]})[0];if(wl0){wl0.items.splice(+wp[1],1);redraw()}return}
@@ -1729,9 +1750,11 @@ function mk(el,mode){
     var pfl=e.target.closest('[data-afilter]');if(pfl){S.afilter=pfl.dataset.afilter;render();return}
     var aed=e.target.closest('[data-aedit]');if(aed){S.menu=null;var ea3=ALERTS.filter(function(x){return x.id===aed.dataset.aedit})[0];if(ea3){S.alf={crop:ea3.crop,type:ea3.type,val:String(ea3.val),tried:false,editId:ea3.id,from:S.screen==='pricedetail'?'pricedetail':'alerts'};S.screen='addalert';render()}return}
     var adl=e.target.closest('[data-adel]');if(adl){S.menu=null;var di=-1;ALERTS.forEach(function(x,i){if(x.id===adl.dataset.adel)di=i});if(di>=0){ALERTS.splice(di,1);redraw();toast('Alert deleted.','ok')}return}
-    var pds=e.target.closest('[data-pdismiss]');if(pds){PADIS[pds.dataset.pdismiss]=true;redraw();return}
+    var bds=e.target.closest('[data-bdismiss]');if(bds){var bx=notices().filter(function(x){return x.id===bds.dataset.bdismiss})[0];if(bx)BDIS[bx.id+'|'+bx.title+'|'+bx.sub]=true;redraw();return}
+    var bal=e.target.closest('[data-bnall]');if(bal){S.bnAll=bal.dataset.bnall==='1';redraw();return}
+    var bac=e.target.closest('[data-bact="update"]');if(bac){BNF.update=false;toast('Updated to version 2.4.','ok');return}
+    var bfl=e.target.closest('[data-bnf]');if(bfl){var k=bfl.dataset.bnf;if(k==='offline')OFFLINE=!OFFLINE;else BNF[k]=!BNF[k];if(k!=='offline'&&BNF[k])Object.keys(BDIS).forEach(function(q){if(q.indexOf(k==='update'?'app-update|':k==='news'?'news-sales|':'wx-sample|')===0)delete BDIS[q]});redraw();return}
     var cmpb=e.target.closest('[data-cmp]');if(cmpb){S.cmp=cmpb.dataset.cmp;render();return}
-    if(e.target.closest('[data-offline]')){OFFLINE=!OFFLINE;redraw();return}
     if(e.target.closest('[data-retry]')){toast('Trying again…','ok');return}
     var rsb=e.target.closest('[data-rs]');if(rsb){S.rs=rsb.dataset.rs;render();return}
     var ryb=e.target.closest('[data-ry]');if(ryb){S.ry=ryb.dataset.ry;render();return}
@@ -1819,7 +1842,7 @@ function mk(el,mode){
       wl1.items.push([wf.crop,wf.apmc]);S.wi=null;S.screen='prices';redraw();toast('Added to '+wl1.name+'.','ok');return}
     if(e.target.matches('[data-savealert]')){var af=S.alf;if(!af)return;af.tried=true;if(Object.keys(alfErr(af)).length){render();return}
       var ex=af.editId?ALERTS.filter(function(x){return x.id===af.editId})[0]:null;
-      if(ex){ex.crop=af.crop;ex.type=af.type;ex.val=parseFloat(af.val);ex.on=true;delete PADIS[ex.id]}else ALERTS.push({id:'a'+(++AID),crop:af.crop,type:af.type,val:parseFloat(af.val),on:true});
+      if(ex){ex.crop=af.crop;ex.type=af.type;ex.val=parseFloat(af.val);ex.on=true;bnReset('alert-'+ex.id)}else ALERTS.push({id:'a'+(++AID),crop:af.crop,type:af.type,val:parseFloat(af.val),on:true});
       S.screen=af.from==='pricedetail'?'pricedetail':'alerts';S.alf=null;redraw();toast(ex?'Alert updated.':'Alert created.','ok');return}
     if(e.target.matches('[data-search]')){S.z=1;S.cx=280;S.cy=165;render();return}var i=el.querySelector('.cc input');if(!i)return;var v=i.value.trim();if(v&&!S.busy)ask(v)});
   render();
