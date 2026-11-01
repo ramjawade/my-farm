@@ -9,7 +9,8 @@ test.beforeEach(async ({ page }) => {
 /**
  * The assistant has its own page (roadmap 4.4, #387): reachable from the
  * sidebar and from the overlay's expand control, with no floating button on it.
- * The sidebar only exists on wide screens; a phone goes through the overlay.
+ * The sidebar only exists on wide screens; a phone goes through the overlay, which it opens
+ * from the quick-actions button.
  */
 test('the assistant page opens from the overlay and has no floating button', async ({
   page,
@@ -21,19 +22,28 @@ test('the assistant page opens from the overlay and has no floating button', asy
   await registerThroughPad(page, phone, pin, 'Assistant Page');
   await expect(page).toHaveURL(/\/map$/, { timeout: 15_000 });
 
+  const isMobile = testInfo.project.name.toLowerCase().includes('mobile');
   const fab = page.locator('.chat-fab');
-  await expect(fab).toBeVisible();
-  await fab.click();
+  if (isMobile) {
+    // On a phone the assistant is "Ask assistant" in the quick-actions button, not a separate button.
+    await expect(fab).toBeHidden();
+    await page.getByRole('button', { name: 'Open quick actions' }).click();
+    await page.getByRole('menuitem', { name: 'Ask assistant' }).click();
+  } else {
+    await expect(fab).toBeVisible();
+    await fab.click();
+  }
   await expect(page.locator('.chat-bot-overlay')).toBeVisible();
 
   await page.locator('.chat-panel__expand').click();
   await expect(page).toHaveURL(/\/chat$/);
   await expect(page.locator('.chat-bot-overlay')).toHaveCount(0);
   await expect(fab).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Open quick actions' })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'My farm assistant' })).toBeVisible();
   await expect(page.locator('#chatPanelInput')).toBeVisible();
 
-  if (!testInfo.project.name.toLowerCase().includes('mobile')) {
+  if (!isMobile) {
     await page.goto('/crops');
     await page.getByRole('link', { name: 'Assistant' }).click();
     await expect(page).toHaveURL(/\/chat$/);
