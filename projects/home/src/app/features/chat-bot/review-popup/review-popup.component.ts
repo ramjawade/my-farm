@@ -23,6 +23,20 @@ import { LandsApiService } from '../../../core/api/lands-api.service';
 import { ReferenceDataService } from '../../../core/api/reference-data.service';
 import { Activity } from '../../activity/activity.models';
 import { EXPENSE_CATEGORIES } from '../chat-decision';
+import { SALE_TYPE, isSaleEntry, positiveNumber, saleNumbersOf } from '../chat-sale';
+
+const SALE_UNITS = ['crates', 'kg', 'quintal', 'bags', 'tonnes'];
+
+/** Translation keys of the sale fields that failed validation. */
+interface SaleErrors {
+  crop?: string;
+  date?: string;
+  quantity?: string;
+  rate?: string;
+  amount?: string;
+}
+
+const todayIso = (): string => new Date().toISOString().substring(0, 10);
 
 type ExpenseLineGroup = FormGroup<{ category: FormControl<string>; amount: FormControl<string> }>;
 
@@ -72,7 +86,19 @@ export class ReviewPopupComponent {
     landId: this.fb.control<number | null>(null),
     cropId: this.fb.control<number | null>(null),
     expenses: this.fb.array<ExpenseLineGroup>([]),
+    // Sale details, used only while the type is Sale.
+    saleQuantity: this.fb.control<number | null>(null),
+    saleUnit: [''],
+    saleRate: this.fb.control<number | null>(null),
+    saleAmount: this.fb.control<number | null>(null),
+    saleBuyer: [''],
   });
+
+  readonly saleUnits = SALE_UNITS;
+  readonly isSale = signal(false);
+  readonly saleErrors = signal<SaleErrors>({});
+  /** Amount follows quantity × rate until the farmer types their own total (or one was said). */
+  private amountTouched = false;
 
   get expensesArray(): FormArray<ExpenseLineGroup> {
     return this.form.controls.expenses;
@@ -83,18 +109,59 @@ export class ReviewPopupComponent {
       const current = this.entry();
       if (!current) return;
       this.errorMessage.set(null);
+      this.saleErrors.set({});
       this.populateForm(current);
       void this.loadOptions();
     });
+
+    this.form.controls.activityType.valueChanges.subscribe((type) => {
+      this.isSale.set(type === SALE_TYPE);
+    });
+    this.form.valueChanges.subscribe(() => {
+      if (!this.amountTouched) {
+        const { saleQuantity, saleRate } = this.form.getRawValue();
+        const total = Number(saleQuantity) * Number(saleRate);
+        this.form.controls.saleAmount.setValue(total > 0 ? Math.round(total * 100) / 100 : null, {
+          emitEvent: false,
+        });
+      }
+      if (Object.keys(this.saleErrors()).length) {
+        this.saleErrors.set(this.isSale() ? this.validateSale() : {});
+      }
+    });
+  }
+
+  onAmountInput(): void {
+    this.amountTouched = true;
+  }
+
+  private validateSale(): SaleErrors {
+    const raw = this.form.getRawValue();
+    const errors: SaleErrors = {};
+    if (!raw.cropId) errors.crop = 'createActivity.saleCropRequired';
+    if (raw.date && raw.date > todayIso()) errors.date = 'chatBot.review.saleDateFuture';
+    if (!(Number(raw.saleQuantity) > 0)) errors.quantity = 'saleForm.quantityRequired';
+    else if (!raw.saleUnit.trim()) errors.quantity = 'saleForm.unitRequired';
+    if (!(Number(raw.saleRate) > 0)) errors.rate = 'saleForm.rateRequired';
+    if (!(Number(raw.saleAmount) > 0)) errors.amount = 'saleForm.amountRequired';
+    return errors;
   }
 
   private populateForm(current: ResolvedEntry): void {
     this.expensesArray.clear();
+    const sale = saleNumbersOf(current);
+    this.amountTouched = positiveNumber(current.sale_amount) !== null;
+    this.isSale.set(isSaleEntry(current));
     this.form.patchValue({
       activityType: current.activity_type,
       date: current.date ? current.date.slice(0, 10) : '',
       landId: current.land_id,
       cropId: current.crop_id,
+      saleQuantity: sale.quantity,
+      saleUnit: current.sale_unit ?? '',
+      saleRate: sale.rate,
+      saleAmount: sale.amount,
+      saleBuyer: current.sale_buyer ?? '',
     });
     for (const line of current.expenses) {
       this.expensesArray.push(
@@ -122,10 +189,31 @@ export class ReviewPopupComponent {
     const current = this.entry();
     if (!current || this.saving()) return;
 
+    if (this.isSale()) {
+      const errors = this.validateSale();
+      this.saleErrors.set(errors);
+      if (Object.keys(errors).length) return;
+    }
+
     this.saving.set(true);
     this.errorMessage.set(null);
     try {
       const raw = this.form.getRawValue();
+      const sale = this.isSale()
+        ? {
+            sale_quantity: String(raw.saleQuantity),
+            sale_unit: raw.saleUnit.trim(),
+            sale_rate: String(raw.saleRate),
+            sale_amount: String(raw.saleAmount),
+            sale_buyer: raw.saleBuyer.trim() || null,
+          }
+        : {
+            sale_quantity: null,
+            sale_unit: null,
+            sale_rate: null,
+            sale_amount: null,
+            sale_buyer: null,
+          };
       const edited: ResolvedEntry = {
         ...current,
         activity_type: raw.activityType,
@@ -143,6 +231,7 @@ export class ReviewPopupComponent {
           category: raw.expenses[i]?.category ?? line.category,
           amount: raw.expenses[i]?.amount ?? line.amount,
         })),
+        ...sale,
       };
 
       const activity = await this.chatEntry.create(edited, this.originalInput(), this.model());

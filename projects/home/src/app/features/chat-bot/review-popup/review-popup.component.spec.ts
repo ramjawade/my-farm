@@ -158,4 +158,186 @@ describe('ReviewPopupComponent', () => {
     expect(component.errorMessage()).toBeTruthy();
     expect(component.saving()).toBeFalse();
   });
+
+  describe('a sale', () => {
+    const saleEntry = (over: Partial<ResolvedEntry> = {}): ResolvedEntry =>
+      entry({
+        activity_type_id: 9,
+        activity_type: 'Sale',
+        date: '2026-09-20',
+        expenses: [],
+        sale_quantity: '12',
+        sale_unit: 'crates',
+        sale_rate: '1250',
+        sale_amount: null,
+        sale_buyer: null,
+        ...over,
+      });
+
+    const saleBlock = () =>
+      (fixture.nativeElement as HTMLElement).querySelector('[data-testid="sale-details"]');
+
+    async function open(over: Partial<ResolvedEntry> = {}): Promise<void> {
+      fixture.componentRef.setInput('entry', saleEntry(over));
+      fixture.componentRef.setInput('originalInput', 'sold 12 crates at 1250');
+      fixture.componentRef.setInput('model', 'test-model');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      chatEntry.create.and.resolveTo(mockActivity);
+    }
+
+    const created = () => chatEntry.create.calls.argsFor(0)[0] as ResolvedEntry;
+
+    it('shows the Sale details prefilled, with the amount worked out', async () => {
+      await open();
+
+      expect(saleBlock()).not.toBeNull();
+      expect(component.form.controls.saleQuantity.value).toBe(12);
+      expect(component.form.controls.saleUnit.value).toBe('crates');
+      expect(component.form.controls.saleRate.value).toBe(1250);
+      expect(component.form.controls.saleAmount.value).toBe(15000);
+    });
+
+    it('keeps a stated total and works the rate out from it', async () => {
+      await open({ sale_rate: null, sale_amount: '15000' });
+
+      expect(component.form.controls.saleAmount.value).toBe(15000);
+      expect(component.form.controls.saleRate.value).toBe(1250);
+    });
+
+    it('recalculates the amount until the farmer types their own', async () => {
+      await open();
+
+      component.form.controls.saleQuantity.setValue(10);
+      expect(component.form.controls.saleAmount.value).toBe(12500);
+
+      component.onAmountInput();
+      component.form.controls.saleAmount.setValue(12000);
+      component.form.controls.saleQuantity.setValue(20);
+      expect(component.form.controls.saleAmount.value).toBe(12000);
+    });
+
+    it('saves the figures as strings with the reviewed entry', async () => {
+      await open();
+      component.form.controls.saleBuyer.setValue(' Patil Traders ');
+
+      await component.save();
+
+      expect(created()).toEqual(
+        jasmine.objectContaining({
+          activity_type: 'Sale',
+          sale_quantity: '12',
+          sale_unit: 'crates',
+          sale_rate: '1250',
+          sale_amount: '15000',
+          sale_buyer: 'Patil Traders',
+        }),
+      );
+    });
+
+    it('refuses to save without a quantity and shows the message', async () => {
+      await open();
+      component.form.controls.saleQuantity.setValue(null);
+
+      await component.save();
+      fixture.detectChanges();
+
+      expect(chatEntry.create).not.toHaveBeenCalled();
+      expect(component.saleErrors().quantity).toBe('saleForm.quantityRequired');
+      expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+        'saleForm.quantityRequired',
+      );
+    });
+
+    it('asks for a unit when only the quantity is filled', async () => {
+      await open();
+      component.form.controls.saleUnit.setValue('  ');
+
+      await component.save();
+
+      expect(component.saleErrors().quantity).toBe('saleForm.unitRequired');
+    });
+
+    it('refuses a missing rate and a missing amount', async () => {
+      await open();
+      component.form.controls.saleRate.setValue(null);
+      component.onAmountInput();
+      component.form.controls.saleAmount.setValue(null);
+
+      await component.save();
+
+      expect(component.saleErrors()).toEqual({
+        rate: 'saleForm.rateRequired',
+        amount: 'saleForm.amountRequired',
+      });
+      expect(chatEntry.create).not.toHaveBeenCalled();
+    });
+
+    it('requires a crop', async () => {
+      await open({ crop_id: null, crop: null });
+
+      await component.save();
+
+      expect(component.saleErrors().crop).toBe('createActivity.saleCropRequired');
+      expect(chatEntry.create).not.toHaveBeenCalled();
+    });
+
+    it('refuses a date after today', async () => {
+      await open();
+      component.form.controls.date.setValue('2999-01-01');
+
+      await component.save();
+
+      expect(component.saleErrors().date).toBe('chatBot.review.saleDateFuture');
+      expect(chatEntry.create).not.toHaveBeenCalled();
+    });
+
+    it('clears an error once the farmer fixes it', async () => {
+      await open();
+      component.form.controls.saleQuantity.setValue(null);
+      await component.save();
+      expect(component.saleErrors().quantity).toBeDefined();
+
+      component.form.controls.saleQuantity.setValue(5);
+
+      expect(component.saleErrors().quantity).toBeUndefined();
+    });
+
+    it('hides the block and sends no figures when the type changes to another activity', async () => {
+      await open();
+
+      component.form.controls.activityType.setValue('Irrigation');
+      fixture.detectChanges();
+      expect(saleBlock()).toBeNull();
+
+      await component.save();
+
+      expect(chatEntry.create).toHaveBeenCalled();
+      expect(created()).toEqual(
+        jasmine.objectContaining({
+          activity_type: 'Irrigation',
+          sale_quantity: null,
+          sale_unit: null,
+          sale_rate: null,
+          sale_amount: null,
+          sale_buyer: null,
+        }),
+      );
+    });
+
+    it('shows no Sale details and asks nothing sale-related for another kind of entry', async () => {
+      fixture.componentRef.setInput('entry', entry());
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      chatEntry.create.and.resolveTo(mockActivity);
+
+      expect(saleBlock()).toBeNull();
+      await component.save();
+
+      expect(chatEntry.create).toHaveBeenCalled();
+      expect(component.saleErrors()).toEqual({});
+    });
+  });
 });

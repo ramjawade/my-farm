@@ -147,4 +147,107 @@ describe('correctionSentence', () => {
     );
     expect(correctionSentence('date', 'Today')).toBe('Date: Today.');
   });
+
+  it('labels the two sale answers', () => {
+    expect(correctionSentence('saleQuantity', '5 crates')).toBe(
+      'Sale quantity and unit: 5 crates.',
+    );
+    expect(correctionSentence('saleRate', '1000')).toBe('Sale rate or total: 1000.');
+  });
+});
+
+describe('decideNextStep for a Sale', () => {
+  function sale(overrides: Partial<ResolvedEntry> = {}): ResolvedEntry {
+    return entry({
+      activity_type_id: 9,
+      activity_type: 'Sale',
+      sale_quantity: '12',
+      sale_unit: 'crates',
+      sale_rate: '1250',
+      ...overrides,
+    });
+  }
+
+  const asked = (e: ResolvedEntry, rounds = {}) => {
+    const { decision } = decideNextStep(e, rounds, source);
+    return decision.kind === 'clarify' || decision.kind === 'escape' ? decision.field : 'ready';
+  };
+
+  it('is ready when the crop, quantity, unit and rate are known', () => {
+    expect(asked(sale())).toBe('ready');
+  });
+
+  it('is ready with a stated total instead of a rate', () => {
+    expect(asked(sale({ sale_rate: null, sale_amount: '15000' }))).toBe('ready');
+  });
+
+  it('asks the crop first, even when nothing was dropped, with the farmer’s crops as chips', () => {
+    const { decision } = decideNextStep(
+      sale({ crop_id: null, crop: null, sale_quantity: null, sale_unit: null }),
+      {},
+      source,
+    );
+    expect(decision).toEqual({
+      kind: 'clarify',
+      field: 'crop',
+      options: [{ label: 'Wheat', value: '1' }],
+    });
+  });
+
+  it('asks for the quantity when it is missing', () => {
+    expect(asked(sale({ sale_quantity: null }))).toBe('saleQuantity');
+  });
+
+  it('asks for the quantity when only the unit is missing', () => {
+    expect(asked(sale({ sale_unit: null }))).toBe('saleQuantity');
+    expect(asked(sale({ sale_unit: '  ' }))).toBe('saleQuantity');
+  });
+
+  it('asks for the rate or total when neither was said, with no chips', () => {
+    const { decision } = decideNextStep(sale({ sale_rate: null }), {}, source);
+    expect(decision).toEqual({ kind: 'clarify', field: 'saleRate', options: [] });
+  });
+
+  it('treats zero or negative numbers as not said', () => {
+    expect(asked(sale({ sale_quantity: '0' }))).toBe('saleQuantity');
+    expect(asked(sale({ sale_rate: '-5' }))).toBe('saleRate');
+  });
+
+  it('asks in order: crop, quantity, rate or total, then date', () => {
+    const bare = sale({
+      crop_id: null,
+      sale_quantity: null,
+      sale_unit: null,
+      sale_rate: null,
+      date: null,
+    });
+    expect(asked(bare)).toBe('crop');
+    expect(asked({ ...bare, crop_id: 1 })).toBe('saleQuantity');
+    expect(asked({ ...bare, crop_id: 1, sale_quantity: '5', sale_unit: 'kg' })).toBe('saleRate');
+    expect(
+      asked({ ...bare, crop_id: 1, sale_quantity: '5', sale_unit: 'kg', sale_rate: '10' }),
+    ).toBe('date');
+  });
+
+  it('does not ask for land on a sale', () => {
+    const droppedLand = sale({
+      land_id: null,
+      land: null,
+      dropped: [{ field: 'land', value: 'north plt', reason: 'not_found' }],
+    });
+    expect(asked(droppedLand)).toBe('ready');
+  });
+
+  it('escapes to the form on the third ask of the same sale question', () => {
+    const missing = sale({ sale_quantity: null });
+    expect(asked(missing, { saleQuantity: MAX_CLARIFY_ROUNDS })).toBe('saleQuantity');
+    const { decision } = decideNextStep(missing, { saleQuantity: MAX_CLARIFY_ROUNDS }, source);
+    expect(decision.kind).toBe('escape');
+  });
+
+  it('never asks a sale question for another activity type', () => {
+    const other = entry({ sale_quantity: null, sale_unit: null, sale_rate: null });
+    expect(asked(other)).toBe('ready');
+    expect(asked(entry({ crop_id: null, crop: null }))).toBe('ready');
+  });
 });
