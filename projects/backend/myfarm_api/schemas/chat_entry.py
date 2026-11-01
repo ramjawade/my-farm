@@ -44,6 +44,13 @@ class ParsedEntry(BaseModel):
     land: str | None = None
     notes: str | None = None
     expenses: list[ParsedExpense] = Field(default_factory=list)
+    # Sale figures, only when the farmer said them. Optional with a default so a
+    # response without them still validates and a client that ignores them still works.
+    sale_quantity: Decimal | None = None
+    sale_unit: str | None = None
+    sale_rate: Decimal | None = None
+    sale_amount: Decimal | None = None
+    sale_buyer: str | None = None
 
 
 class DroppedField(BaseModel):
@@ -91,6 +98,12 @@ class ResolvedEntry(BaseModel):
     land: str | None = None
     notes: str | None = None
     expenses: list[ResolvedExpense] = Field(default_factory=list)
+    # Present only for a Sale: above-zero numbers and non-blank text, else null.
+    sale_quantity: Decimal | None = None
+    sale_unit: str | None = None
+    sale_rate: Decimal | None = None
+    sale_amount: Decimal | None = None
+    sale_buyer: str | None = None
     dropped: list[DroppedField] = Field(default_factory=list)
 
 

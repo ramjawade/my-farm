@@ -13,7 +13,13 @@ import { CropsApiService } from '../../core/api/crops-api.service';
 import { LandsApiService } from '../../core/api/lands-api.service';
 import { ChatMessage, ChatMessageKind, ChatQuickReply } from './chat-bot.models';
 import { buildBriefText } from './chat-brief';
-import { ClarifyField, RoundCounts, correctionSentence, decideNextStep } from './chat-decision';
+import {
+  ClarifyField,
+  RoundCounts,
+  correctionSentence,
+  decideNextStep,
+  isSaleField,
+} from './chat-decision';
 import { localDay } from './chat-time';
 
 /** How many saved messages to restore on open, and per "load older". */
@@ -248,7 +254,12 @@ export class ChatOrchestratorService {
 
     // Answering a clarification for the entry being logged: never routed.
     if (this.currentField) {
-      this.accumulatedText = `${this.accumulatedText} ${text}`;
+      // A sale answer is a bare "12 crates" or "1250": label it so the re-parse reads it as the
+      // answer to that question, not as a new sentence.
+      const answer = isSaleField(this.currentField)
+        ? correctionSentence(this.currentField, text)
+        : text;
+      this.accumulatedText = `${this.accumulatedText} ${answer}`;
       await this.runParse();
       return;
     }

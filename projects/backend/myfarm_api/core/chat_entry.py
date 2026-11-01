@@ -36,7 +36,12 @@ Return ONLY a JSON object with this exact shape:
       "amount": <total money spent, number or null>,
       "remarks": "<what was bought, or null>"
     }}
-  ]
+  ],
+  "sale_quantity": <number sold, or null>,
+  "sale_unit": "<crate, kg, quintal, bag, tonne, ... or null>",
+  "sale_rate": <price per unit, number or null>,
+  "sale_amount": <total money received, number or null>,
+  "sale_buyer": "<who bought it, or null>"
 }}
 
 ACTIVITY_TYPES (use these exact strings, nothing else):
@@ -54,6 +59,13 @@ Rules:
 - If no money is mentioned, return an empty "expenses" list.
 - If the text describes no farm activity at all, return null for
   "activity_type" and an empty "expenses" list.
+- Sales: when the farmer sold produce ("sold", "bech", "बेचा", "विकले"), use the
+  activity type "Sale" and fill the sale_* fields. Take a number only if the text
+  states it. A price per unit ("at 1250", "rate 1250") goes to "sale_rate". A total
+  ("for 15000", "total 15000") goes to "sale_amount". Never multiply or divide to
+  work one out from the other: if only one was said, leave the other null. The
+  buyer is a name only if the text says who bought it. For any other activity,
+  every sale_* field is null.
 - The farmer may write in {language}, in English, or in a mix of both,
   including Latin-script transliteration. Handle all of these.
 

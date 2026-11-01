@@ -47,7 +47,7 @@ describe('ChatEntryService', () => {
             expenseCategoryIdForName: (name: string) =>
               Promise.resolve(name === 'Fertilizer' ? 4 : 9),
             activityTypeIdForName: (name: string) =>
-              Promise.resolve(name === 'Maintenance' ? 11 : 0),
+              Promise.resolve(name === 'Maintenance' ? 11 : name === 'Sale' ? 9 : 0),
           },
         },
       ],
@@ -85,6 +85,72 @@ describe('ChatEntryService', () => {
     await service.create(entry({ dropped }), 'typed', 'test-model');
 
     expect(provenanceOf().dropped).toEqual(dropped);
+  });
+
+  describe('a sale', () => {
+    const sale = (over: Partial<ResolvedEntry> = {}) =>
+      entry({
+        activity_type: 'Sale',
+        crop_id: 30,
+        sale_quantity: '12',
+        sale_unit: ' crates ',
+        sale_rate: '1250',
+        sale_amount: '15000',
+        sale_buyer: ' Nashik APMC ',
+        ...over,
+      });
+
+    it('saves as Completed with its figures', async () => {
+      await service.create(sale(), 'sold 12 crates at 1250', 'test-model');
+
+      const draft = activities.addActivity.calls.mostRecent().args[0];
+      // The same Sale type and the same save as the form, so the Sales card and the Activity
+      // log (which read ActivityService) show it with no extra wiring.
+      expect(draft.activityTypeId).toBe(9);
+      expect(draft.status).toBe('Completed');
+      expect(draft.cropId).toBe(30);
+      expect(draft.sale).toEqual({
+        quantity: 12,
+        unit: 'crates',
+        rate: 1250,
+        amount: 15000,
+        buyer: 'Nashik APMC',
+      });
+    });
+
+    it('leaves a blank buyer out', async () => {
+      await service.create(sale({ sale_buyer: '  ' }), 'typed', 'test-model');
+
+      expect(activities.addActivity.calls.mostRecent().args[0].sale?.buyer).toBeUndefined();
+    });
+
+    it('records the figures the model proposed in the provenance', async () => {
+      await service.create(
+        sale({ sale_rate: null, sale_amount: '15000', sale_buyer: null }),
+        'typed',
+        'test-model',
+      );
+
+      expect(provenanceOf().parsed.sale).toEqual({
+        quantity: '12',
+        unit: ' crates ',
+        rate: null,
+        amount: '15000',
+        buyer: null,
+      });
+    });
+
+    it('sends no figures for any other kind of entry', async () => {
+      await service.create(
+        entry({ sale_quantity: '5', sale_unit: 'kg', sale_amount: '100' }),
+        'typed',
+        'test-model',
+      );
+
+      const draft = activities.addActivity.calls.mostRecent().args[0];
+      expect(draft.sale).toBeUndefined();
+      expect(provenanceOf().parsed.sale).toBeUndefined();
+    });
   });
 
   it('uses the ids resolved by the backend without re-resolving them', async () => {
