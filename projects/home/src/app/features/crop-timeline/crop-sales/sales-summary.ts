@@ -60,7 +60,5 @@ export function summarizeSales(
 
 /** Newest sale first; undated ones last, and same-day sales keep the later one on top. */
 export function sortSales(sales: readonly CropSale[]): CropSale[] {
-  return [...sales].sort(
-    (a, b) => (b.date ?? -Infinity) - (a.date ?? -Infinity) || b.id - a.id,
-  );
+  return [...sales].sort((a, b) => (b.date ?? -Infinity) - (a.date ?? -Infinity) || b.id - a.id);
 }

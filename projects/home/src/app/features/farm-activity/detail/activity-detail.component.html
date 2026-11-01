@@ -95,7 +95,7 @@
             <h2 class="fs-6 fw-bold mb-2">{{ 'activityDetail.saleTitle' | translate }}</h2>
             @if (showSaleFigures()) {
               <p class="h4 text-success mb-1">
-                ₹{{ (act.sale?.amount ?? 0) | localNumber: '1.0-0' }}
+                ₹{{ act.sale?.amount ?? 0 | localNumber: '1.0-0' }}
               </p>
               <p class="text-body-secondary mb-1">
                 {{

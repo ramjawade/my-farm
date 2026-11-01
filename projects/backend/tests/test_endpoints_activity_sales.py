@@ -58,7 +58,8 @@ async def _post(client: AsyncClient, body: dict[str, Any]) -> Any:
 
 
 def _fields(resp: Any) -> set[str]:
-    return {d["loc"][-1] for d in resp.json()["detail"]}
+    """The field named in the problem-details title ("sale_unit: Required ...")."""
+    return {resp.json()["title"].split(":")[0]}
 
 
 @pytest.mark.asyncio

@@ -133,10 +133,8 @@ async def _sale_type_id() -> int | None:
 
 
 def _sale_error(field: str, message: str) -> HTTPException:
-    return HTTPException(
-        status_code=422,
-        detail=[{"loc": ["body", field], "msg": message, "type": "value_error"}],
-    )
+    # The problem-details handler keeps only a string `detail`, so name the field in it.
+    return HTTPException(status_code=422, detail=f"{field}: {message}")
 
 
 def _check_sale(

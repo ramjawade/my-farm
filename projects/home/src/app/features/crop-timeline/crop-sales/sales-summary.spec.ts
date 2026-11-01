@@ -28,12 +28,7 @@ describe('summarizeSales', () => {
   });
 
   it('does not count a planned sale', () => {
-    const s = summarizeSales(
-      [sale(1, 1, 11000), sale(2, 2, 99999, 'Scheduled')],
-      1000,
-      1,
-      'acres',
-    );
+    const s = summarizeSales([sale(1, 1, 11000), sale(2, 2, 99999, 'Scheduled')], 1000, 1, 'acres');
     expect(s.total).toBe(11000);
     expect(s.hasCompleted).toBe(true);
   });

@@ -88,9 +88,11 @@
             </span>
             <span class="d-flex align-items-center gap-1 flex-shrink-0">
               @if (isCompleted(sale)) {
-                <strong>₹{{ (sale.amount ?? 0) | localNumber: '1.0-0' }}</strong>
+                <strong>₹{{ sale.amount ?? 0 | localNumber: '1.0-0' }}</strong>
               } @else {
-                <span class="badge text-bg-secondary">{{ statusKey(sale.status) | translate }}</span>
+                <span class="badge text-bg-secondary">{{
+                  statusKey(sale.status) | translate
+                }}</span>
               }
               <i class="bi bi-chevron-right text-body-secondary" aria-hidden="true"></i>
             </span>
