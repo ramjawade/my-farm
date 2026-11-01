@@ -38,6 +38,64 @@ describe('ActivityMapperService', () => {
     expect(payload['status']).toBe('completed');
   });
 
+  it('maps the sale columns to a sale and back', () => {
+    const activity = service.fromBackend({
+      id: 11,
+      activity_type_id: 9,
+      status: 'Completed',
+      sale_quantity: '12.00',
+      sale_unit: 'crates',
+      sale_rate: '1250.00',
+      sale_amount: '15000.00',
+      sale_buyer: 'Nashik APMC',
+      created_at: '2026-10-02T00:00:00Z',
+      updated_at: '2026-10-02T00:00:00Z',
+    });
+
+    expect(activity.sale).toEqual({
+      quantity: 12,
+      unit: 'crates',
+      rate: 1250,
+      amount: 15000,
+      buyer: 'Nashik APMC',
+    });
+    expect(service.toBackend(activity)).toEqual(
+      jasmine.objectContaining({
+        sale_quantity: 12,
+        sale_unit: 'crates',
+        sale_rate: 1250,
+        sale_amount: 15000,
+        sale_buyer: 'Nashik APMC',
+      }),
+    );
+  });
+
+  it('has no sale on an activity without sale columns, and sends none', () => {
+    const activity = service.fromBackend({
+      id: 12,
+      activity_type_id: 3,
+      status: 'Completed',
+      sale_quantity: null,
+      sale_unit: null,
+      sale_rate: null,
+      sale_amount: null,
+      sale_buyer: null,
+      created_at: '2026-10-02T00:00:00Z',
+      updated_at: '2026-10-02T00:00:00Z',
+    });
+
+    expect(activity.sale).toBeUndefined();
+    expect(Object.keys(service.toBackend(activity))).not.toContain('sale_amount');
+  });
+
+  it('sends null for a sale figure the farmer cleared', () => {
+    const payload = service.toBackend({ sale: { buyer: undefined, quantity: 5 } });
+
+    expect(payload['sale_quantity']).toBe(5);
+    expect(payload['sale_buyer']).toBeNull();
+    expect(payload['sale_amount']).toBeNull();
+  });
+
   it('maps a backend expense item to the Angular model', () => {
     const expense = service.expenseFromBackend({
       id: 1,

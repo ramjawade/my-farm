@@ -140,8 +140,7 @@
           [summary]="salesSummary()"
           [expenses]="cropCost()"
           (add)="onRecordSaleClicked()"
-          (edit)="onEditSaleClicked($event)"
-          (remove)="onDeleteSaleClicked($event)"
+          (open)="onOpenSaleClicked($event)"
         />
 
         <div class="row" style="--bs-gutter-x: 12px; --bs-gutter-y: 12px">
@@ -259,14 +258,4 @@
   [isDestructive]="true"
   [(isOpen)]="showDeleteCropConfirm"
   (confirm)="confirmDeleteCrop()"
-></lib-confirm-dialog>
-
-<lib-confirm-dialog
-  [title]="'cropSales.deleteTitle' | translate"
-  [message]="'cropSales.deleteConfirm' | translate"
-  [confirmText]="'common.delete' | translate"
-  [cancelText]="'common.cancel' | translate"
-  [isDestructive]="true"
-  [(isOpen)]="showDeleteSaleConfirm"
-  (confirm)="confirmDeleteSale()"
 ></lib-confirm-dialog>

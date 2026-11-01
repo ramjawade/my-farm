@@ -28,6 +28,15 @@ export type ExpenseCategory =
   | 'Fuel'
   | 'Other';
 
+/** What was sold, on an activity of type Sale. Figures are required once it is Completed. */
+export interface ActivitySale {
+  quantity?: number;
+  unit?: string;
+  rate?: number;
+  amount?: number;
+  buyer?: string;
+}
+
 export interface Activity {
   id: number;
   parentActivityId?: number;
@@ -50,6 +59,9 @@ export interface Activity {
   status: ActivityStatus;
   notes?: string;
   attachments?: string[]; // Base64 images
+
+  /** Sale figures; only on activities of type Sale. */
+  sale?: ActivitySale;
 
   // Type-specific metadata (optional)
   metadata?: {

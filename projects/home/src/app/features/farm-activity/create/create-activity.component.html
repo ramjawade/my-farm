@@ -98,6 +98,119 @@
             </div>
           }
 
+          @if (isSaleType()) {
+            <fieldset class="border rounded p-3 bg-body-tertiary" data-testid="sale-details">
+              <legend class="fs-6 fw-semibold float-none w-auto px-1 mb-1">
+                {{ 'createActivity.saleDetails' | translate }}
+              </legend>
+              <p class="text-muted small">
+                @if (saleFiguresRequired()) {
+                  {{ 'createActivity.saleRequiredHint' | translate }}
+                } @else {
+                  {{ 'createActivity.salePlannedHint' | translate }}
+                }
+              </p>
+              <div class="row g-3">
+                <div class="col-12 col-md-6">
+                  <label
+                    class="form-label"
+                    [class.required-label]="saleFiguresRequired()"
+                    for="saleQuantity"
+                    >{{ 'saleForm.quantity' | translate }}</label
+                  >
+                  <div class="input-group">
+                    <input
+                      id="saleQuantity"
+                      type="number"
+                      min="0"
+                      step="any"
+                      class="form-control"
+                      formControlName="saleQuantity"
+                      [class.is-invalid]="saleErrors().quantity"
+                    />
+                    <input
+                      id="saleUnit"
+                      class="form-control"
+                      formControlName="saleUnit"
+                      list="sale-units"
+                      autocomplete="off"
+                      [placeholder]="'saleForm.unitPlaceholder' | translate"
+                      [attr.aria-label]="'saleForm.unit' | translate"
+                      [class.is-invalid]="saleErrors().quantity"
+                    />
+                    <datalist id="sale-units">
+                      @for (u of saleUnits; track u) {
+                        <option [value]="u"></option>
+                      }
+                    </datalist>
+                  </div>
+                  @if (saleErrors().quantity; as key) {
+                    <div class="invalid-feedback d-block">{{ key | translate }}</div>
+                  }
+                </div>
+                <div class="col-12 col-md-6">
+                  <label
+                    class="form-label"
+                    [class.required-label]="saleFiguresRequired()"
+                    for="saleRate"
+                    >{{ 'saleForm.rate' | translate }}</label
+                  >
+                  <input
+                    id="saleRate"
+                    type="number"
+                    min="0"
+                    step="any"
+                    class="form-control"
+                    formControlName="saleRate"
+                    [placeholder]="'saleForm.ratePlaceholder' | translate"
+                    [class.is-invalid]="saleErrors().rate"
+                  />
+                  @if (saleErrors().rate; as key) {
+                    <div class="invalid-feedback d-block">{{ key | translate }}</div>
+                  }
+                </div>
+                <div class="col-12 col-md-6">
+                  <label
+                    class="form-label"
+                    [class.required-label]="saleFiguresRequired()"
+                    for="saleAmount"
+                    >{{ 'saleForm.amount' | translate }}</label
+                  >
+                  <input
+                    id="saleAmount"
+                    type="number"
+                    min="0"
+                    step="any"
+                    class="form-control"
+                    formControlName="saleAmount"
+                    [placeholder]="'saleForm.amountPlaceholder' | translate"
+                    [class.is-invalid]="saleErrors().amount"
+                    (input)="onAmountInput()"
+                  />
+                  @if (saleErrors().amount; as key) {
+                    <div class="invalid-feedback d-block">{{ key | translate }}</div>
+                  } @else {
+                    <span class="text-muted mt-1 d-block small">{{
+                      'saleForm.amountHint' | translate
+                    }}</span>
+                  }
+                </div>
+                <div class="col-12 col-md-6">
+                  <label class="form-label" for="saleBuyer">{{
+                    'saleForm.buyer' | translate
+                  }}</label>
+                  <input
+                    id="saleBuyer"
+                    class="form-control"
+                    formControlName="saleBuyer"
+                    autocomplete="off"
+                    [placeholder]="'saleForm.buyerPlaceholder' | translate"
+                  />
+                </div>
+              </div>
+            </fieldset>
+          }
+
           <div class="row g-3">
             <!-- Date of Activity -->
             <div class="col-12 col-md-6">
@@ -138,15 +251,30 @@
           <div class="row g-3">
             <!-- Linked Crop -->
             <div class="col-12 col-md-6">
-              <label class="form-label">{{ 'createActivity.linkCropOptional' | translate }}</label>
-              <select class="form-select" formControlName="cropId">
-                <option [ngValue]="null">{{ 'createActivity.noLinkedCrop' | translate }}</option>
+              <label class="form-label" [class.required-label]="isSaleType()">{{
+                (isSaleType() ? 'createActivity.cropSold' : 'createActivity.linkCropOptional')
+                  | translate
+              }}</label>
+              <select
+                class="form-select"
+                formControlName="cropId"
+                [class.is-invalid]="saleErrors().crop"
+              >
+                <option [ngValue]="null">
+                  {{
+                    (isSaleType() ? 'createActivity.selectCrop' : 'createActivity.noLinkedCrop')
+                      | translate
+                  }}
+                </option>
                 @for (c of crops(); track c.id) {
                   <option [ngValue]="c.id">
                     {{ c.name | referenceName: 'crop' }} ({{ c.fieldId }})
                   </option>
                 }
               </select>
+              @if (saleErrors().crop; as key) {
+                <div class="invalid-feedback d-block">{{ key | translate }}</div>
+              }
               <span class="text-muted mt-1 d-block" style="font-size: 0.75rem">{{
                 'createActivity.linkCropHint' | translate
               }}</span>

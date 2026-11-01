@@ -1,5 +1,6 @@
 """CRUD endpoints for activities — farmer-owned entities."""
 
+import json
 from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Any
@@ -26,6 +27,7 @@ from myfarm_api.models import (
     ActivityAttachment,
     ActivityExpense,
     ActivityHistory,
+    ActivityType,
     Farmer,
 )
 from myfarm_api.repositories.crud import ConflictError
@@ -113,6 +115,50 @@ async def _ensure_owned_references(current_farmer: Farmer, payload: dict[str, An
         await ensure_owned(
             activity_repo, current_farmer.id, payload["parent_activity_id"], "Activity"
         )
+
+
+SALE_TYPE_NAME = "Sale"
+SALE_FIELDS = ("sale_quantity", "sale_unit", "sale_rate", "sale_amount", "sale_buyer")
+SALE_FIGURES = ("sale_quantity", "sale_unit", "sale_rate", "sale_amount")
+
+
+async def _sale_type_id() -> int | None:
+    """Id of the Sale activity type, or None when the reference row is missing."""
+    session_factory = get_session_factory()
+    async with session_factory() as session:
+        found: int | None = await session.scalar(
+            select(ActivityType.id).where(ActivityType.name == SALE_TYPE_NAME)
+        )
+    return found
+
+
+def _sale_error(field: str, message: str) -> HTTPException:
+    # The problem-details handler keeps only a string `detail`, so name the field in it.
+    return HTTPException(status_code=422, detail=f"{field}: {message}")
+
+
+def _check_sale(
+    is_sale: bool, status: str | None, crop_id: int | None, values: dict[str, Any]
+) -> None:
+    """Reject sale figures on other types; a Completed Sale needs a crop and every figure."""
+    if not is_sale:
+        for field in SALE_FIELDS:
+            if values.get(field) is not None:
+                raise _sale_error(field, "Sale details are only for Sale activities")
+        return
+    if status != "Completed":
+        return
+    if crop_id is None:
+        raise _sale_error("crop_id", "Pick the crop that was sold")
+    for field in SALE_FIGURES:
+        if values.get(field) is None:
+            raise _sale_error(field, "Required for a completed sale")
+
+
+def _json_safe(values: dict[str, Any]) -> dict[str, Any]:
+    """History detail is JSONB; turn Decimals (sale figures) into strings."""
+    safe: dict[str, Any] = json.loads(json.dumps(values, default=str))
+    return safe
 
 
 def _cost_expression() -> Any:
@@ -351,6 +397,8 @@ async def create_activity(
     """Create a new activity."""
     payload = data.model_dump()
     await _ensure_owned_references(current_farmer, payload)
+    is_sale = payload["activity_type_id"] == await _sale_type_id()
+    _check_sale(is_sale, payload.get("status"), payload.get("crop_id"), payload)
     activity = Activity(**payload)
     try:
         activity = await activity_repo.create(current_farmer.id, activity)
@@ -376,6 +424,21 @@ async def update_activity(
 
     updates = data.model_dump(exclude_unset=True)
     await _ensure_owned_references(current_farmer, updates)
+    type_id = updates.get("activity_type_id", existing.activity_type_id)
+    is_sale = type_id == await _sale_type_id()
+    if is_sale:
+        values = {f: updates[f] if f in updates else getattr(existing, f) for f in SALE_FIELDS}
+    else:
+        values = {f: updates.get(f) for f in SALE_FIELDS}
+    _check_sale(
+        is_sale,
+        updates.get("status", existing.status),
+        updates["crop_id"] if "crop_id" in updates else existing.crop_id,
+        values,
+    )
+    if not is_sale:
+        # Leaving the Sale type drops its figures.
+        updates.update({f: None for f in SALE_FIELDS if getattr(existing, f) is not None})
     activity = await activity_repo.update(current_farmer.id, activity_id, updates)
     if not activity:
         raise HTTPException(status_code=404, detail="Activity not found")
@@ -386,7 +449,7 @@ async def update_activity(
             activity_id, "status_changed", {"from": old_status, "to": new_status}
         )
     else:
-        await _record_history(activity_id, "updated", updates)
+        await _record_history(activity_id, "updated", _json_safe(updates))
     return ActivityRead.model_validate(activity)
 
 

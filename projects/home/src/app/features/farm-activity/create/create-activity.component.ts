@@ -22,7 +22,7 @@ import { WorkflowStateService } from '../../../core/workflow/workflow-state.serv
 import { ReferenceDataService } from '../../../core/api/reference-data.service';
 import { ReferenceItem } from '../../../core/api/contracts';
 import { parseId } from '../../../core/models/entity-id';
-import { Activity, ActivityType } from '../../activity/activity.models';
+import { Activity, ActivitySale, ActivityType } from '../../activity/activity.models';
 import { ACTIVITY_STATUS_OPTIONS, ACTIVITY_TYPE_OPTIONS } from '../../activity/activity.constants';
 import { activityTypeIcon } from '../../activity/activity-display';
 import { activityStatusKey, statusForDate } from '../../activity/activity-status';
@@ -30,6 +30,14 @@ import { ToastService } from 'shared';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ReferenceNamePipe } from '../../../core/i18n/reference-name.pipe';
 import { resolveReferenceName } from '../../../core/i18n/reference-name';
+
+/** Translation keys for the sale fields that failed validation. */
+interface SaleErrors {
+  crop?: string;
+  quantity?: string;
+  rate?: string;
+  amount?: string;
+}
 
 @Component({
   selector: 'app-create-activity',
@@ -74,6 +82,12 @@ export class CreateActivityComponent implements OnInit {
     parentActivityId: [null as number | null],
     status: ['Completed', Validators.required],
     notes: [''],
+    // Sale details, used only while the type is Sale.
+    saleQuantity: [null as number | null],
+    saleUnit: [''],
+    saleRate: [null as number | null],
+    saleAmount: [null as number | null],
+    saleBuyer: [''],
   });
 
   constructor() {
@@ -126,6 +140,47 @@ export class CreateActivityComponent implements OnInit {
   });
   private readonly selectedType = signal('');
   readonly isCustomType = computed(() => this.selectedType() === 'Custom');
+  readonly isSaleType = computed(() => this.selectedType() === 'Sale');
+
+  private readonly selectedStatus = signal('Completed');
+  /** The sale figures are required only once the sale is Completed. */
+  readonly saleFiguresRequired = computed(() => this.selectedStatus() === 'Completed');
+  readonly saleUnits = ['crates', 'kg', 'quintal', 'bags', 'tonnes'];
+  readonly saleErrors = signal<SaleErrors>({});
+  /** Amount follows quantity × rate until the farmer types their own. */
+  private amountTouched = false;
+  /** Status asked for by the link that opened the form (Mark done on a sale without figures). */
+  private requestedStatus?: string;
+
+  onAmountInput(): void {
+    this.amountTouched = true;
+  }
+
+  private validateSale(): SaleErrors {
+    const val = this.form.getRawValue();
+    const errors: SaleErrors = {};
+    if (!val.cropId) errors.crop = 'createActivity.saleCropRequired';
+    if (this.selectedStatus() !== 'Completed') return errors;
+    if (!(Number(val.saleQuantity) > 0)) errors.quantity = 'saleForm.quantityRequired';
+    else if (!String(val.saleUnit ?? '').trim()) errors.quantity = 'saleForm.unitRequired';
+    if (!(Number(val.saleRate) > 0)) errors.rate = 'saleForm.rateRequired';
+    if (!(Number(val.saleAmount) > 0)) errors.amount = 'saleForm.amountRequired';
+    return errors;
+  }
+
+  /** The sale figures to save, or undefined for any other type. */
+  private saleFromForm(): ActivitySale | undefined {
+    if (!this.isSaleType()) return undefined;
+    const val = this.form.getRawValue();
+    const num = (v: unknown): number | undefined => (Number(v) > 0 ? Number(v) : undefined);
+    return {
+      quantity: num(val.saleQuantity),
+      unit: String(val.saleUnit ?? '').trim() || undefined,
+      rate: num(val.saleRate),
+      amount: num(val.saleAmount),
+      buyer: String(val.saleBuyer ?? '').trim() || undefined,
+    };
+  }
 
   iconFor(name: string): string {
     return activityTypeIcon(name as ActivityType);
@@ -198,6 +253,7 @@ export class CreateActivityComponent implements OnInit {
       if (params['notes']) {
         this.form.patchValue({ notes: params['notes'] });
       }
+      this.requestedStatus = params['status'];
     });
 
     // 3. Load existing activity for editing if activityId is present
@@ -213,16 +269,43 @@ export class CreateActivityComponent implements OnInit {
           parentActivityId: act.parentActivityId ?? null,
           status: act.status,
           notes: act.notes || '',
+          saleQuantity: act.sale?.quantity ?? null,
+          saleUnit: act.sale?.unit ?? '',
+          saleRate: act.sale?.rate ?? null,
+          saleAmount: act.sale?.amount ?? null,
+          saleBuyer: act.sale?.buyer ?? '',
         });
+        this.amountTouched = !!act.sale?.amount;
         if (act.cropId) {
           this.selectedCropId.set(act.cropId);
         }
         this.uploadedImages.set(act.attachments || []);
+        // Mark done on a sale without figures lands here with Completed already chosen.
+        const status = this.requestedStatus;
+        if (status && this.statusOptions.some((s) => s.value === status)) {
+          this.form.patchValue({ status });
+        }
       }
     }
 
     this.form.get('type')!.valueChanges.subscribe((name: string) => this.selectedType.set(name));
     this.selectedType.set(this.form.get('type')?.value ?? '');
+    this.form.get('status')!.valueChanges.subscribe((s: string) => this.selectedStatus.set(s));
+    this.selectedStatus.set(this.form.get('status')?.value ?? 'Completed');
+    // Amount = quantity × rate until the farmer types their own total.
+    this.form.valueChanges.subscribe(() => {
+      if (!this.amountTouched) {
+        const { saleQuantity, saleRate } = this.form.getRawValue();
+        const total = Number(saleQuantity) * Number(saleRate);
+        this.form.patchValue(
+          { saleAmount: total > 0 ? Math.round(total * 100) / 100 : null },
+          { emitEvent: false },
+        );
+      }
+      if (Object.keys(this.saleErrors()).length) {
+        this.saleErrors.set(this.isSaleType() ? this.validateSale() : {});
+      }
+    });
     this.form.get('date')!.valueChanges.subscribe((date: string) => {
       if (!this.statusTouched && date) {
         this.form.patchValue({ status: statusForDate(date, this.today) });
@@ -297,7 +380,14 @@ export class CreateActivityComponent implements OnInit {
     }
     if (this.saving()) return;
 
+    if (this.isSaleType()) {
+      const errors = this.validateSale();
+      this.saleErrors.set(errors);
+      if (Object.keys(errors).length) return;
+    }
+
     const val = this.form.getRawValue();
+    const sale = this.saleFromForm();
 
     if (this.activityId) {
       // Update existing activity
@@ -307,6 +397,7 @@ export class CreateActivityComponent implements OnInit {
         notes: val.notes?.trim() || undefined,
         parentActivityId: val.parentActivityId || undefined,
         attachments: this.uploadedImages(),
+        sale,
       };
       if (val.date) {
         updates['date'] = new Date(val.date).getTime();
@@ -346,6 +437,7 @@ export class CreateActivityComponent implements OnInit {
           notes: val.notes?.trim() || undefined,
           parentActivityId: val.parentActivityId || undefined,
           attachments: this.uploadedImages(),
+          sale,
         });
       } catch {
         this.toast.error(this.translate.instant('createActivity.saveError'));

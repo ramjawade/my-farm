@@ -43,11 +43,28 @@ import { activityStatusKey, activityStatusTone } from '../../activity/activity-s
           @if (cropName()) {
             {{ cropName() | referenceName: 'crop' }} ·
           }
-          {{ statusKey() | translate }}
+          @if (saleAmount()) {
+            {{
+              'cropSales.line'
+                | translate
+                  : {
+                      qty: (activity().sale?.quantity | localNumber: '1.0-2'),
+                      unit: activity().sale?.unit,
+                      rate: (activity().sale?.rate | localNumber: '1.0-2'),
+                    }
+            }}
+            @if (activity().sale?.buyer) {
+              · {{ activity().sale?.buyer }}
+            }
+          } @else {
+            {{ statusKey() | translate }}
+          }
         </small>
       </span>
       @if (showBadge()) {
         <span class="badge flex-shrink-0 text-bg-{{ tone() }}">{{ statusKey() | translate }}</span>
+      } @else if (saleAmount(); as sold) {
+        <strong class="flex-shrink-0 text-success">+₹{{ sold | localNumber }}</strong>
       } @else {
         <strong class="flex-shrink-0">
           @if (total() > 0) {
@@ -73,6 +90,11 @@ export class ActivityRowComponent {
   readonly statusKey = computed(() => activityStatusKey(this.activity().status));
   readonly tone = computed(() => activityStatusTone(this.activity().status));
   readonly cancelled = computed(() => this.activity().status === 'Cancelled');
+  /** What a Completed Sale brought in; 0 for every other activity. */
+  readonly saleAmount = computed(() => {
+    const act = this.activity();
+    return act.status === 'Completed' ? (act.sale?.amount ?? 0) : 0;
+  });
   /** Open activities show their status at the end; finished ones show what they cost. */
   readonly showBadge = computed(() => {
     const status = this.activity().status;

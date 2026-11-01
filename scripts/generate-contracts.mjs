@@ -38,7 +38,6 @@ const BARREL_ORDER = [
   'farm.contract.ts',
   'land.contract.ts',
   'crop.contract.ts',
-  'crop-sale.contract.ts',
   'mandi-price.contract.ts',
   'watchlist.contract.ts',
   'activity.contract.ts',

@@ -9,6 +9,7 @@ import { ActivityDetailService } from './activity-detail.service';
 import { ActivityExpensesService } from './activity-expenses.service';
 import { CropsApiService } from '../../../core/api/crops-api.service';
 import { FakeCropsApiService } from '../../../testing/fake-crops-api.service';
+import { ReferenceDataService } from '../../../core/api/reference-data.service';
 import { LandsApiService } from '../../../core/api/lands-api.service';
 import { FakeLandsApiService } from '../../../testing/fake-lands-api.service';
 import {
@@ -243,6 +244,71 @@ describe('ActivityDetailComponent', () => {
       expect(text).toContain('Expense added');
       expect(text).toContain('Activity created');
       expect(text).not.toContain('expense_added');
+    });
+  });
+
+  describe('a Sale activity', () => {
+    const SALE_TYPE = 9;
+    const planned: Activity = {
+      ...mockActivity,
+      activityTypeId: SALE_TYPE,
+      cropId: 3,
+      status: 'Scheduled',
+    };
+    const completed: Activity = {
+      ...planned,
+      status: 'Completed',
+      sale: { quantity: 12, unit: 'crates', rate: 1250, amount: 15000, buyer: 'Nashik APMC' },
+    };
+
+    async function show(activity: Activity): Promise<void> {
+      spyOn(TestBed.inject(ReferenceDataService), 'isActivityType').and.callFake(
+        (id: number, name: string) => id === SALE_TYPE && name === 'Sale',
+      );
+      getActivitySpy.and.resolveTo(activity);
+      await component.ngOnInit();
+      fixture.detectChanges();
+    }
+    const saleCard = () =>
+      (fixture.nativeElement as HTMLElement).querySelector('[data-testid="sale-card"]');
+
+    it('shows the figures once completed', async () => {
+      await show(completed);
+
+      expect(saleCard()?.textContent).toContain('15,000');
+      expect(saleCard()?.textContent).toContain('Nashik APMC');
+    });
+
+    it('says a planned sale is planned', async () => {
+      await show(planned);
+
+      expect(saleCard()?.textContent).toContain('activityDetail.salePlanned');
+    });
+
+    it('has no Sale card on another type', async () => {
+      await show({ ...mockActivity, activityTypeId: 2 });
+
+      expect(saleCard()).toBeNull();
+    });
+
+    it('opens Edit with Completed chosen when Mark done has no figures', async () => {
+      await show(planned);
+      spyOn(router, 'navigate');
+
+      component.markDone();
+
+      expect(router.navigate).toHaveBeenCalledWith(['/activities/create'], {
+        queryParams: { activityId: 5, status: 'Completed' },
+      });
+      expect(updateStatusSpy).not.toHaveBeenCalled();
+    });
+
+    it('completes a planned sale that already has its figures', async () => {
+      await show({ ...planned, sale: completed.sale });
+
+      component.markDone();
+
+      expect(updateStatusSpy).toHaveBeenCalledWith(5, 'Completed');
     });
   });
 });

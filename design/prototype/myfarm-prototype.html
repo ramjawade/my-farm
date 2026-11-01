@@ -761,7 +761,7 @@ var TASKS=[
  {t:'Drip irrigation, 3 hours',s:'North Plot',b:'Today',c:'sky',done:false},
  {t:'Book 2 workers for picking',s:'Tank Side · for 03 Oct',b:'Today',c:'sun',done:false},
  {t:'First tomato picking',s:'Tank Side · 20 crates',b:'03 Oct',c:'',done:false}];
-var DRAWN=[],DID=0,CID=0,SID=2;
+var DRAWN=[],DID=0,CID=0;
 var ALERTS=[
  {id:'a1',crop:'Onion',type:'above',val:2100,on:true},
  {id:'a2',crop:'Tomato',type:'change',val:8,on:true},
@@ -770,10 +770,6 @@ var ALERTS=[
  {id:'a5',crop:'Grapes',type:'above',val:6500,on:true}
 ],AID=5;
 var PADIS={};
-var SALES=[
- {id:'s2',cropId:'t',iso:'2026-10-02',d:'02 Oct',qty:12,unit:'crates',rate:1250,amt:15000,buyer:'Nashik APMC'},
- {id:'s1',cropId:'t',iso:'2026-09-30',d:'30 Sep',qty:10,unit:'crates',rate:1100,amt:11000,buyer:'Patil Traders'}
-];
 var HIST={
  Tomato:[{s:'Kharif 2025',ac:1.0,exp:17200,sales:31500},{s:'Rabi 2024-25',ac:0.8,exp:12400,sales:20800}],
  Onion:[{s:'Rabi 2025-26',ac:2.0,exp:30100,sales:52600}],
@@ -798,11 +794,14 @@ function apmcKm(n){var a=APMCS.filter(function(x){return x[0]===n})[0];return a?
 function apmcList(c){var m=mandiOf(c);if(!m)return [];return MYAPMC.map(function(n){return {n:n,p:apmcPrice(m,n),km:apmcKm(n)}}).filter(function(x){return x.p!=null}).sort(function(a,b){return b.p-a.p})}
 function apmcModel(c,n){var m=mandiOf(c),p=apmcPrice(m,n);if(p==null||p===m.price)return m;var f=p/m.price,sc=function(a){return a.map(function(x){return Math.round(x*f/5)*5})};return {mkt:n+' APMC',price:p,prev:Math.round(m.prev*f/5)*5,yr:Math.round(m.yr*f/5)*5,upd:m.upd,vol:m.vol,seed:m.seed,series:sc(m.series),dser:sc(m.dser),yser:sc(m.yser)}}
 function areaOf(c){var l=landOf(c);return c.areaAc||(l?l.acre:0)}
-function cropSales(c){return SALES.filter(function(x){return x.cropId===c.id})}
+/* A sale is an activity of type Sale; its figures live on a.sale. Only Completed sales count towards totals and profit. */
+function saleView(a){var s=a.sale||{};return {id:a.id,cropId:a.cropId,iso:a.iso,d:a.d,qty:s.qty,unit:s.unit,rate:s.rate,amt:s.amt||0,buyer:s.buyer,s:a.s}}
+function cropSaleActs(c){return ACTS.filter(function(a){return a.t==='Sale'&&a.cropId===c.id&&a.s!=='Cancelled'}).map(saleView)}
+function cropSales(c){return cropSaleActs(c).filter(function(x){return x.s==='Completed'})}
 function sumAmt(l){return l.reduce(function(a,x){return a+x.amt},0)}
 function sgn(v){return (v<0?'-':'')+inr(Math.abs(v))}
 function pcol(v){return v<0?'var(--rose)':'var(--leaf-ink)'}
-var PARENT={addcrop:'crops',addact:'log',addexp:'log',cropdetail:'crops',actdetail:'log',addsale:'crops',pricedetail:'prices',addalert:'prices',apmcs:'prices',alerts:'prices',newwl:'prices',addwi:'prices'};
+var PARENT={addcrop:'crops',addact:'log',addexp:'log',cropdetail:'crops',actdetail:'log',pricedetail:'prices',addalert:'prices',apmcs:'prices',alerts:'prices',newwl:'prices',addwi:'prices'};
 var PROFILE={name:'Ram Jawade',phone:'+91 98765 43210',email:'',role:'Farmer',since:'June 2026',village:'Sinnar',district:'Nashik, Maharashtra',pincode:'422103',lang:'en',theme:'system'};
 var PTHEME=[['system','Same as phone'],['light','Light'],['dark','Dark']];
 function applyTheme(){var v=PROFILE.theme,r=document.documentElement;if(v==='light'||v==='dark')r.setAttribute('data-theme',v);else r.removeAttribute('data-theme')}
@@ -889,8 +888,10 @@ function panel(){
 function dateChip(top,bot,hot){return '<div style="flex:none;width:44px;text-align:center;border-radius:var(--r-md);padding:4px 0;line-height:1.15;background:var(--'+(hot?'sun':'leaf')+'-soft);color:var(--'+(hot?'sun':'leaf-ink')+')"><b style="display:block;font-size:16px">'+top+'</b><small style="color:inherit;font-size:11px">'+bot+'</small></div>'}
 function actRowHtml(a,up,hot,mode,land){var p=String(a.d).split(' '),x=a.x||[],cnt=x.length||(a.c?1:0),
   sub=up?(a.n||a.s):cnt>1?cnt+' expenses'+(mode==='d'?' · mostly '+x.slice().sort(function(m,n){return n[1]-m[1]})[0][0]:''):cnt?(x.length?x[0][0]:a.n||'Expense'):'No expenses';
+  var sale=a.t==='Sale'&&a.sale&&a.s==='Completed'&&a.sale.amt;
+  if(sale)sub=a.sale.qty+' '+a.sale.unit+' at '+inr(a.sale.rate)+(a.sale.buyer?' · '+a.sale.buyer:'');
   if(land)sub=(a.land||'No field')+' · '+sub;
-  return '<button type="button" class="row" data-go="actdetail" data-act="'+a.id+'" style="width:100%;background:none;border:0;border-top:1px solid var(--line);text-align:left;font:inherit;color:inherit;cursor:pointer">'+dateChip(p[0],p[1]||'',hot)+'<div class="grow"><b'+(a.s==='Cancelled'?' style="text-decoration:line-through;color:var(--muted)"':'')+'>'+a.t+'</b><small>'+sub+'</small></div>'+(up?stBadge(a.s):'<span class="amt">'+(a.c?inr(a.c):'–')+'</span>')+'<span aria-hidden="true" style="flex:none;display:inline-flex;color:var(--muted)">'+ic('chev',14)+'</span></button>'}
+  return '<button type="button" class="row" data-go="actdetail" data-act="'+a.id+'" style="width:100%;background:none;border:0;border-top:1px solid var(--line);text-align:left;font:inherit;color:inherit;cursor:pointer">'+dateChip(p[0],p[1]||'',hot)+'<div class="grow"><b'+(a.s==='Cancelled'?' style="text-decoration:line-through;color:var(--muted)"':'')+'>'+a.t+'</b><small>'+sub+'</small></div>'+(up?stBadge(a.s):sale?'<span class="amt" style="color:var(--leaf-ink)">+'+inr(a.sale.amt)+'</span>':'<span class="amt">'+(a.c?inr(a.c):'–')+'</span>')+'<span aria-hidden="true" style="flex:none;display:inline-flex;color:var(--muted)">'+ic('chev',14)+'</span></button>'}
 function inr(n){return '₹'+n.toLocaleString('en-IN')}
 
 var LANDS=[
@@ -921,7 +922,10 @@ var ACTS=[
  {d:'14 Sep',t:'Labour Activity',land:'Tank Side',cropId:'t',n:'Staking and tying',c:0,s:'Completed'},
  {d:'10 Sep',t:'Field Inspection',land:'Tank Side',cropId:'t',n:'Leaf curl check, no issues',c:0,s:'Completed'},
  {d:'03 Oct',t:'Harvest',land:'Tank Side',cropId:'t',n:'First picking, 20 crates',c:0,s:'Scheduled'},
- {d:'05 Oct',t:'Irrigation',land:'River Field',n:'Drip, 4 hours',c:520,s:'Scheduled'}
+ {d:'05 Oct',t:'Irrigation',land:'River Field',n:'Drip, 4 hours',c:520,s:'Scheduled'},
+ {d:'02 Oct',iso:'2026-10-02',t:'Sale',land:'Tank Side',cropId:'t',n:'',c:0,s:'Completed',sale:{qty:12,unit:'crates',rate:1250,amt:15000,buyer:'Nashik APMC'}},
+ {d:'30 Sep',iso:'2026-09-30',t:'Sale',land:'Tank Side',cropId:'t',n:'',c:0,s:'Completed',sale:{qty:10,unit:'crates',rate:1100,amt:11000,buyer:'Patil Traders'}},
+ {d:'08 Oct',iso:'2026-10-08',t:'Sale',land:'Tank Side',cropId:'t',n:'Plan to sell at Pimpalgaon APMC',c:0,s:'Scheduled',sale:{qty:'',unit:'',rate:'',amt:0,buyer:''}}
 ];
 ACTS.forEach(function(a,i){a.id='a'+(i+1)});var ACTID=ACTS.length;
 var SPEND=[['Fertilizer',48200,'#2f7a3f'],['Labour',31600,'#c98a14'],['Seeds',22400,'#2b74b8'],['Pesticide',14800,'#b83d3d'],['Water',7500,'#6a4aa0']];
@@ -937,7 +941,7 @@ function mk(el,mode){
   function toast(msg,kind,quiet,undo){var id=(S.toastId||0)+1;S.toastId=id;S.toast={msg:msg,kind:kind,undo:!!undo};if(!quiet)render();setTimeout(function(){if(S.toastId===id){if(S.toast&&S.toast.undo)S.undo=null;S.toast=null;render()}},undo?6000:4000)}
   function dialHtml(){
     if(S.screen==='chat'||(PARENT[S.screen]&&S.screen!=='cropdetail')||(S.screen==='lands'&&(S.draw.on||S.draft)))return '';
-    var ALL={draw:['Draw land','data-draw="start"','lands',ic('map',20)],addcrop:['Add crop','data-go="addcrop"','addcrop',ic('sprout',20)],addact:['Log activity','data-go="addact"'+(S.screen==='cropdetail'?' data-cropid="'+S.crop+'"':''),'addact',ic('list',20)],addexp:['Add expense','data-go="addexp"','addexp',ic('rupee',20)],chat:['Ask assistant','data-go="chat"','chat',ic('chat',20)],addsale:['Record sale','data-go="addsale"'+(S.screen==='cropdetail'?' data-cropid="'+S.crop+'"':''),'addsale',ic('rupee',20)]};
+    var ALL={draw:['Draw land','data-draw="start"','lands',ic('map',20)],addcrop:['Add crop','data-go="addcrop"','addcrop',ic('sprout',20)],addact:['Log activity','data-go="addact"'+(S.screen==='cropdetail'?' data-cropid="'+S.crop+'"':''),'addact',ic('list',20)],addexp:['Add expense','data-go="addexp"','addexp',ic('rupee',20)],chat:['Ask assistant','data-go="chat"','chat',ic('chat',20)],addsale:['Record sale','data-go="addact" data-type="Sale"'+(S.screen==='cropdetail'?' data-cropid="'+S.crop+'"':''),'addsale',ic('rupee',20)]};
     var ORDER={cropdetail:['addact','addsale'],lands:['draw','addcrop','chat'],crops:['addcrop','addact','chat'],log:['addact','addexp','chat'],home:['addact','addexp','addcrop','draw','chat'],weather:['chat']};
     var acts=(ORDER[S.screen]||['chat']).map(function(k){return ALL[k]}).filter(function(a){return okScreen(a[2])});
     if(!acts.length)return '';
@@ -1147,8 +1151,10 @@ function mk(el,mode){
         x.map(function(r,ri){var mk='X'+a.id+'|'+ri;return '<div style="position:relative;display:flex;justify-content:space-between;align-items:center;gap:var(--s-2);padding:var(--s-2) 0;border-top:1px solid var(--line)"><span style="display:inline-flex;align-items:center;gap:8px"><i aria-hidden="true" style="width:10px;height:10px;border-radius:50%;background:'+colr(r[0])+'"></i><b>'+r[0]+'</b> <small class="hint">'+pc(r[1])+'%</small></span><span style="display:inline-flex;align-items:center;gap:var(--s-1)"><span class="amt">'+inr(r[1])+'</span><button type="button" class="ibtn2" data-cmenu="'+mk+'" aria-label="Actions for '+r[0]+' expense" aria-haspopup="menu" aria-expanded="'+(S.menu===mk)+'" title="Actions">'+ic('more',16)+'</button></span>'+(S.menu===mk?'<div class="kmenu" role="menu" aria-label="'+r[0]+' expense actions" style="top:44px;right:0"><button role="menuitem" data-editexp="'+a.id+'|'+ri+'">'+ic('edit',16)+' Edit expense</button><button role="menuitem" class="kdel" data-delexp="'+a.id+'|'+ri+'">'+ic('trash',16)+' Delete expense</button></div>':'')+'</div>'}).join(''):'<p class="hint" style="margin:0 0 4px">No expenses recorded for this activity.</p>',
       exp='<div class="card"><h3>Expenses<button class="btn p" data-go="addexp" data-actid="'+a.id+'" style="font-size:14px;font-family:inherit">+ Add expense</button></h3>'+split+'</div>',
       cell=function(k,v){return '<div><small>'+k+'</small><b>'+v+'</b></div>'},
-      det=a.n?'<div class="card"><h3>Notes</h3><p style="margin:0">'+a.n+'</p></div>':'';
-    return hd+'<div class="stack">'+(mode==='d'&&det?'<div class="grid g2">'+exp+det+'</div>':exp+det)+'</div>'
+      det=a.n?'<div class="card"><h3>Notes</h3><p style="margin:0">'+a.n+'</p></div>':'',
+      sv=a.t==='Sale'&&a.sale,
+      sale=sv?'<div class="card"><h3>Sale</h3>'+(done&&sv.amt?'<div style="font-family:var(--display);font-size:28px;font-weight:700;line-height:1.1;color:var(--leaf-ink)">'+inr(sv.amt)+'</div><small class="hint">'+sv.qty+' '+sv.unit+' at '+inr(sv.rate)+'</small>'+cell('Buyer',sv.buyer||'No buyer noted'):'<p class="hint" style="margin:0">Planned sale. Edit it to add quantity, rate and amount when the produce is sold.</p>')+'</div>':'';
+    return hd+'<div class="stack">'+(sale?(mode==='d'?'<div class="grid g2">'+sale+exp+'</div>':sale+exp)+det:(mode==='d'&&det?'<div class="grid g2">'+exp+det+'</div>':exp+det))+'</div>'
   }
   function log(){
     var F=S.lf||(S.lf={season:'',crop:'',land:'',type:'',status:'',sort:'latest'}),m=mode;
@@ -1236,9 +1242,12 @@ function mk(el,mode){
     '</div>'+fld('ef-rem-'+m,'Remarks or notes','<textarea id="ef-rem-'+m+'" data-o="ef" data-f="remarks" rows="2" placeholder="Optional">'+f.remarks.replace(/</g,'&lt;')+'</textarea>')+
     '<div style="display:flex;gap:8px"><button class="btn p">'+(ed2?'Save changes':'Add expense')+'</button><button type="button" class="btn" data-cancelform="ef">Cancel</button></div></form>'
   }
-  function newAf(){var d=today();return {type:'',date:d,season:seasonFor(d),cropId:'',landId:'',parentIdx:'',status:'Completed',custom:'',stTouched:false,notes:'',tried:false}}
+  function newAf(){var d=today();return {type:'',date:d,season:seasonFor(d),cropId:'',landId:'',parentIdx:'',status:'Completed',custom:'',stTouched:false,notes:'',tried:false,qty:'',unit:'',rate:'',amount:'',buyer:'',touched:false}}
   function cfErr(c){var e={};if(!c.season)e.season='Select a season.';if(!c.name.trim())e.name='Enter a crop name.';if(!c.landId)e.landId='Select a saved land.';if(!(parseFloat(c.area)>0))e.area='Enter an area above zero.';if(!c.date)e.date='Pick a sowing date.';return e}
-  function afErr(a){var e={};if(!a.type)e.type='Pick an activity type.';if(a.type==='Custom'&&!(a.custom||'').trim())e.custom='Enter a name for this activity.';if(!a.date)e.date='Pick the date performed.';if(!a.season)e.season='Select a season.';return e}
+  function saleOf(a){return {qty:parseFloat(a.qty)||'',unit:(a.unit||'').trim(),rate:parseFloat(a.rate)||'',amt:parseFloat(a.amount)||0,buyer:(a.buyer||'').trim()}}
+  function afErr(a){var e={};if(!a.type)e.type='Pick an activity type.';if(a.type==='Custom'&&!(a.custom||'').trim())e.custom='Enter a name for this activity.';if(!a.date)e.date='Pick the date performed.';if(!a.season)e.season='Select a season.';
+    if(a.type==='Sale'){if(!a.cropId)e.cropId='Pick the crop that was sold.';if(a.status==='Completed'){if(!(parseFloat(a.qty)>0))e.qty='Enter a quantity above zero.';else if(!(a.unit||'').trim())e.qty='Enter a unit, such as crates or kg.';if(!(parseFloat(a.rate)>0))e.rate='Enter a rate above zero.';if(!(parseFloat(a.amount)>0))e.amount='Enter an amount above zero.'}}
+    return e}
   function opts(list,sel,ph){return (ph?'<option value="">'+ph+'</option>':'')+list.map(function(x){return '<option value="'+x[0]+'"'+(String(sel)===String(x[0])?' selected':'')+'>'+x[1]+'</option>'}).join('')}
   function addcrop(){
     var c=S.cf,e=c.tried?cfErr(c):{},m=mode,ed=!!c.editId;
@@ -1263,37 +1272,30 @@ function mk(el,mode){
       '<div class="frow">'+
       fld('af-date-'+m,'Date performed','<input id="af-date-'+m+'" data-o="af" data-f="date" type="date" value="'+a.date+'">',true,e.date)+
       fld('af-season-'+m,'Season','<select id="af-season-'+m+'" data-o="af" data-f="season">'+opts(SEASONS,a.season,'Select season')+'</select>',true,e.season)+
-      fld('af-crop-'+m,'Link crop (optional)','<select id="af-crop-'+m+'" data-o="af" data-f="cropId">'+opts(CROPS.map(function(c){return [c.id,c.crop+' · '+c.land]}),a.cropId,'No linked crop')+'</select>')+
+      fld('af-crop-'+m,a.type==='Sale'?'Crop sold':'Link crop (optional)','<select id="af-crop-'+m+'" data-o="af" data-f="cropId">'+opts(CROPS.map(function(c){return [c.id,c.crop+' · '+c.land]}),a.cropId,a.type==='Sale'?'Select crop':'No linked crop')+'</select>',a.type==='Sale',e.cropId)+
       fld('af-land-'+m,'Link field (optional)','<select id="af-land-'+m+'" data-o="af" data-f="landId">'+opts(allLands().map(function(l){return [l.id,l.name]}),a.landId,'No linked field')+'</select>')+
       '</div>'+
+      (a.type==='Sale'?'<div class="card" style="box-shadow:none;background:var(--surface2);margin:0 0 var(--s-3)"><h3>Sale details</h3><p class="hint" style="margin:0 0 var(--s-3)">'+(a.status==='Completed'?'Required for a completed sale.':'Optional while the sale is planned. Add them when it is done.')+'</p><div class="frow">'+
+        fld('af-qty-'+m,'Quantity','<div class="unit"><input id="af-qty-'+m+'" data-o="af" data-f="qty" type="number" min="0" step="any" value="'+a.qty+'" placeholder="Quantity"><input id="af-unit-'+m+'" data-o="af" data-f="unit" list="sunits-'+m+'" value="'+a.unit.replace(/"/g,'&quot;')+'" placeholder="Unit" aria-label="Unit" autocomplete="off"><datalist id="sunits-'+m+'"><option value="crates"><option value="kg"><option value="quintal"><option value="bags"><option value="tonnes"></datalist></div>',a.status==='Completed',e.qty)+
+        fld('af-rate-'+m,'Rate per unit (₹)','<input id="af-rate-'+m+'" data-o="af" data-f="rate" type="number" min="0" step="any" value="'+a.rate+'" placeholder="e.g. 1200">',a.status==='Completed',e.rate)+
+        fld('af-amount-'+m,'Amount (₹)','<input id="af-amount-'+m+'" data-o="af" data-f="amount" type="number" min="0" step="any" value="'+a.amount+'" placeholder="Total received">',a.status==='Completed',e.amount,'Worked out from quantity and rate. Change it if the buyer paid a different total.')+
+        fld('af-buyer-'+m,'Buyer','<input id="af-buyer-'+m+'" data-o="af" data-f="buyer" value="'+a.buyer.replace(/"/g,'&quot;')+'" placeholder="e.g. Nashik APMC" autocomplete="off">')+
+      '</div></div>':'')+
       fld('af-parent-'+m,'Parent activity (optional)','<select id="af-parent-'+m+'" data-o="af" data-f="parentIdx">'+opts(ACTS.map(function(x,i){return [i,x.t+' · '+x.d]}),a.parentIdx,'No parent activity')+'</select>')+
       '<div class="fld"><label class="req" id="af-st-l-'+m+'">Status</label><div class="rchips" role="radiogroup" aria-labelledby="af-st-l-'+m+'">'+radios+'</div><span class="help">Set from the date: a future date is Scheduled. Change it if needed.</span></div>'+
       fld('af-notes-'+m,'Description or notes','<textarea id="af-notes-'+m+'" data-o="af" data-f="notes" rows="3" placeholder="What was done, quantities, observations">'+a.notes.replace(/</g,'&lt;')+'</textarea>')+
       fld('af-img-'+m,'Attach images (optional)','<input id="af-img-'+m+'" type="file" accept="image/*" multiple>')+
     '<div style="display:flex;gap:8px"><button class="btn p">'+(ed3?'Save changes':'Save activity')+'</button><button type="button" class="btn" data-cancelform="af">Cancel</button></div></form>'
   }
-  function sfErr(f){var e={};if(!f.date)e.date='Pick the date sold.';if(!(parseFloat(f.qty)>0))e.qty='Enter a quantity above zero.';else if(!f.unit.trim())e.qty='Enter a unit, such as crates or kg.';if(!(parseFloat(f.rate)>0))e.rate='Enter a rate above zero.';if(!(parseFloat(f.amount)>0))e.amount='Enter an amount above zero.';return e}
-  function newSf(id){return {cropId:id||S.crop,date:today(),qty:'',unit:'',rate:'',amount:'',buyer:'',notes:'',touched:false,tried:false}}
   function salesCard(c){
-    var ss=cropSales(c),tot=sumAmt(ss),ac=areaOf(c),pr=tot-c.cost,ppa=ac?Math.round(pr/ac):0;
-    if(!ss.length)return '<div class="card"><h3>Sales</h3>'+emptyHtml('rupee','No sales yet','Record what you sell from '+c.crop+' to see profit and profit per acre.','<button class="btn p" data-go="addsale" data-cropid="'+c.id+'">Record sale</button>')+'</div>';
+    var all=cropSaleActs(c),ss=cropSales(c),tot=sumAmt(ss),ac=areaOf(c),pr=tot-c.cost,ppa=ac?Math.round(pr/ac):0,
+      rec='data-go="addact" data-type="Sale" data-cropid="'+c.id+'"';
+    if(!all.length)return '<div class="card"><h3>Sales</h3>'+emptyHtml('rupee','No sales yet','Record what you sell from '+c.crop+' to see profit and profit per acre.','<button class="btn p" '+rec+'>Record sale</button>')+'</div>';
     var box=function(k,v,st){return '<div><b'+(st?' style="color:'+st+'"':'')+'>'+v+'</b><small>'+k+'</small></div>'};
-    return '<div class="card"><h3>Sales <button class="btn p" data-go="addsale" data-cropid="'+c.id+'" style="font-size:14px;font-family:inherit">+ Record sale</button></h3><div class="ldg" style="grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:var(--s-3)">'+box('Total sales',inr(tot))+box('Profit',sgn(pr),pcol(pr))+box('Profit / acre',sgn(ppa),pcol(ppa))+'</div>'+
-      ss.map(function(x){var p=String(x.d).split(' ');return '<div class="row">'+dateChip(p[0],p[1]||'',false)+'<div class="grow"><b>'+x.qty+' '+x.unit+' at '+inr(x.rate)+'</b><small>'+(x.buyer||'No buyer noted')+'</small></div><span class="amt">'+inr(x.amt)+'</span></div>'}).join('')+
-      '<p class="hint" style="margin:8px 0 0">Profit is sales minus crop expenses ('+inr(c.cost)+'), per acre over '+fmtAc(ac)+'.</p></div>'
-  }
-  function addsale(){
-    var f=S.sf,e=f.tried?sfErr(f):{},m=mode,C=CROPS.filter(function(k){return k.id===f.cropId})[0];
-    return head('Record sale','Add what you sold from '+(C?C.crop:'this crop')+'.','<button class="btn" data-cancelform="sf">Cancel</button>')+
-    '<form class="card" style="max-width:760px" data-savesale novalidate><div class="frow">'+
-      fld('sf-crop-'+m,'Crop','<input id="sf-crop-'+m+'" value="'+(C?C.crop+' · '+C.land:'')+'" disabled>')+
-      fld('sf-date-'+m,'Date sold','<input id="sf-date-'+m+'" data-o="sf" data-f="date" type="date" value="'+f.date+'">',true,e.date)+
-      fld('sf-qty-'+m,'Quantity','<div class="unit"><input id="sf-qty-'+m+'" data-o="sf" data-f="qty" type="number" min="0" step="any" value="'+f.qty+'" placeholder="Quantity"><input id="sf-unit-'+m+'" data-o="sf" data-f="unit" list="sunits-'+m+'" value="'+f.unit.replace(/"/g,'&quot;')+'" placeholder="Unit" aria-label="Unit" autocomplete="off"><datalist id="sunits-'+m+'"><option value="crates"><option value="kg"><option value="quintal"><option value="bags"><option value="tonnes"></datalist></div>',true,e.qty)+
-      fld('sf-rate-'+m,'Rate per unit (₹)','<input id="sf-rate-'+m+'" data-o="sf" data-f="rate" type="number" min="0" step="any" value="'+f.rate+'" placeholder="e.g. 1200">',true,e.rate)+
-      fld('sf-amount-'+m,'Amount (₹)','<input id="sf-amount-'+m+'" data-o="sf" data-f="amount" type="number" min="0" step="any" value="'+f.amount+'" placeholder="Total received">',true,e.amount,'Worked out from quantity and rate. Change it if the buyer paid a different total.')+
-      fld('sf-buyer-'+m,'Buyer','<input id="sf-buyer-'+m+'" data-o="sf" data-f="buyer" value="'+f.buyer.replace(/"/g,'&quot;')+'" placeholder="e.g. Nashik APMC" autocomplete="off">')+
-    '</div>'+fld('sf-notes-'+m,'Notes','<textarea id="sf-notes-'+m+'" data-o="sf" data-f="notes" rows="2" placeholder="Optional">'+f.notes.replace(/</g,'&lt;')+'</textarea>')+
-    '<div style="display:flex;gap:8px"><button class="btn p">Save sale</button><button type="button" class="btn" data-cancelform="sf">Cancel</button></div></form>'
+    return '<div class="card"><h3>Sales <button class="btn p" '+rec+' style="font-size:14px;font-family:inherit">+ Record sale</button></h3>'+(ss.length?'<div class="ldg" style="grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:var(--s-3)">'+box('Total sales',inr(tot))+box('Profit',sgn(pr),pcol(pr))+box('Profit / acre',sgn(ppa),pcol(ppa))+'</div>':'')+
+      all.map(function(x){var p=String(x.d).split(' '),done=x.s==='Completed',main=done?x.qty+' '+x.unit+' at '+inr(x.rate):'Planned sale',sub=done?(x.buyer||'No buyer noted'):'Details added when sold';
+        return '<button type="button" class="row" data-go="actdetail" data-act="'+x.id+'" style="width:100%;background:none;border:0;border-top:1px solid var(--line);text-align:left;font:inherit;color:inherit;cursor:pointer">'+dateChip(p[0],p[1]||'',!done)+'<div class="grow"><b>'+main+'</b><small>'+sub+'</small></div>'+(done?'<span class="amt">'+inr(x.amt)+'</span>':stBadge(x.s))+'<span aria-hidden="true" style="flex:none;display:inline-flex;color:var(--muted)">'+ic('chev',14)+'</span></button>'}).join('')+
+      '<p class="hint" style="margin:8px 0 0">Profit counts completed sales minus crop expenses ('+inr(c.cost)+'), per acre over '+fmtAc(ac)+'. Sales are activities too, so they also show in the Activity log.</p></div>'
   }
   function reports(){
     var data=CROPS.map(function(c){var ss=cropSales(c),t=sumAmt(ss),ac=areaOf(c);return {c:c,n:ss.length,sales:t,exp:c.cost,ac:ac,pr:t-c.cost,ppa:ac?Math.round((t-c.cost)/ac):0}});
@@ -1535,7 +1537,7 @@ function mk(el,mode){
     return false;
   }
   function body(){
-    var s=S.screen;if(!s)return head('Final prototype','Nothing approved yet.')+'<div class="card"><h3>No approved screens</h3><p class="hint">Approve a screen in the Design review panel and it is added here.</p></div>';return s==='profile'?profile():s==='addcrop'?addcrop():s==='addexp'?addexp():s==='addsale'?addsale():s==='reports'?reports():s==='prices'?prices():s==='pricedetail'?pricedetail():s==='apmcs'?apmcs():s==='alerts'?alertsTab():s==='newwl'?newwl():s==='addwi'?addwi():s==='addalert'?addalert():s==='addact'?addact():s==='home'?home():s==='lands'?lands():s==='crops'?crops():s==='cropdetail'?cropdetail():s==='log'?log():s==='actdetail'?actdetail():s==='weather'?weather():chat()
+    var s=S.screen;if(!s)return head('Final prototype','Nothing approved yet.')+'<div class="card"><h3>No approved screens</h3><p class="hint">Approve a screen in the Design review panel and it is added here.</p></div>';return s==='profile'?profile():s==='addcrop'?addcrop():s==='addexp'?addexp():s==='reports'?reports():s==='prices'?prices():s==='pricedetail'?pricedetail():s==='apmcs'?apmcs():s==='alerts'?alertsTab():s==='newwl'?newwl():s==='addwi'?addwi():s==='addalert'?addalert():s==='addact'?addact():s==='home'?home():s==='lands'?lands():s==='crops'?crops():s==='cropdetail'?cropdetail():s==='log'?log():s==='actdetail'?actdetail():s==='weather'?weather():chat()
   }
   function render(){
     if(!okScreen(S.screen))S.screen=firstOk();
@@ -1553,7 +1555,6 @@ function mk(el,mode){
     if(S.screen==='addcrop'&&!S.cf)S.cf=newCf();
     if(S.screen==='addact'&&!S.af)S.af=newAf();
     if(S.screen==='addexp'&&!S.ef)S.ef=newEf();
-    if(S.screen==='addsale'&&!S.sf)S.sf=newSf();
     if(S.screen==='addalert'&&!S.alf)S.alf=newAlf();
     var keep=el.querySelector('.main'),top=keep?keep.scrollTop:0;
     if(!S.chat.length)S.chat.push(greet);
@@ -1588,10 +1589,10 @@ function mk(el,mode){
     var lfr=e.target.closest('[data-lfrm]');if(lfr){S.lf[lfr.dataset.lfrm]='';render();return}
     if(e.target.closest('[data-lfclear]')){S.lf={season:'',crop:'',land:'',type:'',status:'',sort:(S.lf&&S.lf.sort)||'latest'};render();return}
     var sfc=e.target.closest('[data-sf]');if(sfc){S.sfilter=sfc.dataset.sf;render();return}
-    var asb=e.target.closest('[data-actst]');if(asb){var ap=asb.dataset.actst.split('|'),aa=ACTS.filter(function(q){return q.id===ap[0]})[0];if(aa){aa.s=ap[1];redraw();toast(ap[1]==='Completed'?'Marked done.':ap[1]==='Cancelled'?'Activity cancelled.':ap[1]==='In Progress'?'Activity started.':'Activity restored to Scheduled.','ok')}return}
-    var eab=e.target.closest('[data-editact]');if(eab){var ea=ACTS.filter(function(q){return q.id===eab.dataset.editact})[0];if(ea){var eiso=actIso(ea),isT=ATYPES.indexOf(ea.t)>=0&&ea.t!=='Custom',eF=allLands().filter(function(l){return l.name===ea.land})[0];S.af={type:isT?ea.t:'Custom',custom:isT?'':ea.t,date:eiso,season:seasonFor(eiso),cropId:ea.cropId||'',landId:eF?eF.id:'',parentIdx:'',status:ea.s,stTouched:true,notes:ea.n||'',tried:false,editId:ea.id,from:'actdetail'};S.screen='addact';render()}return}
+    var asb=e.target.closest('[data-actst]');if(asb){var ap=asb.dataset.actst.split('|'),aa=ACTS.filter(function(q){return q.id===ap[0]})[0];if(aa){if(ap[1]==='Completed'&&aa.t==='Sale'&&!(aa.sale&&aa.sale.qty&&aa.sale.unit&&aa.sale.rate&&aa.sale.amt)){var seb=el.querySelector('[data-editact="'+aa.id+'"]');if(seb){seb.click();if(S.af){S.af.status='Completed';render()}}return}aa.s=ap[1];redraw();toast(ap[1]==='Completed'?'Marked done.':ap[1]==='Cancelled'?'Activity cancelled.':ap[1]==='In Progress'?'Activity started.':'Activity restored to Scheduled.','ok')}return}
+    var eab=e.target.closest('[data-editact]');if(eab){var ea=ACTS.filter(function(q){return q.id===eab.dataset.editact})[0];if(ea){var eiso=actIso(ea),isT=ATYPES.indexOf(ea.t)>=0&&ea.t!=='Custom',eF=allLands().filter(function(l){return l.name===ea.land})[0];S.af={type:isT?ea.t:'Custom',custom:isT?'':ea.t,date:eiso,season:seasonFor(eiso),cropId:ea.cropId||'',landId:eF?eF.id:'',parentIdx:'',status:ea.s,stTouched:true,notes:ea.n||'',tried:false,editId:ea.id,from:'actdetail',qty:ea.sale&&ea.sale.qty!==''?String(ea.sale.qty):'',unit:ea.sale?ea.sale.unit:'',rate:ea.sale&&ea.sale.rate!==''?String(ea.sale.rate):'',amount:ea.sale&&ea.sale.amt?String(ea.sale.amt):'',buyer:ea.sale?ea.sale.buyer:'',touched:!!(ea.sale&&ea.sale.amt)};S.screen='addact';render()}return}
     var dab=e.target.closest('[data-delact]');if(dab){var da=ACTS.filter(function(q){return q.id===dab.dataset.delact})[0];if(da){S.confirm={kind:'activity',id:da.id,title:'Delete this activity?',label:'Delete activity',msg:da.t+' on '+da.d+' and its expenses will be removed. You can undo for a few seconds.'};S.focusConf=true;render()}return}
-    var cf=e.target.closest('[data-cancelform]');if(cf){var k=cf.dataset.cancelform,bk2=k==='cf'&&S.cf&&S.cf.from?S.cf.from:k==='ef'&&S.ef&&S.ef.from?S.ef.from:k==='af'&&S.af&&S.af.from?S.af.from:(k==='nwl'||k==='wi'?'prices':k==='cf'?'crops':k==='sf'?'cropdetail':k==='alf'?(S.alf&&S.alf.from==='pricedetail'?'pricedetail':'alerts'):'log');S[k]=null;S.screen=bk2;render();return}
+    var cf=e.target.closest('[data-cancelform]');if(cf){var k=cf.dataset.cancelform,bk2=k==='cf'&&S.cf&&S.cf.from?S.cf.from:k==='ef'&&S.ef&&S.ef.from?S.ef.from:k==='af'&&S.af&&S.af.from?S.af.from:(k==='nwl'||k==='wi'?'prices':k==='cf'?'crops':k==='alf'?(S.alf&&S.alf.from==='pricedetail'?'pricedetail':'alerts'):'log');S[k]=null;S.screen=bk2;render();return}
     var dcr=e.target.closest('[data-delcrop]');if(dcr){S.menu=null;var kc=CROPS.filter(function(k){return k.id===dcr.dataset.delcrop})[0];if(kc){S.confirm={kind:'crop',id:kc.id,title:'Delete this crop?',label:'Delete crop',msg:kc.crop+' will be removed from '+kc.land+'. Logged activities are kept. You can undo for a few seconds.'};S.focusConf=true;render()}return}
     var dl=e.target.closest('[data-del]');if(dl){S.menu=null;var did=dl.dataset.del,dnc=CROPS.filter(function(k){return k.landId===did}).length,dL=landById(did);
       if(dnc>0){toast(dL.name+' has '+dnc+' crop'+(dnc>1?'s':'')+'. Remove '+(dnc>1?'them':'it')+' before deleting the land.','warn')}else{S.confirm={kind:'land',id:did,title:'Delete this land?',label:'Delete land',msg:dL.name+' will be removed from your map and list. You can undo for a few seconds.'};S.focusConf=true;render()}return}
@@ -1644,7 +1645,7 @@ function mk(el,mode){
     var st=e.target.closest('[data-st]');if(st){nextStatus(st.dataset.st);return}
     if(e.target.closest('[data-new]')){S.chat=[greet];S.refocus=true;render();return}
     var t=e.target.closest('[data-go],[data-land],[data-crop],[data-f],[data-q]');if(!t)return;if(t.matches('input,select,textarea'))return;
-    if(t.dataset.go){if(t.dataset.go==='pricedetail'){S.apmc=t.dataset.apmc||'';S.cmpl=[];S.pdname='';if(t.dataset.wcrop){var wfc=CROPS.filter(function(k){return k.crop===t.dataset.wcrop})[0];if(wfc)S.crop=wfc.id;else S.pdname=t.dataset.wcrop}}if(t.dataset.go==='newwl')S.nwl=null;if(t.dataset.go==='addwi')S.wi=null;if(t.dataset.go==='actdetail')S.actFrom=S.screen;if(t.dataset.act)S.act=t.dataset.act;S.screen=t.dataset.go;if(t.dataset.crop)S.crop=t.dataset.crop;if(t.dataset.landid)S.pendingLand=t.dataset.landid;if(t.dataset.go==='addcrop')S.cf=null;if(t.dataset.go==='addact'){S.af=null;if(t.dataset.cropid){var kc2=CROPS.filter(function(k){return k.id===t.dataset.cropid})[0];if(kc2){S.af=newAf();S.af.cropId=kc2.id;S.af.landId=kc2.landId||(landOf(kc2)||{}).id||''}}}if(t.dataset.selland){S.land=t.dataset.selland;S.pulse=S.land;flyTo(S.land)}if(t.dataset.go==='addalert'){var ac3=t.dataset.crop?CROPS.filter(function(k){return k.id===t.dataset.crop})[0]:null;S.alf=newAlf(ac3&&ac3.crop,S.screen)}if(t.dataset.go==='addsale'){S.sf=newSf(t.dataset.cropid||S.crop)}if(t.dataset.go==='addexp'){S.ef=null;if(t.dataset.actid){S.ef=newEf();S.ef.actIdx=''+ACTS.map(function(q){return q.id}).indexOf(t.dataset.actid);S.ef.from='actdetail'}}}
+    if(t.dataset.go){if(t.dataset.go==='pricedetail'){S.apmc=t.dataset.apmc||'';S.cmpl=[];S.pdname='';if(t.dataset.wcrop){var wfc=CROPS.filter(function(k){return k.crop===t.dataset.wcrop})[0];if(wfc)S.crop=wfc.id;else S.pdname=t.dataset.wcrop}}if(t.dataset.go==='newwl')S.nwl=null;if(t.dataset.go==='addwi')S.wi=null;if(t.dataset.go==='actdetail')S.actFrom=S.screen;if(t.dataset.act)S.act=t.dataset.act;S.screen=t.dataset.go;if(t.dataset.crop)S.crop=t.dataset.crop;if(t.dataset.landid)S.pendingLand=t.dataset.landid;if(t.dataset.go==='addcrop')S.cf=null;if(t.dataset.go==='addact'){S.af=null;if(t.dataset.cropid){var kc2=CROPS.filter(function(k){return k.id===t.dataset.cropid})[0];if(kc2){S.af=newAf();if(t.dataset.type==='Sale'){S.af.type='Sale';S.af.from='cropdetail'}S.af.cropId=kc2.id;S.af.landId=kc2.landId||(landOf(kc2)||{}).id||''}}}if(t.dataset.selland){S.land=t.dataset.selland;S.pulse=S.land;flyTo(S.land)}if(t.dataset.go==='addalert'){var ac3=t.dataset.crop?CROPS.filter(function(k){return k.id===t.dataset.crop})[0]:null;S.alf=newAlf(ac3&&ac3.crop,S.screen)}if(t.dataset.go==='addexp'){S.ef=null;if(t.dataset.actid){S.ef=newEf();S.ef.actIdx=''+ACTS.map(function(q){return q.id}).indexOf(t.dataset.actid);S.ef.from='actdetail'}}}
     else if(t.dataset.land&&t.tagName!=='A'&&!t.dataset.go){if(S.draw.on)return;S.rn=null;S.land=t.dataset.land;S.pulse=S.land;flyTo(S.land)}
     else if(t.dataset.crop)S.crop=t.dataset.crop;
     else if(t.dataset.f)S.filter=t.dataset.f;
@@ -1673,12 +1674,12 @@ function mk(el,mode){
     var p=toWorld(sv,e.clientX,e.clientY),r=sv.getBoundingClientRect(),fx=(e.clientX-r.left)/r.width,fy=(e.clientY-r.top)/r.height;
     S.z=Math.max(1,Math.min(8,S.z*(e.deltaY<0?1.2:1/1.2)));var w=560/S.z,h=MH/S.z;S.cx=p.x-fx*w+w/2;S.cy=p.y-fy*h+h/2;clampView();setVB();
     clearTimeout(wt);wt=setTimeout(render,160)},{passive:false});
-  el.addEventListener('input',function(e){var f=e.target.dataset&&e.target.dataset.f;if(!f)return;var o=e.target.dataset.o||'draft',obj=S[o];if(!obj)return;var v=e.target.value;obj[f]=v;if(o==='lf'){render();return}if(o==='af'){if(f==='status')obj.stTouched=true;if(f==='date'&&!obj.stTouched){obj.status=v>today()?'Scheduled':'Completed';var sr=el.querySelector('input[name="af-status-'+mode+'"][value="'+obj.status+'"]');if(sr)sr.checked=true}if(f==='type'){render();if(v==='Custom'){var ci=el.querySelector('#af-custom-'+mode);if(ci)ci.focus()}}}if(o==='rn'){obj.err=false;e.target.classList&&e.target.classList.remove('bad')}
+  el.addEventListener('input',function(e){var f=e.target.dataset&&e.target.dataset.f;if(!f)return;var o=e.target.dataset.o||'draft',obj=S[o];if(!obj)return;var v=e.target.value;obj[f]=v;if(o==='lf'){render();return}if(o==='af'){if(f==='status'){obj.stTouched=true;if(obj.type==='Sale'){render();return}}if(f==='date'&&!obj.stTouched){var ps=obj.status;obj.status=v>today()?'Scheduled':'Completed';if(obj.type==='Sale'&&ps!==obj.status){obj.season=seasonFor(v);render();return}var sr=el.querySelector('input[name="af-status-'+mode+'"][value="'+obj.status+'"]');if(sr)sr.checked=true}if(f==='type'){render();if(v==='Custom'){var ci=el.querySelector('#af-custom-'+mode);if(ci)ci.focus()}}}if(o==='rn'){obj.err=false;e.target.classList&&e.target.classList.remove('bad')}
     if(o==='draft'&&f==='name')obj.err=false;
     if((o==='cf'||o==='af')&&f==='date'){obj.season=seasonFor(v);var se=el.querySelector('#'+o+'-season-'+mode);if(se)se.value=obj.season}
     if(o==='ef'){if(f==='amount')obj.touched=true;
       if((f==='qty'||f==='rate')&&!obj.touched){var q=parseFloat(obj.qty),r=parseFloat(obj.rate);obj.amount=(q>0&&r>0)?String(Math.round(q*r*100)/100):'';var am=el.querySelector('#ef-amount-'+mode);if(am)am.value=obj.amount}}
-    if(o==='sf'){if(f==='amount')obj.touched=true;if((f==='qty'||f==='rate')&&!obj.touched){var q2=parseFloat(obj.qty),r2=parseFloat(obj.rate);obj.amount=(q2>0&&r2>0)?String(Math.round(q2*r2*100)/100):'';var am2=el.querySelector('#sf-amount-'+mode);if(am2)am2.value=obj.amount}}
+    if(o==='af'){if(f==='amount')obj.touched=true;if((f==='qty'||f==='rate')&&!obj.touched){var q2=parseFloat(obj.qty),r2=parseFloat(obj.rate);obj.amount=(q2>0&&r2>0)?String(Math.round(q2*r2*100)/100):'';var am2=el.querySelector('#af-amount-'+mode);if(am2)am2.value=obj.amount}}
     if(o==='alf'&&(f==='crop'||f==='type')){render();return}
     if(o==='wi'&&f==='crop'){obj.apmc='';render();return}
     if(o==='cf'&&(f==='landId'||f==='unit')){var L=landById(obj.landId);if(L){obj.area=(obj.unit==='hectares'?L.acre*0.404686:L.acre).toFixed(2)}else if(f==='landId')obj.area='';render()}});
@@ -1704,9 +1705,11 @@ function mk(el,mode){
       var bk=x.from==='actdetail'?(S.act=act.id,'actdetail'):'log';S.ef=null;S.screen=bk;redraw();return}
     if(e.target.matches('[data-saveact]')){var a=S.af;if(!a)return;a.tried=true;if(Object.keys(afErr(a)).length){render();return}
       var F=a.landId?landById(a.landId):null,C=a.cropId?CROPS.filter(function(x){return x.id===a.cropId})[0]:null;
-      if(a.editId){var xa2=ACTS.filter(function(q){return q.id===a.editId})[0];if(xa2){xa2.t=a.type==='Custom'?a.custom.trim():a.type;xa2.d=fmtDate(a.date);xa2.iso=a.date;xa2.cropId=C?C.id:'';xa2.land=F?F.name:(C?C.land:'');xa2.n=a.notes.trim();xa2.s=a.status}
+      if(a.editId){var xa2=ACTS.filter(function(q){return q.id===a.editId})[0];if(xa2){xa2.t=a.type==='Custom'?a.custom.trim():a.type;xa2.d=fmtDate(a.date);xa2.iso=a.date;xa2.cropId=C?C.id:'';xa2.land=F?F.name:(C?C.land:'');xa2.n=a.notes.trim();xa2.s=a.status;if(a.type==='Sale')xa2.sale=saleOf(a);else delete xa2.sale}
         S.act=a.editId;S.af=null;S.screen='actdetail';redraw();toast('Activity updated.','ok');return}
       ACTS.unshift({id:'a'+(++ACTID),iso:a.date,cropId:C?C.id:'',d:fmtDate(a.date),t:a.type==='Custom'?a.custom.trim():a.type,land:F?F.name:(C?C.land:''),n:a.notes.trim(),c:0,s:a.status});
+      if(a.type==='Sale')ACTS[0].sale=saleOf(a);
+      if(a.type==='Sale'&&C&&a.from==='cropdetail'){S.crop=C.id;S.af=null;S.screen='cropdetail';redraw();toast('Sale recorded.','ok');return}
       S.af=null;S.screen='log';redraw();return}
     if(e.target.matches('[data-savewl]')){var nf=S.nwl;if(!nf)return;nf.tried=true;if(nwlErr(nf).name){render();return}
       var nw={id:'w'+(++WID),name:nf.name.trim(),items:[]};WL.push(nw);S.wl=nw.id;S.nwl=null;S.screen='prices';redraw();toast('Watchlist created. Add items to start watching.','ok');return}
@@ -1718,9 +1721,6 @@ function mk(el,mode){
       var ex=af.editId?ALERTS.filter(function(x){return x.id===af.editId})[0]:null;
       if(ex){ex.crop=af.crop;ex.type=af.type;ex.val=parseFloat(af.val);ex.on=true;delete PADIS[ex.id]}else ALERTS.push({id:'a'+(++AID),crop:af.crop,type:af.type,val:parseFloat(af.val),on:true});
       S.screen=af.from==='pricedetail'?'pricedetail':'alerts';S.alf=null;redraw();toast(ex?'Alert updated.':'Alert created.','ok');return}
-    if(e.target.matches('[data-savesale]')){var sf=S.sf;if(!sf)return;sf.tried=true;if(Object.keys(sfErr(sf)).length){render();return}
-      SALES.unshift({id:'s'+(++SID),cropId:sf.cropId,iso:sf.date,d:fmtDate(sf.date),qty:parseFloat(sf.qty),unit:sf.unit.trim(),rate:parseFloat(sf.rate),amt:parseFloat(sf.amount),buyer:sf.buyer.trim(),notes:sf.notes.trim()});
-      S.crop=sf.cropId;S.sf=null;S.screen='cropdetail';redraw();toast('Sale recorded.','ok');return}
     if(e.target.matches('[data-search]')){S.z=1;S.cx=280;S.cy=165;render();return}var i=el.querySelector('.cc input');if(!i)return;var v=i.value.trim();if(v&&!S.busy)ask(v)});
   render();
   var api={render:render,screen:function(){return S.screen},go:function(k){if(okScreen(k)){S.screen=k;render()}}};views.push(api);return api;

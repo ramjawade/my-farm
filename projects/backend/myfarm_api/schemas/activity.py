@@ -1,11 +1,18 @@
 """Pydantic schemas for activity endpoints."""
 
 from datetime import datetime
-from typing import Any
+from decimal import Decimal
+from typing import Annotated, Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StringConstraints
 
 from myfarm_api.schemas.common import BodyId, IsoDate, NonNullUpdate
+
+# Sale figures (type Sale only). Bounds mirror the Numeric columns; a figure is above zero.
+SaleQuantity = Annotated[Decimal, Field(gt=0, lt=Decimal(10) ** 8)]
+SaleAmount = Annotated[Decimal, Field(gt=0, lt=Decimal(10) ** 10)]
+SaleUnit = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=50)]
+SaleBuyer = Annotated[str, StringConstraints(strip_whitespace=True, max_length=255)]
 
 
 class ActivityBase(BaseModel):
@@ -21,6 +28,11 @@ class ActivityBase(BaseModel):
     status: str = Field(default="pending", max_length=50)
     notes: str | None = None
     activity_meta: dict[str, Any] | None = None
+    sale_quantity: SaleQuantity | None = None
+    sale_unit: SaleUnit | None = None
+    sale_rate: SaleQuantity | None = None
+    sale_amount: SaleAmount | None = None
+    sale_buyer: SaleBuyer | None = None
 
 
 class ActivityCreate(ActivityBase):
@@ -48,6 +60,11 @@ class ActivityUpdate(NonNullUpdate):
     status: str | None = Field(None, max_length=50)
     notes: str | None = None
     activity_meta: dict[str, Any] | None = None
+    sale_quantity: SaleQuantity | None = None
+    sale_unit: SaleUnit | None = None
+    sale_rate: SaleQuantity | None = None
+    sale_amount: SaleAmount | None = None
+    sale_buyer: SaleBuyer | None = None
 
 
 class ActivityRead(ActivityBase):
