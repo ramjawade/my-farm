@@ -22,6 +22,8 @@ Two rules run through all of it:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from decimal import Decimal
+from typing import TypedDict
 
 from sqlalchemy import select
 
@@ -155,6 +157,42 @@ def _lookup(
     return None
 
 
+SALE_TYPE = normalize("Sale")
+
+
+def _positive(value: Decimal | None) -> Decimal | None:
+    """A sale figure is above zero or it is absent; zero and negatives mean "not said"."""
+    return value if value is not None and value > 0 else None
+
+
+def _text(value: str | None) -> str | None:
+    return value.strip() or None if value is not None else None
+
+
+class _SaleFigures(TypedDict):
+    sale_quantity: Decimal | None
+    sale_unit: str | None
+    sale_rate: Decimal | None
+    sale_amount: Decimal | None
+    sale_buyer: str | None
+
+
+_NO_SALE = _SaleFigures(
+    sale_quantity=None, sale_unit=None, sale_rate=None, sale_amount=None, sale_buyer=None
+)
+
+
+def _sale_figures(parsed: ParsedEntry) -> _SaleFigures:
+    """The sale_* fields of a Sale entry, cleaned. Missing figures are not an error."""
+    return _SaleFigures(
+        sale_quantity=_positive(parsed.sale_quantity),
+        sale_unit=_text(parsed.sale_unit),
+        sale_rate=_positive(parsed.sale_rate),
+        sale_amount=_positive(parsed.sale_amount),
+        sale_buyer=_text(parsed.sale_buyer),
+    )
+
+
 def resolve_entry(parsed: ParsedEntry, context: ResolutionContext) -> ResolvedEntry:
     """Resolve a parsed entry against one farmer's data.
 
@@ -189,6 +227,9 @@ def resolve_entry(parsed: ParsedEntry, context: ResolutionContext) -> ResolvedEn
         for e in parsed.expenses
     ]
 
+    is_sale = normalize(parsed.activity_type) == SALE_TYPE
+    sale = _sale_figures(parsed) if is_sale else _NO_SALE
+
     return ResolvedEntry(
         transcript=parsed.transcript,
         activity_type_id=activity_type_id,
@@ -201,4 +242,5 @@ def resolve_entry(parsed: ParsedEntry, context: ResolutionContext) -> ResolvedEn
         notes=parsed.notes,
         expenses=expenses,
         dropped=dropped,
+        **sale,
     )

@@ -2213,6 +2213,16 @@ export interface components {
       land_id?: number | null;
       /** Notes */
       notes?: string | null;
+      /** Sale Amount */
+      sale_amount?: string | null;
+      /** Sale Buyer */
+      sale_buyer?: string | null;
+      /** Sale Quantity */
+      sale_quantity?: string | null;
+      /** Sale Rate */
+      sale_rate?: string | null;
+      /** Sale Unit */
+      sale_unit?: string | null;
       /** Transcript */
       transcript: string;
     };

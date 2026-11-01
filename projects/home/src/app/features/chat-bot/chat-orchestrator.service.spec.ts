@@ -212,6 +212,105 @@ describe('ChatOrchestratorService', () => {
     expect(service.originalInput()).toBe('');
   });
 
+  describe('logging a sale', () => {
+    const sale = (overrides: Partial<ResolvedEntry> = {}): ResolvedEntry =>
+      entry({
+        activity_type_id: 9,
+        activity_type: 'Sale',
+        sale_quantity: '12',
+        sale_unit: 'crates',
+        sale_rate: '1250',
+        ...overrides,
+      });
+
+    it('goes straight to Review & Save when the sale is complete', async () => {
+      chatEntry.parse.and.resolveTo({ parsed: sale(), model: 'm' });
+
+      await service.sendText('sold 12 crates of wheat at 1250');
+
+      expect(service.ready()).toBeTrue();
+      expect(service.draft()).toEqual(sale());
+    });
+
+    it('asks which crop, with the farmer’s crops as chips, when none was named', async () => {
+      chatEntry.parse.and.resolveTo({
+        parsed: sale({ crop_id: null, crop: null }),
+        model: 'm',
+      });
+
+      await service.sendText('sold 12 crates at 1250');
+
+      expect(service.ready()).toBeFalse();
+      expect(service.messages().at(-1)?.chips).toEqual([{ label: 'Wheat', value: '1' }]);
+    });
+
+    it('asks how much was sold, then the rate, reading each typed answer as that answer', async () => {
+      chatEntry.parse.and.resolveTo({
+        parsed: sale({ sale_quantity: null, sale_unit: null, sale_rate: null }),
+        model: 'm',
+      });
+      await service.sendText('sold wheat today');
+      expect(service.messages().at(-1)?.chips).toEqual([]);
+
+      chatEntry.parse.and.resolveTo({ parsed: sale({ sale_rate: null }), model: 'm' });
+      await service.sendText('5 crates');
+      const afterQuantity = chatEntry.parse.calls.mostRecent().args[0] as string;
+      expect(afterQuantity).toContain('sold wheat today');
+      expect(afterQuantity).toContain('Sale quantity and unit: 5 crates.');
+      expect(service.ready()).toBeFalse();
+
+      chatEntry.parse.and.resolveTo({ parsed: sale(), model: 'm' });
+      await service.sendText('1000');
+      const afterRate = chatEntry.parse.calls.mostRecent().args[0] as string;
+      expect(afterRate).toContain('Sale rate or total: 1000.');
+      expect(service.ready()).toBeTrue();
+    });
+
+    it('reads a crop chip as the answer to the crop question', async () => {
+      chatEntry.parse.and.resolveTo({
+        parsed: sale({ crop_id: null, crop: null }),
+        model: 'm',
+      });
+      await service.sendText('sold 12 crates at 1250');
+
+      chatEntry.parse.and.resolveTo({ parsed: sale(), model: 'm' });
+      await service.selectChip({ label: 'Wheat', value: '1' });
+
+      expect(chatEntry.parse.calls.mostRecent().args[0]).toContain('Crop: Wheat.');
+      expect(service.ready()).toBeTrue();
+    });
+
+    it('offers the manual form, with the sale type and crop it knows, after the limit', async () => {
+      const noQuantity = sale({ sale_quantity: null, sale_unit: null });
+      chatEntry.parse.and.resolveTo({ parsed: noQuantity, model: 'm' });
+
+      for (let i = 0; i <= MAX_CLARIFY_ROUNDS; i++) {
+        await service.sendText(`attempt ${i}`);
+      }
+
+      const hatch = service.escapeHatch();
+      expect(hatch?.field).toBe('saleQuantity');
+      expect(hatch?.entry.activity_type).toBe('Sale');
+      expect(hatch?.entry.crop_id).toBe(1);
+      expect(service.ready()).toBeFalse();
+    });
+
+    it('does not label an ordinary answer for another kind of entry', async () => {
+      chatEntry.parse.and.resolveTo({
+        parsed: entry({
+          land: null,
+          land_id: null,
+          dropped: [{ field: 'land', value: 'x', reason: 'not_found' }],
+        }),
+        model: 'm',
+      });
+      await service.sendText('100 rs fertilizer');
+      await service.sendText('north');
+
+      expect(chatEntry.parse.calls.mostRecent().args[0]).toBe('100 rs fertilizer north');
+    });
+  });
+
   describe('routing a fresh message (#290)', () => {
     it('sends the text and the app language to /ask, then continues as a log entry', async () => {
       spyOn(TestBed.inject(TranslateService), 'getCurrentLang').and.returnValue('mr');

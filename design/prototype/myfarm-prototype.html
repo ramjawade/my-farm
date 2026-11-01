@@ -951,6 +951,7 @@ function mk(el,mode){
       (open?acts.map(function(a){return '<div class="dact"><span class="dlab">'+a[0]+'</span><button class="fab mini" '+a[1]+' aria-label="'+a[0]+'">'+a[3]+'</button></div>'}).join(''):'')+'</div>'
   }
   function modalHtml(){
+    if(S.rv)return rvHtml();
     var c=S.confirm;if(!c)return '';
     return '<button class="mscrim" data-modalclose tabindex="-1" aria-label="Close dialog"></button><div class="modal dB t-danger" role="alertdialog" aria-modal="true" aria-labelledby="md-t-'+mode+'" aria-describedby="md-d-'+mode+'"><span class="dB-h"></span><span class="dB-i">'+ic('trash',26)+'</span><h3 id="md-t-'+mode+'">'+c.title+'</h3><p id="md-d-'+mode+'">'+c.msg+'</p><div class="dB-a"><button class="btn" data-confcancel>Cancel</button><button class="tbtn" data-confok>'+c.label+'</button></div></div>'
   }
@@ -1210,18 +1211,79 @@ function mk(el,mode){
     return {r:'a',t:txt||'I can help with today\'s tasks, spending, rain and harvest dates. Pick one below or type your question.',card:k};
   }
   function now(){return new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}
+  /* Logging a sale from the chat: read the text, ask for what is missing, then Review & Save. */
+  function isSaleText(q){return /\b(sold|sell|selling|sale)\b/i.test(q)}
+  function newSp(){return {cropId:'',qty:'',unit:'',rate:'',amount:'',amtSaid:false,buyer:'',date:today(),rounds:{},waiting:''}}
+  function applySale(q,sp){
+    var l=q.toLowerCase(),i;
+    for(i=0;i<CROPS.length;i++){if(l.indexOf(CROPS[i].crop.toLowerCase())>=0){sp.cropId=CROPS[i].id;break}}
+    var qm=q.match(/(\d+(?:\.\d+)?)\s*(crates?|kg|quintals?|bags?|tonnes?)\b/i);
+    if(qm){sp.qty=qm[1];sp.unit=qm[2].toLowerCase()}
+    else if(sp.waiting==='qty'){var bn=q.match(/^\s*(\d+(?:\.\d+)?)\s*$/);if(bn)sp.qty=bn[1]}
+    var rm=q.match(/(?:\bat\b|@|\brate\b)\s*(?:₹|rs\.?)?\s*(\d+(?:\.\d+)?)/i),tm=q.match(/\b(?:for|total)\s*(?:₹|rs\.?)?\s*(\d+(?:\.\d+)?)/i);
+    if(rm)sp.rate=rm[1];
+    if(tm){sp.amount=tm[1];sp.amtSaid=true}
+    if(sp.waiting==='rate'&&!rm&&!tm){var bn2=q.match(/^\s*(?:₹|rs\.?)?\s*(\d+(?:\.\d+)?)\s*$/i);if(bn2)sp.rate=bn2[1]}
+    if(/yesterday/i.test(q))sp.date=new Date(Date.parse(today())-864e5).toISOString().slice(0,10);
+    else if(/\btoday\b/i.test(q))sp.date=today();
+    var bm=q.match(/\bto ([A-Z][A-Za-z ]{2,30}?)(?= at\b| for\b| @|[.,]|$)/);
+    if(bm)sp.buyer=bm[1].trim();
+    var qn=parseFloat(sp.qty),rn=parseFloat(sp.rate),an=parseFloat(sp.amount);
+    if(qn>0&&rn>0&&!sp.amtSaid)sp.amount=String(Math.round(qn*rn*100)/100);
+    else if(qn>0&&an>0&&!(rn>0))sp.rate=String(Math.round(an/qn*100)/100);
+  }
+  function saleNeed(sp){
+    if(!sp.cropId)return 'crop';
+    if(!(parseFloat(sp.qty)>0)||!sp.unit)return 'qty';
+    if(!(parseFloat(sp.rate)>0)&&!(parseFloat(sp.amount)>0))return 'rate';
+    return ''
+  }
+  function saleReply(q){
+    if(S.sp&&!S.sp.waiting&&isSaleText(q))S.sp=null;
+    if(!S.sp)S.sp=newSp();
+    var sp=S.sp;applySale(q,sp);
+    var need=saleNeed(sp),C=CROPS.filter(function(k){return k.id===sp.cropId})[0];
+    if(!need){sp.waiting='';return {r:'a',t:'Got it: '+sp.qty+' '+sp.unit+' of '+C.crop+' sold at '+inr(parseFloat(sp.rate))+' for '+inr(parseFloat(sp.amount))+'. Check it and save.',review:true}}
+    sp.rounds[need]=(sp.rounds[need]||0)+1;
+    if(sp.rounds[need]>2){var cid=sp.cropId;S.sp=null;return {r:'a',t:'I could not get that. Let us use the form instead.',form:cid}}
+    sp.waiting=need;
+    if(need==='crop')return {r:'a',t:'Which crop did you sell?',chips:CROPS.map(function(k){return k.crop})};
+    if(need==='qty')return {r:'a',t:'How much did you sell? For example 12 crates.'};
+    return {r:'a',t:'At what rate per '+(sp.unit.replace(/s$/,'')||'unit')+', or for what total?'}
+  }
+  function rvErr(f){var e={};if(!f.date)e.date='Pick the date sold.';else if(f.date>today())e.date='Pick today or an earlier date. A future sale is planned in the form.';if(!f.cropId)e.cropId='Pick the crop that was sold.';if(!(parseFloat(f.qty)>0))e.qty='Enter a quantity above zero.';else if(!(f.unit||'').trim())e.qty='Enter a unit, such as crates or kg.';if(!(parseFloat(f.rate)>0))e.rate='Enter a rate above zero.';if(!(parseFloat(f.amount)>0))e.amount='Enter an amount above zero.';return e}
+  function rvHtml(){
+    var f=S.rv,e=f.tried?rvErr(f):{},m=mode;
+    return '<button class="mscrim" data-rvclose tabindex="-1" aria-label="Close Review and Save"></button><form class="modal" role="dialog" aria-modal="true" aria-labelledby="rv-t-'+m+'" data-rvform novalidate style="max-height:88%;overflow:auto;text-align:left"><h3 id="rv-t-'+m+'">Review &amp; Save</h3><p class="hint">Check what the assistant understood and change anything that is wrong.</p>'+
+      fld('rv-type-'+m,'Activity type','<input id="rv-type-'+m+'" value="Sale" disabled>')+
+      fld('rv-date-'+m,'Date sold','<input id="rv-date-'+m+'" data-o="rv" data-f="date" type="date" value="'+f.date+'">',true,e.date)+
+      fld('rv-crop-'+m,'Crop sold','<select id="rv-crop-'+m+'" data-o="rv" data-f="cropId">'+opts(CROPS.map(function(c){return [c.id,c.crop+' · '+c.land]}),f.cropId,'Select crop')+'</select>',true,e.cropId)+
+      fld('rv-qty-'+m,'Quantity','<div class="unit"><input id="rv-qty-'+m+'" data-o="rv" data-f="qty" type="number" min="0" step="any" value="'+f.qty+'" placeholder="Quantity"><input id="rv-unit-'+m+'" data-o="rv" data-f="unit" list="sunits-'+m+'" value="'+f.unit.replace(/"/g,'&quot;')+'" placeholder="Unit" aria-label="Unit" autocomplete="off"><datalist id="sunits-'+m+'"><option value="crates"><option value="kg"><option value="quintal"><option value="bags"><option value="tonnes"></datalist></div>',true,e.qty)+
+      fld('rv-rate-'+m,'Rate per unit (₹)','<input id="rv-rate-'+m+'" data-o="rv" data-f="rate" type="number" min="0" step="any" value="'+f.rate+'" placeholder="e.g. 1200">',true,e.rate)+
+      fld('rv-amount-'+m,'Amount (₹)','<input id="rv-amount-'+m+'" data-o="rv" data-f="amount" type="number" min="0" step="any" value="'+f.amount+'" placeholder="Total received">',true,e.amount,'Worked out from quantity and rate. Change it if the buyer paid a different total.')+
+      fld('rv-buyer-'+m,'Buyer','<input id="rv-buyer-'+m+'" data-o="rv" data-f="buyer" value="'+f.buyer.replace(/"/g,'&quot;')+'" placeholder="e.g. Nashik APMC" autocomplete="off">')+
+      '<div class="mact"><button type="button" class="btn" data-rvclose>Cancel</button><button type="button" class="btn p" data-rvsave>Save sale</button></div></form>'
+  }
+  function rvSave(){
+    var f=S.rv;if(!f)return;f.tried=true;if(Object.keys(rvErr(f)).length){render();return}
+    var C=CROPS.filter(function(k){return k.id===f.cropId})[0],qty=parseFloat(f.qty),amt=parseFloat(f.amount);
+    ACTS.unshift({id:'a'+(++ACTID),iso:f.date,cropId:f.cropId,d:fmtDate(f.date),t:'Sale',land:C.land,n:'',c:0,s:'Completed',sale:{qty:qty,unit:f.unit.trim(),rate:parseFloat(f.rate),amt:amt,buyer:f.buyer.trim()}});
+    S.chat.forEach(function(x){x.review=false});
+    S.chat.push({r:'a',t:'Saved. '+qty+' '+f.unit.trim()+' of '+C.crop+' for '+inr(amt)+'. Total sales for '+C.crop+' is now '+inr(sumAmt(cropSales(C)))+'.',time:now()});
+    S.rv=null;S.sp=null;S.refocus=true;redraw();toast('Sale recorded.','ok')
+  }
   var greet={r:'a',t:'Namaste Ram. Here is your brief for Thursday.\n• 3 activities pending. Next: Harvest at Tank Side (03 Oct).\n• ₹18,150 spent in the last 7 days, mostly fertilizer.\n• Rain Sat–Sun, about 8 mm. Finish spraying by Friday.',card:'tasks',time:now()};
   function chat(){
     var m='<div class="day">Today</div>'+S.chat.map(function(x){
       var bot=x.r==='a';
-      return '<div class="bub '+x.r+'">'+(bot?'<span class="cav">'+ic('leaf',15)+'</span>':'')+'<div class="bd"><div class="cb">'+x.t.replace(/</g,'&lt;')+'</div>'+(x.card?CARDS[x.card]():'')+'<div class="ts">'+(x.time||'')+'</div></div></div>'}).join('')+
+      return '<div class="bub '+x.r+'">'+(bot?'<span class="cav">'+ic('leaf',15)+'</span>':'')+'<div class="bd"><div class="cb">'+x.t.replace(/</g,'&lt;')+'</div>'+(x.card?CARDS[x.card]():'')+(x.chips?'<div class="chips" role="group" aria-label="Choose a crop" style="margin-top:8px">'+x.chips.map(function(c){return '<button type="button" class="chip" data-q="'+c+'">'+c+'</button>'}).join('')+'</div>':'')+(x.review?'<button type="button" class="btn p" data-rv style="margin-top:8px">Review &amp; Save</button>':'')+(x.form!==undefined?'<button type="button" class="btn" data-go="addact" data-type="Sale" data-cropid="'+x.form+'" style="margin-top:8px">Open the form</button>':'')+'<div class="ts">'+(x.time||'')+'</div></div></div>'}).join('')+
       (S.busy?'<div class="bub a"><span class="cav">'+ic('leaf',15)+'</span><div class="cb"><span class="dots"><i></i><i></i><i></i></span></div></div>':'');
     var side=mode==='d'?'<aside class="cside"><button class="btn p" data-new="1" style="margin:0 4px 6px">+ New chat</button><h4>Recent</h4>'+
       ['Will it rain this week?','How much have I spent this season?','What should I do today?'].map(function(q){return '<button class="nav" data-q="'+q+'">'+ic('chat',15)+'<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+q+'</span></button>'}).join('')+'</aside>':'';
     return '<div class="cwrap">'+side+'<div class="cpane"><div class="ch"><span class="cav">'+ic('leaf',18)+'</span><div class="grow"><b>Farm assistant</b><small>Knows your 4 lands, crops and expenses</small></div>'+(FINAL?'':'<button class="badge '+stCls(STATUS.chat)+'" data-st="chat" title="Design status. Click to move to the next status.">'+STATUS.chat+'</button>')+'</div>'+
       '<div class="cm" id="cm-'+mode+'">'+m+'</div>'+
-      '<div class="cq">'+Object.keys(ANS).map(function(q){return '<button class="chip" data-q="'+q+'">'+q+'</button>'}).join('')+'</div>'+
-      '<form class="cc" data-ask><input id="ask-'+mode+'" placeholder="Ask about your farm" aria-label="Ask the assistant" autocomplete="off"><button class="send" aria-label="Send">'+ic('send',18)+'</button></form></div></div>'
+      '<div class="cq">'+Object.keys(ANS).concat(['Sold 12 crates of Tomato at ₹1250','Sold Tomato today']).map(function(q){return '<button class="chip" data-q="'+q+'">'+q+'</button>'}).join('')+'</div>'+
+      '<form class="cc" data-ask><input id="ask-'+mode+'" placeholder="Ask about your farm or log a sale" aria-label="Ask the assistant" autocomplete="off"><button class="send" aria-label="Send">'+ic('send',18)+'</button></form></div></div>'
   }
   function fld(id,label,ctl,req,err,help){var d=[];if(err){ctl=ctl.replace(' id="'+id+'"',' id="'+id+'" aria-invalid="true"');d.push(id+'-e')}if(help)d.push(id+'-h');if(d.length)ctl=ctl.replace(' id="'+id+'"',' id="'+id+'" aria-describedby="'+d.join(' ')+'"');return '<div class="fld'+(err?' is-error':'')+'"><label for="'+id+'"'+(req?' class="req"':'')+'>'+label+'</label>'+ctl+(help?'<span class="help" id="'+id+'-h">'+help+'</span>':'')+(err?'<span class="err" id="'+id+'-e">'+err+'</span>':'')+'</div>'}
   function newCf(){var L=S.pendingLand?landById(S.pendingLand):null,o={irr:'',method:'',season:'',name:'',landId:L?L.id:'',area:L?L.acre.toFixed(2):'',unit:'acres',date:'',tried:false};S.pendingLand=null;return o}
@@ -1584,7 +1646,7 @@ function mk(el,mode){
   }
   function ask(q){
     S.chat.push({r:'u',t:q,time:now()});S.busy=true;S.refocus=true;render();
-    setTimeout(function(){S.busy=false;var r=reply(q);r.time=now();S.chat.push(r);S.refocus=true;render()},800);
+    setTimeout(function(){S.busy=false;var r=((S.sp&&S.sp.waiting)||isSaleText(q))?saleReply(q):reply(q);r.time=now();S.chat.push(r);S.refocus=true;render()},800);
   }
   el.addEventListener('click',function(e){
     if(S.supp){S.supp=false;return}
@@ -1658,7 +1720,10 @@ function mk(el,mode){
     var atb=e.target.closest('[data-acttab]');if(atb){S.actTab=atb.dataset.acttab;render();return}
     var tk=e.target.closest('[data-task]');if(tk){var i=+tk.dataset.task;TASKS[i].done=!TASKS[i].done;redraw();return}
     var st=e.target.closest('[data-st]');if(st){nextStatus(st.dataset.st);return}
-    if(e.target.closest('[data-new]')){S.chat=[greet];S.refocus=true;render();return}
+    if(e.target.closest('[data-rvclose]')){S.rv=null;render();return}
+    if(e.target.closest('[data-rvsave]')){rvSave();return}
+    if(e.target.closest('[data-rv]')){var sp0=S.sp;if(sp0){S.rv={date:sp0.date,cropId:sp0.cropId,qty:sp0.qty,unit:sp0.unit,rate:sp0.rate,amount:sp0.amount,buyer:sp0.buyer,touched:!!sp0.amtSaid,tried:false};render()}return}
+    if(e.target.closest('[data-new]')){S.sp=null;S.rv=null;S.chat=[greet];S.refocus=true;render();return}
     var t=e.target.closest('[data-go],[data-land],[data-crop],[data-f],[data-q]');if(!t)return;if(t.matches('input,select,textarea'))return;
     if(t.dataset.go){if(t.dataset.go==='pricedetail'){S.apmc=t.dataset.apmc||'';S.cmpl=[];S.pdname='';if(t.dataset.wcrop){var wfc=CROPS.filter(function(k){return k.crop===t.dataset.wcrop})[0];if(wfc)S.crop=wfc.id;else S.pdname=t.dataset.wcrop}}if(t.dataset.go==='newwl')S.nwl=null;if(t.dataset.go==='addwi')S.wi=null;if(t.dataset.go==='actdetail')S.actFrom=S.screen;if(t.dataset.act)S.act=t.dataset.act;S.screen=t.dataset.go;if(t.dataset.crop)S.crop=t.dataset.crop;if(t.dataset.landid)S.pendingLand=t.dataset.landid;if(t.dataset.go==='addcrop')S.cf=null;if(t.dataset.go==='addact'){S.af=null;if(t.dataset.cropid){var kc2=CROPS.filter(function(k){return k.id===t.dataset.cropid})[0];if(kc2){S.af=newAf();if(t.dataset.type==='Sale'){S.af.type='Sale';S.af.from='cropdetail'}S.af.cropId=kc2.id;S.af.landId=kc2.landId||(landOf(kc2)||{}).id||''}}}if(t.dataset.selland){S.land=t.dataset.selland;S.pulse=S.land;flyTo(S.land)}if(t.dataset.go==='addalert'){var ac3=t.dataset.crop?CROPS.filter(function(k){return k.id===t.dataset.crop})[0]:null;S.alf=newAlf(ac3&&ac3.crop,S.screen)}if(t.dataset.go==='addexp'){S.ef=null;if(t.dataset.actid){S.ef=newEf();S.ef.actIdx=''+ACTS.map(function(q){return q.id}).indexOf(t.dataset.actid);S.ef.from='actdetail'}}}
     else if(t.dataset.land&&t.tagName!=='A'&&!t.dataset.go){if(S.draw.on)return;S.rn=null;S.land=t.dataset.land;S.pulse=S.land;flyTo(S.land)}
@@ -1694,7 +1759,7 @@ function mk(el,mode){
     if((o==='cf'||o==='af')&&f==='date'){obj.season=seasonFor(v);var se=el.querySelector('#'+o+'-season-'+mode);if(se)se.value=obj.season}
     if(o==='ef'){if(f==='amount')obj.touched=true;
       if((f==='qty'||f==='rate')&&!obj.touched){var q=parseFloat(obj.qty),r=parseFloat(obj.rate);obj.amount=(q>0&&r>0)?String(Math.round(q*r*100)/100):'';var am=el.querySelector('#ef-amount-'+mode);if(am)am.value=obj.amount}}
-    if(o==='af'){if(f==='amount')obj.touched=true;if((f==='qty'||f==='rate')&&!obj.touched){var q2=parseFloat(obj.qty),r2=parseFloat(obj.rate);obj.amount=(q2>0&&r2>0)?String(Math.round(q2*r2*100)/100):'';var am2=el.querySelector('#af-amount-'+mode);if(am2)am2.value=obj.amount}}
+    if(o==='af'||o==='rv'){if(f==='amount')obj.touched=true;if((f==='qty'||f==='rate')&&!obj.touched){var q2=parseFloat(obj.qty),r2=parseFloat(obj.rate);obj.amount=(q2>0&&r2>0)?String(Math.round(q2*r2*100)/100):'';var am2=el.querySelector('#'+o+'-amount-'+mode);if(am2)am2.value=obj.amount}}
     if(o==='alf'&&(f==='crop'||f==='type')){render();return}
     if(o==='wi'&&f==='crop'){obj.apmc='';render();return}
     if(o==='cf'&&(f==='landId'||f==='unit')){var L=landById(obj.landId);if(L){obj.area=(obj.unit==='hectares'?L.acre*0.404686:L.acre).toFixed(2)}else if(f==='landId')obj.area='';render()}});
@@ -1702,6 +1767,7 @@ function mk(el,mode){
   el.addEventListener('input',function(e){if(S.lg&&e.target.matches('[data-lgin]')){S.lg.name=e.target.value;e.target.classList.remove('lg-bad');if(S.lg.err){S.lg.err=null;var er=el.querySelector('.lg-err');if(er)er.remove()}}});
   el.addEventListener('keydown',function(e){if(e.key==='Escape'&&S.pe&&S.screen==='profile'){S.pe=null;render()}});
   el.addEventListener('submit',function(e){e.preventDefault();
+    if(e.target.matches('[data-rvform]')){rvSave();return}
     if(e.target.matches('[data-rename]')){var rn=S.rn;if(!rn)return;var nn=rn.val.trim();if(!nn){rn.err=true;S.focusRn=true;render();return}
       var rtl=landById(rn.id);if(rtl){var old=rtl.name;rtl.name=nn;CROPS.forEach(function(k){if(k.landId===rn.id)k.land=nn});ACTS.forEach(function(a){if(a.land===old)a.land=nn})}
       S.rn=null;redraw();toast('Renamed to '+nn+'.','ok');return}

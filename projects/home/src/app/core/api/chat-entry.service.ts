@@ -1,7 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 
 import { ActivityService } from '../../features/activity/activity.service';
-import { Activity, ActivityStatus, NewActivity } from '../../features/activity/activity.models';
+import {
+  Activity,
+  ActivitySale,
+  ActivityStatus,
+  NewActivity,
+} from '../../features/activity/activity.models';
 import { HttpService } from '../http/http.service';
 import { ReferenceDataService } from './reference-data.service';
 
@@ -35,6 +40,12 @@ export interface ResolvedEntry {
   land: string | null;
   notes: string | null;
   expenses: ParsedExpenseLine[];
+  /** Sale figures as the API sends them (decimal strings); only set for a Sale, else null/absent. */
+  sale_quantity?: string | null;
+  sale_unit?: string | null;
+  sale_rate?: string | null;
+  sale_amount?: string | null;
+  sale_buyer?: string | null;
   dropped: DroppedField[];
 }
 
@@ -72,6 +83,14 @@ export interface ChatEntryProvenance {
     crop_id: number | null;
     land_id: number | null;
     expenses: { category: string | null; amount: string | null }[];
+    /** Present only for a Sale: the figures the model proposed, before the farmer's edits. */
+    sale?: {
+      quantity: string | null;
+      unit: string | null;
+      rate: string | null;
+      amount: string | null;
+      buyer: string | null;
+    };
   };
   /** Values the backend refused to use, and why (#242). */
   dropped: DroppedField[];
@@ -135,6 +154,8 @@ export class ChatEntryService {
       fieldId: entry.land_id ?? undefined,
       notes: entry.notes ?? undefined,
       metadata: buildProvenance(entry, input, model),
+      // Only a Sale carries figures; the API refuses them on any other type.
+      ...(entry.activity_type === 'Sale' && { sale: saleOf(entry) }),
     };
 
     const activity = await this.activities.addActivity(draft);
@@ -184,8 +205,29 @@ function buildProvenance(entry: ResolvedEntry, input: string, model: string): Ch
       crop_id: entry.crop_id,
       land_id: entry.land_id,
       expenses: entry.expenses.map((e) => ({ category: e.category, amount: e.amount })),
+      // What the model proposed for a sale, so a later edit shows the correction.
+      ...(entry.activity_type === 'Sale' && {
+        sale: {
+          quantity: entry.sale_quantity ?? null,
+          unit: entry.sale_unit ?? null,
+          rate: entry.sale_rate ?? null,
+          amount: entry.sale_amount ?? null,
+          buyer: entry.sale_buyer ?? null,
+        },
+      }),
     },
     dropped: entry.dropped,
+  };
+}
+
+/** The sale figures to save, from the reviewed entry's decimal strings. */
+function saleOf(entry: ResolvedEntry): ActivitySale {
+  return {
+    quantity: toNumber(entry.sale_quantity ?? null),
+    unit: entry.sale_unit?.trim() || undefined,
+    rate: toNumber(entry.sale_rate ?? null),
+    amount: toNumber(entry.sale_amount ?? null),
+    buyer: entry.sale_buyer?.trim() || undefined,
   };
 }
 

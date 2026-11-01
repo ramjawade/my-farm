@@ -29,7 +29,16 @@
             <label for="reviewDate" class="form-label small">{{
               'chatBot.review.date' | translate
             }}</label>
-            <input id="reviewDate" type="date" class="form-control" formControlName="date" />
+            <input
+              id="reviewDate"
+              type="date"
+              class="form-control"
+              formControlName="date"
+              [class.is-invalid]="saleErrors().date"
+            />
+            @if (saleErrors().date; as key) {
+              <div class="invalid-feedback d-block">{{ key | translate }}</div>
+            }
           </div>
 
           <div class="mb-3">
@@ -48,13 +57,116 @@
             <label for="reviewCrop" class="form-label small">{{
               'chatBot.review.crop' | translate
             }}</label>
-            <select id="reviewCrop" class="form-select" formControlName="cropId">
+            <select
+              id="reviewCrop"
+              class="form-select"
+              formControlName="cropId"
+              [class.is-invalid]="saleErrors().crop"
+            >
               <option [ngValue]="null">{{ 'chatBot.review.none' | translate }}</option>
               @for (c of cropOptions(); track c.id) {
                 <option [ngValue]="c.id">{{ c.name }}</option>
               }
             </select>
+            @if (saleErrors().crop; as key) {
+              <div class="invalid-feedback d-block">{{ key | translate }}</div>
+            }
           </div>
+
+          @if (isSale()) {
+            <fieldset class="border rounded p-3 mb-3 bg-body-tertiary" data-testid="sale-details">
+              <legend class="fs-6 fw-semibold float-none w-auto px-1 mb-2">
+                {{ 'chatBot.review.saleDetails' | translate }}
+              </legend>
+              <div class="mb-3">
+                <label for="reviewSaleQuantity" class="form-label small">{{
+                  'saleForm.quantity' | translate
+                }}</label>
+                <div class="input-group">
+                  <input
+                    id="reviewSaleQuantity"
+                    type="number"
+                    min="0"
+                    step="any"
+                    class="form-control"
+                    formControlName="saleQuantity"
+                    [class.is-invalid]="saleErrors().quantity"
+                  />
+                  <input
+                    id="reviewSaleUnit"
+                    class="form-control"
+                    formControlName="saleUnit"
+                    list="reviewSaleUnits"
+                    autocomplete="off"
+                    [placeholder]="'saleForm.unitPlaceholder' | translate"
+                    [attr.aria-label]="'saleForm.unit' | translate"
+                    [class.is-invalid]="saleErrors().quantity"
+                  />
+                  <datalist id="reviewSaleUnits">
+                    @for (u of saleUnits; track u) {
+                      <option [value]="u"></option>
+                    }
+                  </datalist>
+                </div>
+                @if (saleErrors().quantity; as key) {
+                  <div class="invalid-feedback d-block">{{ key | translate }}</div>
+                }
+              </div>
+              <div class="mb-3">
+                <label for="reviewSaleRate" class="form-label small">{{
+                  'saleForm.rate' | translate
+                }}</label>
+                <input
+                  id="reviewSaleRate"
+                  type="number"
+                  min="0"
+                  step="any"
+                  class="form-control"
+                  formControlName="saleRate"
+                  [placeholder]="'saleForm.ratePlaceholder' | translate"
+                  [class.is-invalid]="saleErrors().rate"
+                />
+                @if (saleErrors().rate; as key) {
+                  <div class="invalid-feedback d-block">{{ key | translate }}</div>
+                }
+              </div>
+              <div class="mb-3">
+                <label for="reviewSaleAmount" class="form-label small">{{
+                  'saleForm.amount' | translate
+                }}</label>
+                <input
+                  id="reviewSaleAmount"
+                  type="number"
+                  min="0"
+                  step="any"
+                  class="form-control"
+                  formControlName="saleAmount"
+                  [placeholder]="'saleForm.amountPlaceholder' | translate"
+                  [class.is-invalid]="saleErrors().amount"
+                  (input)="onAmountInput()"
+                />
+                @if (saleErrors().amount; as key) {
+                  <div class="invalid-feedback d-block">{{ key | translate }}</div>
+                } @else {
+                  <span class="text-muted d-block small mt-1">{{
+                    'saleForm.amountHint' | translate
+                  }}</span>
+                }
+              </div>
+              <div>
+                <label for="reviewSaleBuyer" class="form-label small">{{
+                  'saleForm.buyer' | translate
+                }}</label>
+                <input
+                  id="reviewSaleBuyer"
+                  class="form-control"
+                  formControlName="saleBuyer"
+                  autocomplete="off"
+                  [placeholder]="'saleForm.buyerPlaceholder' | translate"
+                />
+              </div>
+            </fieldset>
+          }
 
           @if (expensesArray.controls.length) {
             <div formArrayName="expenses" class="mb-3">
