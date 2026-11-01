@@ -9,7 +9,6 @@ import { CropActivityComponent } from './crop-activity.component';
 import { CropTimelineService } from '../crop-timeline.service';
 import { CropActivity, CropEntity } from '../crop-timeline.models';
 import { FarmLookupService } from '../../../core/farms/farm-lookup.service';
-import { CropSalesService } from '../crop-sales/crop-sales.service';
 
 describe('CropActivityComponent', () => {
   let component: CropActivityComponent;
@@ -49,7 +48,6 @@ describe('CropActivityComponent', () => {
             paramMap: new BehaviorSubject(convertToParamMap(cropId ? { cropId } : {})),
           },
         },
-        { provide: CropSalesService, useValue: { list: () => Promise.resolve([]) } },
         {
           provide: FarmLookupService,
           useValue: {

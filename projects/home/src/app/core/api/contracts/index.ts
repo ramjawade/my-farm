@@ -17,7 +17,6 @@ export * from './auth.contract';
 export * from './farm.contract';
 export * from './land.contract';
 export * from './crop.contract';
-export * from './crop-sale.contract';
 export * from './mandi-price.contract';
 export * from './watchlist.contract';
 export * from './activity.contract';

@@ -1,5 +1,21 @@
 import { Injectable } from '@angular/core';
-import { Activity, ActivityExpense } from '../../features/activity/activity.models';
+import { Activity, ActivityExpense, ActivitySale } from '../../features/activity/activity.models';
+
+function numberOrUndefined(value: unknown): number | undefined {
+  return value === null || value === undefined ? undefined : Number(value);
+}
+
+/** The sale figures of a backend row, or undefined when it carries none. */
+function saleFromBackend(item: any): ActivitySale | undefined {
+  const sale: ActivitySale = {
+    quantity: numberOrUndefined(item.sale_quantity),
+    unit: item.sale_unit ?? undefined,
+    rate: numberOrUndefined(item.sale_rate),
+    amount: numberOrUndefined(item.sale_amount),
+    buyer: item.sale_buyer ?? undefined,
+  };
+  return Object.values(sale).some((v) => v !== undefined) ? sale : undefined;
+}
 
 function dateStringToTimestamp(value: string | null | undefined): number | undefined {
   if (!value) return undefined;
@@ -35,6 +51,7 @@ export class ActivityMapperService {
       status: item.status,
       notes: item.notes ?? undefined,
       metadata: item.activity_meta ?? undefined,
+      sale: saleFromBackend(item),
       createdAt: new Date(item.created_at).getTime(),
       updatedAt: new Date(item.updated_at).getTime(),
     };
@@ -52,6 +69,14 @@ export class ActivityMapperService {
       status: activity.status,
       notes: activity.notes,
       activity_meta: activity.metadata,
+      // When a sale is present send every figure (null clears one); otherwise leave them alone.
+      ...(activity.sale && {
+        sale_quantity: activity.sale.quantity ?? null,
+        sale_unit: activity.sale.unit ?? null,
+        sale_rate: activity.sale.rate ?? null,
+        sale_amount: activity.sale.amount ?? null,
+        sale_buyer: activity.sale.buyer ?? null,
+      }),
     };
   }
 

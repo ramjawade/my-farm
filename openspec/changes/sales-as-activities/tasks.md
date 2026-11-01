@@ -12,20 +12,20 @@ One PR on `claude/feature-sales-as-activities`. Backend checks: `ruff`, `mypy`, 
 
 ## 2. Frontend: activity form, page and list
 
-- [ ] 2.1 Extend the activity models, mapper and `ActivityService` with the five sale fields. Verify: mapper specs round-trip the fields and omit them for other types.
-- [ ] 2.2 Add the Sale details block to the Log/Edit activity form per the prototype: revealed by the Sale chip, "Crop sold" required, required-or-optional text and markers following the status, amount calculated from quantity and rate and overridable, error messages from the spec, figures dropped when the type changes. Verify: component specs for reveal, planned sale saved without figures, completed sale errors, calculated and overridden amount, and type switch.
-- [ ] 2.3 Accept `type=Sale` and `cropId` from the "Record sale" link and return to the crop page after saving and on Cancel. Verify: spec that Record sale opens the form with type and crop set and that save and Cancel return to the crop page.
-- [ ] 2.4 Show the Sale card on the activity page and the quantity, rate, buyer and `+amount` on the list row; make "Mark done" on a Sale without figures open the edit form with Completed selected. Verify: specs for completed and planned sale pages, the list row, and Mark done with and without figures.
+- [x] 2.1 Extend the activity models, mapper and `ActivityService` with the five sale fields. Verify: mapper specs round-trip the fields and omit them for other types.
+- [x] 2.2 Add the Sale details block to the Log/Edit activity form per the prototype: revealed by the Sale chip, "Crop sold" required, required-or-optional text and markers following the status, amount calculated from quantity and rate and overridable, error messages from the spec, figures dropped when the type changes. Verify: component specs for reveal, planned sale saved without figures, completed sale errors, calculated and overridden amount, and type switch.
+- [x] 2.3 Accept `type=Sale` and `cropId` from the "Record sale" link and return to the crop page after saving and on Cancel. Verify: spec that Record sale opens the form with type and crop set and that save and Cancel return to the crop page.
+- [x] 2.4 Show the Sale card on the activity page and the quantity, rate, buyer and `+amount` on the list row; make "Mark done" on a Sale without figures open the edit form with Completed selected. Verify: specs for completed and planned sale pages, the list row, and Mark done with and without figures.
 
 ## 3. Frontend: crop Sales card and clean-up
 
-- [ ] 3.1 Rebuild the crop Sales card from the crop's Sale activities (Cancelled excluded): completed rows with amount, "Planned sale" rows with status badge, rows open the activity page, totals, profit and profit per acre from Completed sales only. Verify: card specs for no sales, profit, loss, planned-only, mixed, and row navigation.
-- [ ] 3.2 Delete `crop-sales.service.ts`, `sale-form.component.*`, the `sales/new` and `sales/:saleId/edit` routes, their contracts and the `shell.title.recordSale` and `shell.title.editSale` strings; add en and mr strings for the Sale details block, "Planned sale" and the new messages. Verify: `npm run build` passes with no references left (`grep` for `CropSalesService` and `sale-form` is empty) and the translation completeness check passes.
+- [x] 3.1 Rebuild the crop Sales card from the crop's Sale activities (Cancelled excluded): completed rows with amount, "Planned sale" rows with status badge, rows open the activity page, totals, profit and profit per acre from Completed sales only. Verify: card specs for no sales, profit, loss, planned-only, mixed, and row navigation.
+- [x] 3.2 Delete `crop-sales.service.ts`, `sale-form.component.*`, the `sales/new` and `sales/:saleId/edit` routes, their contracts and the `shell.title.recordSale` and `shell.title.editSale` strings; add en and mr strings for the Sale details block, "Planned sale" and the new messages. Verify: `npm run build` passes with no references left (`grep` for `CropSalesService` and `sale-form` is empty) and the translation completeness check passes.
 
 ## 4. Roadmap, PR and archive
 
 - [ ] 4.1 Update the Playwright golden path if it records a sale; run `npm run lint`, `npm run build`, `npm test` and the backend `ruff`, `mypy`, `pytest`. Verify: all green locally.
-- [ ] 4.2 Add `sales-as-activities` to the roadmap before 4.6 (note that 4.6 reads sales from activities) in `openspec/changes/prototype-adoption-roadmap/tasks.md`. Verify: the new line is present above `reports-redesign`.
+- [x] 4.2 Add `sales-as-activities` to the roadmap before 4.6 (note that 4.6 reads sales from activities) in `openspec/changes/prototype-adoption-roadmap/tasks.md`. Verify: the new line is present above `reports-redesign`.
 - [ ] 4.3 Open the draft PR (it already holds the prototype and plan). Verify: PR links this change; CI runs.
 - [ ] 4.4 Once CI is green, archive the change on this branch (sync `crop-sales` and `activity-log-and-detail` specs, tick the roadmap line) and mark the PR ready. Verify: `openspec/specs/crop-sales/spec.md` shows the new requirements and the change sits under `archive/`.
 - [ ] 4.5 After merge, verify production counts and total amount match between live `crop_sale` rows and Sale activities, then note the follow-up change that drops `crop_sale`. Verify: figures recorded in the PR.

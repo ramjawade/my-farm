@@ -551,54 +551,6 @@ export interface paths {
     patch: operations['update_crop_api_v1_crops__crop_id__patch'];
     trace?: never;
   };
-  '/api/v1/crops/{crop_id}/sales': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * List Crop Sales
-     * @description List a crop's sales, newest first.
-     */
-    get: operations['list_crop_sales_api_v1_crops__crop_id__sales_get'];
-    put?: never;
-    /**
-     * Create Crop Sale
-     * @description Record a sale of a crop.
-     */
-    post: operations['create_crop_sale_api_v1_crops__crop_id__sales_post'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/crops/{crop_id}/sales/{sale_id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /**
-     * Delete Crop Sale
-     * @description Soft-delete a sale.
-     */
-    delete: operations['delete_crop_sale_api_v1_crops__crop_id__sales__sale_id__delete'];
-    options?: never;
-    head?: never;
-    /**
-     * Update Crop Sale
-     * @description Update a sale.
-     */
-    patch: operations['update_crop_sale_api_v1_crops__crop_id__sales__sale_id__patch'];
-    trace?: never;
-  };
   '/api/v1/farms': {
     parameters: {
       query?: never;
@@ -1193,6 +1145,16 @@ export interface components {
       notes?: string | null;
       /** Parent Activity Id */
       parent_activity_id?: number | null;
+      /** Sale Amount */
+      sale_amount?: number | string | null;
+      /** Sale Buyer */
+      sale_buyer?: string | null;
+      /** Sale Quantity */
+      sale_quantity?: number | string | null;
+      /** Sale Rate */
+      sale_rate?: number | string | null;
+      /** Sale Unit */
+      sale_unit?: string | null;
       /** Season */
       season?: string | null;
       /**
@@ -1331,6 +1293,16 @@ export interface components {
       notes?: string | null;
       /** Parent Activity Id */
       parent_activity_id?: number | null;
+      /** Sale Amount */
+      sale_amount?: string | null;
+      /** Sale Buyer */
+      sale_buyer?: string | null;
+      /** Sale Quantity */
+      sale_quantity?: string | null;
+      /** Sale Rate */
+      sale_rate?: string | null;
+      /** Sale Unit */
+      sale_unit?: string | null;
       /** Season */
       season?: string | null;
       /**
@@ -1399,6 +1371,16 @@ export interface components {
       notes?: string | null;
       /** Parent Activity Id */
       parent_activity_id?: number | null;
+      /** Sale Amount */
+      sale_amount?: number | string | null;
+      /** Sale Buyer */
+      sale_buyer?: string | null;
+      /** Sale Quantity */
+      sale_quantity?: number | string | null;
+      /** Sale Rate */
+      sale_rate?: number | string | null;
+      /** Sale Unit */
+      sale_unit?: string | null;
       /** Season */
       season?: string | null;
       /** Status */
@@ -1774,88 +1756,6 @@ export interface components {
        * Format: date-time
        */
       updated_at: string;
-    };
-    /**
-     * CropSaleCreate
-     * @description Create a sale (crop_id is from the URL path).
-     */
-    CropSaleCreate: {
-      /** Amount */
-      amount: number | string;
-      /** Buyer */
-      buyer?: string | null;
-      /** Notes */
-      notes?: string | null;
-      /** Quantity */
-      quantity: number | string;
-      /** Rate */
-      rate: number | string;
-      /**
-       * Sold On
-       * Format: date
-       */
-      sold_on: string;
-      /** Unit */
-      unit: string;
-    };
-    /**
-     * CropSaleRead
-     * @description Read a sale record.
-     */
-    CropSaleRead: {
-      /** Amount */
-      amount: string;
-      /** Buyer */
-      buyer?: string | null;
-      /**
-       * Created At
-       * Format: date-time
-       */
-      created_at: string;
-      /** Crop Id */
-      crop_id: number;
-      /** Deleted At */
-      deleted_at?: string | null;
-      /** Id */
-      id: number;
-      /** Notes */
-      notes?: string | null;
-      /** Quantity */
-      quantity: string;
-      /** Rate */
-      rate: string;
-      /**
-       * Sold On
-       * Format: date
-       */
-      sold_on: string;
-      /** Unit */
-      unit: string;
-      /**
-       * Updated At
-       * Format: date-time
-       */
-      updated_at: string;
-    };
-    /**
-     * CropSaleUpdate
-     * @description Update sale fields.
-     */
-    CropSaleUpdate: {
-      /** Amount */
-      amount?: number | string | null;
-      /** Buyer */
-      buyer?: string | null;
-      /** Notes */
-      notes?: string | null;
-      /** Quantity */
-      quantity?: number | string | null;
-      /** Rate */
-      rate?: number | string | null;
-      /** Sold On */
-      sold_on?: string | null;
-      /** Unit */
-      unit?: string | null;
     };
     /**
      * CropUpdate
@@ -3615,148 +3515,6 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['CropRead'];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['HTTPValidationError'];
-        };
-      };
-    };
-  };
-  list_crop_sales_api_v1_crops__crop_id__sales_get: {
-    parameters: {
-      query?: never;
-      header?: {
-        authorization?: string | null;
-      };
-      path: {
-        crop_id: number;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': {
-            [key: string]: unknown;
-          };
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['HTTPValidationError'];
-        };
-      };
-    };
-  };
-  create_crop_sale_api_v1_crops__crop_id__sales_post: {
-    parameters: {
-      query?: never;
-      header?: {
-        authorization?: string | null;
-      };
-      path: {
-        crop_id: number;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CropSaleCreate'];
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['CropSaleRead'];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['HTTPValidationError'];
-        };
-      };
-    };
-  };
-  delete_crop_sale_api_v1_crops__crop_id__sales__sale_id__delete: {
-    parameters: {
-      query?: never;
-      header?: {
-        authorization?: string | null;
-      };
-      path: {
-        crop_id: number;
-        sale_id: number;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['HTTPValidationError'];
-        };
-      };
-    };
-  };
-  update_crop_sale_api_v1_crops__crop_id__sales__sale_id__patch: {
-    parameters: {
-      query?: never;
-      header?: {
-        authorization?: string | null;
-      };
-      path: {
-        crop_id: number;
-        sale_id: number;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CropSaleUpdate'];
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['CropSaleRead'];
         };
       };
       /** @description Validation Error */

@@ -237,4 +237,125 @@ describe('CreateActivityComponent', () => {
     component.form.patchValue({ date: '2999-01-01' });
     expect(component.form.get('status')?.value).toBe('In Progress');
   });
+
+  describe('Sale details', () => {
+    const saleBlock = () =>
+      (fixture.nativeElement as HTMLElement).querySelector('[data-testid="sale-details"]');
+
+    async function openSale(): Promise<void> {
+      queryParams = new BehaviorSubject<Record<string, string>>({ type: 'Sale' });
+      paramMap = new BehaviorSubject(convertToParamMap({ cropId: '5' }));
+      setup();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+    }
+
+    it('reveals the block for the Sale type and hides it for another type', async () => {
+      await openSale();
+      expect(saleBlock()).not.toBeNull();
+
+      component.form.patchValue({ type: 'Irrigation' });
+      fixture.detectChanges();
+      expect(saleBlock()).toBeNull();
+    });
+
+    it('refuses a completed sale with no figures and shows the messages', async () => {
+      await openSale();
+
+      await component.onSubmit();
+      fixture.detectChanges();
+
+      expect(addActivitySpy).not.toHaveBeenCalled();
+      expect(component.saleErrors()).toEqual({
+        quantity: 'saleForm.quantityRequired',
+        rate: 'saleForm.rateRequired',
+        amount: 'saleForm.amountRequired',
+      });
+    });
+
+    it('asks for a unit when only the quantity is filled', async () => {
+      await openSale();
+      component.form.patchValue({ saleQuantity: 5 });
+
+      await component.onSubmit();
+
+      expect(component.saleErrors().quantity).toBe('saleForm.unitRequired');
+    });
+
+    it('asks for the crop on a sale', async () => {
+      queryParams = new BehaviorSubject<Record<string, string>>({ type: 'Sale' });
+      setup();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      await component.onSubmit();
+
+      expect(component.saleErrors().crop).toBe('createActivity.saleCropRequired');
+      expect(addActivitySpy).not.toHaveBeenCalled();
+    });
+
+    it('works out the amount from quantity and rate, and keeps a typed amount', async () => {
+      await openSale();
+
+      component.form.patchValue({ saleQuantity: 10, saleRate: 1100 });
+      expect(component.form.get('saleAmount')?.value).toBe(11000);
+
+      component.onAmountInput();
+      component.form.patchValue({ saleAmount: 10500 });
+      component.form.patchValue({ saleQuantity: 12 });
+      expect(component.form.get('saleAmount')?.value).toBe(10500);
+    });
+
+    it('saves a completed sale with its figures and returns to the crop page', async () => {
+      await openSale();
+      component.form.patchValue({
+        saleQuantity: 12,
+        saleUnit: 'crates',
+        saleRate: 1250,
+        saleBuyer: ' Nashik APMC ',
+      });
+
+      await component.onSubmit();
+
+      const saved = addActivitySpy.calls.mostRecent().args[0];
+      expect(saved.sale).toEqual({
+        quantity: 12,
+        unit: 'crates',
+        rate: 1250,
+        amount: 15000,
+        buyer: 'Nashik APMC',
+      });
+      expect(saved.cropId).toBe(5);
+      expect(router.navigate).toHaveBeenCalledWith(['..'], { relativeTo: component['route'] });
+    });
+
+    it('saves a planned sale without figures', async () => {
+      await openSale();
+      component.form.patchValue({ date: '2999-01-01' });
+      expect(component.form.get('status')?.value).toBe('Scheduled');
+
+      await component.onSubmit();
+
+      const saved = addActivitySpy.calls.mostRecent().args[0];
+      expect(saved.status).toBe('Scheduled');
+      expect(saved.sale).toEqual({
+        quantity: undefined,
+        unit: undefined,
+        rate: undefined,
+        amount: undefined,
+        buyer: undefined,
+      });
+    });
+
+    it('drops the figures when the type is changed away from Sale', async () => {
+      await openSale();
+      component.form.patchValue({ saleQuantity: 1, saleUnit: 'kg', saleRate: 10 });
+      component.form.patchValue({ type: 'Irrigation' });
+
+      await component.onSubmit();
+
+      expect(addActivitySpy.calls.mostRecent().args[0].sale).toBeUndefined();
+    });
+  });
 });

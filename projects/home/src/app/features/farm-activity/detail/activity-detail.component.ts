@@ -1,5 +1,6 @@
 import { I18n } from '../../../core/i18n/i18n.service';
-import { LocalDatePipe } from '../../../core/i18n/localized.pipes';
+import { LocalDatePipe, LocalNumberPipe } from '../../../core/i18n/localized.pipes';
+import { ReferenceDataService } from '../../../core/api/reference-data.service';
 import {
   Component,
   inject,
@@ -39,6 +40,7 @@ import {
   standalone: true,
   imports: [
     LocalDatePipe,
+    LocalNumberPipe,
     RouterLink,
     ConfirmDialogComponent,
     ExpenseListComponent,
@@ -60,6 +62,7 @@ export class ActivityDetailComponent implements OnInit {
   private readonly cropService = inject(CropTimelineService);
   private readonly farmDrawService = inject(FarmDrawService);
   private readonly authService = inject(AuthService);
+  private readonly referenceData = inject(ReferenceDataService);
 
   readonly showDeleteActivityConfirm = signal(false);
   readonly savedFarms = signal<SavedFarm[]>([]);
@@ -93,9 +96,35 @@ export class ActivityDetailComponent implements OnInit {
   readonly statusTone = computed(() => activityStatusTone(this.activity()?.status ?? 'Draft'));
   readonly statusKey = computed(() => activityStatusKey(this.activity()?.status ?? 'Draft'));
 
-  editActivity(): void {
+  readonly isSale = computed(() => {
+    const act = this.activity();
+    return !!act && this.referenceData.isActivityType(act.activityTypeId, 'Sale');
+  });
+  /** True when the sale has every figure a Completed sale needs. */
+  private readonly saleComplete = computed(() => {
+    const sale = this.activity()?.sale;
+    return !!sale && !!sale.quantity && !!sale.unit && !!sale.rate && !!sale.amount;
+  });
+  /** The Sale card shows the figures once the sale is Completed. */
+  readonly showSaleFigures = computed(
+    () => this.activity()?.status === 'Completed' && this.saleComplete(),
+  );
+
+  editActivity(status?: ActivityStatus): void {
     const id = this.activityId();
-    if (id) void this.router.navigate(['/activities/create'], { queryParams: { activityId: id } });
+    if (!id) return;
+    void this.router.navigate(['/activities/create'], {
+      queryParams: status ? { activityId: id, status } : { activityId: id },
+    });
+  }
+
+  /** A Sale without its figures cannot be completed here: Edit opens with Completed chosen. */
+  markDone(): void {
+    if (this.isSale() && !this.saleComplete()) {
+      this.editActivity('Completed');
+      return;
+    }
+    void this.updateStatus('Completed');
   }
 
   async ngOnInit(): Promise<void> {

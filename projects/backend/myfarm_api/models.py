@@ -478,6 +478,12 @@ class Activity(TenantScopedBase):
     status: Mapped[str] = mapped_column(String(50), default="pending")
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     activity_meta: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    # Sale figures: only set on activities of type Sale (validated in the router).
+    sale_quantity: Mapped[Decimal | None] = mapped_column(Numeric(10, 2), nullable=True)
+    sale_unit: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    sale_rate: Mapped[Decimal | None] = mapped_column(Numeric(10, 2), nullable=True)
+    sale_amount: Mapped[Decimal | None] = mapped_column(Numeric(12, 2), nullable=True)
+    sale_buyer: Mapped[str | None] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

@@ -50,6 +50,28 @@ describe('ActivityRowComponent', () => {
     expect(el.querySelector('strong.flex-shrink-0')?.textContent?.trim()).toBe('–');
   });
 
+  it('shows a completed sale as quantity at rate and a plus amount', () => {
+    const { el } = setup(ActivityRowComponent, {
+      activity: activity({
+        sale: { quantity: 12, unit: 'crates', rate: 1250, amount: 15000, buyer: 'Nashik APMC' },
+      }),
+      total: 0,
+    });
+
+    expect(el.textContent).toContain('Nashik APMC');
+    expect(el.querySelector('strong.text-success')?.textContent).toContain('+₹15,000');
+  });
+
+  it('shows a planned sale by its status badge, with no amount', () => {
+    const { el } = setup(ActivityRowComponent, {
+      activity: activity({ status: 'Scheduled', sale: { buyer: 'Nashik APMC' } }),
+      total: 0,
+    });
+
+    expect(el.querySelector('.badge')).not.toBeNull();
+    expect(el.textContent).not.toContain('+₹');
+  });
+
   it('shows the status badge for an open activity', () => {
     const { el } = setup(ActivityRowComponent, {
       activity: activity({ status: 'Scheduled' }),

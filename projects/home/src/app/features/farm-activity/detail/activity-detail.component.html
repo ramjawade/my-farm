@@ -48,7 +48,7 @@
       </div>
       <div class="d-flex flex-wrap" style="gap: 8px">
         @if (actions().markDone) {
-          <button type="button" class="btn btn-primary" (click)="updateStatus('Completed')">
+          <button type="button" class="btn btn-primary" (click)="markDone()">
             {{ 'activityDetail.markDone' | translate }}
           </button>
         }
@@ -89,7 +89,36 @@
     </header>
 
     <div class="row g-3">
-      <div class="col-12" [class.col-md-6]="act.notes">
+      @if (isSale()) {
+        <div class="col-12 col-md-6">
+          <section class="card h-100" data-testid="sale-card">
+            <h2 class="fs-6 fw-bold mb-2">{{ 'activityDetail.saleTitle' | translate }}</h2>
+            @if (showSaleFigures()) {
+              <p class="h4 text-success mb-1">
+                ₹{{ (act.sale?.amount ?? 0) | localNumber: '1.0-0' }}
+              </p>
+              <p class="text-body-secondary mb-1">
+                {{
+                  'cropSales.line'
+                    | translate
+                      : {
+                          qty: (act.sale?.quantity | localNumber: '1.0-2'),
+                          unit: act.sale?.unit,
+                          rate: (act.sale?.rate | localNumber: '1.0-2'),
+                        }
+                }}
+              </p>
+              <p class="mb-0">
+                <span class="text-body-secondary">{{ 'saleForm.buyer' | translate }}:</span>
+                {{ act.sale?.buyer || ('cropSales.noBuyer' | translate) }}
+              </p>
+            } @else {
+              <p class="text-body-secondary mb-0">{{ 'activityDetail.salePlanned' | translate }}</p>
+            }
+          </section>
+        </div>
+      }
+      <div class="col-12" [class.col-md-6]="act.notes || isSale()">
         <section class="card h-100">
           <h2 class="fs-6 fw-bold d-flex justify-content-between align-items-center mb-2">
             {{ 'activityDetail.expenseDetails' | translate }}

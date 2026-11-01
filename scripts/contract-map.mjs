@@ -75,25 +75,6 @@ export const CONTRACT_FILES = [
     ],
   },
   {
-    file: 'crop-sale.contract.ts',
-    header: `/**
- * Crop sales — produce sold from a crop, nested under it.
- *
- *   GET    /api/v1/crops/{cid}/sales        -> { items: CropSaleResponse[] }
- *   POST   /api/v1/crops/{cid}/sales        -> CropSaleResponse   (201)
- *   PATCH  /api/v1/crops/{cid}/sales/{id}   -> CropSaleResponse
- *   DELETE /api/v1/crops/{cid}/sales/{id}   -> 204
- *
- * The owning \`crop_id\` is always taken from the URL path; the create body
- * doesn't carry it. Decimals arrive as strings or numbers.
- */`,
-    exports: [
-      { name: 'CropSaleResponse', schema: 'CropSaleRead' },
-      { name: 'CropSaleCreateRequest', schema: 'CropSaleCreate' },
-      { name: 'CropSaleUpdateRequest', schema: 'CropSaleUpdate' },
-    ],
-  },
-  {
     file: 'mandi-price.contract.ts',
     header: `/**
  * Mandi prices — mandis, the mandis a farmer follows, latest prices and history.
