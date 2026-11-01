@@ -34,7 +34,7 @@ Each task is one child change: run `/opsx:propose`, get approval, apply it, merg
 - [x] 4.4 `assistant-full-page`: assistant screen, greeting with brief bullets, suggested questions, review-and-save of logged entries [prototype: chat]
 - [ ] 4.5 `weather-redesign`: today card, forecast, farming advisories in the new style [prototype: weather]
 - [x] 4.5a `sales-as-activities`: a sale is an activity of type Sale with real columns; Record sale opens Log activity; Sales card reads Sale activities; runs before 4.6 [prototype: addact, cropdetail, actdetail, log]
-- [ ] 4.6 `reports-redesign`: reports by category and month, export, in the new style; reads sales from Sale activities (after 4.5a) [prototype: reports]
+- [x] 4.6 `reports-redesign`: reports by category and month, export, in the new style; reads sales from Sale activities (after 4.5a) [prototype: reports]
 
 ## 5. Phase 4: Polish and parity
 

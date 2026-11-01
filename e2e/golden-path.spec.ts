@@ -157,11 +157,12 @@ test.describe('Golden path', () => {
       await expect(page.getByText('₹500').first()).toBeVisible();
     });
 
-    await test.step('generate the season report and export it as CSV', async () => {
+    await test.step('open the season report and export it as CSV', async () => {
       await page.goto('/reports');
 
-      await page.getByRole('button', { name: 'Generate Report' }).click();
-      await expect(page.getByText('Total Season Expenses')).toBeVisible();
+      // The report loads live; the activity above was logged in Kharif, whatever today's season is.
+      await page.locator('label[for="reports-season-Kharif"]').click();
+      await expect(page.getByText('Season summary')).toBeVisible();
 
       const exportButton = page.getByRole('button', { name: 'Export CSV' });
       await expect(exportButton).toBeVisible();

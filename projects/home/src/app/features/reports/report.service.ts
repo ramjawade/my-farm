@@ -4,6 +4,12 @@ import { ActivityService } from '../activity/activity.service';
 import { CropTimelineService } from '../crop-timeline/crop-timeline.service';
 import { Season } from '../../core/models/season';
 import { ReferenceDataService } from '../../core/api/reference-data.service';
+import { Activity, ActivityExpense } from '../activity/activity.models';
+import {
+  isCompletedSale,
+  salesFromActivities,
+  summarizeSales,
+} from '../crop-timeline/crop-sales/sales-summary';
 
 export interface ExpenseByCategory {
   expenseCategoryId: number;
@@ -11,11 +17,16 @@ export interface ExpenseByCategory {
   count: number;
 }
 
-export interface ExpenseByCrop {
+/** One crop's sales against its expenses in the selected season. */
+export interface CropProfit {
   cropId: number;
   cropName: string;
-  total: number;
-  activities: number;
+  /** Completed sales and their total. */
+  soldCount: number;
+  sales: number;
+  expenses: number;
+  /** Rounded to the rupee; null when the crop has no area. */
+  profitPerAcre: number | null;
 }
 
 export interface ExpenseByMonth {
@@ -27,9 +38,31 @@ export interface SeasonReport {
   season: Season;
   year: number;
   totalExpense: number;
+  /** Completed Sale activities in the selection. */
+  totalSales: number;
+  /** Total sales minus total expenses; includes crops that have no sales yet. */
+  net: number;
+  /** Crops with at least one Completed sale. */
+  cropsSold: number;
   byCategory: ExpenseByCategory[];
-  byCrop: ExpenseByCrop[];
+  crops: CropProfit[];
   byMonth: ExpenseByMonth[];
+  /** False when nothing was recorded in the selection. */
+  hasData: boolean;
+}
+
+/** One sowing of a crop, for Compare seasons. */
+export interface CompareRow {
+  cropId: number;
+  season?: Season;
+  year?: number;
+  /** Still growing. */
+  inProgress: boolean;
+  areaLabel: { area: number; unit: 'acres' | 'hectares' };
+  sold: boolean;
+  sales: number;
+  expenses: number;
+  profitPerAcre: number | null;
 }
 
 /** Aggregates expenses into season reports. */
@@ -58,17 +91,68 @@ export class ReportService {
     const totalExpense = expenses.reduce((sum, e) => sum + e.amount, 0);
 
     const byCategory = this.aggregateByCategory(expenses);
-    const byCrop = this.aggregateByCrop(seasonActivities, expenses);
+    const crops = this.aggregateByCrop(seasonActivities, expenses);
     const byMonth = this.aggregateByMonth(expenses);
+    const totalSales = seasonActivities
+      .filter((a) => this.isCompletedSale(a))
+      .reduce((sum, a) => sum + (a.sale?.amount ?? 0), 0);
 
     return {
       season,
       year,
       totalExpense,
+      totalSales,
+      net: totalSales - totalExpense,
+      cropsSold: crops.filter((c) => c.soldCount > 0).length,
       byCategory,
-      byCrop,
+      crops,
       byMonth,
+      hasData: seasonActivities.length > 0 || expenses.length > 0,
     };
+  }
+
+  private isSaleType = (activityTypeId: number): boolean =>
+    this.referenceData.isActivityType(activityTypeId, 'Sale');
+
+  private isCompletedSale(activity: Activity): boolean {
+    return activity.status === 'Completed' && this.isSaleType(activity.activityTypeId);
+  }
+
+  /** The crop names the farmer has grown, for the Compare seasons chips. */
+  comparableCropNames(): string[] {
+    return [...new Set(this.cropService.crops().map((c) => c.name))].sort((a, b) =>
+      a.localeCompare(b),
+    );
+  }
+
+  /**
+   * One row per crop of that name, newest sowing first. Counts every Completed sale and
+   * every expense of the crop, so it does not depend on the season filter.
+   */
+  compareRows(cropName: string): CompareRow[] {
+    const activities = this.activityService.activities();
+    return this.cropService
+      .crops()
+      .filter((c) => c.name === cropName)
+      .map((crop) => {
+        const sales = salesFromActivities(activities, crop.id, this.isSaleType);
+        const expenses = this.cropService.costForCrop(crop.id);
+        const summary = summarizeSales(sales, expenses, crop.area, crop.areaUnit);
+        return {
+          cropId: crop.id,
+          season: crop.season,
+          year: crop.sowingDate ? new Date(crop.sowingDate).getFullYear() : undefined,
+          sowingDate: crop.sowingDate ?? 0,
+          inProgress: crop.status === 'Active',
+          areaLabel: { area: crop.area, unit: crop.areaUnit },
+          sold: summary.hasCompleted,
+          sales: summary.total,
+          expenses,
+          profitPerAcre: summary.profitPerAcre,
+        };
+      })
+      .sort((a, b) => b.sowingDate - a.sowingDate || b.cropId - a.cropId)
+      .map(({ sowingDate: _sowingDate, ...row }) => row);
   }
 
   private aggregateByCategory(expenses: any[]): ExpenseByCategory[] {
@@ -86,37 +170,40 @@ export class ReportService {
       .sort((a, b) => b.total - a.total);
   }
 
-  private aggregateByCrop(activities: any[], expenses: any[]): ExpenseByCrop[] {
-    const map = new Map<number, { cropName: string; total: number; activities: number }>();
-    activities.forEach((a) => {
-      if (!a.cropId) return;
-      const crop = this.cropService.getCropById(a.cropId);
-      const cropName = crop?.name || this.i18n.t('common.unknownCrop');
-      const existing = map.get(a.cropId) || { cropName, total: 0, activities: 0 };
-      map.set(a.cropId, {
-        ...existing,
-        cropName,
-        activities: existing.activities + 1,
-      });
-    });
+  /** Sales, expenses and profit per acre for each crop that has activity in the selection. */
+  private aggregateByCrop(activities: Activity[], expenses: ActivityExpense[]): CropProfit[] {
+    const cropIds = new Set<number>();
+    activities.forEach((a) => a.cropId && cropIds.add(a.cropId));
 
+    const expenseByCrop = new Map<number, number>();
     expenses.forEach((e) => {
-      const a = this.activityService.getActivityById(e.activityId);
-      if (!a?.cropId) return;
-      const crop = this.cropService.getCropById(a.cropId);
-      const cropName = crop?.name || this.i18n.t('common.unknownCrop');
-      const existing = map.get(a.cropId);
-      if (existing) {
-        map.set(a.cropId, {
-          ...existing,
-          total: existing.total + e.amount,
-        });
-      }
+      const cropId = this.activityService.getActivityById(e.activityId)?.cropId;
+      if (cropId) expenseByCrop.set(cropId, (expenseByCrop.get(cropId) ?? 0) + e.amount);
     });
 
-    return Array.from(map.entries())
-      .map(([cropId, data]) => ({ cropId, ...data }))
-      .sort((a, b) => b.total - a.total);
+    return [...cropIds]
+      .map((cropId) => {
+        const crop = this.cropService.getCropById(cropId);
+        const cropExpenses = expenseByCrop.get(cropId) ?? 0;
+        const sales = salesFromActivities(activities, cropId, this.isSaleType);
+        const summary = summarizeSales(
+          sales,
+          cropExpenses,
+          crop?.area ?? 0,
+          crop?.areaUnit ?? 'acres',
+        );
+        return {
+          cropId,
+          cropName: crop?.name || this.i18n.t('common.unknownCrop'),
+          soldCount: sales.filter(isCompletedSale).length,
+          sales: summary.total,
+          expenses: cropExpenses,
+          profitPerAcre: summary.profitPerAcre,
+        };
+      })
+      .sort(
+        (a, b) => (b.soldCount > 0 ? 1 : 0) - (a.soldCount > 0 ? 1 : 0) || b.expenses - a.expenses,
+      );
   }
 
   private aggregateByMonth(expenses: any[]): ExpenseByMonth[] {
@@ -141,7 +228,20 @@ export class ReportService {
     const lines: string[] = [];
 
     lines.push(`Season Report: ${report.season} ${report.year}`);
+    lines.push(`Total Sales: ₹${report.totalSales.toFixed(2)}`);
     lines.push(`Total Expenses: ₹${report.totalExpense.toFixed(2)}`);
+    lines.push(`Net So Far: ₹${report.net.toFixed(2)}`);
+    lines.push(`Crops Sold: ${report.cropsSold} of ${report.crops.length}`);
+    lines.push('');
+
+    lines.push('Profit by Crop');
+    lines.push('Crop,Sales,Expenses,Profit per Acre');
+    report.crops.forEach((c) => {
+      const perAcre = c.soldCount > 0 && c.profitPerAcre !== null ? String(c.profitPerAcre) : '';
+      lines.push(
+        `"${this.escapeCSV(c.cropName)}",${c.sales.toFixed(2)},${c.expenses.toFixed(2)},${perAcre}`,
+      );
+    });
     lines.push('');
 
     lines.push('Expenses by Category');
@@ -149,13 +249,6 @@ export class ReportService {
     report.byCategory.forEach((c) => {
       const name = this.referenceData.expenseCategoryName(c.expenseCategoryId);
       lines.push(`"${this.escapeCSV(name)}",${c.total.toFixed(2)},${c.count}`);
-    });
-    lines.push('');
-
-    lines.push('Expenses by Crop');
-    lines.push('Crop,Amount,Activities');
-    report.byCrop.forEach((c) => {
-      lines.push(`"${this.escapeCSV(c.cropName)}",${c.total.toFixed(2)},${c.activities}`);
     });
     lines.push('');
 

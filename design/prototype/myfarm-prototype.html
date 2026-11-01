@@ -1298,22 +1298,35 @@ function mk(el,mode){
       '<p class="hint" style="margin:8px 0 0">Profit counts completed sales minus crop expenses ('+inr(c.cost)+'), per acre over '+fmtAc(ac)+'. Sales are activities too, so they also show in the Activity log.</p></div>'
   }
   function reports(){
-    var data=CROPS.map(function(c){var ss=cropSales(c),t=sumAmt(ss),ac=areaOf(c);return {c:c,n:ss.length,sales:t,exp:c.cost,ac:ac,pr:t-c.cost,ppa:ac?Math.round((t-c.cost)/ac):0}});
-    var tS=data.reduce(function(a,x){return a+x.sales},0),tE=data.reduce(function(a,x){return a+x.exp},0),sold=data.filter(function(x){return x.n>0}).length;
+    var rs=S.rs||'Kharif',ry=S.ry||'2026',YEARS=['2026','2025'];
+    var seasonOfMon=function(s){var m=new Date(s+' 2026').getMonth();return m>=5&&m<=9?'Kharif':(m===3||m===4)?'Zaid':'Rabi'};
+    var inSeason=function(s){return ry==='2026'&&seasonOfMon(s)===rs};
     var box=function(k,v,st){return '<div><b'+(st?' style="color:'+st+'"':'')+'>'+v+'</b><small>'+k+'</small></div>'};
-    var summary='<div class="card"><h3>Season summary <span class="hint">All crops</span></h3><div class="ldg">'+box('Total sales',inr(tS))+box('Total expenses',inr(tE))+box('Net so far',sgn(tS-tE),pcol(tS-tE))+box('Crops sold',sold+' of '+data.length)+'</div><p class="hint" style="margin:8px 0 0">Net so far counts crops that have no sales yet, so it will rise as you record sales.</p></div>';
+    var filter='<div class="card"><div class="chips" role="group" aria-label="Season">'+SEASONS.map(function(s){return '<button type="button" class="chip" data-rs="'+s[0]+'" aria-pressed="'+(rs===s[0])+'">'+s[0]+'</button>'}).join('')+'</div>'+
+      '<div class="chips" role="group" aria-label="Year" style="margin-top:var(--s-2)">'+YEARS.map(function(y){return '<button type="button" class="chip" data-ry="'+y+'" aria-pressed="'+(ry===y)+'">'+y+'</button>'}).join('')+'</div></div>';
+    var data=CROPS.filter(function(c){return inSeason(c.sown)}).map(function(c){var ss=cropSales(c),t=sumAmt(ss),ac=areaOf(c);return {c:c,n:ss.length,sales:t,exp:c.cost,ac:ac,pr:t-c.cost,ppa:ac?Math.round((t-c.cost)/ac):0}});
+    var tS=data.reduce(function(a,x){return a+x.sales},0),tE=data.reduce(function(a,x){return a+x.exp},0),sold=data.filter(function(x){return x.n>0}).length;
+    var summary='<div class="card"><h3>Season summary <span class="hint">'+rs+' '+ry+'</span></h3><div class="ldg">'+box('Total sales',inr(tS))+box('Total expenses',inr(tE))+box('Net so far',sgn(tS-tE),pcol(tS-tE))+box('Crops sold',sold+' of '+data.length)+'</div><p class="hint" style="margin:8px 0 0">Net so far counts crops that have no sales yet, so it will rise as you record sales. Only completed sales are counted.</p></div>';
     var list='<div class="card"><h3>Profit by crop</h3>'+data.slice().sort(function(a,b){return b.n-a.n}).map(function(x){
       var right=x.n?'<div style="flex:none;text-align:right"><b style="display:block;color:'+pcol(x.ppa)+'">'+sgn(x.ppa)+'</b><small>profit per acre</small></div>':'<div style="flex:none;text-align:right"><b style="display:block">–</b><small>No sales yet</small></div>';
       return '<button type="button" class="row" data-go="cropdetail" data-crop="'+x.c.id+'" style="'+ROWSTY+'"><span class="cico" aria-hidden="true">'+ic(cropIcon(x.c),20)+'</span><div class="grow"><b>'+x.c.crop+'</b><small>Sales '+inr(x.sales)+' · Expenses '+inr(x.exp)+'</small></div>'+right+CHV+'</button>'}).join('')+'</div>';
+    var spTot=SPEND.reduce(function(a,b){return a+b[1]},0);
+    var cat='<div class="card"><h3>Expenses by category <b class="amt">'+inr(spTot)+'</b></h3>'+SPEND.map(function(s){return '<div style="margin:0 0 10px"><div style="display:flex;justify-content:space-between"><span>'+s[0]+' <small class="hint">'+Math.round(s[1]/spTot*100)+'%</small></span><span class="amt">'+inr(s[1])+'</span></div><div class="bar"><i style="width:'+(s[1]/spTot*100)+'%;background:'+s[2]+'"></i></div></div>'}).join('')+'</div>';
+    var MONS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],byMon={};
+    ACTS.forEach(function(a){if(a.s!=='Completed'||!a.c)return;var mo=String(a.d).split(' ')[1];if(inSeason(a.d))byMon[mo]=(byMon[mo]||0)+a.c});
+    var monKeys=Object.keys(byMon).sort(function(a,b){return MONS.indexOf(a)-MONS.indexOf(b)}),monMax=Math.max.apply(0,monKeys.map(function(k){return byMon[k]}).concat([1]));
+    var mon='<div class="card"><h3>Expenses by month</h3>'+(monKeys.length?monKeys.map(function(k){return '<div style="margin:0 0 10px"><div style="display:flex;justify-content:space-between"><span>'+k+' '+ry+'</span><span class="amt">'+inr(byMon[k])+'</span></div><div class="bar"><i style="width:'+(byMon[k]/monMax*100)+'%;background:var(--leaf)"></i></div></div>'}).join(''):'<p class="hint" style="margin:0">No expenses this season.</p>')+'</div>';
     var names=Object.keys(HIST),cur=names.indexOf(S.cmp)>=0?S.cmp:names[0],rows=[],cc=CROPS.filter(function(k){return k.crop===cur})[0];
-    if(cc){var d0=data.filter(function(x){return x.c===cc})[0];rows.push({s:'Kharif 2026',now:true,ac:d0.ac,exp:d0.exp,sales:d0.sales,sold:d0.n>0})}
+    if(cc){var d0=CROPS.map(function(c){var ss=cropSales(c),t=sumAmt(ss),ac=areaOf(c);return {c:c,n:ss.length,sales:t,exp:c.cost,ac:ac}}).filter(function(x){return x.c===cc})[0];rows.push({s:'Kharif 2026',now:true,ac:d0.ac,exp:d0.exp,sales:d0.sales,sold:d0.n>0})}
     HIST[cur].forEach(function(h){rows.push({s:h.s,ac:h.ac,exp:h.exp,sales:h.sales,sold:true})});
     rows.forEach(function(r){r.ppa=r.ac?Math.round((r.sales-r.exp)/r.ac):0});
     var mx=Math.max.apply(0,rows.filter(function(r){return r.sold}).map(function(r){return Math.abs(r.ppa)}).concat([1]));
-    var cmp='<div class="card"><h3>Compare seasons</h3><div class="chips" role="group" aria-label="Crop to compare">'+names.map(function(n){return '<button type="button" class="chip" data-cmp="'+n+'" aria-pressed="'+(n===cur)+'">'+n+'</button>'}).join('')+'</div>'+
+    var cmp='<div class="card"><h3>Compare seasons <span class="hint">Not filtered</span></h3><div class="chips" role="group" aria-label="Crop to compare">'+names.map(function(n){return '<button type="button" class="chip" data-cmp="'+n+'" aria-pressed="'+(n===cur)+'">'+n+'</button>'}).join('')+'</div>'+
       rows.map(function(r){return '<div style="padding:10px 0;border-top:1px solid var(--line)"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px"><div><b>'+r.s+'</b>'+(r.now?' <span class="badge sun">In progress</span>':'')+'<small style="display:block;color:var(--muted)">'+fmtAc(r.ac)+' · Sales '+inr(r.sales)+' · Expenses '+inr(r.exp)+'</small></div>'+(r.sold?'<div style="text-align:right;flex:none"><b style="display:block;color:'+pcol(r.ppa)+'">'+sgn(r.ppa)+'</b><small style="color:var(--muted)">per acre</small></div>':'<div style="text-align:right;flex:none"><b style="display:block">–</b><small style="color:var(--muted)">No sales yet</small></div>')+'</div>'+(r.sold?'<div class="bar" style="margin-top:8px" role="img" aria-label="'+r.s+' profit per acre '+sgn(r.ppa)+'"><i style="width:'+Math.max(4,Math.round(Math.abs(r.ppa)/mx*100))+'%;background:'+(r.ppa<0?'var(--rose)':'var(--leaf)')+'"></i></div>':'')+'</div>'}).join('')+'</div>';
+    var grid=function(a,b){return mode==='d'?'<div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr))">'+a+b+'</div>':a+b};
+    var body=data.length?summary+grid(list,cmp)+(rs==='Kharif'&&ry==='2026'?grid(cat,mon):'<div class="stack">'+mon+'</div>'):'<div class="card">'+emptyHtml('chart','Nothing recorded for this season','Crops sown in '+rs+' '+ry+' and their sales and expenses will show here.','')+'</div>'+cmp;
     return head('Reports','Income, expenses and profit for the season.',mode==='d'?'<button class="btn" data-export>Export CSV</button>':'')+
-      '<div class="stack">'+summary+(mode==='d'?'<div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr))">'+list+cmp+'</div>':list+cmp)+(mode==='m'?'<button class="btn" data-export style="width:100%">Export CSV</button>':'')+'</div>'
+      '<div class="stack">'+filter+body+(mode==='m'?'<button class="btn" data-export style="width:100%">Export CSV</button>':'')+'</div>'
   }
   function pChange(m){var d=m.price-m.prev,p=m.prev?d/m.prev*100:0;return {d:d,p:p,up:d>0,flat:d===0,big:Math.abs(p)>=5}}
   function pLine(ch){var arrow=ch.flat?'':ch.up?'\u25b2 ':'\u25bc ',col=ch.flat?'var(--muted)':ch.up?'var(--leaf-ink)':'var(--rose)';return '<span style="color:'+col+';font-weight:600;font-variant-numeric:tabular-nums">'+arrow+(ch.flat?'No change':inr(Math.abs(ch.d))+' ('+(ch.up?'+':'-')+Math.abs(ch.p).toFixed(1)+'%)')+'</span>'}
@@ -1639,7 +1652,9 @@ function mk(el,mode){
     var adl=e.target.closest('[data-adel]');if(adl){S.menu=null;var di=-1;ALERTS.forEach(function(x,i){if(x.id===adl.dataset.adel)di=i});if(di>=0){ALERTS.splice(di,1);redraw();toast('Alert deleted.','ok')}return}
     var pds=e.target.closest('[data-pdismiss]');if(pds){PADIS[pds.dataset.pdismiss]=true;redraw();return}
     var cmpb=e.target.closest('[data-cmp]');if(cmpb){S.cmp=cmpb.dataset.cmp;render();return}
-    if(e.target.closest('[data-export]')){toast('CSV export (prototype, no file): crops, expenses and sales.','ok');return}
+    var rsb=e.target.closest('[data-rs]');if(rsb){S.rs=rsb.dataset.rs;render();return}
+    var ryb=e.target.closest('[data-ry]');if(ryb){S.ry=ryb.dataset.ry;render();return}
+    if(e.target.closest('[data-export]')){toast('CSV export (prototype, no file): the selected season, with sales, categories and months.','ok');return}
     var atb=e.target.closest('[data-acttab]');if(atb){S.actTab=atb.dataset.acttab;render();return}
     var tk=e.target.closest('[data-task]');if(tk){var i=+tk.dataset.task;TASKS[i].done=!TASKS[i].done;redraw();return}
     var st=e.target.closest('[data-st]');if(st){nextStatus(st.dataset.st);return}
