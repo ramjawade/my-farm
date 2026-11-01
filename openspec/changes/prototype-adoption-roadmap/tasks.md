@@ -32,7 +32,7 @@ Each task is one child change: run `/opsx:propose`, get approval, apply it, merg
 - [x] 4.3a `price-watchlists`: named watchlists of crop-at-market items, tabs on the Prices page, New list and Add item [prototype: wlView, newwl, addwi]
 - [ ] 4.3b `price-alerts`: price alerts and their banners [prototype: alerts, addalert]
 - [x] 4.4 `assistant-full-page`: assistant screen, greeting with brief bullets, suggested questions, review-and-save of logged entries [prototype: chat]
-- [ ] 4.4a `assistant-sale-entry`: the assistant reads sale figures, asks for what is missing and shows them in Review & Save [prototype: chat]
+- [x] 4.4a `assistant-sale-entry`: the assistant reads sale figures, asks for what is missing and shows them in Review & Save [prototype: chat]
 - [ ] 4.5 `weather-redesign`: today card, forecast, farming advisories in the new style [prototype: weather]
 - [x] 4.5a `sales-as-activities`: a sale is an activity of type Sale with real columns; Record sale opens Log activity; Sales card reads Sale activities; runs before 4.6 [prototype: addact, cropdetail, actdetail, log]
 - [x] 4.6 `reports-redesign`: reports by category and month, export, in the new style; reads sales from Sale activities (after 4.5a) [prototype: reports]

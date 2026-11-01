@@ -7,7 +7,7 @@ One PR on `claude/feature-assistant-sale-entry`. Backend checks: `ruff`, `mypy`,
 - [x] 1.1 Add `sale_quantity`, `sale_unit`, `sale_rate`, `sale_amount` and `sale_buyer` (optional, default null) to `ParsedEntry` and `ResolvedEntry`. Verify: schema tests accept a response with and without them.
 - [x] 1.2 Extend the extraction prompt with the five fields and the rules (only said numbers, per-unit price vs total, never multiply, buyer only when named, null for non-sales). Verify: prompt tests assert the fields and each rule appear and that the farmer's text stays quoted.
 - [x] 1.3 In `resolve_entry`, pass the figures through, turn non-positive numbers and blank strings into null, and clear every sale field when the resolved type is not Sale; no `dropped` entry for missing figures. Verify: pure resolver tests for rate, total, zero and negative values, blank unit, and a non-Sale type carrying figures.
-- [ ] 1.4 Regenerate `openapi.json` and the frontend contracts. Verify: the "contracts up to date" CI check passes; `ruff`, `mypy`, `pytest` are green.
+- [x] 1.4 Regenerate `openapi.json` and the frontend contracts. Verify: the "contracts up to date" CI check passes; `ruff`, `mypy`, `pytest` are green.
 
 ## 2. Frontend: asking for what is missing
 
@@ -25,6 +25,6 @@ One PR on `claude/feature-assistant-sale-entry`. Backend checks: `ruff`, `mypy`,
 ## 4. Roadmap, PR and archive
 
 - [x] 4.1 Add `assistant-sale-entry` to `openspec/changes/prototype-adoption-roadmap/tasks.md` after 4.4. Verify: the line is present.
-- [ ] 4.2 Update the Playwright golden path only if it uses the assistant; run `npm run lint`, `npm run build`, `npm test` and the backend `ruff`, `mypy`, `pytest`. Verify: all green.
+- [x] 4.2 Update the Playwright golden path only if it uses the assistant; run `npm run lint`, `npm run build`, `npm test` and the backend `ruff`, `mypy`, `pytest`. Verify: all green.
 - [x] 4.3 Open the draft PR (it holds the prototype and plan). Verify: the PR links this change and CI runs.
-- [ ] 4.4 Once CI is green, archive the change on this branch (sync the new `assistant-sale-entry` spec, tick the roadmap) and mark the PR ready. Verify: `openspec/specs/assistant-sale-entry/spec.md` exists and the change sits under `archive/`.
+- [x] 4.4 Once CI is green, archive the change on this branch (sync the new `assistant-sale-entry` spec, tick the roadmap) and mark the PR ready. Verify: `openspec/specs/assistant-sale-entry/spec.md` exists and the change sits under `archive/`.
