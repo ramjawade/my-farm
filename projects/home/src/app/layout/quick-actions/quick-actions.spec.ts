@@ -76,19 +76,16 @@ describe('QuickActions', () => {
     ]);
   });
 
-  it('offers Log activity, Add expense and Ask assistant on the activity screens', async () => {
-    for (const url of ['/activities', '/activities/list']) {
-      TestBed.resetTestingModule();
-      await setup(url);
-      q('quick-toggle')!.click();
-      fixture.detectChanges();
+  it('offers Log activity, Add expense and Ask assistant on the Activity screen', async () => {
+    await setup('/activities/list');
+    q('quick-toggle')!.click();
+    fixture.detectChanges();
 
-      expect(labels()).toEqual([
-        'quickActions.activity',
-        'quickActions.expense',
-        'quickActions.assistant',
-      ]);
-    }
+    expect(labels()).toEqual([
+      'quickActions.activity',
+      'quickActions.expense',
+      'quickActions.assistant',
+    ]);
   });
 
   it('does the one action directly on Prices, Reports and Weather', async () => {

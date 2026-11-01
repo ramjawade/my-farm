@@ -39,7 +39,6 @@ const SCREENS: Readonly<Record<string, readonly ActionId[]>> = {
   '/': ['activity', 'expense', 'crop', 'land', 'assistant'],
   '/map': ['land', 'crop', 'assistant'],
   '/crops': ['crop', 'activity', 'assistant'],
-  '/activities': LOG,
   '/activities/list': LOG,
   '/reports': ['assistant'],
   '/prices': ['assistant'],

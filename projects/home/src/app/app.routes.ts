@@ -136,17 +136,11 @@ export const routes: Routes = [
       ),
     canActivate: [authGuard],
     children: [
-      {
-        path: '',
-        loadComponent: () =>
-          import('./features/farm-activity/dashboard/activity-dashboard.component').then(
-            (m) => m.ActivityDashboardComponent,
-          ),
-      },
+      // The Activity screen is the All activities list; the old address still works.
+      { path: '', pathMatch: 'full', redirectTo: 'list' },
       {
         path: 'list',
         title: 'shell.title.activityList',
-        data: { parent: '/activities' },
         loadComponent: () =>
           import('./features/farm-activity/list/activity-list.component').then(
             (m) => m.ActivityListComponent,
