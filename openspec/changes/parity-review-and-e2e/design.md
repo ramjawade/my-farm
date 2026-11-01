@@ -85,6 +85,21 @@ Matched at a glance, no differences worth listing: Home layout (KPIs, farm, weat
 
 Not yet reviewed (need real data or clicking through flows): sign-in, add crop, crop detail, add activity, add expense, activity detail, price detail, My APMCs, watchlists, Lands draw and save, Assistant overlay, Reports with data, empty states, dark theme, Hindi and Marathi, banners and offline in the live app, phone width for Lands, Reports, Assistant, Profile and System states. Weather and price alerts are skipped by decision.
 
+## Accessibility results
+
+Checked on 2026-11-01 in the running app (phone layout, the deployed API) with an in-page audit over Home, Lands, Crops, Activity, Reports, Prices, Assistant and Profile, in the light and the dark theme: controls without a name, images without alt text, duplicate ids, positive tab stops, heading order, and text contrast against the effective background (4.5:1, or 3:1 for large text).
+
+| Finding | Where | Result |
+|---|---|---|
+| Two `h1` on every page on phones: the mobile header title was an `h1` as well as the page's own | All screens on phones | Fixed: the header title is a plain paragraph |
+| The Assistant page had no `h1` of its own on wide screens (the panel title was an `h2`) | Assistant | Fixed: the panel title is the `h1` on the page and stays an `h2` in the overlay |
+| "Scheduled" badge at 2.38:1 (the Bootstrap `text-bg-info` colours bypassed the badge tones) | Activity list | Fixed: `text-bg-success`, `-warning`, `-danger` and `-info` now use the badge tones |
+| Date tiles and the onboarding badge at 4.39:1 (`text-success` on the pale green) | Activity list, Home | Fixed: `text-success-emphasis` |
+| Controls without names, images without alt, duplicate ids, positive tab stops | All audited screens | None found |
+| Contrast in the dark theme | All audited screens | None below the limits |
+
+Not done: a full manual keyboard walk (Tab order, focus visibility, Escape on every dialog and menu) and a reduced-motion check on every screen; the quick-actions button and the banners are covered by specs for real buttons, Escape and focus return. Colour contrast was measured on text only, not on icons or borders.
+
 ## Risks / Trade-offs
 
 - **Unknown size.** The fix work cannot be sized before the review. The checkpoint (3a) lets the user split it into several changes if the list is long.

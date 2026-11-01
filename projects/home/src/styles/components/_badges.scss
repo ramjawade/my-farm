@@ -34,6 +34,7 @@
 // Success / completed (leaf)
 .badge-soft-success,
 .bg-success,
+.text-bg-success,
 .mf-badge-success,
 .status-completed,
 .status-badge-inline.completed,
@@ -46,6 +47,7 @@
 // Warning / in progress (sun)
 .badge-soft-warning,
 .bg-warning,
+.text-bg-warning,
 .mf-badge-warning,
 .status-progress,
 .status-badge-inline.progressing {
@@ -55,6 +57,7 @@
 // Danger / alert (rose)
 .badge-soft-danger,
 .bg-danger,
+.text-bg-danger,
 .mf-badge-danger {
   @include mf-badge-tone(--mf-rose-soft, --mf-rose-ink);
 }
@@ -62,6 +65,7 @@
 // Info / field (sky)
 .badge-soft-info,
 .bg-info,
+.text-bg-info,
 .mf-badge-info,
 .tag-field {
   @include mf-badge-tone(--mf-sky-soft, --mf-sky-ink);

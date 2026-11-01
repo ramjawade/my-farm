@@ -12,11 +12,11 @@
       <app-brand-logo [size]="28" />
     </a>
   }
-  <h1 class="h6 fw-bold mb-0 flex-grow-1 text-truncate">
+  <p class="h6 fw-bold mb-0 flex-grow-1 text-truncate">
     @if (titleKey(); as key) {
       {{ key | translate }}
     }
-  </h1>
+  </p>
   <a
     routerLink="/profile"
     class="app-avatar text-decoration-none"

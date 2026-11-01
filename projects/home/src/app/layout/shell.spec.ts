@@ -133,7 +133,9 @@ describe('app shell navigation', () => {
       const el = render(MobileHeader);
       expect(el.querySelector('app-brand-logo')).not.toBeNull();
       expect(el.querySelector('a[aria-label="Back"]')).toBeNull();
-      expect(el.querySelector('h1')?.textContent?.trim()).toBe('Activity');
+      expect(el.querySelector('.app-mobile-header p')?.textContent?.trim()).toBe('Activity');
+      // The page has its own h1; the header title is not a second one.
+      expect(el.querySelector('h1')).toBeNull();
       const avatar = el.querySelector('a[href="/profile"]')!;
       expect(avatar.textContent?.trim()).toBe('RJ');
       expect(avatar.getAttribute('aria-label')).toBe('Open profile');
@@ -146,7 +148,7 @@ describe('app shell navigation', () => {
       const back = el.querySelector('a[aria-label="Back"]')!;
       expect(back.getAttribute('href')).toBe('/crops');
       expect(el.querySelector('app-brand-logo')).toBeNull();
-      expect(el.querySelector('h1')?.textContent?.trim()).toBe('Add crop');
+      expect(el.querySelector('.app-mobile-header p')?.textContent?.trim()).toBe('Add crop');
     });
   });
 });

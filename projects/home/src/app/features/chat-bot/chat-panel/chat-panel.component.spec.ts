@@ -269,6 +269,17 @@ describe('ChatPanelComponent', () => {
       expect(fixture.nativeElement.querySelector('.chat-panel__expand')).toBeNull();
     });
 
+    it('is the page heading (h1) on the page and an h2 in the overlay', () => {
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('h2')).toBeTruthy();
+      expect(fixture.nativeElement.querySelector('h1')).toBeNull();
+
+      fixture.componentRef.setInput('layout', 'page');
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('h1')).toBeTruthy();
+      expect(fixture.nativeElement.querySelector('h2')).toBeNull();
+    });
+
     it('emits expand from the overlay header', () => {
       fixture.detectChanges();
       const expanded = jasmine.createSpy('expand');

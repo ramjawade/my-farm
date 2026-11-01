@@ -2,7 +2,11 @@
   <header class="chat-panel__header d-flex align-items-center gap-2 p-3 border-bottom">
     <span class="chat-panel__avatar" aria-hidden="true"><i class="bi bi-flower1"></i></span>
     <div class="flex-grow-1 min-w-0">
-      <h2 class="h6 mb-0">{{ 'chatBot.title' | translate }}</h2>
+      @if (layout() === 'page') {
+        <h1 class="h6 mb-0">{{ 'chatBot.title' | translate }}</h1>
+      } @else {
+        <h2 class="h6 mb-0">{{ 'chatBot.title' | translate }}</h2>
+      }
       <p class="small text-muted mb-0">{{ 'chatBot.subtitlePage' | translate }}</p>
     </div>
     <div class="d-flex align-items-center gap-2">

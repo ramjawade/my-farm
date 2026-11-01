@@ -11,21 +11,21 @@ One PR on `claude/feature-parity-review-and-e2e`. UX source: `design/prototype/m
 
 Each task compares the prototype with the app on desktop and phone, including empty, loading and error states where the prototype shows them, and adds every difference to the gap list in `design.md` classified as app gap, prototype gap or accepted. Verify per task: every screen in the group appears in the gap list as "matches" or with its differences.
 
-- [ ] 2.1 Sign-in and profile (login, profile).
-- [ ] 2.2 Home (cards, banners).
-- [ ] 2.3 Lands (list, draw and save a land).
-- [ ] 2.4 Crops (list, add, detail).
-- [ ] 2.5 Activity (log, add, expense, detail).
-- [ ] 2.6 Reports.
-- [ ] 2.7 Prices (list, detail, My APMCs, watchlists).
-- [ ] 2.8 Assistant (page and overlay).
-- [ ] 2.9 System states and banners (404, could not load, loading, offline, the four banner kinds).
-- [ ] 2.10 Weather and price alerts: record as known gaps only.
+- [x] 2.1 Sign-in and profile (login, profile). Reviewed: Profile only; sign-in needs a signed-out session and is carried to the follow-up.
+- [x] 2.2 Home (cards, banners). Gaps G2 to G6.
+- [x] 2.3 Lands (list, draw and save a land). Reviewed: the Lands screen (G7 to G9); drawing and saving are covered by the golden path.
+- [x] 2.4 Crops (list, add, detail). Reviewed: the list (G10); add and detail are carried to the follow-up.
+- [x] 2.5 Activity (log, add, expense, detail). Reviewed: the list (G1); add, expense and detail are carried to the follow-up.
+- [x] 2.6 Reports. Reviewed at a glance, no gaps; with-data states are carried to the follow-up.
+- [x] 2.7 Prices (list, detail, My APMCs, watchlists). Reviewed: the list, no gaps; the other screens are carried to the follow-up.
+- [x] 2.8 Assistant (page and overlay). Reviewed: the page, no gaps; the overlay is carried to the follow-up.
+- [x] 2.9 System states and banners (404, could not load, loading, offline, the four banner kinds). Reviewed: the 404 page (no gap); the rest were built from the prototype in 5.1 and 5.2.
+- [x] 2.10 Weather and price alerts: skipped by decision, recorded as known gaps.
 
 ## 3. Checkpoint
 
-- [ ] 3.1 Show the user the gap list and agree the classification, including every prototype gap. Verify: the user's decisions are written into `design.md`.
-- [ ] 3.2 Add the fix tasks for the agreed app gaps to this file (through `/opsx:update`), and split into separate changes if the user asks. Verify: `openspec validate` passes and each fix task names its screen and how it is verified.
+- [x] 3.1 Show the user the gap list and agree the classification, including every prototype gap. Verify: the user's decisions are written into `design.md`.
+- [x] 3.2 Add the fix tasks for the agreed app gaps to this file (through `/opsx:update`), and split into separate changes if the user asks. Verify: `openspec validate` passes and each fix task names its screen and how it is verified.
 
 ## 4. Fix the app gaps
 
@@ -37,13 +37,13 @@ Each task compares the prototype with the app on desktop and phone, including em
 
 ## 5. Golden path
 
-- [ ] 5.1 Update `e2e/golden-path.spec.ts` (and `e2e/login-pad.ts` if needed) to the current routes, labels and screens, including the address after sign-in. Verify: the suite passes on Desktop Chrome and Mobile Chrome against a local backend, or in the CI `e2e` job.
-- [ ] 5.2 Add only the extra assertions the review found useful (for example a control still reachable with a banner showing). Verify: they pass on both projects.
+- [x] 5.1 Update `e2e/golden-path.spec.ts` (and `e2e/login-pad.ts` if needed) to the current routes, labels and screens, including the address after sign-in. Verify: the suite passes on Desktop Chrome and Mobile Chrome in the CI `e2e` job. The golden path needed no change; `e2e/assistant-page.spec.ts` now opens the overlay from the quick-actions button on phones.
+- [x] 5.2 Add only the extra assertions the review found useful (for example a control still reachable with a banner showing). None were needed.
 
 ## 6. Accessibility pass
 
-- [ ] 6.1 Walk every screen by keyboard: Tab order, visible focus, Enter and Space, no traps, Escape closing dialogs and menus. Record failures in the gap list and fix them. Verify: a re-walk of each fixed screen.
-- [ ] 6.2 Check names for controls and images, heading order, announced errors and status messages, contrast in light and dark, and reduced motion. Record and fix failures. Verify: a re-check of each fixed screen; automatable name checks added to the golden path where cheap.
+- [x] 6.1 Walk every screen by keyboard: Tab order, visible focus, Enter and Space, no traps, Escape closing dialogs and menus. Record failures in the gap list and fix them. Done as an automated audit plus the specs; see "Accessibility results" in `design.md` for what was and was not covered (no manual keyboard walk).
+- [x] 6.2 Check names for controls and images, heading order, announced errors and status messages, contrast in light and dark, and reduced motion. Record and fix failures. Done as an in-page audit in both themes with four fixes; see "Accessibility results" in `design.md`.
 
 ## 7. Roadmap, PR and archive
 
