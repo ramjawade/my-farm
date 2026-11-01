@@ -47,6 +47,15 @@ Anything that cannot be decided from the files alone is also shown to the user, 
 
 **5. Accessibility, without a new dependency.** Walk each screen by keyboard (Tab order, visible focus, Enter and Space on every control, no traps, Escape closes dialogs and menus), check that every control and image has a name, headings are in order, error and status messages are announced, colour contrast holds in light and dark, and reduced motion is honoured. Where a check can be automated cheaply inside the existing Playwright run (for example buttons and inputs have accessible names), it goes into the golden path; the rest is recorded in the gap list as passed or fixed.
 
+**6. Phone quick actions (G12, G13).** One `app-quick-actions` component in the signed-in layout, shown under 992 px, replaces the separate floating buttons on phones.
+- It reads the section and the parent page from `PageMetaService` (a page with a parent shows nothing) and `FarmDrawService.isDrawing` (nothing while drawing), and picks its action list from the section.
+- "Ask assistant" opens the overlay through a small `ChatOverlayService` (root) that owns the overlay's open state; `ChatBotContainer` reads it instead of holding its own signal, so the two cannot disagree. The container's own button is hidden under 992 px (CSS) so wide screens keep it unchanged.
+- "Draw land" goes to `/map` (if not already there) and then starts drawing through `FarmDrawService`, the same call the Lands page button makes.
+- The menu is a real button with `aria-expanded`, a backdrop button that closes it, Escape to close, and focus returned to the toggle.
+- The round "Back" buttons are removed from every page that has one (Lands, Crops dashboard, Add crop, Create activity, Activity dashboard, Reports, Weather, Activity detail), since the header has the back arrow. The activity list's and dashboard's "+" buttons go too, replaced by the dial. The activity detail page's "Add expense" button stays (the page has no other phone entry for it) and takes the bottom slot.
+- Styles: positions and sizes in `_buttons.scss` next to the existing floating-button rules (fixed positioning cannot be done with utilities), using the design tokens and lifted by `--mf-tabbar-h`.
+- Known difference kept: the prototype also shows the dial on the crop detail page ("Log activity", "Record sale"); here the crop detail has a parent page, so it shows none.
+
 ## Gap list
 
 Filled in during the review. Format: `screen | desktop or phone | what differs | app gap, prototype gap or accepted | status`.

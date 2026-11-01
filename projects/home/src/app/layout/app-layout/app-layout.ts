@@ -6,6 +6,7 @@ import { Main } from '../main/main';
 import { BannerHost } from '../banner-host/banner-host';
 import { MobileHeader } from '../mobile-header/mobile-header';
 import { Sidebar } from '../sidebar/sidebar';
+import { QuickActions } from '../quick-actions/quick-actions';
 import { TabBar } from '../tab-bar/tab-bar';
 import { AuthService } from '../../core/auth/auth.service';
 import { AppBanners } from '../../core/banners/app-banners';
@@ -22,6 +23,7 @@ import { LoaderOutletComponent, ToastOutletComponent } from 'shared';
     Main,
     BannerHost,
     TabBar,
+    QuickActions,
     RouterOutlet,
     TranslatePipe,
     ToastOutletComponent,

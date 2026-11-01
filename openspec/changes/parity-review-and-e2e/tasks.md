@@ -29,7 +29,10 @@ Each task compares the prototype with the app on desktop and phone, including em
 
 ## 4. Fix the app gaps
 
-- [ ] 4.1 Fix the app gaps agreed in 3.1, one task per gap or screen group (added in 3.2). Verify: each task's own check, plus `npm run lint`, `npm run build` and `npm test`.
+- [x] 4.1 Phone buttons (G12): remove the round Back buttons from Lands, Crops dashboard, Add crop, Create activity, Activity dashboard, Reports, Weather and Activity detail, and the "+" buttons from the activity list and dashboard; the detail page's "Add expense" button moves to the bottom slot. Verify: a search finds no `fab-soft-tertiary` left, the existing page specs still pass, and the phone width shows no floating back arrow.
+- [x] 4.2 Add `ChatOverlayService` and make `ChatBotContainer` read its open state; hide the container's button under 992 px. Verify: the container spec still passes, and a new spec shows the service opens and closes the overlay.
+- [x] 4.3 Add `app-quick-actions` to the signed-in layout with the action lists, menu, backdrop, Escape and `aria` from the app-shell delta; add the strings in en, hi and mr, and styles. Verify: component specs for each scenario in the app-shell delta (several actions, one action, choose an action, not on sub-screens or Assistant, not while drawing, close, wide screens), Draw land starting the drawing, `npm run lint` (translation check) and `npm run build`.
+- [ ] 4.4 Fix the other app gaps agreed in 3.1, one task per gap or screen group (added in 3.2). Verify: each task's own check, plus `npm run lint`, `npm run build` and `npm test`.
 
 ## 5. Golden path
 
