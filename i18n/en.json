@@ -914,7 +914,6 @@
     "setLocation": "Set Your Location",
     "dashboardTitle": "Smart Farming Dashboard",
     "beta": "Beta",
-    "sampleData": "Showing sample weather data — live forecasts are temporarily unavailable.",
     "setLocationText": "Tell us your village and state to receive localized weather forecasts, precise satellite mapping coordinates, and customized agronomy advisories for your fields.",
     "configure": "Configure Location",
     "today": "Today's Weather",
@@ -1335,5 +1334,28 @@
       "text": "We couldn't load this. Check your connection and try again.",
       "retry": "Try again"
     }
+  },
+  "banners": {
+    "kind": {
+      "problem": "Problem",
+      "warning": "Warning",
+      "update": "Update",
+      "new": "New"
+    },
+    "update": {
+      "title": "New version available",
+      "text": "Reload to get the latest version of MyFarm.",
+      "action": "Update now"
+    },
+    "weatherSample": {
+      "title": "Weather shows sample data",
+      "text": "The live forecast is unavailable, so these figures are examples."
+    },
+    "dismiss": "Dismiss: {{title}}",
+    "viewAll": "View all",
+    "showLess": "Show less",
+    "showingAll": "Showing all {{count}}",
+    "moreOne": "{{count}} more notification",
+    "moreMany": "{{count}} more notifications"
   }
 }
