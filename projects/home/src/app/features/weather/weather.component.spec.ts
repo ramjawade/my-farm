@@ -1,9 +1,10 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { provideTranslateService } from '@ngx-translate/core';
 import { WeatherComponent } from './weather.component';
+import { BannerService } from '../../core/banners/banner.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { WeatherService } from '../../core/weather/weather.service';
 import { IWeatherService } from '../../core/weather/weather.interface';
@@ -24,7 +25,7 @@ describe('WeatherComponent', () => {
       providers: [
         { provide: LandsApiService, useClass: FakeLandsApiService },
         provideZonelessChangeDetection(),
-        provideRouter([]),
+        provideRouter([{ path: 'weather', children: [] }]),
         provideHttpClient(),
         provideTranslateService(),
         AuthService,
@@ -91,6 +92,24 @@ describe('WeatherComponent', () => {
     fixture.detectChanges();
 
     expect(component.showLocationPrompt()).toBeFalse();
+  });
+
+  it('shows the sample-data banner on Weather while the forecast is demo data', async () => {
+    const banners = TestBed.inject(BannerService);
+    expect(component.isDemoData()).toBeTrue();
+
+    await TestBed.inject(Router).navigateByUrl('/weather');
+
+    expect(banners.active().map((b) => b.id)).toContain('weather-sample');
+  });
+
+  it('removes the sample-data banner when the page is destroyed', async () => {
+    const banners = TestBed.inject(BannerService);
+    await TestBed.inject(Router).navigateByUrl('/weather');
+
+    fixture.destroy();
+
+    expect(banners.active().map((b) => b.id)).not.toContain('weather-sample');
   });
 
   it('should set showEditDialog to true when openLandDialog is called', () => {

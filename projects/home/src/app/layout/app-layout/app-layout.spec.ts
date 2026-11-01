@@ -7,7 +7,7 @@ import { LoaderOutletComponent, LoaderService } from 'shared';
 import { AuthService } from '../../core/auth/auth.service';
 import { ConnectionService } from '../../core/services/connection.service';
 import { Main } from '../main/main';
-import { OfflineBanner } from '../offline-banner/offline-banner';
+import { BannerHost } from '../banner-host/banner-host';
 import { AppLayout } from './app-layout';
 
 describe('AppLayout offline notice', () => {
@@ -18,7 +18,7 @@ describe('AppLayout offline notice', () => {
     // Only the pieces under test are real; the rest of the shell is replaced by unknown elements.
     TestBed.overrideComponent(AppLayout, {
       set: {
-        imports: [Main, OfflineBanner, RouterOutlet, TranslatePipe],
+        imports: [Main, BannerHost, RouterOutlet, TranslatePipe],
         schemas: [NO_ERRORS_SCHEMA],
       },
     });
@@ -27,7 +27,7 @@ describe('AppLayout offline notice', () => {
     return fixture.nativeElement as HTMLElement;
   }
 
-  const banners = (el: HTMLElement) => el.querySelectorAll('[data-testid="offline-banner"]');
+  const banners = (el: HTMLElement) => el.querySelectorAll('[data-testid="banner"]');
 
   beforeEach(() => {
     online.set(false);
@@ -39,7 +39,11 @@ describe('AppLayout offline notice', () => {
         provideTranslateService(),
         {
           provide: AuthService,
-          useValue: { initialized: signal(true), isLoggedIn: loggedIn.asReadonly() },
+          useValue: {
+            initialized: signal(true),
+            isLoggedIn: loggedIn.asReadonly(),
+            currentUser: signal(null).asReadonly(),
+          },
         },
         { provide: ConnectionService, useValue: { online: online.asReadonly() } },
       ],
@@ -50,7 +54,7 @@ describe('AppLayout offline notice', () => {
     const el = render();
 
     expect(banners(el).length).toBe(1);
-    expect(el.querySelector('#main-content [data-testid="offline-banner"]')).not.toBeNull();
+    expect(el.querySelector('#main-content [data-testid="banner"]')).not.toBeNull();
   });
 
   it('shows above the sign-in screen too', () => {
@@ -78,14 +82,18 @@ describe('AppLayout loading overlay', () => {
         provideTranslateService(),
         {
           provide: AuthService,
-          useValue: { initialized: signal(true), isLoggedIn: signal(false) },
+          useValue: {
+            initialized: signal(true),
+            isLoggedIn: signal(false),
+            currentUser: signal(null).asReadonly(),
+          },
         },
         { provide: ConnectionService, useValue: { online: signal(true).asReadonly() } },
       ],
     });
     TestBed.overrideComponent(AppLayout, {
       set: {
-        imports: [OfflineBanner, RouterOutlet, TranslatePipe, LoaderOutletComponent],
+        imports: [BannerHost, RouterOutlet, TranslatePipe, LoaderOutletComponent],
         schemas: [NO_ERRORS_SCHEMA],
       },
     });
