@@ -51,7 +51,7 @@ Anything that cannot be decided from the files alone is also shown to the user, 
 
 Filled in during the review. Format: `screen | desktop or phone | what differs | app gap, prototype gap or accepted | status`.
 
-Reviewed on 2026-11-01 against the deployed API, light theme, English, one farmer (4 lands, 6 crops, 11 activities). Classification is a proposal until the user agrees it (checkpoint 3.1).
+Reviewed on 2026-11-01 against the deployed API, light theme, English, one farmer (4 lands, 6 crops, 11 activities); the phone buttons were added after a second look at 390 px. Classification is a proposal until the user agrees it (checkpoint 3.1).
 
 | # | Screen | Size | What differs | Proposed class |
 |---|---|---|---|---|
@@ -66,6 +66,8 @@ Reviewed on 2026-11-01 against the deployed API, light theme, English, one farme
 | G9 | Lands | desktop | The land card has a "Water source" stat and a "Notes" section; the prototype has four stats and no notes | Prototype gap (features exist): ask |
 | G10 | Crops | both | A "Search crops or fields…" box and a card menu are in the app, not in the prototype | Prototype gap (minor): ask |
 | G11 | Page not found | desktop | The card sits at the bottom of the content area with empty space above it; the prototype card sits at the top of the page | App gap (minor) |
+| G12 | Phone, Lands, Crops, All activities, Reports (and the other pages that carry it) | phone | A round "Back to Home" arrow button floats bottom-right on each page. The mobile header already has a back arrow on sub-pages, and the prototype has no such button. On Lands it sits under the map zoom controls | App gap: remove the back FAB where the header covers it |
+| G13 | All screens | phone | The assistant button is a separate round button bottom-left, over the content, on every screen. The prototype has one speed-dial button bottom-right whose menu holds the screen's actions (Log activity, Add expense, Add crop, Draw land, Record sale) and "Ask assistant", hidden on the Assistant page, on sub-screens and while drawing. Home and Prices in the app have no quick actions at all | App gap, large: build the speed dial (needs its own change) or accept the separate button: ask |
 
 Matched at a glance, no differences worth listing: Home layout (KPIs, farm, weather, needs attention, today) on desktop and phone; All activities on desktop and phone; Prices on desktop and phone; Crops cards; Assistant page structure; Reports structure; Profile list.
 
