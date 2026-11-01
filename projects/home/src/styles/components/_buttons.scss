@@ -249,6 +249,91 @@
   justify-content: center;
 }
 
+// Phone quick-actions button (under 992 px): one round button bottom-right, above the tab bar,
+// that replaces the separate assistant, add and back buttons. See layout/quick-actions.
+.quick-dial {
+  position: fixed;
+  right: 16px;
+  bottom: calc(20px + var(--mf-tabbar-h, 0px));
+  z-index: var(--mf-z-float);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--mf-s-3);
+}
+
+.quick-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--mf-z-float) - 1);
+  border: 0;
+  padding: 0;
+  background: var(--mf-scrim);
+}
+
+.quick-menu {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: var(--mf-s-3);
+}
+
+.quick-item {
+  display: flex;
+  align-items: center;
+  gap: var(--mf-s-2);
+}
+
+.quick-label {
+  padding: 5px 10px;
+  border: 1px solid var(--mf-line);
+  border-radius: 8px;
+  background: var(--mf-surface);
+  color: var(--mf-fg);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: var(--mf-shadow-1);
+}
+
+.quick-fab {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--mf-leaf);
+  color: var(--mf-on-leaf);
+  font-size: 1.25rem;
+  box-shadow: var(--mf-shadow-2);
+
+  &--mini {
+    width: 42px;
+    height: 42px;
+    font-size: 1.05rem;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .quick-item {
+    animation: quick-pop 0.15s ease-out;
+  }
+  @keyframes quick-pop {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+}
+
+// Under 992 px the quick-actions button takes over the assistant button's job.
+@include media-breakpoint-down(lg) {
+  .chat-fab {
+    display: none !important;
+  }
+}
+
 // Mobile action row convention
 //
 // App-wide rule for a form/dialog's trailing action row (Cancel next to a

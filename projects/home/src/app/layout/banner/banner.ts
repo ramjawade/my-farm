@@ -19,7 +19,11 @@ const LOOK: Record<BannerKind, { icon: string; chip: string; text: string }> = {
     chip: 'bg-info-subtle text-info-emphasis',
     text: 'text-info-emphasis',
   },
-  new: { icon: 'bi-star', chip: 'bg-success-subtle text-success', text: 'text-success' },
+  new: {
+    icon: 'bi-star',
+    chip: 'bg-success-subtle text-success-emphasis',
+    text: 'text-success-emphasis',
+  },
 };
 
 /** One banner card. Only a problem has a coloured border and no dismiss button. */

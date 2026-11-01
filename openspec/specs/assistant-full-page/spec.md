@@ -26,7 +26,7 @@ The system SHALL provide a signed-in page at `/chat` that shows the assistant co
 - **THEN** they are sent to sign-in
 
 ### Requirement: Entry points
-The sidebar SHALL list "Assistant" and mark it active on `/chat`. The floating chat button SHALL NOT be shown on `/chat`, and SHALL stay on every other signed-in page. The overlay SHALL have a control that opens `/chat`.
+The sidebar SHALL list "Assistant" and mark it active on `/chat`. On wide screens the floating chat button SHALL NOT be shown on `/chat`, and SHALL stay on every other signed-in page. On phones there is no separate floating chat button: the assistant opens from "Ask assistant" in the quick-actions button on the screens that show it, and is not offered on `/chat` or on pages that have a parent page. The overlay SHALL have a control that opens `/chat`.
 
 #### Scenario: Sidebar
 - **WHEN** the farmer taps "Assistant" in the sidebar
@@ -39,6 +39,10 @@ The sidebar SHALL list "Assistant" and mark it active on `/chat`. The floating c
 #### Scenario: Floating button on the page
 - **WHEN** the farmer is on `/chat`
 - **THEN** no floating chat button is shown
+
+#### Scenario: Assistant on a phone
+- **WHEN** a farmer on a phone is on Crops and chooses "Ask assistant" from the quick-actions button
+- **THEN** the assistant overlay opens over the same conversation
 
 ### Requirement: One shared conversation
 The page and the overlay SHALL show one conversation: the same messages, the same pending activity entry and the same Review & Save popup. A message sent in one SHALL appear in the other. Signing out SHALL clear it.

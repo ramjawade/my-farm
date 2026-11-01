@@ -13,7 +13,11 @@
           }}
         </p>
       </div>
-      <button type="button" class="btn btn-primary text-nowrap" (click)="startDraw()">
+      <button
+        type="button"
+        class="btn btn-primary text-nowrap d-none d-lg-inline-block"
+        (click)="startDraw()"
+      >
         + {{ 'lands.drawLand' | translate }}
       </button>
     </header>
@@ -130,17 +134,7 @@
     }
   </div>
 
-  @if (!isPicker) {
-    <!-- Back to Home FAB - MOBILE ONLY -->
-    <button
-      type="button"
-      class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-tertiary fab-stack-1"
-      (click)="onBackClicked()"
-      [title]="'cropDashboard.backToHome' | translate"
-    >
-      <i class="bi bi-arrow-left"></i>
-    </button>
-  }
+  @if (!isPicker) {}
 </div>
 
 <lib-confirm-dialog

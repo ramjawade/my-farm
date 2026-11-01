@@ -17,7 +17,7 @@ import { activityStatusKey, activityStatusTone } from '../../activity/activity-s
       (click)="open.emit(activity())"
     >
       <span
-        class="d-inline-flex flex-column align-items-center justify-content-center rounded-3 bg-success-subtle text-success flex-shrink-0 lh-1"
+        class="d-inline-flex flex-column align-items-center justify-content-center rounded-3 bg-success-subtle text-success-emphasis flex-shrink-0 lh-1"
         style="width: 44px; height: 44px; gap: 2px"
         aria-hidden="true"
       >

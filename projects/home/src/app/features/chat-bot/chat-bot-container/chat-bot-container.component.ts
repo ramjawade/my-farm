@@ -13,6 +13,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 
 import { Activity } from '../../activity/activity.models';
 import { ChatOrchestratorService } from '../chat-orchestrator.service';
+import { ChatOverlayService } from '../chat-overlay.service';
 import { ChatPanelComponent } from '../chat-panel/chat-panel.component';
 import { ReviewPopupComponent } from '../review-popup/review-popup.component';
 
@@ -40,7 +41,7 @@ export class ChatBotContainerComponent {
 
   readonly orchestrator = inject(ChatOrchestratorService);
 
-  readonly open = signal(false);
+  readonly open = inject(ChatOverlayService).open;
 
   /** Where the farmer is now; the floating button is not shown on the assistant page. */
   private readonly url = toSignal(

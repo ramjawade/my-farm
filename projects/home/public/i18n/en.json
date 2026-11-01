@@ -1357,5 +1357,14 @@
     "showingAll": "Showing all {{count}}",
     "moreOne": "{{count}} more notification",
     "moreMany": "{{count}} more notifications"
+  },
+  "quickActions": {
+    "open": "Open quick actions",
+    "close": "Close quick actions",
+    "activity": "Log activity",
+    "expense": "Add expense",
+    "crop": "Add crop",
+    "land": "Draw land",
+    "assistant": "Ask assistant"
   }
 }

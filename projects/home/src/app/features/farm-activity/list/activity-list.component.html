@@ -18,7 +18,7 @@
       <h1 class="h4 mb-1">{{ 'activityLogScreen.title' | translate }}</h1>
       <p class="text-body-secondary mb-0">{{ 'activityLogScreen.subtitle' | translate }}</p>
     </div>
-    <div class="d-none d-md-flex" style="gap: 8px">
+    <div class="d-none d-lg-flex" style="gap: 8px">
       <a
         routerLink="/activities/expenses/new"
         [queryParams]="{ from: 'list' }"
@@ -164,13 +164,4 @@
       </div>
     </div>
   </div>
-
-  <!-- Floating Action Buttons (FAB) for Mobile -->
-  <a
-    [routerLink]="createLink()"
-    class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-success fab-stack-1"
-    [title]="'activityList.recordNew' | translate"
-  >
-    <i class="bi bi-plus-lg"></i>
-  </a>
 </div>

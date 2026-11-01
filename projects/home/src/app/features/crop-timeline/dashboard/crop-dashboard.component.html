@@ -21,7 +21,11 @@
       />
     </div>
     @if (!hasNoCropsAtAll()) {
-      <button type="button" class="btn btn-primary text-nowrap" (click)="onAddCropClicked()">
+      <button
+        type="button"
+        class="btn btn-primary text-nowrap d-none d-lg-inline-block"
+        (click)="onAddCropClicked()"
+      >
         + {{ 'cropDashboard.addCrop' | translate }}
       </button>
     }
@@ -177,16 +181,6 @@
     }
   </div>
 }
-
-<!-- Back to Home FAB - MOBILE ONLY -->
-<button
-  type="button"
-  class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-tertiary fab-stack-1"
-  (click)="onBackClicked()"
-  [title]="'cropDashboard.backToHome' | translate"
->
-  <i class="bi bi-arrow-left"></i>
-</button>
 
 <lib-confirm-dialog
   [(isOpen)]="showDeleteConfirm"

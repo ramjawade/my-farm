@@ -24,7 +24,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     key: 'activity',
     labelKey: 'shell.nav.activity',
     icon: 'bi-activity',
-    link: '/activities',
+    link: '/activities/list',
     phoneTab: true,
   },
   {

@@ -152,20 +152,11 @@
       </div>
     </div>
 
-    <!-- Back to List FAB - MOBILE ONLY -->
-    <a
-      routerLink="/activities/list"
-      class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-tertiary fab-stack-1"
-      [title]="'activityDetail.backToList' | translate"
-    >
-      <i class="bi bi-arrow-left"></i>
-    </a>
-
     <!-- Add Expense FAB - MOBILE ONLY -->
     <a
       [routerLink]="['/activities/expenses/new']"
       [queryParams]="{ activityId: act.id }"
-      class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-success fab-stack-2"
+      class="btn rounded-circle shadow-lg d-flex d-md-none align-items-center justify-content-center fab-soft fab-soft-success fab-stack-1"
       [title]="'activityDetail.addExpense' | translate"
     >
       <i class="bi bi-plus-lg"></i>
