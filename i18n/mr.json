@@ -1357,5 +1357,14 @@
     "showingAll": "सर्व {{count}} दाखवले आहेत",
     "moreOne": "आणखी {{count}} सूचना",
     "moreMany": "आणखी {{count}} सूचना"
+  },
+  "quickActions": {
+    "open": "झटपट कृती उघडा",
+    "close": "झटपट कृती बंद करा",
+    "activity": "कामाची नोंद करा",
+    "expense": "खर्च जोडा",
+    "crop": "पीक जोडा",
+    "land": "जमीन आखा",
+    "assistant": "सहायकाला विचारा"
   }
 }
