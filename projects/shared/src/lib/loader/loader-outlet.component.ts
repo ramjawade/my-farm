@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { LoaderService } from './loader.service';
 
 /** App-wide center-overlay loading indicator. Place once in the root layout. */
@@ -8,10 +8,10 @@ import { LoaderService } from './loader.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (loaderService.isLoading()) {
-      <div class="lib-loader-backdrop" role="status" aria-live="polite" aria-label="Loading">
+      <div class="lib-loader-backdrop" role="status" aria-live="polite" [attr.aria-label]="label()">
         <div class="lib-loader-card">
           <div class="spinner-border text-success" aria-hidden="true"></div>
-          <span class="lib-loader-text">Loading...</span>
+          <span class="lib-loader-text">{{ label() }}</span>
         </div>
       </div>
     }
@@ -33,7 +33,8 @@ import { LoaderService } from './loader.service';
       align-items: center;
       gap: 0.75rem;
       background: var(--mf-surface);
-      border-radius: 1rem;
+      border: 1px solid var(--mf-line);
+      border-radius: var(--mf-r-lg, 1rem);
       padding: 1.625rem 2.125rem;
       box-shadow: 0 10px 34px rgba(var(--mf-shadow-rgb), 0.14);
     }
@@ -46,4 +47,7 @@ import { LoaderService } from './loader.service';
 })
 export class LoaderOutletComponent {
   readonly loaderService = inject(LoaderService);
+
+  /** The text shown and announced. The app passes its translated "Loading…". */
+  readonly label = input('Loading...');
 }

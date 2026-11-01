@@ -65,6 +65,18 @@ describe('CropDashboardComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('shows the shared loading card while the crops load', () => {
+    component.loading.set(true);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-page-loading')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.spinner-border')).not.toBeNull();
+
+    component.loading.set(false);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-page-loading')).toBeNull();
+  });
+
   it('should calculate days after sowing', () => {
     const today = Date.now();
     expect(component.getDaysAfterSowing(today)).toBe(0);

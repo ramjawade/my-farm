@@ -69,6 +69,16 @@ describe('MyApmcsComponent', () => {
     fixture = TestBed.createComponent(MyApmcsComponent);
   });
 
+  it('shows the shared loading card while the markets are retried', async () => {
+    await open({ status: 'error' });
+    (fixture.componentInstance as unknown as { retrying: { set(v: boolean): void } }).retrying.set(
+      true,
+    );
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-page-loading')).not.toBeNull();
+  });
+
   it('lists the chosen markets and the first search results', async () => {
     await open(data());
     expect(text()).toContain('Market 1');

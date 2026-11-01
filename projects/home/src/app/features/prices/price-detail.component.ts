@@ -1,3 +1,4 @@
+import { PageLoadingComponent } from '../shared/states/page-loading.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -31,6 +32,7 @@ const cacheKey = (mandiId: number, days: number): string => `${mandiId}|${days}`
 @Component({
   selector: 'app-price-detail',
   imports: [
+    PageLoadingComponent,
     RouterLink,
     TranslatePipe,
     ReferenceNamePipe,

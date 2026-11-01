@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { Main } from '../main/main';
+import { OfflineBanner } from '../offline-banner/offline-banner';
 import { MobileHeader } from '../mobile-header/mobile-header';
 import { Sidebar } from '../sidebar/sidebar';
 import { TabBar } from '../tab-bar/tab-bar';
@@ -18,6 +19,7 @@ import { LoaderOutletComponent, ToastOutletComponent } from 'shared';
     Sidebar,
     MobileHeader,
     Main,
+    OfflineBanner,
     TabBar,
     RouterOutlet,
     TranslatePipe,

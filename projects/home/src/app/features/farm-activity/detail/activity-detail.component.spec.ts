@@ -125,6 +125,68 @@ describe('ActivityDetailComponent', () => {
     expect(component.error()).toBe('activityDetail.loadFailed');
   });
 
+  describe('could not load', () => {
+    const text = () => (fixture.nativeElement as HTMLElement).textContent ?? '';
+    const retryButton = () =>
+      (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+        'app-load-error button',
+      );
+
+    async function fail(): Promise<void> {
+      getActivitySpy.and.rejectWith(new Error('network down'));
+      await (component as any).reload(5);
+      fixture.detectChanges();
+    }
+
+    it('shows the shared card with Try again, not the old error box', async () => {
+      await fail();
+
+      expect(fixture.nativeElement.querySelector('app-load-error')).not.toBeNull();
+      expect(text()).toContain('states.error.title');
+      expect(retryButton()).not.toBeNull();
+      expect(text()).not.toContain('activityDetail.loadError');
+    });
+
+    it('repeats the load on Try again and shows the activity when it works', async () => {
+      await fail();
+      getActivitySpy.and.resolveTo(mockActivity);
+      getActivitySpy.calls.reset();
+
+      retryButton()!.click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(getActivitySpy).toHaveBeenCalledWith(5);
+      expect(fixture.nativeElement.querySelector('app-load-error')).toBeNull();
+      expect(component.activity()).toEqual(mockActivity);
+    });
+
+    it('keeps the card when the load fails again, so the farmer can try once more', async () => {
+      await fail();
+
+      retryButton()!.click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('app-load-error')).not.toBeNull();
+      expect(retryButton()).not.toBeNull();
+    });
+  });
+
+  it('shows the loading card while the activity loads', async () => {
+    let finish!: (a: Activity) => void;
+    getActivitySpy.and.returnValue(new Promise<Activity>((resolve) => (finish = resolve)));
+
+    const pending = (component as any).reload(5);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-page-loading')).not.toBeNull();
+
+    finish(mockActivity);
+    await pending;
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-page-loading')).toBeNull();
+  });
+
   describe('status badge and actions', () => {
     const el = () => fixture.nativeElement as HTMLElement;
     const buttons = () =>

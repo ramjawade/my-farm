@@ -1,3 +1,4 @@
+import { PageLoadingComponent } from '../shared/states/page-loading.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -21,7 +22,7 @@ const SEARCH_DELAY_MS = 300;
 /** Pick the one to five mandis whose prices the farmer follows. */
 @Component({
   selector: 'app-my-apmcs',
-  imports: [RouterLink, TranslatePipe],
+  imports: [PageLoadingComponent, RouterLink, TranslatePipe],
   templateUrl: './my-apmcs.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

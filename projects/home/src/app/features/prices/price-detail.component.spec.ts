@@ -88,6 +88,16 @@ describe('PriceDetailComponent', () => {
     fixture = TestBed.createComponent(PriceDetailComponent);
   });
 
+  it('shows the shared loading card while the price is retried', async () => {
+    await open(okData());
+    (fixture.componentInstance as unknown as { retrying: { set(v: boolean): void } }).retrying.set(
+      true,
+    );
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-page-loading')).not.toBeNull();
+  });
+
   it('shows the crop, the market, the price per quintal and the change', async () => {
     await open(okData());
     expect(text()).toContain('Market 2 · Nashik');

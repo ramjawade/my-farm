@@ -72,6 +72,14 @@ describe('ActivityDashboardComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('shows the shared loading card while the activities load', () => {
+    component.loading.set(true);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-page-loading')).not.toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('states.loading.title');
+  });
+
   it('loads KPI/upcoming/recent on init, scoped by no cropId', async () => {
     expect(getKpiSummarySpy).toHaveBeenCalledWith(undefined);
     expect(getUpcomingSpy).toHaveBeenCalledWith(undefined, 5);

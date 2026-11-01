@@ -4,11 +4,7 @@
   </a>
 
   @if (retrying()) {
-    <div class="d-flex justify-content-center py-5" role="status">
-      <div class="spinner-border text-success">
-        <span class="visually-hidden">{{ 'prices.loading' | translate }}</span>
-      </div>
-    </div>
+    <app-page-loading />
   } @else if (view().status === 'error') {
     <div class="card p-5 text-center">
       <i class="bi bi-exclamation-triangle text-danger fs-1 d-block mb-3" aria-hidden="true"></i>

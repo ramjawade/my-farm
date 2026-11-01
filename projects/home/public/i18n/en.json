@@ -508,8 +508,6 @@
   },
   "activityDetail": {
     "notes": "Notes",
-    "loading": "Loading activity…",
-    "loadError": "Could not load this activity",
     "season": "Season",
     "performedOn": "Performed on",
     "recorded": "Recorded",
@@ -810,9 +808,9 @@
     "errUnreachable": "Cannot reach the server. Check your connection and try again."
   },
   "notFound": {
-    "title": "This field doesn't exist",
-    "text": "The page you were looking for has moved or was never planted here.",
-    "backToDashboard": "Back to dashboard"
+    "title": "This page isn't here",
+    "text": "The link may be old or mistyped.",
+    "backToHome": "Go to Home"
   },
   "profileEdit": {
     "namePlaceholder": "e.g. Rajesh Kumar",
@@ -1321,5 +1319,21 @@
     "bestFirst": "Best price first.",
     "addToList": "Add to list",
     "itemAdded": "Added to {{list}}."
+  },
+  "states": {
+    "offline": {
+      "label": "Offline",
+      "title": "You are offline",
+      "text": "Saved screens still open, but changes need a connection."
+    },
+    "loading": {
+      "title": "Loading…",
+      "text": "Getting your farm ready."
+    },
+    "error": {
+      "title": "Something went wrong",
+      "text": "We couldn't load this. Check your connection and try again.",
+      "retry": "Try again"
+    }
   }
 }

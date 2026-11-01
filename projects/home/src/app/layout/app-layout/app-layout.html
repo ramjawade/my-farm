@@ -12,7 +12,8 @@
     <app-chat-bot-container />
   </div>
 } @else {
+  <app-offline-banner />
   <router-outlet />
 }
 <lib-toast-outlet />
-<lib-loader-outlet />
+<lib-loader-outlet [label]="'states.loading.title' | translate" />

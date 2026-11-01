@@ -1,3 +1,4 @@
+import { PageLoadingComponent } from '../shared/states/page-loading.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -29,6 +30,7 @@ import { WatchlistsService } from './watchlists.service';
 @Component({
   selector: 'app-prices-list',
   imports: [
+    PageLoadingComponent,
     RouterLink,
     TranslatePipe,
     ReferenceNamePipe,
