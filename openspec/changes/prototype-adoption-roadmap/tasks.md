@@ -40,6 +40,6 @@ Each task is one child change: run `/opsx:propose`, get approval, apply it, merg
 ## 5. Phase 4: Polish and parity
 
 - [ ] 5.1 `banners-and-notifications`: the four banner kinds, stacking (two, then "N more"), dismiss rules [design system: Banners]
-- [ ] 5.2 `system-states`: 404, error, offline and loading states in the new style
+- [x] 5.2 `system-states`: 404, error, offline and loading states in the new style
 - [ ] 5.3 `parity-review-and-e2e`: compare each prototype screen with the app (desktop and phone), fix gaps, update the Playwright golden path, accessibility pass
 - [ ] 5.4 Update `ROADMAP.md`, then archive this roadmap change

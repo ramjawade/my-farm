@@ -23,4 +23,4 @@ One PR on `claude/feature-system-states`. Frontend only. UX source: `design/prot
 
 - [x] 4.1 Run `npm run lint`, `npm run build` and `npm test`; update the Playwright golden path only if it reads any changed text. Verify: all green.
 - [x] 4.2 Open the draft PR (it holds the prototype, design system and plan). Verify: the PR links this change and CI runs.
-- [ ] 4.3 Once CI is green, archive the change on this branch (sync the new `system-states` spec, tick roadmap 5.2) and mark the PR ready. Verify: `openspec/specs/system-states/spec.md` exists and the change sits under `archive/`.
+- [x] 4.3 Once CI is green, archive the change on this branch (sync the new `system-states` spec, tick roadmap 5.2) and mark the PR ready. Verify: `openspec/specs/system-states/spec.md` exists and the change sits under `archive/`.
