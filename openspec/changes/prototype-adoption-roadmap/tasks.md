@@ -41,5 +41,6 @@ Each task is one child change: run `/opsx:propose`, get approval, apply it, merg
 
 - [x] 5.1 `banners-and-notifications`: the four banner kinds, stacking (two, then "N more"), dismiss rules [design system: Banners]
 - [x] 5.2 `system-states`: 404, error, offline and loading states in the new style (the offline banner now uses the shared banner from 5.1)
-- [ ] 5.3 `parity-review-and-e2e`: compare each prototype screen with the app (desktop and phone), fix gaps, update the Playwright golden path, accessibility pass
+- [x] 5.3 `parity-review-and-e2e`: compare each prototype screen with the app (desktop and phone), fix gaps, update the Playwright golden path, accessibility pass (first pass: Activity opens the list, one quick-actions button on phones, accessibility fixes; remaining gaps in 5.3a)
+- [ ] 5.3a `parity-follow-ups`: decide and fix gaps G2 to G10 from the archived 5.3 gap list, review the screens it did not reach (sign-in, add and detail screens, price detail, My APMCs, watchlists, assistant overlay), and do a manual keyboard walk
 - [ ] 5.4 Update `ROADMAP.md`, then archive this roadmap change

@@ -33,7 +33,7 @@ Each task compares the prototype with the app on desktop and phone, including em
 - [x] 4.2 Add `ChatOverlayService` and make `ChatBotContainer` read its open state; hide the container's button under 992 px. Verify: the container spec still passes, and a new spec shows the service opens and closes the overlay.
 - [x] 4.3 Add `app-quick-actions` to the signed-in layout with the action lists, menu, backdrop, Escape and `aria` from the app-shell delta; add the strings in en, hi and mr, and styles. Verify: component specs for each scenario in the app-shell delta (several actions, one action, choose an action, not on sub-screens or Assistant, not while drawing, close, wide screens), Draw land starting the drawing, `npm run lint` (translation check) and `npm run build`.
 - [x] 4.4 Activity (G1): redirect `/activities` to the list, point the nav and tab bar at it, make the list a top-level screen, and remove the old Activity dashboard. Verify: the route table, a build, all specs, and the live app (Activity opens All activities, the Activity tab is current).
-- [ ] 4.5 DEFERRED by the user (2026-11-01, "we will work on these later"): fix the remaining app gaps once the user has decided them (G2 weather box on Home, G3 onboarding strip, G4 brand name, G5 units, G6 sidebar area, G7 land colour dots, G8 map controls, G9 land card extras, G10 crop search): one task per gap or group (added in 3.2). Verify: each task's own check, plus `npm run lint`, `npm run build` and `npm test`.
+- [x] 4.5 DEFERRED by the user (2026-11-01, "we will work on these later"): fix the remaining app gaps once the user has decided them (G2 weather box on Home, G3 onboarding strip, G4 brand name, G5 units, G6 sidebar area, G7 land colour dots, G8 map controls, G9 land card extras, G10 crop search): one task per gap or group (added in 3.2). Verify: each task's own check, plus `npm run lint`, `npm run build` and `npm test`.
 
 ## 5. Golden path
 
@@ -47,6 +47,6 @@ Each task compares the prototype with the app on desktop and phone, including em
 
 ## 7. Roadmap, PR and archive
 
-- [ ] 7.1 Run `npm run lint`, `npm run build` and `npm test` (and `ruff`, `mypy` and `pytest` only if backend files changed). Verify: all green.
-- [ ] 7.2 Open the draft PR (it holds the plan; the gap list is in `design.md`). Verify: the PR links this change and CI runs.
-- [ ] 7.3 Once CI is green, archive the change on this branch (tick roadmap 5.3; no main spec to sync) and mark the PR ready. Verify: the change sits under `archive/` and roadmap 5.3 is ticked.
+- [x] 7.1 Run `npm run lint`, `npm run build` and `npm test` (and `ruff`, `mypy` and `pytest` only if backend files changed). Verify: all green.
+- [x] 7.2 Open the draft PR (it holds the plan; the gap list is in `design.md`). Verify: the PR links this change and CI runs.
+- [x] 7.3 Once CI is green, archive the change on this branch (tick roadmap 5.3; no main spec to sync) and mark the PR ready. Verify: the change sits under `archive/` and roadmap 5.3 is ticked.
