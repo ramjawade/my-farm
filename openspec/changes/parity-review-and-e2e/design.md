@@ -54,6 +54,7 @@ Anything that cannot be decided from the files alone is also shown to the user, 
 - The menu is a real button with `aria-expanded`, a backdrop button that closes it, Escape to close, and focus returned to the toggle.
 - The round "Back" buttons are removed from every page that has one (Lands, Crops dashboard, Add crop, Create activity, Activity dashboard, Reports, Weather, Activity detail), since the header has the back arrow. The activity list's and dashboard's "+" buttons go too, replaced by the dial. The activity detail page's "Add expense" button stays (the page has no other phone entry for it) and takes the bottom slot.
 - Styles: positions and sizes in `_buttons.scss` next to the existing floating-button rules (fixed positioning cannot be done with utilities), using the design tokens and lifted by `--mf-tabbar-h`.
+- The header buttons that repeat a quick action (Home "+ Log activity", Activity "+ Expense" and "+ Log", Lands "+ Draw land", Crops "+ Add crop") are hidden under 992 px with Bootstrap display utilities (`d-none d-lg-...`), as in the prototype, where they are desktop-only. Reports' "Export CSV" stays, since the dial has no export.
 - Known difference kept: the prototype also shows the dial on the crop detail page ("Log activity", "Record sale"); here the crop detail has a parent page, so it shows none.
 
 ## Gap list

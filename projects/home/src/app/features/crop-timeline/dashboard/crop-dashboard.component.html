@@ -21,7 +21,11 @@
       />
     </div>
     @if (!hasNoCropsAtAll()) {
-      <button type="button" class="btn btn-primary text-nowrap" (click)="onAddCropClicked()">
+      <button
+        type="button"
+        class="btn btn-primary text-nowrap d-none d-lg-inline-block"
+        (click)="onAddCropClicked()"
+      >
         + {{ 'cropDashboard.addCrop' | translate }}
       </button>
     }

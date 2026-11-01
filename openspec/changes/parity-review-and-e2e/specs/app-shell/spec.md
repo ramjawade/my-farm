@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Phones show one quick-actions button
-Under 992 px, a signed-in screen that has no parent page (Home, Lands, Crops, Activity, Reports, Prices, Weather) SHALL show one round button at the bottom right, above the tab bar. It SHALL replace the separate floating buttons: there SHALL be no floating assistant button, no floating add button and no floating back button on phones. Where the screen has more than one action the button SHALL open a menu of labelled actions with a dimmed backdrop and a close control; where it has one action the button SHALL do that action directly. The actions SHALL be, in order: Home: Log activity, Add expense, Add crop, Draw land, Ask assistant; Lands: Draw land, Add crop, Ask assistant; Crops: Add crop, Log activity, Ask assistant; Activity: Log activity, Add expense, Ask assistant; Reports, Prices and Weather: Ask assistant. The button SHALL NOT be shown on the Assistant page, on any page that has a parent page (including add, edit and detail pages), while a land is being drawn, or on wide screens. Choosing an action SHALL close the menu. The back arrow of a page with a parent SHALL be only the one in the header.
+Under 992 px, a signed-in screen that has no parent page (Home, Lands, Crops, Activity, Reports, Prices, Weather) SHALL show one round button at the bottom right, above the tab bar. It SHALL replace the separate floating buttons: there SHALL be no floating assistant button, no floating add button and no floating back button on phones. Where the screen has more than one action the button SHALL open a menu of labelled actions with a dimmed backdrop and a close control; where it has one action the button SHALL do that action directly. The actions SHALL be, in order: Home: Log activity, Add expense, Add crop, Draw land, Ask assistant; Lands: Draw land, Add crop, Ask assistant; Crops: Add crop, Log activity, Ask assistant; Activity: Log activity, Add expense, Ask assistant; Reports, Prices and Weather: Ask assistant. The button SHALL NOT be shown on the Assistant page, on any page that has a parent page (including add, edit and detail pages), while a land is being drawn, or on wide screens. Choosing an action SHALL close the menu. The back arrow of a page with a parent SHALL be only the one in the header. Under 992 px the header buttons that repeat a quick action (Log activity, Expense, Draw land, Add crop) SHALL be hidden on those screens; they stay on wide screens.
 
 #### Scenario: Several actions
 - **WHEN** a farmer on a phone opens the button on Home
@@ -33,7 +33,11 @@ Under 992 px, a signed-in screen that has no parent page (Home, Lands, Crops, Ac
 
 #### Scenario: Wide screens
 - **WHEN** the screen is 992 px or wider
-- **THEN** no quick-actions button is shown
+- **THEN** no quick-actions button is shown, and the header buttons (such as "+ Log" on Activity) are shown
+
+#### Scenario: No duplicate on phones
+- **WHEN** a farmer on a phone opens Activity, Lands or Crops
+- **THEN** the header has no "+ Log", "+ Expense", "+ Draw land" or "+ Add crop" button, since the quick-actions button offers them
 
 ## MODIFIED Requirements
 
