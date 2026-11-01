@@ -694,7 +694,9 @@
       "land": "Which land is this for?",
       "crop": "Which crop is this for?",
       "expenseCategory": "Which category does this expense fall under?",
-      "date": "When did this happen?"
+      "date": "When did this happen?",
+      "saleQuantity": "How much did you sell? For example 12 crates.",
+      "saleRate": "At what rate per unit, or for what total?"
     },
     "escapeHatch": "I'm having trouble understanding that. You can fill in the rest using the manual form instead.",
     "rephrase": "I couldn't tell what activity that describes. Could you try saying it differently?",
@@ -710,7 +712,9 @@
       "amount": "Amount",
       "cancel": "Cancel",
       "save": "Save entry",
-      "saveFailed": "Couldn't save that entry. Please try again."
+      "saveFailed": "Couldn't save that entry. Please try again.",
+      "saleDetails": "Sale details",
+      "saleDateFuture": "Pick today or an earlier date. A future sale is planned in the form."
     },
     "expand": "Open the assistant page",
     "suggestionsLabel": "Suggested questions",
