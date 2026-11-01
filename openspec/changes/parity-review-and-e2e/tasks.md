@@ -4,8 +4,8 @@ One PR on `claude/feature-parity-review-and-e2e`. UX source: `design/prototype/m
 
 ## 1. Set up the review
 
-- [ ] 1.1 Agree with the user which farmer account and API to use (deployed or local backend) and that the farmer has lands, crops, activities, expenses, sales and prices. Verify: the user confirms; `npm start` shows the farmer's data.
-- [ ] 1.2 Write a throwaway headless Playwright script (kept in the scratchpad, not committed) that captures a named prototype screen and the matching app screen at 1280 px and 390 px. Verify: it produces both images for one screen.
+- [x] 1.1 Use the deployed API (decided) and a farmer the user signs in as in the review app, who has lands, crops, activities, expenses, sales and prices. Verify: the signed-in app shows that farmer's data.
+- [x] 1.2 Capture the prototype screens with a throwaway headless Playwright script (kept in the scratchpad, not committed) and the app screens in the Browser pane at 1280 px and 390 px (the pane carries the user's sign-in; a script cannot). Verify: both images exist for a screen.
 
 ## 2. Review, screen by screen
 

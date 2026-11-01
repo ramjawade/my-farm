@@ -51,7 +51,25 @@ Anything that cannot be decided from the files alone is also shown to the user, 
 
 Filled in during the review. Format: `screen | desktop or phone | what differs | app gap, prototype gap or accepted | status`.
 
-_(empty until the review runs)_
+Reviewed on 2026-11-01 against the deployed API, light theme, English, one farmer (4 lands, 6 crops, 11 activities). Classification is a proposal until the user agrees it (checkpoint 3.1).
+
+| # | Screen | Size | What differs | Proposed class |
+|---|---|---|---|---|
+| G1 | Activity (nav) | both | The sidebar and the tab bar open `/activities`, the old "Farm Activities" dashboard (stat cards, "Upcoming Activity", a "Chart coming soon (#170)" card). The prototype's Activity is the "All activities" list, which the app has at `/activities/list` and which matches the prototype | App gap (high): point Activity at the list, decide what happens to the old dashboard |
+| G2 | Home | both | The weather card has its own amber "Sample data" box inside the card; the prototype card has none (5.1 moved only the Weather page's notice to a banner) | App gap or accepted: ask |
+| G3 | Home | both | A "Getting Started: Step 6 of 6, 83%" strip sits above the title; it is not in the prototype | Prototype gap (the onboarding feature is real): ask whether to add it to the prototype or remove it |
+| G4 | All | both | The brand reads "My Farm" in plain text with a small leaf; the prototype shows the "MyFarm" wordmark logo | App gap, if the brand-identity spec says wordmark: to check |
+| G5 | Home, Lands, Crops | both | Units are long and follow the farmer's profile ("12.52 Acres", "0.7 hec", "152 Days"); the prototype shows "10.50 ac" and "112 days" | Accepted if the unit comes from the profile; ask whether to shorten |
+| G6 | Sidebar user card | desktop | Shows "Makhani · 0.86 hectares" (farm area from sign-up) while the lands total 12.52 acres; the prototype shows the lands total | App gap: use the lands total |
+| G7 | Lands | desktop | The list has no colour dot per land and no "Fallow" badge for a land without a crop; the header has no pan and zoom hint | App gap (minor) |
+| G8 | Lands | desktop | The map has a Street and Satellite switch and a "Street, city, postcode, place…" search; the prototype has a layers button and "Search village or survey no." | Accepted (real map): ask |
+| G9 | Lands | desktop | The land card has a "Water source" stat and a "Notes" section; the prototype has four stats and no notes | Prototype gap (features exist): ask |
+| G10 | Crops | both | A "Search crops or fields…" box and a card menu are in the app, not in the prototype | Prototype gap (minor): ask |
+| G11 | Page not found | desktop | The card sits at the bottom of the content area with empty space above it; the prototype card sits at the top of the page | App gap (minor) |
+
+Matched at a glance, no differences worth listing: Home layout (KPIs, farm, weather, needs attention, today) on desktop and phone; All activities on desktop and phone; Prices on desktop and phone; Crops cards; Assistant page structure; Reports structure; Profile list.
+
+Not yet reviewed (need real data or clicking through flows): sign-in, add crop, crop detail, add activity, add expense, activity detail, price detail, My APMCs, watchlists, Lands draw and save, Assistant overlay, Reports with data, empty states, dark theme, Hindi and Marathi, banners and offline in the live app, phone width for Lands, Reports, Assistant, Profile and System states. Weather and price alerts are skipped by decision.
 
 ## Risks / Trade-offs
 
@@ -62,5 +80,6 @@ _(empty until the review runs)_
 
 ## Open questions
 
-- Which farmer account and which API (deployed or a local backend) to use for the review.
-- Whether weather and price alerts should be reviewed anyway so their gaps are on record (they are listed as known gaps for now).
+- Which farmer account to use: the user signs in to the review app themselves (PIN), so the account and its data are theirs; none is created by this change.
+
+Decided with the user (2026-11-01): the review uses the deployed API (`https://myfarm-api.onrender.com`, through the dev proxy, app on its own port because 4200 is taken by another session), and weather is skipped (it stays a known gap; price alerts too).
