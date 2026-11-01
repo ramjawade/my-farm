@@ -18,5 +18,5 @@ One PR on `claude/feature-reports-redesign`. Frontend only. UX source: `design/p
 ## 3. Roadmap, PR and archive
 
 - [x] 3.1 Update the Playwright golden path if it opens Reports; run `npm run lint`, `npm run build` and `npm test`. Verify: all green locally.
-- [ ] 3.2 Open the draft PR (it holds the prototype and plan). Verify: PR links this change and CI runs.
+- [x] 3.2 Open the draft PR (it holds the prototype and plan). Verify: PR links this change and CI runs.
 - [ ] 3.3 Once CI is green, archive the change on this branch (sync the new `reports` spec, tick roadmap 4.6) and mark the PR ready. Verify: `openspec/specs/reports/spec.md` exists and the change sits under `archive/`.
