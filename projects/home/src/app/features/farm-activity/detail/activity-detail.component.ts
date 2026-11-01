@@ -15,6 +15,8 @@ import { DecimalPipe } from '@angular/common';
 import { map } from 'rxjs/operators';
 import { ActivityDetailService } from './activity-detail.service';
 import { ExpenseListComponent } from './expense-list/expense-list.component';
+import { LoadErrorComponent } from '../../shared/states/load-error.component';
+import { PageLoadingComponent } from '../../shared/states/page-loading.component';
 import { CropTimelineService } from '../../crop-timeline/crop-timeline.service';
 import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
 import { SavedFarm } from '../../../map/models/map.models';
@@ -44,6 +46,8 @@ import {
     RouterLink,
     ConfirmDialogComponent,
     ExpenseListComponent,
+    LoadErrorComponent,
+    PageLoadingComponent,
     TranslatePipe,
     ReferenceNamePipe,
   ],
@@ -139,6 +143,12 @@ export class ActivityDetailComponent implements OnInit {
     } else {
       this.loading.set(false);
     }
+  }
+
+  /** "Try again" on the could-not-load card: repeat the load. */
+  retryLoad(): void {
+    const id = this.activityId();
+    if (id) void this.reload(id);
   }
 
   private async reload(id: number): Promise<void> {

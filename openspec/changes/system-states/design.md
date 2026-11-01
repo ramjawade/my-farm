@@ -5,7 +5,7 @@
 - `HttpService` wraps every call in `withLoader` and `withErrorToast`, so the global `<lib-loader-outlet>` (in the shared library, placed in `app-layout.html`) already shows while any request runs; its text is a hard-coded "Loading..." and it uses the `--mf-*` tokens.
 - The empty-state pattern exists in the app as `.empty-state` (`styles/components/_empty-state.scss`): round leaf icon, display-font title, muted line, optional action. Lists use it.
 - `NotFoundComponent` has its own centred layout, Bootstrap rounded-pill button and scoped CSS, wired to the `**` route; keys `notFound.*` carry the old wording.
-- Pages with a full-page spinner: activity detail, crop dashboard, activity dashboard, activity list, prices list, price detail and My APMCs. Only the activity page has its own "could not load" box; the others report failures through the toast.
+- Pages with a full-page spinner: activity detail, crop dashboard, activity dashboard, activity list, prices list, price detail and My APMCs. The activity page, both dashboards and the prices pages each already have their own "could not load" card with a retry (found while applying); the rest report failures through the toast.
 - The app is online-only (no outbox) and registers a service worker for the shell.
 - The shared banner component with kinds and stacking does not exist yet (roadmap 5.1), so there is no `.bn` in the app.
 
@@ -18,7 +18,7 @@
 
 **2. Retry belongs to the page.** `app-load-error` only raises `retry`. The activity page calls its existing `reload(id)`; a future page does the same. No global retry mechanism, no automatic retries (non-goal), which keeps a failed request from being repeated behind the farmer's back.
 
-**3. Adoption is limited to full-page spinners.** The seven pages above replace their spinner block with `app-page-loading`; buttons' inline spinners and the review popup are untouched. Only the activity page swaps its error box for `app-load-error`, since the others have no inline error today.
+**3. Adoption is limited to full-page spinners.** The seven pages above replace their spinner block with `app-page-loading`; buttons' inline spinners and the review popup are untouched. Only the activity page swaps its error box for `app-load-error`, as planned. The dashboards and prices pages keep their own working error cards for now; moving them onto `app-load-error` is a small follow-up so this change stays one PR-sized slice. The activity-list spinner sits inside the list card, not full page, so it also stays.
 
 **4. Overlay stays, text and style change.** `LoaderOutletComponent` gains a `label` input (default "Loading..." so the shared library stays dependency-free); `app-layout` passes the translated `common.loading`. The card uses the token surface, border and radius from the design system. Which requests show it is unchanged (non-goal).
 

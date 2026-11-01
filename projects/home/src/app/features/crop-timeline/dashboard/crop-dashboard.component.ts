@@ -1,3 +1,4 @@
+import { PageLoadingComponent } from '../../shared/states/page-loading.component';
 import {
   Component,
   inject,
@@ -25,6 +26,7 @@ import { FarmDrawService } from '../../../map/farm-draw/farm-draw.service';
   standalone: true,
   selector: 'app-crop-dashboard',
   imports: [
+    PageLoadingComponent,
     FormsModule,
     ConfirmDialogComponent,
     LocalNumberPipe,

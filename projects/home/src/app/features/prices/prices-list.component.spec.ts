@@ -208,6 +208,17 @@ describe('PricesListComponent', () => {
     expect(text()).toContain('prices.noCropsTitle');
   });
 
+  it('shows the shared loading card while the prices reload', () => {
+    open({ status: 'error' });
+    (
+      fixture.componentInstance as unknown as { reloading: { set(v: boolean): void } }
+    ).reloading.set(true);
+    fixture.detectChanges();
+
+    expect(el().querySelector('app-page-loading')).not.toBeNull();
+    expect(text()).toContain('states.loading.title');
+  });
+
   it('shows how many markets are followed', () => {
     open(ok([], 3));
     expect(text()).toContain('prices.myApmcs');

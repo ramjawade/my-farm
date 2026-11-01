@@ -1,3 +1,4 @@
+import { PageLoadingComponent } from '../../shared/states/page-loading.component';
 import { LocalDatePipe, LocalNumberPipe } from '../../../core/i18n/localized.pipes';
 import { Component, ChangeDetectionStrategy, OnInit, inject, input, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
@@ -15,7 +16,14 @@ import { ReferenceDataService } from '../../../core/api/reference-data.service';
 @Component({
   selector: 'app-activity-dashboard',
   standalone: true,
-  imports: [LocalDatePipe, LocalNumberPipe, RouterLink, TranslatePipe, ReferenceNamePipe],
+  imports: [
+    PageLoadingComponent,
+    LocalDatePipe,
+    LocalNumberPipe,
+    RouterLink,
+    TranslatePipe,
+    ReferenceNamePipe,
+  ],
   templateUrl: './activity-dashboard.component.html',
   styleUrl: './activity-dashboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

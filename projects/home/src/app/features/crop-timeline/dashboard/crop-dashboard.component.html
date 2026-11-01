@@ -29,12 +29,7 @@
 </header>
 
 @if (loading()) {
-  <div class="d-flex flex-column align-items-center justify-content-center py-5 text-muted">
-    <div class="spinner-border text-success mb-3" role="status">
-      <span class="visually-hidden">{{ 'cropDashboard.loadingCrops' | translate }}</span>
-    </div>
-    <p class="mb-0">{{ 'cropDashboard.loadingCrops' | translate }}</p>
-  </div>
+  <app-page-loading />
 } @else if (error()) {
   <div class="card p-5 text-center">
     <i class="bi bi-exclamation-triangle text-danger fs-1 d-block mb-3" aria-hidden="true"></i>

@@ -1,6 +1,7 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
+import { provideTranslateService } from '@ngx-translate/core';
 import { TestBed } from '@angular/core/testing';
 import { App } from './app';
 import { ActivitiesApiService } from './core/api/activities-api.service';
@@ -27,6 +28,8 @@ describe('App', () => {
         provideZonelessChangeDetection(),
         provideRouter([]),
         provideHttpClient(),
+        // The loading overlay's text is translated even before anyone signs in.
+        provideTranslateService(),
       ],
     }).compileComponents();
   });

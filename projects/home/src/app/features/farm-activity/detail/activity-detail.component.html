@@ -1,18 +1,8 @@
 <div class="mf-page-container">
   @if (loading()) {
-    <div class="text-center text-muted py-5">
-      <div class="spinner-border me-2" role="status"></div>
-      {{ 'activityDetail.loading' | translate }}
-    </div>
+    <app-page-loading />
   } @else if (error()) {
-    <div class="alert alert-danger card card-glass p-5 text-center my-5">
-      <i class="bi bi-exclamation-triangle display-4"></i>
-      <h3 class="mt-3">{{ 'activityDetail.loadError' | translate }}</h3>
-      <p class="text-muted mt-2">{{ error() }}</p>
-      <a routerLink="/activities" class="btn btn-secondary mt-3">{{
-        'cropActivity.backToDashboard' | translate
-      }}</a>
-    </div>
+    <app-load-error (retry)="retryLoad()" />
   } @else if (activity(); as act) {
     <!-- Header: title with status badge, meta line, and the actions for this status -->
     <a
