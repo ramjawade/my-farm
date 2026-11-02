@@ -21,7 +21,11 @@ describe('AssistantApiService', () => {
 
     await service.ask('hello', 'mr');
 
-    expect(http.post).toHaveBeenCalledWith('/assistant/ask', { text: 'hello', language: 'mr' });
+    expect(http.post).toHaveBeenCalledWith(
+      '/assistant/ask',
+      { text: 'hello', language: 'mr' },
+      { showLoader: false },
+    );
   });
 
   it('sends a null language when none is known, so the backend falls back to the profile', async () => {
@@ -29,7 +33,11 @@ describe('AssistantApiService', () => {
 
     await service.ask('hello');
 
-    expect(http.post).toHaveBeenCalledWith('/assistant/ask', { text: 'hello', language: null });
+    expect(http.post).toHaveBeenCalledWith(
+      '/assistant/ask',
+      { text: 'hello', language: null },
+      { showLoader: false },
+    );
   });
 
   it('lets a failed ask reach the caller unchanged', async () => {
@@ -44,10 +52,15 @@ describe('AssistantApiService', () => {
     await service.listMessages();
     await service.listMessages(20, 99);
 
-    expect(http.get.calls.argsFor(0)).toEqual(['/assistant/messages', { limit: '50' }]);
+    expect(http.get.calls.argsFor(0)).toEqual([
+      '/assistant/messages',
+      { limit: '50' },
+      { showLoader: false },
+    ]);
     expect(http.get.calls.argsFor(1)).toEqual([
       '/assistant/messages',
       { limit: '20', before: '99' },
+      { showLoader: false },
     ]);
   });
 
@@ -60,10 +73,14 @@ describe('AssistantApiService', () => {
     await service.brief();
     await service.clearMessages();
 
-    expect(http.post).toHaveBeenCalledWith('/assistant/messages', {
-      messages: [{ role: 'bot', kind: 'text', text: 'hi' }],
-    });
-    expect(http.get).toHaveBeenCalledWith('/assistant/brief');
-    expect(http.delete).toHaveBeenCalledWith('/assistant/messages');
+    expect(http.post).toHaveBeenCalledWith(
+      '/assistant/messages',
+      {
+        messages: [{ role: 'bot', kind: 'text', text: 'hi' }],
+      },
+      { showLoader: false },
+    );
+    expect(http.get).toHaveBeenCalledWith('/assistant/brief', undefined, { showLoader: false });
+    expect(http.delete).toHaveBeenCalledWith('/assistant/messages', { showLoader: false });
   });
 });

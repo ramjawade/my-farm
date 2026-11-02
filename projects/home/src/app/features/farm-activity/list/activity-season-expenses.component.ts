@@ -6,6 +6,7 @@ import { CategorySpend } from './activity-log-summary';
 /** This season's spend by category, as a bar per category. */
 @Component({
   selector: 'app-activity-season-expenses',
+  styles: ':host { display: block; }',
   imports: [TranslatePipe, LocalNumberPipe],
   template: `
     <section class="card">

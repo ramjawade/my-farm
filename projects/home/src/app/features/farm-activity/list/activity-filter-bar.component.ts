@@ -193,6 +193,9 @@ export interface FilterOption {
     </section>
   `,
   styles: `
+    :host {
+      display: block;
+    }
     .rotate-180 {
       transform: rotate(180deg);
     }
