@@ -1,8 +1,13 @@
 import { NO_ERRORS_SCHEMA, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, RouterOutlet } from '@angular/router';
-import { TranslatePipe, TranslateService, provideTranslateService } from '@ngx-translate/core';
-import { LoaderOutletComponent, LoaderService } from 'shared';
+import {
+  TranslatePipe,
+  TranslateService,
+  TranslationObject,
+  provideTranslateService,
+} from '@ngx-translate/core';
+import { LoaderOutletComponent, LoaderService, SLOW_START_MS } from 'shared';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { ConnectionService } from '../../core/services/connection.service';
@@ -74,7 +79,7 @@ describe('AppLayout offline notice', () => {
 });
 
 describe('AppLayout loading overlay', () => {
-  it('shows the translated text while a request runs', () => {
+  function create(translations: TranslationObject) {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
@@ -98,13 +103,32 @@ describe('AppLayout loading overlay', () => {
       },
     });
     const translate = TestBed.inject(TranslateService);
-    translate.setTranslation('mr', { states: { loading: { title: 'लोड होत आहे…' } } });
+    translate.setTranslation('mr', translations);
     translate.use('mr');
     const fixture = TestBed.createComponent(AppLayout);
     TestBed.inject(LoaderService).show();
+    return fixture;
+  }
+
+  it('shows the translated text while a request runs', () => {
+    const fixture = create({ states: { loading: { title: 'लोड होत आहे…' } } });
     fixture.detectChanges();
 
     const text = (fixture.nativeElement as HTMLElement).querySelector('.lib-loader-text');
     expect(text!.textContent).toContain('लोड होत आहे…');
+  });
+
+  it('shows the translated slow-start line when the first load is slow', () => {
+    jasmine.clock().install();
+    try {
+      const fixture = create({ states: { loading: { slow: 'मोफत होस्टिंग' } } });
+      jasmine.clock().tick(SLOW_START_MS);
+      fixture.detectChanges();
+
+      const note = (fixture.nativeElement as HTMLElement).querySelector('.lib-loader-note');
+      expect(note!.textContent).toContain('मोफत होस्टिंग');
+    } finally {
+      jasmine.clock().uninstall();
+    }
   });
 });

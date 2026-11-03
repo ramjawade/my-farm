@@ -17,4 +17,7 @@
   <router-outlet />
 }
 <lib-toast-outlet />
-<lib-loader-outlet [label]="'states.loading.title' | translate" />
+<lib-loader-outlet
+  [label]="'states.loading.title' | translate"
+  [slowNote]="'states.loading.slow' | translate"
+/>

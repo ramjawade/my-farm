@@ -12,6 +12,9 @@ import { LoaderService } from './loader.service';
         <div class="lib-loader-card">
           <div class="spinner-border text-success" aria-hidden="true"></div>
           <span class="lib-loader-text">{{ label() }}</span>
+          @if (loaderService.slow() && slowNote()) {
+            <span class="lib-loader-note">{{ slowNote() }}</span>
+          }
         </div>
       </div>
     }
@@ -38,6 +41,12 @@ import { LoaderService } from './loader.service';
       padding: 1.625rem 2.125rem;
       box-shadow: 0 10px 34px rgba(var(--mf-shadow-rgb), 0.14);
     }
+    .lib-loader-note {
+      max-width: 18rem;
+      text-align: center;
+      font-size: 0.8125rem;
+      color: var(--mf-fg-muted, var(--bs-secondary-color));
+    }
     .lib-loader-text {
       font-size: 0.8125rem;
       font-weight: 600;
@@ -50,4 +59,7 @@ export class LoaderOutletComponent {
 
   /** The text shown and announced. The app passes its translated "Loading…". */
   readonly label = input('Loading...');
+
+  /** An extra muted line shown while the first load of the session is slow; empty shows none. */
+  readonly slowNote = input('');
 }
