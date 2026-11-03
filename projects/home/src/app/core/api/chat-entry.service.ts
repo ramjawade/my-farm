@@ -128,7 +128,11 @@ export class ChatEntryService {
    */
   async parse(text: string): Promise<ChatParseResponse> {
     try {
-      return await this.http.post<ChatParseResponse>('/activities/parse', { text });
+      return await this.http.post<ChatParseResponse>(
+        '/activities/parse',
+        { text },
+        { showLoader: false },
+      );
     } catch (err) {
       const status = (err as { status?: number })?.status;
       throw new ChatEntryError(status === 422 ? 'not-understood' : 'unavailable');

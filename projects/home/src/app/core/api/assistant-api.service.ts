@@ -16,32 +16,39 @@ export type NewAssistantMessage = components['schemas']['ChatMessageCreate'];
  * failure means (`ask` failing falls back to logging, history failing is
  * ignored), so nothing here swallows an error.
  */
+/** The chat has its own inline indicators, so its calls skip the app-wide loader. */
+const NO_LOADER = { showLoader: false };
+
 @Injectable({ providedIn: 'root' })
 export class AssistantApiService {
   private readonly http = inject(HttpService);
 
   /** Route a fresh message and, for a question, answer it. 503 when the model is unavailable. */
   ask(text: string, language?: string): Promise<AskResponse> {
-    return this.http.post<AskResponse>('/assistant/ask', { text, language: language ?? null });
+    return this.http.post<AskResponse>(
+      '/assistant/ask',
+      { text, language: language ?? null },
+      NO_LOADER,
+    );
   }
 
   brief(): Promise<BriefResponse> {
-    return this.http.get<BriefResponse>('/assistant/brief');
+    return this.http.get<BriefResponse>('/assistant/brief', undefined, NO_LOADER);
   }
 
   /** Newest-first page; pass the oldest id already shown as `before` for older messages. */
   listMessages(limit = 50, before?: number): Promise<AssistantMessagesPage> {
     const params: Record<string, string> = { limit: String(limit) };
     if (before !== undefined) params['before'] = String(before);
-    return this.http.get<AssistantMessagesPage>('/assistant/messages', params);
+    return this.http.get<AssistantMessagesPage>('/assistant/messages', params, NO_LOADER);
   }
 
   /** Append one turn (1–2 messages). */
   appendMessages(messages: NewAssistantMessage[]): Promise<AssistantMessage[]> {
-    return this.http.post<AssistantMessage[]>('/assistant/messages', { messages });
+    return this.http.post<AssistantMessage[]>('/assistant/messages', { messages }, NO_LOADER);
   }
 
   clearMessages(): Promise<void> {
-    return this.http.delete<void>('/assistant/messages');
+    return this.http.delete<void>('/assistant/messages', NO_LOADER);
   }
 }

@@ -5,6 +5,11 @@ import { firstValueFrom } from 'rxjs';
 import { EnvironmentService } from '../services/environment.service';
 import { LoaderService, ToastService } from 'shared';
 
+/** Per-request options. The chat shows its own typing dots, so it turns the app-wide loader off. */
+export interface RequestOptions {
+  showLoader?: boolean;
+}
+
 /**
  * Single entry point for backend HTTP calls. Every API-facing service
  * (the per-domain `*ApiService`s, `ReferenceDataService`, `SessionAuthService`,
@@ -40,7 +45,7 @@ export class HttpService {
     return new HttpHeaders(headers);
   }
 
-  get<T>(path: string, params?: Record<string, string>): Promise<T> {
+  get<T>(path: string, params?: Record<string, string>, options?: RequestOptions): Promise<T> {
     return this.withLoader(
       this.withErrorToast(
         firstValueFrom(
@@ -50,14 +55,16 @@ export class HttpService {
           }),
         ),
       ),
+      options,
     );
   }
 
-  post<T>(path: string, body: unknown): Promise<T> {
+  post<T>(path: string, body: unknown, options?: RequestOptions): Promise<T> {
     return this.withLoader(
       this.withErrorToast(
         firstValueFrom(this.http.post<T>(this.url(path), body, { headers: this.headers() })),
       ),
+      options,
     );
   }
 
@@ -77,16 +84,18 @@ export class HttpService {
     );
   }
 
-  delete<T>(path: string): Promise<T> {
+  delete<T>(path: string, options?: RequestOptions): Promise<T> {
     return this.withLoader(
       this.withErrorToast(
         firstValueFrom(this.http.delete<T>(this.url(path), { headers: this.headers() })),
       ),
+      options,
     );
   }
 
-  /** Shows the app-wide loader for the duration of one request. */
-  private async withLoader<T>(request: Promise<T>): Promise<T> {
+  /** Shows the app-wide loader for the duration of one request, unless `showLoader` is false. */
+  private async withLoader<T>(request: Promise<T>, options?: RequestOptions): Promise<T> {
+    if (options?.showLoader === false) return request;
     const id = this.loader.show();
     try {
       return await request;

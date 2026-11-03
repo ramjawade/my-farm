@@ -44,6 +44,7 @@ export class HomeFarmMapComponent implements OnDestroy {
   private map?: L.Map;
   private readonly layer = L.layerGroup();
   private fittedTo?: SavedFarm[];
+  private fittedSelectedId: number | null = null;
 
   constructor() {
     afterNextRender(() => this.init());
@@ -83,11 +84,13 @@ export class HomeFarmMapComponent implements OnDestroy {
     if (!map) return;
     this.layer.clearLayers();
     const all: L.LatLng[] = [];
+    let selectedPoints: L.LatLng[] = [];
     for (const land of lands) {
       const points = land.points.map((p) => L.latLng(p.lat, p.lng));
       if (points.length < 3) continue;
       all.push(...points);
       const selected = land.id === selectedId;
+      if (selected) selectedPoints = points;
       const polygon = L.polygon(points, {
         color: selected ? SELECTED_COLOR : LAND_COLOR,
         weight: selected ? 4 : 2,
@@ -100,10 +103,14 @@ export class HomeFarmMapComponent implements OnDestroy {
         interactive: false,
       }).addTo(this.layer);
     }
-    if (all.length && this.fittedTo !== lands) {
+    // Focus on the selected land; fall back to all lands when none is selected.
+    // Refit when the lands load or the selection changes, not on every redraw.
+    const target = selectedPoints.length ? selectedPoints : all;
+    if (target.length && (this.fittedTo !== lands || this.fittedSelectedId !== selectedId)) {
       this.fittedTo = lands;
+      this.fittedSelectedId = selectedId;
       map.invalidateSize();
-      map.fitBounds(L.latLngBounds(all), { padding: [24, 24], maxZoom: 17 });
+      map.fitBounds(L.latLngBounds(target), { padding: [24, 24], maxZoom: 17 });
     }
   }
 

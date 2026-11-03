@@ -139,6 +139,16 @@ describe('HttpService', () => {
     expect(loader.isLoading()).toBeFalse();
   });
 
+  it('does not show the app-wide loader when a request opts out', async () => {
+    const promise = service.post('/assistant/ask', { text: 'hi' }, { showLoader: false });
+    expect(loader.isLoading()).toBeFalse();
+
+    httpMock.expectOne('/api/v1/assistant/ask').flush({});
+    await promise;
+
+    expect(loader.isLoading()).toBeFalse();
+  });
+
   it('keeps the loader shown while a second overlapping request is still in flight', async () => {
     const firstPromise = service.get('/lands');
     const firstReq = httpMock.expectOne('/api/v1/lands');
