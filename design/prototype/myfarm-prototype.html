@@ -1220,6 +1220,7 @@ function mk(el,mode){
   function states(){
     var card=function(icon,title,text,btn){return '<div class="card">'+emptyHtml(icon,title,text,btn)+'</div>'};
     var loading='<div class="card"><div class="empty" role="status" aria-live="polite"><span class="spin" aria-hidden="true"></span><h3>Loading…</h3><p>Getting your farm ready.</p></div></div>';
+    var slow='<div class="card"><div class="empty" role="status" aria-live="polite"><span class="spin" aria-hidden="true"></span><h3>Loading…</h3><p>Getting your farm ready.</p><p class="hint">The app runs on free hosting, so the first load can take up to a minute. Thanks for waiting.</p></div><p class="hint">Slow start: this line appears only if the first load is still running after 3 seconds.</p></div>';
     var tg=function(k,on,l){return '<button type="button" class="btn'+(on?' p':'')+'" data-bnf="'+k+'" aria-pressed="'+on+'">'+l+'</button>'};
     var off='<div class="card"><h3>Banners</h3><p class="hint">Turn each one on to see it at the top of its screen. Offline cannot be dismissed and goes away by itself when the connection returns. With three or more active on Home, the third folds into "N more notifications".</p><div class="chips">'+tg('offline',OFFLINE,OFFLINE?'Back online':'Simulate offline')+tg('sample',BNF.sample,'Weather sample data')+tg('update',BNF.update,'App update')+tg('news',BNF.news,'New feature')+'</div></div>';
     var g=function(a,b){return mode==='d'?'<div class="grid g2">'+a+b+'</div>':a+b};
@@ -1227,7 +1228,7 @@ function mk(el,mode){
       '<div class="stack">'+
       g(card('map',"This page isn't here",'The link may be old or mistyped.','<button class="btn p" data-go="home">Go to Home</button>'),
         card('warn','Something went wrong',"We couldn't load this. Check your connection and try again.",'<button class="btn p" data-retry>Try again</button>'))+
-      g(loading,off)+'</div>'
+      g(loading,off)+g(slow,'')+'</div>'
   }
   /* Logging a sale from the chat: read the text, ask for what is missing, then Review & Save. */
   function isSaleText(q){return /\b(sold|sell|selling|sale)\b/i.test(q)}
