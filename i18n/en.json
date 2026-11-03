@@ -1327,7 +1327,8 @@
     },
     "loading": {
       "title": "Loading…",
-      "text": "Getting your farm ready."
+      "text": "Getting your farm ready.",
+      "slow": "The app runs on free hosting, so the first load can take up to a minute. Thanks for waiting."
     },
     "error": {
       "title": "Something went wrong",
