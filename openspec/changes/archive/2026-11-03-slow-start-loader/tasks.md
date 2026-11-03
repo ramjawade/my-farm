@@ -14,5 +14,5 @@ One PR on this branch. Frontend only. UX source: `design/prototype/myfarm-protot
 ## 3. Check, PR and archive
 
 - [x] 3.1 Run `npm run lint`, `npm run build` and `npm test`; update the Playwright golden path only if it reads the overlay text. Verify: all green.
-- [ ] 3.2 Open the draft PR (it holds the prototype, plan and code). Verify: the PR links this change and issue #404, and CI runs.
-- [ ] 3.3 Once CI is green, archive the change on this branch (sync the `system-states` spec) and mark the PR ready. Verify: `openspec/specs/system-states/spec.md` has the Slow start message requirement and the change sits under `archive/`.
+- [x] 3.2 Open the draft PR (it holds the prototype, plan and code). Verify: the PR links this change and issue #404, and CI runs.
+- [x] 3.3 Once CI is green, archive the change on this branch (sync the `system-states` spec) and mark the PR ready. Verify: `openspec/specs/system-states/spec.md` has the Slow start message requirement and the change sits under `archive/`.
